@@ -401,7 +401,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
             'tokens': result['usage']['total_tokens'], 'model_calls': result['usage']['api_calls'],
             'tool_calls': result['tool_calls'], 'latency_ms': result['elapsed_seconds'] * 1000}
     reflector = make_reflector(creds, augment_training_context=True)
-    learner = SkillOptLearner(edit_budget=config.edit_budget)
+    learner = SkillOptLearner(edit_budget=config.edit_budget, rollouts_k=config.skillopt_rollouts_k)
     result = learner.update(state['skills'][employee], experiences, replay, reflector,
         current_day=eco.day, night=len(state['updates']) + 1,
         budget=LearningBudget(max_target_model_calls=max(1, remaining_calls - 4),

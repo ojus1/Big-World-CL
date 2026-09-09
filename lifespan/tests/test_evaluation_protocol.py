@@ -33,7 +33,8 @@ class ProtocolTests(unittest.TestCase):
 
     def test_invalid_contracts_fail_before_calls(self):
         for kwargs in ({'days':7}, {'seed':-1}, {'seed':True}, {'seed':1000000},
-                       {'max_iterations':False}, {'algorithm':'fake'}, {'state_mode':'all_history'}):
+                       {'max_iterations':False}, {'algorithm':'fake'}, {'state_mode':'all_history'},
+                       {'skillopt_rollouts_k':False}, {'skillopt_rollouts_k':0}, {'skillopt_rollouts_k':1.5}):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 ExperimentConfig(**kwargs)
 

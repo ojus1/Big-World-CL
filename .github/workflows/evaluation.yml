@@ -40,3 +40,6 @@ jobs:
 
       - name: Test independent artifact audit, corrected reporting and tamper detection
         run: python -m unittest discover -s tests -p 'test_evaluation_*.py' -v
+
+      - name: Test calibration selection, native orchestration and audit
+        run: python -m unittest discover -s tests -p 'test_calibration_*.py' -v

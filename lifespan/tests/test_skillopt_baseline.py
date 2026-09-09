@@ -97,6 +97,11 @@ class InputContractTests(unittest.TestCase):
             with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
                 LearningBudget(**kwargs)
 
+    def test_rollouts_k_requires_positive_integer(self):
+        for value in (0, -1, True, 1.5, None, "3"):
+            with self.subTest(rollouts_k=value), self.assertRaises(ValueError):
+                SkillOptLearner(rollouts_k=value)
+
     def test_missing_upstream_has_no_silent_mock_fallback(self):
         with tempfile.TemporaryDirectory() as root:
             with self.assertRaises(SkillOptUnavailable):
@@ -107,10 +112,135 @@ class InputContractTests(unittest.TestCase):
 @unittest.skipUnless((DEFAULT_SOURCE / "skillopt_sleep" / "consolidate.py").is_file(),
                      "Pinned upstream missing: python3 scripts/install_skillopt.py")
 class UpstreamIntegrationTests(unittest.TestCase):
-    def update(self, target=None, optimizer=None, cases=None, **kwargs):
-        return SkillOptLearner().update(
+    def update(self, target=None, optimizer=None, cases=None, learner_options=None, **kwargs):
+        return SkillOptLearner(**(learner_options or {})).update(
             "# Accounting\nFollow the task instructions.", cases or experiences(),
             target or RecordingTarget(), optimizer or RecordingOptimizer(), current_day=2, **kwargs)
+
+    def test_native_k_rollouts_execute_fresh_and_charge_all_attempts(self):
+        target, optimizer = RecordingTarget(), RecordingOptimizer()
+
+        def variable_train(payload, limits):
+            outcome = target(payload, limits)
+            if payload["task"]["split"] == "train" and payload["sample_id"] == 1:
+                outcome.update(hard=1.0, soft=1.0, response="Good signed-amount reconciliation", feedback="")
+            return outcome
+
+        result = self.update(variable_train, optimizer, learner_options={"rollouts_k": 3})
+        self.assertTrue(result["accepted"], result)
+        self.assertEqual(result["configuration"]["rollouts_k"], 3)
+        train = [call for call in target.calls if call["task"]["split"] == "train"]
+        # Upstream does an initial replay PLUS K contrastive replays. The
+        # original and first extra sample both use sample_id=0, but they still
+        # invoke the target twice: this bridge never caches target executions.
+        self.assertEqual([call["sample_id"] for call in train], [0, 0, 1, 2])
+        self.assertEqual([call["attempt_index"] for call in train], [1, 2, 3, 4])
+        self.assertEqual([row["attempt_index"] for row in result["replay_evidence"]], list(range(7)))
+        self.assertEqual([row["sample_id"] for row in result["replay_evidence"] if row["split"] == "train"], [0, 0, 1, 2])
+        validation = [call["phase"] for call in target.calls if call["task"]["split"] == "val"]
+        self.assertEqual(validation, ["baseline_val", "gate_trial:skill", "final_val"])
+        self.assertIn("CONTRASTIVE reflection", optimizer.calls[0]["prompt"])
+        self.assertIn("GOOD attempt", optimizer.calls[0]["prompt"])
+        self.assertIn("BAD  attempt", optimizer.calls[0]["prompt"])
+        self.assertEqual(result["costs"]["replays"], 7)
+        self.assertEqual(result["costs"]["target_model_calls"], 7)
+        self.assertEqual(result["costs"]["optimizer_model_calls"], 1)
+        self.assertEqual(result["costs"]["tokens"], 80)
+        operations = [row for row in result["costs"]["operations"] if row["kind"] == "target"]
+        self.assertEqual([row["attempt_index"] for row in operations], list(range(7)))
+        self.assertEqual(len(optimizer.calls[0]["train_experiences"]), 4)
+        self.assertNotIn("val-b", json.dumps(optimizer.calls))
+
+    def test_native_contrast_uses_configured_soft_metric_spread(self):
+        target, optimizer = RecordingTarget(), RecordingOptimizer()
+
+        def variable_soft(payload, limits):
+            outcome = target(payload, limits)
+            if payload["task"]["split"] == "train":
+                outcome.update(hard=0.0, soft=0.75 if payload["sample_id"] == 1 else 0.0)
+            return outcome
+
+        result = self.update(variable_soft, optimizer, learner_options={"rollouts_k": 2, "gate_metric": "soft"})
+        self.assertTrue(result["accepted"])
+        self.assertIn("CONTRASTIVE reflection", optimizer.calls[0]["prompt"])
+        self.assertIn("soft score 0.750", optimizer.calls[0]["prompt"])
+
+    def test_no_spread_falls_back_to_original_train_failures(self):
+        optimizer = RecordingOptimizer()
+        result = self.update(optimizer=optimizer, learner_options={"rollouts_k": 3})
+        self.assertTrue(result["accepted"])
+        self.assertEqual(result["costs"]["replays"], 7)
+        self.assertNotIn("CONTRASTIVE reflection", optimizer.calls[0]["prompt"])
+        self.assertIn("Recurring failures", optimizer.calls[0]["prompt"])
+
+    def test_repeated_uniform_failures_do_not_replace_initial_upstream_failure_set(self):
+        seen_train = [0]
+        optimizer = RecordingOptimizer()
+
+        def target(payload, limits):
+            score = 0.0
+            if payload["task"]["split"] == "train":
+                score = float(seen_train[0] == 0)
+                seen_train[0] += 1
+            return receipt(hard=score, soft=score, response="Result", feedback="Observed check result")
+
+        # The pinned fallback consults initial train failures. If that one
+        # succeeds but all K later attempts fail identically, no contrast exists
+        # and upstream proposes no edits. Preserve and disclose this limitation.
+        result = self.update(target, optimizer, learner_options={"rollouts_k": 3})
+        self.assertFalse(result["accepted"])
+        self.assertEqual(seen_train[0], 4)
+        self.assertEqual(optimizer.calls, [])
+        self.assertEqual(result["costs"]["replays"], 6)
+
+    def test_k_rollout_final_gate_remains_a_fresh_rollout_and_can_rollback(self):
+        target = RecordingTarget()
+
+        def final_regression(payload, limits):
+            outcome = target(payload, limits)
+            if payload["phase"] == "final_val":
+                outcome.update(hard=0.0, soft=0.0)
+            return outcome
+
+        result = self.update(final_regression, learner_options={"rollouts_k": 2})
+        self.assertTrue(result["gate_evidence"]["gate_trials"][0]["accepted"])
+        self.assertFalse(result["accepted"])
+        self.assertEqual(result["skill_before_sha256"], result["skill_after_sha256"])
+        self.assertEqual([call["phase"] for call in target.calls].count("final_val"), 1)
+
+    def test_nonfinite_repetition_is_not_averaged_away(self):
+        target, optimizer = RecordingTarget(), RecordingOptimizer()
+
+        def malformed(payload, limits):
+            outcome = target(payload, limits)
+            if payload["task"]["split"] == "train" and payload["sample_id"] == 1:
+                outcome["hard"] = math.nan
+            return outcome
+
+        result = self.update(malformed, optimizer, learner_options={"rollouts_k": 3})
+        self.assertEqual(result["status"], "failed")
+        self.assertFalse(result["accepted"])
+        self.assertEqual(result["costs"]["target_model_calls"], 4)
+        self.assertEqual(optimizer.calls, [])
+
+    def test_repeated_rollouts_stop_at_total_token_budget(self):
+        target, optimizer = RecordingTarget(), RecordingOptimizer()
+        result = self.update(target, optimizer, learner_options={"rollouts_k": 3},
+                             budget=LearningBudget(max_tokens=30))
+        self.assertEqual(result["status"], "budget_exhausted")
+        self.assertFalse(result["accepted"])
+        self.assertEqual(len(target.calls), 3)
+        self.assertEqual(result["costs"]["tokens"], 30)
+        self.assertEqual(optimizer.calls, [])
+
+    def test_repeated_rollouts_stop_at_physical_model_call_budget(self):
+        target = RecordingTarget()
+        result = self.update(target, learner_options={"rollouts_k": 3},
+                             budget=LearningBudget(max_target_model_calls=3))
+        self.assertEqual(result["status"], "budget_exhausted")
+        self.assertEqual(len(target.calls), 3)
+        self.assertEqual(result["costs"]["target_model_calls"], 3)
+        self.assertFalse(result["accepted"])
 
     def test_real_upstream_accepts_and_freshly_replays_final(self):
         target, optimizer = RecordingTarget(), RecordingOptimizer()
@@ -160,9 +290,11 @@ class UpstreamIntegrationTests(unittest.TestCase):
             score = float(not changed) if payload["task"]["id"] == "val-b" else float(changed)
             return receipt(hard=score, soft=score, response="Result", feedback="Ledger is incorrect")
 
-        result = self.update(target, cases=cases)
-        self.assertFalse(result["accepted"])
-        self.assertTrue(result["gate_evidence"]["gate_trials"][0]["blocked_by_regression"])
+        for rollouts_k in (1, 3):
+            with self.subTest(rollouts_k=rollouts_k):
+                result = self.update(target, cases=cases, learner_options={"rollouts_k": rollouts_k})
+                self.assertFalse(result["accepted"])
+                self.assertTrue(result["gate_evidence"]["gate_trials"][0]["blocked_by_regression"])
 
     def test_optimizer_never_sees_validation_or_privileged_fields(self):
         cases = experiences()

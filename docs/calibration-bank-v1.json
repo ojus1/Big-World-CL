@@ -1,0 +1,595 @@
+{
+  "bank_version": "outcome-blind-replay-bank-v1",
+  "dependence": {
+    "repeated_obligation_groups": [
+      {
+        "employee": "firm-0__incident-regulated",
+        "regimes": [
+          "changed",
+          "exception"
+        ],
+        "selection_ids": [
+          "d003-firm-0__incident-regulated-firm-0-order-0011",
+          "d004-firm-0__incident-regulated-firm-0-order-0011"
+        ],
+        "source_task_id": "firm-0-order-0011"
+      },
+      {
+        "employee": "firm-1__incident-regulated",
+        "regimes": [
+          "exception",
+          "reversal"
+        ],
+        "selection_ids": [
+          "d004-firm-1__incident-regulated-firm-1-order-0008",
+          "d006-firm-1__incident-regulated-firm-1-order-0008"
+        ],
+        "source_task_id": "firm-1-order-0008"
+      }
+    ],
+    "underlying_obligation_count": 20,
+    "warning": "Employee/regime cells and repeats are not independent tasks or world samples; no confidence interval is justified from treating them as independent."
+  },
+  "expected_cell_count": 24,
+  "expected_rollout_count": 44,
+  "missing_cells": [
+    {
+      "employee": "firm-0__onboarding-regulated",
+      "reason": "no_released_source_session_in_this_cell",
+      "regime": "exception"
+    },
+    {
+      "employee": "firm-0__renewal-regulated",
+      "reason": "no_released_source_session_in_this_cell",
+      "regime": "exception"
+    }
+  ],
+  "public_summary_boundary": "Only identifiers, provenance hashes, scope metadata and post-selection source outcomes are public. Private capsule state, requests, files and expected work outputs are excluded.",
+  "repeats_per_selection": 2,
+  "schema_version": 1,
+  "selected_cell_count": 22,
+  "selection_rule": "First session by (day, source session id) in each employee/regime cell; selection is outcome-blind.",
+  "selections": [
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "77db858710c25df904e778ffb9cf4e8602e245f42e7539797321a613f366d054",
+      "case_sha256": "4f359015ece56b1d74757c12170d256719e669d74538024b155cd1b4913d0318",
+      "case_split": "online",
+      "employee": "firm-0__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-0__incident-regulated-firm-0-order-0002",
+      "source_case_path": "private/cases/d000-firm-0__incident-regulated-firm-0-order-0002.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-0__incident-regulated-firm-0-order-0002",
+      "source_task_id": "firm-0-order-0002",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "a297aa649e19a7dea8e60ab6ef0966511dac068561e5f39bd6af5dbce6058416",
+      "case_sha256": "6acace77f9019b2247bbd5e4e4a05d4aee6aaebdd816e789892c33bd898b890f",
+      "case_split": "online",
+      "employee": "firm-0__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": true,
+        "infrastructure_valid": true,
+        "semantic_score": 0.933333,
+        "skill_loaded": true,
+        "success": false
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-0__incident-regulated-firm-0-order-0011",
+      "source_case_path": "private/cases/d003-firm-0__incident-regulated-firm-0-order-0011.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-0__incident-regulated-firm-0-order-0011",
+      "source_task_id": "firm-0-order-0011",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "16ef45eac259e0872e9e64aeb91116c27644cf48b95592ff01acd19f3809d793",
+      "case_sha256": "6312d04de79b04c7f06c4e3bf6b550ce70f0664c6d36c41a49221539939c5c83",
+      "case_split": "online",
+      "employee": "firm-0__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "exception",
+      "selection_id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+      "source_case_path": "private/cases/d004-firm-0__incident-regulated-firm-0-order-0011.json",
+      "source_day": 4,
+      "source_session_id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+      "source_task_id": "firm-0-order-0011",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "7555cc7ed6c97edef95b21a4d9283019d1398489d40b11134662284a074f084a",
+      "case_sha256": "bae879d0f347a2def68a08c25ad37bbc4af60a3fcf25ee55eac736840ff353e9",
+      "case_split": "online",
+      "employee": "firm-0__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+      "source_case_path": "private/cases/d006-firm-0__incident-regulated-firm-0-order-0014.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+      "source_task_id": "firm-0-order-0014",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "7341cd465898cca0c237b9c96201da607e12ac42b711aa3b776e971e0f87e303",
+      "case_sha256": "6f5887938641d50cdc6a54f16aa6944c44b9a515c1c414059cb5c93b73f34e06",
+      "case_split": "online",
+      "employee": "firm-0__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000",
+      "source_case_path": "private/cases/d000-firm-0__onboarding-regulated-firm-0-order-0000.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000",
+      "source_task_id": "firm-0-order-0000",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "404ac4dcd1eb8e582f43455cd58b9ebafc218160f170cdc55216de5c8d4be65d",
+      "case_sha256": "061ff2571f48d6c36419c4fae6420531e1000cb7fd65e42b6d7a1f48281c431d",
+      "case_split": "online",
+      "employee": "firm-0__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009",
+      "source_case_path": "private/cases/d003-firm-0__onboarding-regulated-firm-0-order-0009.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009",
+      "source_task_id": "firm-0-order-0009",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "99f821b27e33d28b8f7bc0d221c232b50559d81180d3f1a95fd207ae24b7cd86",
+      "case_sha256": "baeb16efb178da05e43920de573eb8c89aafcda6b003d945ba77d9098355c37c",
+      "case_split": "online",
+      "employee": "firm-0__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012",
+      "source_case_path": "private/cases/d006-firm-0__onboarding-regulated-firm-0-order-0012.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012",
+      "source_task_id": "firm-0-order-0012",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "84339bac383ed14ac5f439780406dba4a4f6a18ab88daa30e074e9d2460a39d5",
+      "case_sha256": "6202f1bebce36c1cca8e79ba41dc97931d01bc6e71da0ddefe81afb5b676cb8c",
+      "case_split": "online",
+      "employee": "firm-0__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-0__renewal-regulated-firm-0-order-0001",
+      "source_case_path": "private/cases/d000-firm-0__renewal-regulated-firm-0-order-0001.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-0__renewal-regulated-firm-0-order-0001",
+      "source_task_id": "firm-0-order-0001",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "f16cd6b1a9c2d8a2f3eda537f90955277faa3d115717115810161ff56061ee12",
+      "case_sha256": "7c1183e98ddaa014a61eed74c349f4a7039f984ea8e20936638da0b00db0ab01",
+      "case_split": "online",
+      "employee": "firm-0__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-0__renewal-regulated-firm-0-order-0010",
+      "source_case_path": "private/cases/d003-firm-0__renewal-regulated-firm-0-order-0010.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-0__renewal-regulated-firm-0-order-0010",
+      "source_task_id": "firm-0-order-0010",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "c13e58a4a9a646f2a77d76cde7e1605b640a4123e17d61f3cd64e47b92e54730",
+      "case_sha256": "ddc29b7331a4485fa627e12e7b0fef0c27b8be433755aa162aa498b21bb96607",
+      "case_split": "online",
+      "employee": "firm-0__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-0__renewal-regulated-firm-0-order-0013",
+      "source_case_path": "private/cases/d006-firm-0__renewal-regulated-firm-0-order-0013.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-0__renewal-regulated-firm-0-order-0013",
+      "source_task_id": "firm-0-order-0013",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "1085c422843b5c48258734d992c110f121e9086ac966ada9842878459d8bcfa4",
+      "case_sha256": "a0ec8c16dd8df8f2d655a2ca53512502d504a8074a1b010088f0093243674b7c",
+      "case_split": "online",
+      "employee": "firm-1__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": true,
+        "infrastructure_valid": true,
+        "semantic_score": 0.933333,
+        "skill_loaded": true,
+        "success": false
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-1__incident-regulated-firm-1-order-0002",
+      "source_case_path": "private/cases/d000-firm-1__incident-regulated-firm-1-order-0002.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-1__incident-regulated-firm-1-order-0002",
+      "source_task_id": "firm-1-order-0002",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "9afcc075c9d4b97aa8749c0fbe867eb8cdc13c2caeb791410119a6f76cb5a224",
+      "case_sha256": "1e976720763b90f894073629775d3f6ca3f7711e62ab7bfcc2e69b0925f6708f",
+      "case_split": "online",
+      "employee": "firm-1__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-1__incident-regulated-firm-1-order-0005",
+      "source_case_path": "private/cases/d003-firm-1__incident-regulated-firm-1-order-0005.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-1__incident-regulated-firm-1-order-0005",
+      "source_task_id": "firm-1-order-0005",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "4c2010c10509bc1da88f872a21fa1591bdce1a12f3e261d05482f4fb43c4ab14",
+      "case_sha256": "98525f2ec2555926b5bf371f13d30abe079ff5a7a64a2c4da81630cb96e0d899",
+      "case_split": "online",
+      "employee": "firm-1__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": true,
+        "infrastructure_valid": true,
+        "semantic_score": 0.933333,
+        "skill_loaded": true,
+        "success": false
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "exception",
+      "selection_id": "d004-firm-1__incident-regulated-firm-1-order-0008",
+      "source_case_path": "private/cases/d004-firm-1__incident-regulated-firm-1-order-0008.json",
+      "source_day": 4,
+      "source_session_id": "d004-firm-1__incident-regulated-firm-1-order-0008",
+      "source_task_id": "firm-1-order-0008",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "4a9d822c038674806003e81ef494f872db572b4a63994ab54eafc80ae199d006",
+      "case_sha256": "45689f916e790e1c3c852c02dc04156358216d186684d8d06449a0b5917cd38f",
+      "case_split": "online",
+      "employee": "firm-1__incident-regulated",
+      "original_outcome": {
+        "budget_exhausted": true,
+        "infrastructure_valid": true,
+        "semantic_score": 0.866667,
+        "skill_loaded": true,
+        "success": false
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-1__incident-regulated-firm-1-order-0008",
+      "source_case_path": "private/cases/d006-firm-1__incident-regulated-firm-1-order-0008.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-1__incident-regulated-firm-1-order-0008",
+      "source_task_id": "firm-1-order-0008",
+      "workflow": "incident"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "2da8e84af47cfbedb107508bec2524a5eee050a28cd7953903699208ffe82b91",
+      "case_sha256": "fce19af617ebb57112221c62f8114a10ec852db118578332ba15b12cce6b9a47",
+      "case_split": "online",
+      "employee": "firm-1__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000",
+      "source_case_path": "private/cases/d000-firm-1__onboarding-regulated-firm-1-order-0000.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000",
+      "source_task_id": "firm-1-order-0000",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "d70d42a48912249000b3022ab27ad704e0b11432484f63976e9437f8f5dd1268",
+      "case_sha256": "f61f750fb4df54bfc2ad902364a6f2f804cd1b2069e8dc129fd77b1b384ccf18",
+      "case_split": "online",
+      "employee": "firm-1__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009",
+      "source_case_path": "private/cases/d003-firm-1__onboarding-regulated-firm-1-order-0009.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009",
+      "source_task_id": "firm-1-order-0009",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "17d3828c104144663ca427d720fa84ad2c1cd2a9f519448bb2794552bcf5d814",
+      "case_sha256": "c4e0637557f371d5246e2a2aaeb2f31f13d7e4810a910e2fcf3885f3e11e4767",
+      "case_split": "online",
+      "employee": "firm-1__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "exception",
+      "selection_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012",
+      "source_case_path": "private/cases/d004-firm-1__onboarding-regulated-firm-1-order-0012.json",
+      "source_day": 4,
+      "source_session_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012",
+      "source_task_id": "firm-1-order-0012",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "e53d0ab38753da2653fb1b991051ab05ebdb096228cab99fa977ce63cf3c729d",
+      "case_sha256": "50081b2bd23daafbc913b15d25adf8b06a3cb254af696b92834d74bad8808414",
+      "case_split": "online",
+      "employee": "firm-1__onboarding-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018",
+      "source_case_path": "private/cases/d006-firm-1__onboarding-regulated-firm-1-order-0018.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018",
+      "source_task_id": "firm-1-order-0018",
+      "workflow": "onboarding"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "41eb42ed83f60e804ec44b9d7e8cb3feabb1d98034c670a3ed0b121d0dbcfbbb",
+      "case_sha256": "ef4db0b268b278a9e0744f690effb98f1006a5e52fd9946991f8b537bfea6904",
+      "case_split": "online",
+      "employee": "firm-1__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "base",
+      "selection_id": "d000-firm-1__renewal-regulated-firm-1-order-0001",
+      "source_case_path": "private/cases/d000-firm-1__renewal-regulated-firm-1-order-0001.json",
+      "source_day": 0,
+      "source_session_id": "d000-firm-1__renewal-regulated-firm-1-order-0001",
+      "source_task_id": "firm-1-order-0001",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "4f0ca26b2dbcf4ae453789adf3a8b0608f6a40e8f85b240adfcfafbaf88e2fbb",
+      "case_sha256": "816216a82c765537fabbf972fd52267314b138c2f35c76a0a04f29b155425fc1",
+      "case_split": "online",
+      "employee": "firm-1__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "changed",
+      "selection_id": "d003-firm-1__renewal-regulated-firm-1-order-0010",
+      "source_case_path": "private/cases/d003-firm-1__renewal-regulated-firm-1-order-0010.json",
+      "source_day": 3,
+      "source_session_id": "d003-firm-1__renewal-regulated-firm-1-order-0010",
+      "source_task_id": "firm-1-order-0010",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "80b998206f628dd1964cb0fe1f4c31a845631e31d920aaade1ebfe4179b0b241",
+      "case_sha256": "d2303438e1e1cad6852fd2c37b9322e64738189f6748b711f763a5743f8fddbb",
+      "case_split": "online",
+      "employee": "firm-1__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "exception",
+      "selection_id": "d004-firm-1__renewal-regulated-firm-1-order-0013",
+      "source_case_path": "private/cases/d004-firm-1__renewal-regulated-firm-1-order-0013.json",
+      "source_day": 4,
+      "source_session_id": "d004-firm-1__renewal-regulated-firm-1-order-0013",
+      "source_task_id": "firm-1-order-0013",
+      "workflow": "renewal"
+    },
+    {
+      "capsule_hash_encoding": "raw_file_bytes",
+      "capsule_sha256": "92037983890a0d82b2a0ccc6867fe9fbe43af81765af139b0c52f72cc6cb3616",
+      "case_sha256": "aa4f8dc514ef5198f3083dda8fb34ce63b5053b8981268fab6ff335551208ce0",
+      "case_split": "online",
+      "employee": "firm-1__renewal-regulated",
+      "original_outcome": {
+        "budget_exhausted": false,
+        "infrastructure_valid": true,
+        "semantic_score": 1.0,
+        "skill_loaded": true,
+        "success": true
+      },
+      "original_outcome_usage": "Attached after the outcome-blind selection; never a selection criterion.",
+      "regime": "reversal",
+      "selection_id": "d006-firm-1__renewal-regulated-firm-1-order-0019",
+      "source_case_path": "private/cases/d006-firm-1__renewal-regulated-firm-1-order-0019.json",
+      "source_day": 6,
+      "source_session_id": "d006-firm-1__renewal-regulated-firm-1-order-0019",
+      "source_task_id": "firm-1-order-0019",
+      "workflow": "renewal"
+    }
+  ],
+  "source": {
+    "config": {
+      "algorithm": "no_learning",
+      "days": 8,
+      "decision_every": 4,
+      "edit_budget": 4,
+      "feedback_delay": 1,
+      "focal_employee": "firm-0__onboarding-regulated",
+      "max_iterations": 16,
+      "max_learning_calls": 320,
+      "max_learning_tokens": 4000000,
+      "max_output_tokens": 4096,
+      "max_run_seconds": 14400,
+      "max_work_sessions": 48,
+      "schema_version": 1,
+      "seed": 101,
+      "split": "dev",
+      "state_mode": "skill_transfer",
+      "train_cases": 1,
+      "update_every": 2,
+      "val_cases": 1
+    },
+    "hashes": {
+      "checkpoint_sha256": "57b73e04de3f9f12879d9be54983a0ba8294cd202cf768af4f82b4e4594be9e6",
+      "encoding": "raw_file_bytes",
+      "manifest_sha256": "6269761c58d5566c79f24728216fe16665647d05e7da882c04917ad26185ba49",
+      "report_sha256": "f3e6c9e9b67808c9e3e6eb3f09b74e53949c25f12a59f4d8e2eb4b9de1bca301",
+      "selector_sha256": "e2e04f85d61e48051fe60fb28758875b844170168c966b8cb6e66547995652fd"
+    },
+    "provenance_sha256": "575bdca40148f7689347a8b21e75e68f3d6c93f50953a675bdbc7583caff2b0d",
+    "scenario": {
+      "change_day": 3,
+      "days": 8,
+      "demand": "One exogenous work obligation per employee per day; native consumer orders are additional.",
+      "exception_window": [
+        4,
+        6
+      ],
+      "reversal_day": 6,
+      "seed": 101,
+      "settlement_delay": 2,
+      "shock_schedule": [
+        {
+          "corridor": "disrupted",
+          "day": 3,
+          "supply_delay": 2
+        },
+        {
+          "corridor": "open",
+          "day": 6,
+          "supply_delay": 0
+        }
+      ],
+      "split": "dev"
+    },
+    "target_model": "gpt-5.6-luna"
+  }
+}

@@ -58,9 +58,10 @@ The next development calibration should be explicit and bounded:
    the frozen baseline or hide authorized specifications merely to force updates.
 2. **Characterize replay noise before tuning the gate.** Repeat incumbent
    rollouts from identical capsules, then preregister rollout counts, matching and
-   candidate/final acceptance criteria. Count every rollout. Repeated-rollout
-   evaluation is follow-up work: the current baseline uses one rollout per task
-   per phase, and its separate final replay is not an uncertainty estimate.
+   candidate/final acceptance criteria. Count every rollout. The adapter now
+   exposes upstream's repeated **training** rollouts through `rollouts_k`, described
+   below. This does not average validation or establish its uncertainty: repeated
+   incumbent/candidate gate evaluation remains separate follow-up work.
 3. **Expand the declared experience pool and workforce.** The supplied
    [24-day development configs](RUN_EVALUATION.md#larger-development-comparison)
    use two training and two validation cases and all six employees, with equal
@@ -126,7 +127,7 @@ all benchmark settings or its published scores.
 | Gate | On; strict improvement over incumbent |
 | Gate metric | `0.5 * hard + 0.5 * soft` by default; configurable |
 | Regression guard | Per-validation-task no regression by default; configurable |
-| Rollouts | One per task per phase; no dream augmentation |
+| Rollouts | One per task per phase by default; optional native `rollouts_k > 1` adds repeated training attempts for contrastive reflection |
 | Candidate verification | Separate candidate trial and **fresh** final validation |
 | Retry | Upstream reflection JSON retry, charged against optimizer budget |
 | Deployment | Caller atomically installs an accepted native `SKILL.md` |
@@ -197,6 +198,59 @@ the bridge's pre-adapter prompt alone is not sufficient provenance for this
 augmented baseline.
 
 ## Callback contract
+
+### Optional native contrastive training rollouts
+
+```python
+learner = SkillOptLearner(rollouts_k=3)
+```
+
+`rollouts_k` is a positive integer, defaults to 1 and is recorded in each update's
+configuration. Values greater than 1 call the pinned upstream
+[`multi_rollout` and `contrastive_reflect`](https://github.com/microsoft/SkillOpt/blob/79124b37e9a6371e13b753f8bcd7adb1e493ade1/skillopt_sleep/rollout.py)
+through `consolidate`; the adapter does not implement its own reflection selector
+or gate. With `K > 1`, upstream first performs its ordinary initial train replay,
+then **K additional fresh attempts per training task** under the incumbent skill.
+
+For each training task, upstream chooses the best and worst repeated attempt by
+the configured gate metric. It reflects on up to six tasks with positive score
+spread; different soft scores can therefore be informative even when binary
+success is unchanged. Its contrastive prompt contains the best/worst responses
+and public failure feedback. The same bounded BigWorld training-context adapter
+can append the available public trajectories. This is selection for reflection,
+**not best-of-K task-performance evaluation**: all attempts remain recorded and
+charged, and prospective work performance is unchanged by this option.
+
+No score averaging occurs in this pinned path. Baseline validation, candidate
+validation and final validation still run **one fresh attempt per validation
+task per phase**. The strict improvement and optional per-task no-regression gates
+are unchanged. `rollouts_k` does not make the validation decision robust to model
+noise or supply a confidence interval.
+
+If contrastive reflection yields no edits, upstream falls back to its **original
+initial training replay's** failures. This has a specific limitation: when the
+initial replay succeeds but all K additional attempts fail at the same score,
+there is no repeated-attempt spread and no original failure, so no reflection
+occurs. The adapter preserves that behavior rather than silently changing the
+algorithm. Uniformly perfect repeats likewise need not produce an optimizer call.
+
+For T training and V validation tasks, `K > 1` costs `(K + 1) * T + 2 * V` target
+executions when no candidate is tested, or `(K + 1) * T + 3 * V` when the skill
+candidate is tested. Reflection calls and any upstream JSON retry are additional.
+For the default `K = 1` single-shot path, these counts are `T + 2 * V` and
+`T + 3 * V`. Early budget exhaustion can stop either sequence; incomplete runs
+cannot adopt a candidate.
+
+Every callback invocation still receives a new isolated runtime from the runner.
+`replay_evidence` and the cost ledger include `phase`, `sample_id` and globally
+unique-in-update `attempt_index`. Upstream labels the initial train pass and extra
+rollouts with phase `train`; the initial pass and first extra rollout both have
+`sample_id=0`, but have different attempt indices and genuinely execute separately.
+There is no target-response cache. A sample id is an audit label, not a controlled
+provider random seed, and fresh sandboxes do not prove statistical independence
+of hosted-model outputs.
+
+### Execution and reflection callbacks
 
 ```python
 from lifespan.evaluation.skillopt import LearningBudget, SkillOptLearner

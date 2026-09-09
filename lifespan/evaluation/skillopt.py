@@ -219,6 +219,7 @@ class _Ledger:
             self.replays += 1
         row = {"kind": kind, "task_id": payload.get("task", {}).get("id"),
                "phase": payload.get("phase", "reflect"), "limits": limits,
+               "attempt_index": payload.get("attempt_index"), "sample_id": payload.get("sample_id"),
                "tokens": limits["max_tokens"], "model_calls": limits["max_model_calls"],
                "tool_calls": None, "accounting": "reservation", "status": "dispatched"}
         self.rows.append(row)
@@ -285,7 +286,8 @@ class SkillOptLearner:
 
     def __init__(self, *, source: str | Path = DEFAULT_SOURCE, edit_budget: int = 4,
                  gate_metric: str = "mixed", gate_no_regression: bool = True,
-                 gate_mixed_weight: float = 0.5, max_skill_chars: int = 32_000):
+                 gate_mixed_weight: float = 0.5, max_skill_chars: int = 32_000,
+                 rollouts_k: int = 1):
         if not isinstance(edit_budget, int) or isinstance(edit_budget, bool) or edit_budget < 1:
             raise ValueError("edit_budget must be a positive integer")
         if gate_metric not in {"hard", "soft", "mixed"}:
@@ -294,9 +296,12 @@ class SkillOptLearner:
             raise ValueError("gate_mixed_weight must be in [0, 1]")
         if not isinstance(max_skill_chars, int) or max_skill_chars < 1:
             raise ValueError("max_skill_chars must be positive")
+        if type(rollouts_k) is not int or rollouts_k < 1:
+            raise ValueError("rollouts_k must be a positive integer")
         self.source, self.edit_budget = Path(source), edit_budget
         self.gate_metric, self.gate_no_regression = gate_metric, gate_no_regression
         self.gate_mixed_weight, self.max_skill_chars = gate_mixed_weight, max_skill_chars
+        self.rollouts_k = rollouts_k
 
     def update(self, skill: str, experiences: list[dict], replay: Callable, reflect: Callable,
                *, current_day: int, budget: LearningBudget | dict | None = None,
@@ -314,7 +319,7 @@ class SkillOptLearner:
             "validation_ids": [x["id"] for x in safe if x["split"] == "val"],
             "configuration": {"edit_budget": self.edit_budget, "gate_metric": self.gate_metric,
                 "gate_mixed_weight": self.gate_mixed_weight, "gate_no_regression": self.gate_no_regression,
-                "gate_mode": "on", "evolve_memory": False, "rollouts_k": 1,
+                "gate_mode": "on", "evolve_memory": False, "rollouts_k": self.rollouts_k,
                 "budget": asdict(budget)},
         }
         with _UPSTREAM_LOCK:
@@ -358,6 +363,7 @@ class SkillOptLearner:
                         feedback = ""
                     # No raw receipts/diagnostics are retained or sent to reflect.
                     attempt = {"id": task.id, "split": task.split, "phase": self.evidence_phase,
+                               "sample_id": sample_id, "attempt_index": len(attempts),
                                "skill_sha256": _hash(candidate), "hard": receipt["hard"],
                                "soft": receipt["soft"], "response": response, "feedback": feedback}
                     attempts.append(attempt)
@@ -375,6 +381,8 @@ class SkillOptLearner:
 
                 def _call(self, prompt, *, max_tokens=1024):
                     train = [{"task": dict(descriptors[x["id"]]),
+                              "sample_id": x["sample_id"], "attempt_index": x["attempt_index"],
+                              "phase": x["phase"],
                               "response": x["response"], "feedback": x["feedback"]}
                              for x in attempts if x["split"] == "train"]
                     payload = {"prompt": prompt, "train_experiences": train,
@@ -396,7 +404,7 @@ class SkillOptLearner:
                         bridge, tasks, skill, "", edit_budget=self.edit_budget,
                         gate_metric=self.gate_metric, gate_mixed_weight=self.gate_mixed_weight,
                         gate_no_regression=self.gate_no_regression, gate_mode="on",
-                        rollouts_k=1, evolve_skill=True, evolve_memory=False, night=night,
+                        rollouts_k=self.rollouts_k, evolve_skill=True, evolve_memory=False, night=night,
                     )
                 evidence = asdict(consolidated)
                 # Raw optimizer replies are allowed text, but unneeded duplicate

@@ -28,6 +28,12 @@ adopted an edit because its training replay passed; this verifies integration,
 but demonstrates no learning gain. The [results and reporting correction](docs/EVALUATION_RESULTS.md)
 retain failed work and orders that arrived after the action horizon.
 
+The next stage has a [preregistered calibration plan](docs/CALIBRATION_PLAN.md)
+and a native replay runner that measures fixed-skill variability before further
+learning claims. Optional `skillopt_rollouts_k` enables pinned upstream
+contrastive training replays; its validation gate remains single-shot. Matching
+24-day configurations are provided in `configs/evaluation/dev_contrastive_*.json`.
+
 ## What the PoC demonstrates
 
 | Accepted run | Result |

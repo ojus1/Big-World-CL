@@ -1,0 +1,12 @@
+{
+  "repeats": 2,
+  "max_rollouts": 48,
+  "max_model_calls": 768,
+  "max_charged_tokens": 12000000,
+  "max_run_seconds": 3600,
+  "max_iterations": 16,
+  "max_output_tokens": 4096,
+  "max_rollout_tokens": 250000,
+  "max_rollout_seconds": 420,
+  "order_seed": 104729
+}

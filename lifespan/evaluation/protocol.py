@@ -36,6 +36,7 @@ class ExperimentConfig:
     train_cases: int = 2
     val_cases: int = 2
     edit_budget: int = 4
+    skillopt_rollouts_k: int = 1
     focal_employee: str | None = None
     schema_version: int = 1
 
@@ -46,7 +47,7 @@ class ExperimentConfig:
             raise ValueError('Unknown scenario split or state mode')
         for key in ('days','decision_every','update_every','feedback_delay','max_iterations',
                     'max_output_tokens','max_work_sessions','max_run_seconds','max_learning_calls',
-                    'max_learning_tokens','train_cases','val_cases','edit_budget'):
+                    'max_learning_tokens','train_cases','val_cases','edit_budget','skillopt_rollouts_k'):
             if type(getattr(self, key)) is not int or getattr(self, key) < 1:
                 raise ValueError(key + ' must be a positive integer')
         if type(self.seed) is not int or not 0 <= self.seed < 1_000_000:
