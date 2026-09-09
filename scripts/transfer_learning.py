@@ -255,6 +255,8 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
         session_check(result, path.parent, _read(case_file))
         if not unchanged():
             raise RuntimeError("Historical parent changed during target execution")
+        print(f"Learning replay {len(evidence['target_sessions'])} (cap {LIMITS['max_replays']}) "
+              f"{employee} success={result['success']} calls={result['usage']['api_calls']}", flush=True)
         return result
 
     checkpoint()

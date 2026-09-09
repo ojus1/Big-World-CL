@@ -1,0 +1,366 @@
+{
+  "calibration_sha256": {
+    "REPORT.json": "8e0b279800e12bb9e577c90b6b536121da49f9702c457e3b4fff3c5fa1492339",
+    "bank.json": "cfa139d08225485d7f64ff7e757c4d7ce9db62800c2c25912d78223419f8e835",
+    "manifest.json": "d3dc458fc267cfc1fbb8b7175204b57bfbcc62e48547eb4d1c17dfd4c70e68c8",
+    "state.json": "b9d63f6a28ccc12837724dfc6599eb21e9daac74bcfee53d17358e39dfbd64f6"
+  },
+  "config": {
+    "cutoff_day": 9,
+    "max_charged_tokens": 4000000,
+    "max_iterations": 16,
+    "max_model_calls": 256,
+    "max_output_tokens": 4096,
+    "max_rollout_seconds": 420,
+    "max_rollout_tokens": 250000,
+    "max_run_seconds": 1800,
+    "probe_seed": 20260910,
+    "repeats": 2
+  },
+  "dependencies": {
+    "hermes": {
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "mirofish": {
+      "revision": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+      "tracked_python_diff_sha256": "f9be242925d1d0dae0f037a1d594da649c817b36d585620e7915f9bb7a3d806d"
+    },
+    "skillopt": {
+      "revision": "79124b37e9a6371e13b753f8bcd7adb1e493ade1",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "employee": "firm-0__incident-regulated",
+  "experience_ids": [
+    "d006-firm-0__incident-regulated-firm-0-order-0014",
+    "d007-firm-0__incident-regulated-firm-0-order-0017",
+    "d002-firm-0__incident-regulated-firm-0-order-0008",
+    "d004-firm-0__incident-regulated-firm-0-order-0011"
+  ],
+  "experiences_sha256": "4120137481bb559e3d5a1094ed6e983a59a6f8ee74cc7b3ea52a8658909966e4",
+  "information_contract": "Future probes withheld from optimizer training and validation; frozen deployed skill.",
+  "kind": "native_employee_learning_transfer_diagnostic",
+  "learning_contract": {
+    "epochs": 1,
+    "max_charged_tokens": 4000000,
+    "max_model_calls": 200,
+    "max_seconds": 1800,
+    "rollouts_k": 2,
+    "train_cases": 2,
+    "val_cases": 2
+  },
+  "original_world_actor_compute_included": false,
+  "private_manifest_sha256": "6b974b3408b769560d811c70553b64af84f068ee91f941a12145250685a51ce9",
+  "probe_files_sha256": {
+    "private/probes/probe-0.json": "789618d49fb0c192fbcca768c5ec2c5735f41b098281a59ec86978b2a1c4afa4",
+    "private/probes/probe-1.json": "f6eaec945f9b95c265c93bb6c873068d24b48e9becfc6f4b86f62e5836cc9493",
+    "private/probes/probe-2.json": "df7d45e40c9950b3cdf93d94f7788653cbab7fa139c00f7fe99d3ea03225e54e",
+    "private/probes/probe-3.json": "89bfeb0277168fd8fbdcdeca78642833f3ab6f22a522638be44703f3e6881cc3"
+  },
+  "probe_manifest": {
+    "cutoff_day": 9,
+    "employee": "firm-0__incident-regulated",
+    "evaluation_role": "post_learning_frozen_skill_transfer_and_retention",
+    "final_test_namespace_used": false,
+    "generator_version": "fixed-environment-transfer-probes-v1",
+    "interpretation": "Fixed inherited schedules advance independently; no new MiroFish decisions. Four fresh development tasks test frozen-skill transfer and retention, not continual adaptation during probe execution. They are dependent diagnostic exposures, not independent worlds.",
+    "label": "Synthetic fixed-environment transfer probes; development diagnostics, not a causal world benchmark.",
+    "new_institutional_decisions": 0,
+    "optimizer_exposure": "withheld_from_both_training_and_validation",
+    "probe_count": 4,
+    "probes": [
+      {
+        "capsule_sha256": "24e53e72f1b3e33cbd82a1d38b1d8510fdee6bbfbbd67e78b972f2618cfedc71",
+        "case_sha256": "9d249c93f72c627c42bc7326a30a5af35f3cec90fefb3f9adf5f3c36989cdf26",
+        "clone_horizon_days": 16,
+        "day": 10,
+        "ecosystem_sha256": "6e1dfe0b4a8ae052e87e26f38bf73abbafd4212bdfcfa791319fddd45dbe3006",
+        "employee": "firm-0__incident-regulated",
+        "objectives_sha256": "1036dba131e11ff21c702a1e9005b07efa6b745728a4b412252528fc8eed11cf",
+        "probe_index": 0,
+        "public_files_sha256": "7a8acbcc4807d104b051da47e79be9c9c6f573cbd5240fb478c7a3af1812bd16",
+        "public_procedures_sha256": "d76d78c85543aa6e14bf8621f0bb9d580e9ac4eb0936a4ddb41af6719aa0236b",
+        "regime": "changed",
+        "request_sha256": "d27d449fc704b8b5d80d4dc0a3f5e19814aca61110aee7b18d71d0d5a566b518",
+        "segment": "regulated",
+        "source_horizon_days": 16,
+        "source_observed_day": 9,
+        "split": "validation",
+        "task_id": "transfer-8d7ff3d69650aba59464bf0a-0",
+        "task_sha256": "6c6dc80ceba2ac850c78dcfcf9b5c32d862314d65ad4b79397a9149f6c649044",
+        "workflow": "incident"
+      },
+      {
+        "capsule_sha256": "c482bde3f060a0cdfd0b3399f70b5cc2db49bc1e210aab448a9641c2272809ee",
+        "case_sha256": "7d5e77e2f15dd9f97bcebaed88699765c20b1d4208b24d955054546e89a76901",
+        "clone_horizon_days": 16,
+        "day": 11,
+        "ecosystem_sha256": "aeb32ab7b66c64e709ff501fb51a3d0f90586082ff25fdd7151f44c842dd6939",
+        "employee": "firm-0__incident-regulated",
+        "objectives_sha256": "1036dba131e11ff21c702a1e9005b07efa6b745728a4b412252528fc8eed11cf",
+        "probe_index": 1,
+        "public_files_sha256": "31c0a9b265cd7e005e3af15cc6a0cabbe044be1e3aaa3bc64439e286daf79585",
+        "public_procedures_sha256": "d76d78c85543aa6e14bf8621f0bb9d580e9ac4eb0936a4ddb41af6719aa0236b",
+        "regime": "changed",
+        "request_sha256": "8791ef35340d5f6a58839640812995832e894db8835bd4e72d5fc510bdb0aa40",
+        "segment": "regulated",
+        "source_horizon_days": 16,
+        "source_observed_day": 9,
+        "split": "validation",
+        "task_id": "transfer-8d7ff3d69650aba59464bf0a-1",
+        "task_sha256": "465f85339d9c2a39f25db1627e2d5ef63e7e2882330ec31575fb3bd4675ca8db",
+        "workflow": "incident"
+      },
+      {
+        "capsule_sha256": "b12de55665cf1cc1761a07426714985f0294b48507342294d34056f605f40654",
+        "case_sha256": "fd56c3c103b9977e4cc21315a95d87ad151a02e64c2666b0f92cfc5d11cadf26",
+        "clone_horizon_days": 16,
+        "day": 12,
+        "ecosystem_sha256": "358ef4acb788aadce1afd71f2e0fa4be46724b60f05399c4181cabf996956ca2",
+        "employee": "firm-0__incident-regulated",
+        "objectives_sha256": "1036dba131e11ff21c702a1e9005b07efa6b745728a4b412252528fc8eed11cf",
+        "probe_index": 2,
+        "public_files_sha256": "42142b6d3ba54cf2761f293db2491244d6875064b41ea8f3db67c3e538ab1f37",
+        "public_procedures_sha256": "d76d78c85543aa6e14bf8621f0bb9d580e9ac4eb0936a4ddb41af6719aa0236b",
+        "regime": "reversal",
+        "request_sha256": "b6eaeaf2d8e6673aa7f707568eea77e7b65043a69e0ef3d5ec53ef19a5fce7cb",
+        "segment": "regulated",
+        "source_horizon_days": 16,
+        "source_observed_day": 9,
+        "split": "validation",
+        "task_id": "transfer-8d7ff3d69650aba59464bf0a-2",
+        "task_sha256": "5de6187f66c7b726b873a344587f328562681f9ff49f6f234cc95cbaf3b08b48",
+        "workflow": "incident"
+      },
+      {
+        "capsule_sha256": "98d6cee0d5f3898dfaef93c4822be24fdcc34619ecd6b1dc6e70de125dc85f5c",
+        "case_sha256": "174fda04262d5adf99a8e51955222f74243fba44f4ebf8638af4774136cd5110",
+        "clone_horizon_days": 16,
+        "day": 13,
+        "ecosystem_sha256": "b10c393bb627a0ab7c453c121b6ec4836a4c93c2303b08da37743ba9ede878f5",
+        "employee": "firm-0__incident-regulated",
+        "objectives_sha256": "1036dba131e11ff21c702a1e9005b07efa6b745728a4b412252528fc8eed11cf",
+        "probe_index": 3,
+        "public_files_sha256": "932690af166a9b98074e340e1ff7740b089a98cebea3f9bf8fcd575168992810",
+        "public_procedures_sha256": "d76d78c85543aa6e14bf8621f0bb9d580e9ac4eb0936a4ddb41af6719aa0236b",
+        "regime": "reversal",
+        "request_sha256": "9df71412c67ed996a3d63c2a0c0a8c26689fac8a7d4dc2c28c6b33cbfa1347e6",
+        "segment": "regulated",
+        "source_horizon_days": 16,
+        "source_observed_day": 9,
+        "split": "validation",
+        "task_id": "transfer-8d7ff3d69650aba59464bf0a-3",
+        "task_sha256": "5ee154a8a09b885886a61e324a1476202318a9b9d81afb52246b8ea9e24ce00f",
+        "workflow": "incident"
+      }
+    ],
+    "schema_version": 1,
+    "seed": 20260910,
+    "source_checkpoint_sha256": "63de032bea755137e322bfe0ad7fffa002273f694e95fbe31cbdc701c8110d56",
+    "source_hash_encoding": "canonical_json",
+    "visibility": "Evaluator manifest only. Withhold all future probes from learning and reveal each task's public inputs only in its own replay; private rubric truth never enters the worker."
+  },
+  "ranking": [
+    {
+      "calibration_attempts": 8,
+      "calibration_failures": 5,
+      "eligible": true,
+      "employee": "firm-0__incident-regulated",
+      "train_unique_count": 3,
+      "val_unique_count": 3
+    },
+    {
+      "calibration_attempts": 8,
+      "calibration_failures": 2,
+      "eligible": true,
+      "employee": "firm-1__renewal-regulated",
+      "train_unique_count": 6,
+      "val_unique_count": 2
+    },
+    {
+      "calibration_attempts": 6,
+      "calibration_failures": 0,
+      "eligible": true,
+      "employee": "firm-0__renewal-regulated",
+      "train_unique_count": 2,
+      "val_unique_count": 4
+    },
+    {
+      "calibration_attempts": 8,
+      "calibration_failures": 0,
+      "eligible": true,
+      "employee": "firm-1__onboarding-regulated",
+      "train_unique_count": 5,
+      "val_unique_count": 3
+    },
+    {
+      "calibration_attempts": 8,
+      "calibration_failures": 6,
+      "eligible": false,
+      "employee": "firm-1__incident-regulated",
+      "train_unique_count": 2,
+      "val_unique_count": 1
+    },
+    {
+      "calibration_attempts": 6,
+      "calibration_failures": 0,
+      "eligible": false,
+      "employee": "firm-0__onboarding-regulated",
+      "train_unique_count": 5,
+      "val_unique_count": 1
+    }
+  ],
+  "sampling": "Fresh hosted model calls; provider randomness uncontrolled; all repeats retained.",
+  "schema_version": 1,
+  "seed_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+  "selection_scope": "Outcome-selected development employee; no population or final-test claim.",
+  "slots": [
+    {
+      "arm": "seed",
+      "probe_index": 0,
+      "repeat_index": 0,
+      "rollout_id": "probe-0-r0-seed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 0,
+      "repeat_index": 0,
+      "rollout_id": "probe-0-r0-deployed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 1,
+      "repeat_index": 0,
+      "rollout_id": "probe-1-r0-deployed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 1,
+      "repeat_index": 0,
+      "rollout_id": "probe-1-r0-seed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 2,
+      "repeat_index": 0,
+      "rollout_id": "probe-2-r0-seed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 2,
+      "repeat_index": 0,
+      "rollout_id": "probe-2-r0-deployed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 3,
+      "repeat_index": 0,
+      "rollout_id": "probe-3-r0-deployed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 3,
+      "repeat_index": 0,
+      "rollout_id": "probe-3-r0-seed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 0,
+      "repeat_index": 1,
+      "rollout_id": "probe-0-r1-deployed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 0,
+      "repeat_index": 1,
+      "rollout_id": "probe-0-r1-seed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 1,
+      "repeat_index": 1,
+      "rollout_id": "probe-1-r1-seed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 1,
+      "repeat_index": 1,
+      "rollout_id": "probe-1-r1-deployed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 2,
+      "repeat_index": 1,
+      "rollout_id": "probe-2-r1-deployed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 2,
+      "repeat_index": 1,
+      "rollout_id": "probe-2-r1-seed"
+    },
+    {
+      "arm": "seed",
+      "probe_index": 3,
+      "repeat_index": 1,
+      "rollout_id": "probe-3-r1-seed"
+    },
+    {
+      "arm": "deployed",
+      "probe_index": 3,
+      "repeat_index": 1,
+      "rollout_id": "probe-3-r1-deployed"
+    }
+  ],
+  "source_case_sha256": {
+    "d002-firm-0__incident-regulated-firm-0-order-0008": "fe401cad89a83d170766bb3d97ff1c91059db2df56a65bcd7fe98ea1cceb3d65",
+    "d004-firm-0__incident-regulated-firm-0-order-0011": "16ef45eac259e0872e9e64aeb91116c27644cf48b95592ff01acd19f3809d793",
+    "d006-firm-0__incident-regulated-firm-0-order-0014": "7555cc7ed6c97edef95b21a4d9283019d1398489d40b11134662284a074f084a",
+    "d007-firm-0__incident-regulated-firm-0-order-0017": "9b04335238e0bed59f387bc866d3299df8554122c5c4dbae7551b28875cba60a"
+  },
+  "source_checkpoint_sha256": "57b73e04de3f9f12879d9be54983a0ba8294cd202cf768af4f82b4e4594be9e6",
+  "source_manifest_sha256": "6269761c58d5566c79f24728216fe16665647d05e7da882c04917ad26185ba49",
+  "source_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "a62c5c56c0e780c469d090a5f8b4926304b8518683794f6cf67922599ac4d0b1",
+    "lifespan/ecosystem.py": "9b8ec817f742a03c6e54e0f3315b232d3a472298908ea2c103b3f28433869d12",
+    "lifespan/ecosystem_run.py": "c96f967365179d3d3f3d8a479fad5943ec55e85f362d2e6b059f4e442f85a2f7",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "24a6239be2c48410f61653f9d92a02e6b0d321d41af36ae5e98590a3fe0a18e4",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "ebc4a9b7111eba819ad57a021be035c479c2c3763059cc923e4585e4f94085df",
+    "lifespan/evaluation/runner.py": "049fb81127fd161b426107b026d066342d01ffe1d6a092b6c153c3cb99aadd06",
+    "lifespan/evaluation/runtime.py": "daa16243fe3dee07133fbef488652f4694f60d9b40558998c9b8c87d24f2ac04",
+    "lifespan/evaluation/skillopt.py": "4e01ade02d56fa9182dc639907f49c48a075c60c4d6b0a6f04b3d2f4ffb7a38b",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "8686fc475252a5b1e2ca6e6034a23cf4fcfc29fb0bcfe1d27178ae48b9852e8b",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "7caff43282656665cfdb3a6833bd9db758de6aee4abe6b573eaf0be606499cc1",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0",
+    "scripts/audit_calibration.py": "8e3779d31c6e76292f7dcf3a47a0e155220bca39d486d9b3f1fa90e720d965a3",
+    "scripts/audit_evaluation.py": "5dc647c04d5081506d0dea9cb679e0f9a572070d27a537e6297bb233c3931dce",
+    "scripts/audit_transfer.py": "cd0009da38145afec82957cac8f1f81272949d17f9df1632b96abaf45ecb9e71",
+    "scripts/calibration_bank.py": "e2e04f85d61e48051fe60fb28758875b844170168c966b8cb6e66547995652fd",
+    "scripts/evaluation_report_v2.py": "56e346e2342fa930b6ee98dcc069e758595e4db4115a639b6c8a6aa0e8d2664b",
+    "scripts/run_calibration.py": "46f43f6e3d83d685fba426c2491943f3c187a01e01b2c677c7e22f3b216160a2",
+    "scripts/run_transfer_experiment.py": "0e5f380b3dc0c1d00c22302cf5136430e2b909f1b63853d67b7e6e27c340d8e6",
+    "scripts/transfer_analysis.py": "93ecb1bbd7dc838f90b33a8e75942b3338132e3fa526ef6d36ce651b52974247",
+    "scripts/transfer_learning.py": "857bc1f0d378c511389c38cba108a16cf1815b974c29609ba8aab6a41e0f630a",
+    "scripts/transfer_probes.py": "a2c01f42753a07548afc0e07b8d90694cc7121fa30048b3905ec3f0db9507799"
+  },
+  "stage": "Frozen before any learning or probe execution",
+  "target_model": "gpt-5.6-luna"
+}
