@@ -1,0 +1,252 @@
+{
+  "applied_edit_count": 0,
+  "attempted_candidate_skill_sha256": [
+    "444eeaec87799be245066576bdc9ef9e189d78bc6762603b6f90da74da46400c"
+  ],
+  "configuration": {
+    "budget": {
+      "max_optimizer_model_calls": 4,
+      "max_replays": 64,
+      "max_seconds": 1799.8943124980033,
+      "max_target_model_calls": 196,
+      "max_tokens": 4000000,
+      "optimizer_model_calls": 1,
+      "optimizer_seconds": 120,
+      "optimizer_tokens": 32768,
+      "replay_model_calls": 16,
+      "replay_seconds": 420,
+      "replay_tokens": 250000
+    },
+    "edit_budget": 4,
+    "evolve_memory": false,
+    "gate_metric": "mixed",
+    "gate_mixed_weight": 0.5,
+    "gate_mode": "on",
+    "gate_no_regression": true,
+    "rollouts_k": 2
+  },
+  "deployed_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+  "evidence_sha256": {
+    "AUDIT.json": "bcfa488b5136c2e442f0bbe550f475bb673b571159b0cbb160ce63b274f546f3",
+    "REPORT.json": "6e5bc98535f0af2c2b9f42d0eb881d712844366593d6ef697c1630dd5af82567",
+    "checkpoint.json": "7fa446de470453c8a06bdb2a610435f80e81a1455d24105a1ea3e5ca848dc025",
+    "evidence.json": "84524a6ef3c9dd0397e889a53f61b8ef2276a6a1494652c3cb80ae272c463e0c",
+    "manifest.json": "8da76544a89f64ddfc16abb2c26c09ae320e4748da62955631405040e39f8141"
+  },
+  "gate_action": "reject",
+  "gate_trials": [
+    {
+      "accepted": false,
+      "baseline_score": 0.71666675,
+      "blocked_by_regression": true,
+      "candidate_score": 0.73333325,
+      "target": "skill",
+      "task_deltas": [
+        {
+          "baseline_score": 1.0,
+          "candidate_score": 0.4666665,
+          "scores_are_finite": true,
+          "status": "regressed",
+          "tags": [],
+          "task_id": "d002-firm-0__incident-regulated-firm-0-order-0008"
+        },
+        {
+          "baseline_score": 0.4333335,
+          "candidate_score": 1.0,
+          "scores_are_finite": true,
+          "status": "improved",
+          "tags": [],
+          "task_id": "d004-firm-0__incident-regulated-firm-0-order-0011"
+        }
+      ]
+    },
+    {
+      "accepted": false,
+      "baseline_score": 0.71666675,
+      "blocked_by_regression": false,
+      "candidate_score": 0.71666675,
+      "target": "final",
+      "task_deltas": [
+        {
+          "baseline_score": 1.0,
+          "candidate_score": 1.0,
+          "scores_are_finite": true,
+          "status": "unchanged",
+          "tags": [],
+          "task_id": "d002-firm-0__incident-regulated-firm-0-order-0008"
+        },
+        {
+          "baseline_score": 0.4333335,
+          "candidate_score": 0.4333335,
+          "scores_are_finite": true,
+          "status": "unchanged",
+          "tags": [],
+          "task_id": "d004-firm-0__incident-regulated-firm-0-order-0011"
+        }
+      ]
+    }
+  ],
+  "hash_encoding": "sha256_raw_file_bytes",
+  "interpretation": "Candidate was rejected; deployed skill equals seed. Future probe comparison is A/A and cannot demonstrate a learning gain.",
+  "kind": "completed_native_employee_learning_epoch",
+  "native_replays": [
+    {
+      "attempt_index": 0,
+      "hard": 1.0,
+      "id": "d002-firm-0__incident-regulated-firm-0-order-0008",
+      "phase": "baseline_val",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 1,
+      "hard": 0.0,
+      "id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+      "phase": "baseline_val",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 0.866667
+    },
+    {
+      "attempt_index": 2,
+      "hard": 1.0,
+      "id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+      "phase": "train",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 3,
+      "hard": 1.0,
+      "id": "d007-firm-0__incident-regulated-firm-0-order-0017",
+      "phase": "train",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 4,
+      "hard": 0.0,
+      "id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+      "phase": "train",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 0.866667
+    },
+    {
+      "attempt_index": 5,
+      "hard": 1.0,
+      "id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+      "phase": "train",
+      "sample_id": 1,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 6,
+      "hard": 0.0,
+      "id": "d007-firm-0__incident-regulated-firm-0-order-0017",
+      "phase": "train",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 0.933333
+    },
+    {
+      "attempt_index": 7,
+      "hard": 0.0,
+      "id": "d007-firm-0__incident-regulated-firm-0-order-0017",
+      "phase": "train",
+      "sample_id": 1,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 0.933333
+    },
+    {
+      "attempt_index": 8,
+      "hard": 0.0,
+      "id": "d002-firm-0__incident-regulated-firm-0-order-0008",
+      "phase": "gate_trial:skill",
+      "sample_id": 0,
+      "skill_sha256": "444eeaec87799be245066576bdc9ef9e189d78bc6762603b6f90da74da46400c",
+      "soft": 0.933333
+    },
+    {
+      "attempt_index": 9,
+      "hard": 1.0,
+      "id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+      "phase": "gate_trial:skill",
+      "sample_id": 0,
+      "skill_sha256": "444eeaec87799be245066576bdc9ef9e189d78bc6762603b6f90da74da46400c",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 10,
+      "hard": 1.0,
+      "id": "d002-firm-0__incident-regulated-firm-0-order-0008",
+      "phase": "final_val",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 1.0
+    },
+    {
+      "attempt_index": 11,
+      "hard": 0.0,
+      "id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+      "phase": "final_val",
+      "sample_id": 0,
+      "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "soft": 0.866667
+    }
+  ],
+  "optimizer_tokens": 5212,
+  "preregistration_commit": "02eab32786d493ae5a8f5201fb24ddd32cd04179",
+  "public_boundary": "No task contents, model/optimizer prompts, raw answers, private rubric truth, skill text or credentials.",
+  "rejected_edit_count": 4,
+  "report": {
+    "accepted": false,
+    "cutoff_day": 9,
+    "deployed_to_future_probes": false,
+    "employee": "firm-0__incident-regulated",
+    "error_class": null,
+    "evidence_path": "evidence.json",
+    "evidence_sha256": "84524a6ef3c9dd0397e889a53f61b8ef2276a6a1494652c3cb80ae272c463e0c",
+    "execution_mode": "native",
+    "future_probes_evaluated": false,
+    "interpretation": "Completed no adoption is valid. An accepted local skill still requires independent future probes; no learning improvement is established here.",
+    "learning_status": "completed",
+    "manifest_sha256": "8da76544a89f64ddfc16abb2c26c09ae320e4748da62955631405040e39f8141",
+    "parent_unchanged": true,
+    "schema_version": 1,
+    "skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+    "skill_version": 0,
+    "status": "completed",
+    "update_path": "learning/d009-firm-0__incident-regulated/update.json",
+    "update_sha256": "2fdb55ebbe41f873ac0fbf2ccff91fc17095b0773e3580020ee7c0fb1a8c3e13",
+    "usage": {
+      "accounting_complete": true,
+      "charged_or_reserved_model_calls": 134,
+      "charged_or_reserved_tokens": 1586933,
+      "elapsed_seconds": 692.2670372399989,
+      "model_calls": 134,
+      "optimizer_model_calls": 1,
+      "reserved_max_model_calls": 200,
+      "reserved_max_tokens": 4000000,
+      "target_model_calls": 133,
+      "tokens": 1586933
+    },
+    "version": "historical-transfer-learning-epoch-v1"
+  },
+  "schema_version": 1,
+  "seed_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+  "target_tokens": 1581721,
+  "train_ids": [
+    "d006-firm-0__incident-regulated-firm-0-order-0014",
+    "d007-firm-0__incident-regulated-firm-0-order-0017"
+  ],
+  "unmatched_edit_count": 0,
+  "validation_ids": [
+    "d002-firm-0__incident-regulated-firm-0-order-0008",
+    "d004-firm-0__incident-regulated-firm-0-order-0011"
+  ]
+}

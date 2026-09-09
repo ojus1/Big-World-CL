@@ -6,7 +6,7 @@ The historical proof of concept uses actual **MiroFish/OASIS actors**, **12 dist
 
 The repository now also provides a **controlled deployment-time skill-learning evaluator** comparing no-learning Hermes with pinned upstream SkillOpt-Sleep. It adds substantive work rubrics, isolated candidate replays, chronological feedback, skill versions, compute accounting and paired world-level reports. This implementation is ready for new evaluations; the historical PoC is not evidence of a SkillOpt improvement.
 
-[Run learning evaluations](docs/RUN_EVALUATION.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
+[Run learning evaluations](docs/RUN_EVALUATION.md) · [Learning study](docs/LEARNING_STUDY_RESULTS.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
 ## Evaluate deployment-time learning
 
@@ -28,9 +28,9 @@ adopted an edit because its training replay passed; this verifies integration,
 but demonstrates no learning gain. The [results and reporting correction](docs/EVALUATION_RESULTS.md)
 retain failed work and orders that arrived after the action horizon.
 
-The next stage has a [preregistered calibration plan](docs/CALIBRATION_PLAN.md)
-and a native replay runner that measures fixed-skill variability before further
-learning claims. Optional `skillopt_rollouts_k` enables pinned upstream
+The [preregistered calibration](docs/CALIBRATION_PLAN.md) completed 44 fresh
+native replays: 31 succeeded, and three of 22 repeated capsules had different
+strict outcomes. Optional `skillopt_rollouts_k` enables pinned upstream
 contrastive training replays; its validation gate remains single-shot. Matching
 24-day configurations are provided in `configs/evaluation/dev_contrastive_*.json`.
 The same plan includes a bounded employee-level experiment: one native SkillOpt
@@ -40,6 +40,10 @@ per task. A separate auditor verifies the learning receipts, exact skill version
 future-task isolation and every probe; no adoption produces an identical-skill
 control. These are development transfer diagnostics, not independent world
 replications or a final algorithm ranking.
+The first such epoch proposed four edits and rejected them after a validation
+regression; its deployed skill remained unchanged. See the
+[learning study](docs/LEARNING_STUDY_RESULTS.md) for native evidence, compute,
+fresh-task controls and remaining research limits.
 
 ## What the PoC demonstrates
 

@@ -1,0 +1,903 @@
+{
+  "dependencies": {
+    "hermes": {
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "mirofish": {
+      "revision": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+      "tracked_python_diff_sha256": "f9be242925d1d0dae0f037a1d594da649c817b36d585620e7915f9bb7a3d806d"
+    },
+    "skillopt": {
+      "revision": "79124b37e9a6371e13b753f8bcd7adb1e493ade1",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "evidence_sha256": {
+    "AUDIT.json": "d5d23e36bb15fe27bb18c36b73cbe24e0dfc1cc4d6b5dd2289cbb8130b81b452",
+    "REPORT.json": "8e0b279800e12bb9e577c90b6b536121da49f9702c457e3b4fff3c5fa1492339",
+    "bank.json": "cfa139d08225485d7f64ff7e757c4d7ce9db62800c2c25912d78223419f8e835",
+    "manifest.json": "d3dc458fc267cfc1fbb8b7175204b57bfbcc62e48547eb4d1c17dfd4c70e68c8",
+    "state.json": "b9d63f6a28ccc12837724dfc6599eb21e9daac74bcfee53d17358e39dfbd64f6"
+  },
+  "hash_encoding": "sha256_raw_file_bytes",
+  "initial_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+  "kind": "completed_native_fixed_skill_calibration",
+  "preregistration_commit": "da3009eae473cfcb619bd3e63f22923b5c6b8739",
+  "public_boundary": "Aggregate metrics and synthetic task identities only. No requests, file contents, model transcripts, private rubric answers or credentials.",
+  "report": {
+    "accounting_complete": true,
+    "actual_execution_elapsed_seconds": 1988.2826655769968,
+    "all_native_receipts_valid": true,
+    "bank_sha256": "6d839f188ef9817bab23f5657009659071cc7f981884149af659c27f9d7697d1",
+    "bank_version": "outcome-blind-replay-bank-v1",
+    "cells": [
+      {
+        "employee": "firm-0__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-0__incident-regulated-firm-0-order-0002-r0",
+            "selection_id": "d000-firm-0__incident-regulated-firm-0-order-0002",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-0__incident-regulated-firm-0-order-0002-r1",
+            "selection_id": "d000-firm-0__incident-regulated-firm-0-order-0002",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-0__incident-regulated-firm-0-order-0002",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0002",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-0__incident-regulated-firm-0-order-0011-r0",
+            "selection_id": "d003-firm-0__incident-regulated-firm-0-order-0011",
+            "semantic_score": 0.866667,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-0__incident-regulated-firm-0-order-0011-r1",
+            "selection_id": "d003-firm-0__incident-regulated-firm-0-order-0011",
+            "semantic_score": 0.866667,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d003-firm-0__incident-regulated-firm-0-order-0011",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0011",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "exception",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d004-firm-0__incident-regulated-firm-0-order-0011-r0",
+            "selection_id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+            "semantic_score": 0.833333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d004-firm-0__incident-regulated-firm-0-order-0011-r1",
+            "selection_id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+            "semantic_score": 0.966667,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d004-firm-0__incident-regulated-firm-0-order-0011",
+        "semantic_score_absolute_difference": 0.13333400000000006,
+        "source_task_id": "firm-0-order-0011",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-0__incident-regulated-firm-0-order-0014-r0",
+            "selection_id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-0__incident-regulated-firm-0-order-0014-r1",
+            "selection_id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+            "semantic_score": 0.933333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d006-firm-0__incident-regulated-firm-0-order-0014",
+        "semantic_score_absolute_difference": 0.06666700000000003,
+        "source_task_id": "firm-0-order-0014",
+        "strict_success_disagreement": true
+      },
+      {
+        "employee": "firm-0__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000-r0",
+            "selection_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000-r1",
+            "selection_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-0__onboarding-regulated-firm-0-order-0000",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0000",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009-r0",
+            "selection_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009-r1",
+            "selection_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d003-firm-0__onboarding-regulated-firm-0-order-0009",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0009",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012-r0",
+            "selection_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012-r1",
+            "selection_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d006-firm-0__onboarding-regulated-firm-0-order-0012",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0012",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-0__renewal-regulated-firm-0-order-0001-r0",
+            "selection_id": "d000-firm-0__renewal-regulated-firm-0-order-0001",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-0__renewal-regulated-firm-0-order-0001-r1",
+            "selection_id": "d000-firm-0__renewal-regulated-firm-0-order-0001",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-0__renewal-regulated-firm-0-order-0001",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0001",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-0__renewal-regulated-firm-0-order-0010-r0",
+            "selection_id": "d003-firm-0__renewal-regulated-firm-0-order-0010",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-0__renewal-regulated-firm-0-order-0010-r1",
+            "selection_id": "d003-firm-0__renewal-regulated-firm-0-order-0010",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d003-firm-0__renewal-regulated-firm-0-order-0010",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0010",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-0__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-0__renewal-regulated-firm-0-order-0013-r0",
+            "selection_id": "d006-firm-0__renewal-regulated-firm-0-order-0013",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-0__renewal-regulated-firm-0-order-0013-r1",
+            "selection_id": "d006-firm-0__renewal-regulated-firm-0-order-0013",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d006-firm-0__renewal-regulated-firm-0-order-0013",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-0-order-0013",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-1__incident-regulated-firm-1-order-0002-r0",
+            "selection_id": "d000-firm-1__incident-regulated-firm-1-order-0002",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-1__incident-regulated-firm-1-order-0002-r1",
+            "selection_id": "d000-firm-1__incident-regulated-firm-1-order-0002",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-1__incident-regulated-firm-1-order-0002",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0002",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-1__incident-regulated-firm-1-order-0005-r0",
+            "selection_id": "d003-firm-1__incident-regulated-firm-1-order-0005",
+            "semantic_score": 0.933333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-1__incident-regulated-firm-1-order-0005-r1",
+            "selection_id": "d003-firm-1__incident-regulated-firm-1-order-0005",
+            "semantic_score": 0.933333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d003-firm-1__incident-regulated-firm-1-order-0005",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0005",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "exception",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d004-firm-1__incident-regulated-firm-1-order-0008-r0",
+            "selection_id": "d004-firm-1__incident-regulated-firm-1-order-0008",
+            "semantic_score": 0.9,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d004-firm-1__incident-regulated-firm-1-order-0008-r1",
+            "selection_id": "d004-firm-1__incident-regulated-firm-1-order-0008",
+            "semantic_score": 0.866667,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d004-firm-1__incident-regulated-firm-1-order-0008",
+        "semantic_score_absolute_difference": 0.03333300000000006,
+        "source_task_id": "firm-1-order-0008",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__incident-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-1__incident-regulated-firm-1-order-0008-r0",
+            "selection_id": "d006-firm-1__incident-regulated-firm-1-order-0008",
+            "semantic_score": 0.933333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-1__incident-regulated-firm-1-order-0008-r1",
+            "selection_id": "d006-firm-1__incident-regulated-firm-1-order-0008",
+            "semantic_score": 0.933333,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          }
+        ],
+        "selection_id": "d006-firm-1__incident-regulated-firm-1-order-0008",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0008",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000-r0",
+            "selection_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000-r1",
+            "selection_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-1__onboarding-regulated-firm-1-order-0000",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0000",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009-r0",
+            "selection_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009-r1",
+            "selection_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d003-firm-1__onboarding-regulated-firm-1-order-0009",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0009",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "exception",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012-r0",
+            "selection_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012-r1",
+            "selection_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d004-firm-1__onboarding-regulated-firm-1-order-0012",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0012",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__onboarding-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018-r0",
+            "selection_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018-r1",
+            "selection_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d006-firm-1__onboarding-regulated-firm-1-order-0018",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0018",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "base",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d000-firm-1__renewal-regulated-firm-1-order-0001-r0",
+            "selection_id": "d000-firm-1__renewal-regulated-firm-1-order-0001",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d000-firm-1__renewal-regulated-firm-1-order-0001-r1",
+            "selection_id": "d000-firm-1__renewal-regulated-firm-1-order-0001",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d000-firm-1__renewal-regulated-firm-1-order-0001",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0001",
+        "strict_success_disagreement": false
+      },
+      {
+        "employee": "firm-1__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "changed",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d003-firm-1__renewal-regulated-firm-1-order-0010-r0",
+            "selection_id": "d003-firm-1__renewal-regulated-firm-1-order-0010",
+            "semantic_score": 0.628571,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d003-firm-1__renewal-regulated-firm-1-order-0010-r1",
+            "selection_id": "d003-firm-1__renewal-regulated-firm-1-order-0010",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d003-firm-1__renewal-regulated-firm-1-order-0010",
+        "semantic_score_absolute_difference": 0.371429,
+        "source_task_id": "firm-1-order-0010",
+        "strict_success_disagreement": true
+      },
+      {
+        "employee": "firm-1__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "exception",
+        "repeats": [
+          {
+            "budget_exhausted": true,
+            "outcome": "substantive_incomplete",
+            "repeat_index": 0,
+            "rollout_id": "d004-firm-1__renewal-regulated-firm-1-order-0013-r0",
+            "selection_id": "d004-firm-1__renewal-regulated-firm-1-order-0013",
+            "semantic_score": 0.571429,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": false
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d004-firm-1__renewal-regulated-firm-1-order-0013-r1",
+            "selection_id": "d004-firm-1__renewal-regulated-firm-1-order-0013",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d004-firm-1__renewal-regulated-firm-1-order-0013",
+        "semantic_score_absolute_difference": 0.42857100000000004,
+        "source_task_id": "firm-1-order-0013",
+        "strict_success_disagreement": true
+      },
+      {
+        "employee": "firm-1__renewal-regulated",
+        "evaluable_repeat_pair": true,
+        "regime": "reversal",
+        "repeats": [
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 0,
+            "rollout_id": "d006-firm-1__renewal-regulated-firm-1-order-0019-r0",
+            "selection_id": "d006-firm-1__renewal-regulated-firm-1-order-0019",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          },
+          {
+            "budget_exhausted": false,
+            "outcome": "strict_success",
+            "repeat_index": 1,
+            "rollout_id": "d006-firm-1__renewal-regulated-firm-1-order-0019-r1",
+            "selection_id": "d006-firm-1__renewal-regulated-firm-1-order-0019",
+            "semantic_score": 1.0,
+            "skill_loaded": true,
+            "status": "completed",
+            "success": true
+          }
+        ],
+        "selection_id": "d006-firm-1__renewal-regulated-firm-1-order-0019",
+        "semantic_score_absolute_difference": 0.0,
+        "source_task_id": "firm-1-order-0019",
+        "strict_success_disagreement": false
+      }
+    ],
+    "charged_or_reserved_calls": 474,
+    "charged_or_reserved_tokens": 5265090,
+    "complete": true,
+    "config": {
+      "max_charged_tokens": 12000000,
+      "max_iterations": 16,
+      "max_model_calls": 768,
+      "max_output_tokens": 4096,
+      "max_rollout_seconds": 420,
+      "max_rollout_tokens": 250000,
+      "max_rollouts": 48,
+      "max_run_seconds": 3600,
+      "order_seed": 104729,
+      "repeats": 2
+    },
+    "costs": {
+      "charged_tokens": {
+        "complete": true,
+        "measured_receipts": 44,
+        "missing_or_unknown_slots": 0,
+        "recorded_total": 5265090,
+        "total": 5265090
+      },
+      "estimated_usd": {
+        "complete": false,
+        "measured_receipts": 0,
+        "missing_or_unknown_slots": 44,
+        "recorded_total": 0,
+        "total": null
+      },
+      "model_calls": {
+        "complete": true,
+        "measured_receipts": 44,
+        "missing_or_unknown_slots": 0,
+        "recorded_total": 474,
+        "total": 474
+      },
+      "scope": "Replay receipts only; missing/unknown slots do not become measured zeros. Historical actor generation and source-run compute are excluded.",
+      "simulated_operation_cost": {
+        "complete": true,
+        "measured_receipts": 44,
+        "missing_or_unknown_slots": 0,
+        "recorded_total": 52.07999999999999,
+        "total": 52.07999999999999
+      },
+      "tokens": {
+        "complete": true,
+        "measured_receipts": 44,
+        "missing_or_unknown_slots": 0,
+        "recorded_total": 5265090,
+        "total": 5265090
+      },
+      "wall_seconds": {
+        "complete": true,
+        "measured_receipts": 44,
+        "missing_or_unknown_slots": 0,
+        "recorded_total": 1937.6172574399934,
+        "total": 1937.6172574399934
+      }
+    },
+    "counts": {
+      "budget_exhausted": 14,
+      "completed": 44,
+      "infrastructure_error": 0,
+      "infrastructure_invalid": 0,
+      "missing": 0,
+      "protocol_incomplete": 0,
+      "skill_load_unknown": 0,
+      "skill_loaded": 44,
+      "skill_not_loaded": 0,
+      "strict_success": 31,
+      "substantive_incomplete": 13
+    },
+    "coverage": {
+      "expected_employee_regime_cells": 24,
+      "missing_source_cells": [
+        {
+          "employee": "firm-0__onboarding-regulated",
+          "reason": "no_released_source_session_in_this_cell",
+          "regime": "exception"
+        },
+        {
+          "employee": "firm-0__renewal-regulated",
+          "reason": "no_released_source_session_in_this_cell",
+          "regime": "exception"
+        }
+      ],
+      "repeated_obligation_groups": [
+        {
+          "employee": "firm-0__incident-regulated",
+          "regimes": [
+            "changed",
+            "exception"
+          ],
+          "selection_ids": [
+            "d003-firm-0__incident-regulated-firm-0-order-0011",
+            "d004-firm-0__incident-regulated-firm-0-order-0011"
+          ],
+          "source_task_id": "firm-0-order-0011"
+        },
+        {
+          "employee": "firm-1__incident-regulated",
+          "regimes": [
+            "exception",
+            "reversal"
+          ],
+          "selection_ids": [
+            "d004-firm-1__incident-regulated-firm-1-order-0008",
+            "d006-firm-1__incident-regulated-firm-1-order-0008"
+          ],
+          "source_task_id": "firm-1-order-0008"
+        }
+      ],
+      "selected_cells": 22,
+      "underlying_obligation_count": 20
+    },
+    "expected_slots": 44,
+    "inference": "Calibration describes fixed-skill native repeatability and failure modes. It does not estimate deployment-time learning gains and reports no confidence interval across dependent cells.",
+    "manifest_sha256": "d3dc458fc267cfc1fbb8b7175204b57bfbcc62e48547eb4d1c17dfd4c70e68c8",
+    "outcomes": {
+      "confirmed_success_fraction_all_planned_slots": 0.7045454545454546,
+      "failure_categories": "Substantive incomplete means score below1; protocol incomplete means score1 without strict commit. Budget exhaustion overlaps either category.",
+      "mean_semantic_score_completed_receipts": 0.9583333181818183,
+      "planned_slot_fraction_note": "With missing/invalid execution, this is a confirmed-success lower bound; missing results are not asserted behavioral failures.",
+      "strict_success_rate_completed_receipts": 0.7045454545454546
+    },
+    "received_receipts": 44,
+    "repeat_stability": {
+      "confidence_interval": null,
+      "disagreeing_case_pairs": 3,
+      "evaluable_case_pairs": 22,
+      "interpretation": "Descriptive within-capsule repeat variation under a fixed skill; dependent employee/regime cells and repeated underlying obligations do not supply independent population samples.",
+      "mean_absolute_semantic_difference": 0.04696972727272728,
+      "strict_success_disagreement_rate": 0.13636363636363635,
+      "unevaluable_case_pairs": 0
+    },
+    "schema_version": 1,
+    "status": "completed"
+  },
+  "schema_version": 1,
+  "target_model": "gpt-5.6-luna"
+}

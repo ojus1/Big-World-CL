@@ -1,0 +1,747 @@
+{
+  "calibration_plus_learning_and_probes": {
+    "measured_tokens": 8586738,
+    "physical_model_calls": 757,
+    "scope": "This bounded study only; excludes historical pilot/world generation and unrelated diagnostic runs."
+  },
+  "evidence_sha256": {
+    "AUDIT.json": "2b76eafc714de749658acccb1520dfa53435ad8581592669235d553d1c0c6adf",
+    "REPORT.json": "e86827e6ae1b3b08bcdb0d340c203318b199c9328bf9661c36f16047f38ba548",
+    "manifest.json": "6b974b3408b769560d811c70553b64af84f068ee91f941a12145250685a51ce9",
+    "state.json": "0ab3713305e2b263b70ff6b73255265f59aa4211af92861a9a0ec26bdcb0651d"
+  },
+  "hash_encoding": "sha256_raw_file_bytes",
+  "independent_verification": {
+    "all_16_probe_receipts_verified": true,
+    "combined_cost_totals_reconciled": true,
+    "epoch_accounting_verified": true,
+    "execution_sources_match_preregistered_commit": true,
+    "probe_accounting_reconciled": true,
+    "v1_audit_metadata_note": "The preserved outer v1 auditor leaves its generic accounting_verified flag false outside the learning helper. Its strict valid_completed result, 16 checked raw probes, nested epoch accounting and independently reconciled totals establish the named facts here. Original AUDIT.json and score REPORT.json are unchanged."
+  },
+  "kind": "completed_native_frozen_skill_transfer_control",
+  "preregistration_commit": "02eab32786d493ae5a8f5201fb24ddd32cd04179",
+  "public_boundary": "Aggregate outcomes, synthetic identities and hashes only. No private requests, file contents, rubric answers, raw model/optimizer transcripts, skill text or credentials.",
+  "report": {
+    "accounting_complete": true,
+    "actual_probe_elapsed_seconds": 582.6395628540013,
+    "analysis_version": "development-transfer-analysis-v1",
+    "arms": {
+      "deployed": {
+        "budget_exhausted": 1,
+        "completed": 8,
+        "confirmed_success_fraction_planned": 1.0,
+        "costs": {
+          "charged_tokens": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 821822,
+            "total": 821822,
+            "unknown_slots": 0
+          },
+          "estimated_usd": {
+            "complete": false,
+            "measured_slots": 0,
+            "recorded_total": 0,
+            "total": null,
+            "unknown_slots": 8
+          },
+          "physical_model_calls": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 72,
+            "total": 72,
+            "unknown_slots": 0
+          },
+          "simulated_operation_cost": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 4.32,
+            "total": 4.32,
+            "unknown_slots": 0
+          },
+          "tokens": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 821822,
+            "total": 821822,
+            "unknown_slots": 0
+          },
+          "wall_seconds": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 267.02442252600304,
+            "total": 267.02442252600304,
+            "unknown_slots": 0
+          }
+        },
+        "failures": 0,
+        "infrastructure_error": 0,
+        "infrastructure_invalid": 0,
+        "mean_semantic_score_completed": 1.0,
+        "missing": 0,
+        "planned": 8,
+        "protocol_incomplete": 0,
+        "received": 8,
+        "regimes": {
+          "changed": {
+            "budget_exhausted": 1,
+            "completed": 4,
+            "confirmed_success_fraction_planned": 1.0,
+            "costs": {
+              "charged_tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 452865,
+                "total": 452865,
+                "unknown_slots": 0
+              },
+              "estimated_usd": {
+                "complete": false,
+                "measured_slots": 0,
+                "recorded_total": 0,
+                "total": null,
+                "unknown_slots": 4
+              },
+              "physical_model_calls": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 39,
+                "total": 39,
+                "unknown_slots": 0
+              },
+              "simulated_operation_cost": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 2.96,
+                "total": 2.96,
+                "unknown_slots": 0
+              },
+              "tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 452865,
+                "total": 452865,
+                "unknown_slots": 0
+              },
+              "wall_seconds": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 140.61463827899934,
+                "total": 140.61463827899934,
+                "unknown_slots": 0
+              }
+            },
+            "failures": 0,
+            "infrastructure_error": 0,
+            "infrastructure_invalid": 0,
+            "mean_semantic_score_completed": 1.0,
+            "missing": 0,
+            "planned": 4,
+            "protocol_incomplete": 0,
+            "received": 4,
+            "skill_load_unknown": 0,
+            "skill_loaded": 4,
+            "skill_not_loaded": 0,
+            "strict_success_rate_completed": 1.0,
+            "substantive_incomplete": 0,
+            "successes": 4
+          },
+          "reversal": {
+            "budget_exhausted": 0,
+            "completed": 4,
+            "confirmed_success_fraction_planned": 1.0,
+            "costs": {
+              "charged_tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 368957,
+                "total": 368957,
+                "unknown_slots": 0
+              },
+              "estimated_usd": {
+                "complete": false,
+                "measured_slots": 0,
+                "recorded_total": 0,
+                "total": null,
+                "unknown_slots": 4
+              },
+              "physical_model_calls": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 33,
+                "total": 33,
+                "unknown_slots": 0
+              },
+              "simulated_operation_cost": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 1.3599999999999999,
+                "total": 1.3599999999999999,
+                "unknown_slots": 0
+              },
+              "tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 368957,
+                "total": 368957,
+                "unknown_slots": 0
+              },
+              "wall_seconds": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 126.4097842470037,
+                "total": 126.4097842470037,
+                "unknown_slots": 0
+              }
+            },
+            "failures": 0,
+            "infrastructure_error": 0,
+            "infrastructure_invalid": 0,
+            "mean_semantic_score_completed": 1.0,
+            "missing": 0,
+            "planned": 4,
+            "protocol_incomplete": 0,
+            "received": 4,
+            "skill_load_unknown": 0,
+            "skill_loaded": 4,
+            "skill_not_loaded": 0,
+            "strict_success_rate_completed": 1.0,
+            "substantive_incomplete": 0,
+            "successes": 4
+          }
+        },
+        "skill_load_unknown": 0,
+        "skill_loaded": 8,
+        "skill_not_loaded": 0,
+        "strict_success_rate_completed": 1.0,
+        "substantive_incomplete": 0,
+        "successes": 8
+      },
+      "seed": {
+        "budget_exhausted": 2,
+        "completed": 8,
+        "confirmed_success_fraction_planned": 0.875,
+        "costs": {
+          "charged_tokens": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 912893,
+            "total": 912893,
+            "unknown_slots": 0
+          },
+          "estimated_usd": {
+            "complete": false,
+            "measured_slots": 0,
+            "recorded_total": 0,
+            "total": null,
+            "unknown_slots": 8
+          },
+          "physical_model_calls": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 77,
+            "total": 77,
+            "unknown_slots": 0
+          },
+          "simulated_operation_cost": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 8.56,
+            "total": 8.56,
+            "unknown_slots": 0
+          },
+          "tokens": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 912893,
+            "total": 912893,
+            "unknown_slots": 0
+          },
+          "wall_seconds": {
+            "complete": true,
+            "measured_slots": 8,
+            "recorded_total": 296.54766396799823,
+            "total": 296.54766396799823,
+            "unknown_slots": 0
+          }
+        },
+        "failures": 1,
+        "infrastructure_error": 0,
+        "infrastructure_invalid": 0,
+        "mean_semantic_score_completed": 0.991666625,
+        "missing": 0,
+        "planned": 8,
+        "protocol_incomplete": 0,
+        "received": 8,
+        "regimes": {
+          "changed": {
+            "budget_exhausted": 1,
+            "completed": 4,
+            "confirmed_success_fraction_planned": 0.75,
+            "costs": {
+              "charged_tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 454501,
+                "total": 454501,
+                "unknown_slots": 0
+              },
+              "estimated_usd": {
+                "complete": false,
+                "measured_slots": 0,
+                "recorded_total": 0,
+                "total": null,
+                "unknown_slots": 4
+              },
+              "physical_model_calls": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 39,
+                "total": 39,
+                "unknown_slots": 0
+              },
+              "simulated_operation_cost": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 3.6300000000000003,
+                "total": 3.6300000000000003,
+                "unknown_slots": 0
+              },
+              "tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 454501,
+                "total": 454501,
+                "unknown_slots": 0
+              },
+              "wall_seconds": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 157.3610680569982,
+                "total": 157.3610680569982,
+                "unknown_slots": 0
+              }
+            },
+            "failures": 1,
+            "infrastructure_error": 0,
+            "infrastructure_invalid": 0,
+            "mean_semantic_score_completed": 0.98333325,
+            "missing": 0,
+            "planned": 4,
+            "protocol_incomplete": 0,
+            "received": 4,
+            "skill_load_unknown": 0,
+            "skill_loaded": 4,
+            "skill_not_loaded": 0,
+            "strict_success_rate_completed": 0.75,
+            "substantive_incomplete": 1,
+            "successes": 3
+          },
+          "reversal": {
+            "budget_exhausted": 1,
+            "completed": 4,
+            "confirmed_success_fraction_planned": 1.0,
+            "costs": {
+              "charged_tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 458392,
+                "total": 458392,
+                "unknown_slots": 0
+              },
+              "estimated_usd": {
+                "complete": false,
+                "measured_slots": 0,
+                "recorded_total": 0,
+                "total": null,
+                "unknown_slots": 4
+              },
+              "physical_model_calls": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 38,
+                "total": 38,
+                "unknown_slots": 0
+              },
+              "simulated_operation_cost": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 4.930000000000001,
+                "total": 4.930000000000001,
+                "unknown_slots": 0
+              },
+              "tokens": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 458392,
+                "total": 458392,
+                "unknown_slots": 0
+              },
+              "wall_seconds": {
+                "complete": true,
+                "measured_slots": 4,
+                "recorded_total": 139.18659591100004,
+                "total": 139.18659591100004,
+                "unknown_slots": 0
+              }
+            },
+            "failures": 0,
+            "infrastructure_error": 0,
+            "infrastructure_invalid": 0,
+            "mean_semantic_score_completed": 1.0,
+            "missing": 0,
+            "planned": 4,
+            "protocol_incomplete": 0,
+            "received": 4,
+            "skill_load_unknown": 0,
+            "skill_loaded": 4,
+            "skill_not_loaded": 0,
+            "strict_success_rate_completed": 1.0,
+            "substantive_incomplete": 0,
+            "successes": 4
+          }
+        },
+        "skill_load_unknown": 0,
+        "skill_loaded": 8,
+        "skill_not_loaded": 0,
+        "strict_success_rate_completed": 0.875,
+        "substantive_incomplete": 1,
+        "successes": 7
+      }
+    },
+    "combined_budget_calls": 456,
+    "combined_budget_tokens": 8000000,
+    "combined_charged_or_reserved_calls": 283,
+    "combined_charged_or_reserved_tokens": 3321648,
+    "comparison_type": "A/A fixed-skill diagnostic",
+    "complete": true,
+    "deployed_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+    "interpretation": "Descriptive frozen-skill transfer and retention on four dependent development probes. No confidence intervals or continual-adaptation claim. Missing and infrastructure-invalid outcomes are unknown, not behavioral failures; the confirmed-success fraction is only a lower bound when coverage is incomplete. Reservation charges remain separate from measured model use. Per-arm and probe totals exclude historical actor generation and learning-phase compute; the outer campaign reports learning and combined compute in separate fields.",
+    "learning_report_sha256": "6e5bc98535f0af2c2b9f42d0eb881d712844366593d6ef697c1630dd5af82567",
+    "learning_usage": {
+      "accounting_complete": true,
+      "charged_or_reserved_model_calls": 134,
+      "charged_or_reserved_tokens": 1586933,
+      "elapsed_seconds": 692.2670372399989,
+      "model_calls": 134,
+      "optimizer_model_calls": 1,
+      "reserved_max_model_calls": 200,
+      "reserved_max_tokens": 4000000,
+      "target_model_calls": 133,
+      "tokens": 1586933
+    },
+    "manifest_sha256": "6b974b3408b769560d811c70553b64af84f068ee91f941a12145250685a51ce9",
+    "paired": {
+      "confidence_interval": null,
+      "deployed_only_success_pairs": 1,
+      "disagreeing_pairs": 1,
+      "disagreement_rate": 0.125,
+      "evaluable_pairs": 8,
+      "mean_semantic_delta_deployed_minus_seed": 0.008333375000000004,
+      "pairs": [
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 0,
+          "regime": "changed",
+          "repeat_index": 0,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 0,
+          "regime": "changed",
+          "repeat_index": 1,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 1,
+          "regime": "changed",
+          "repeat_index": 0,
+          "seed_success": false,
+          "semantic_delta_deployed_minus_seed": 0.06666700000000003,
+          "strict_disagreement": true
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 1,
+          "regime": "changed",
+          "repeat_index": 1,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 2,
+          "regime": "reversal",
+          "repeat_index": 0,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 2,
+          "regime": "reversal",
+          "repeat_index": 1,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 3,
+          "regime": "reversal",
+          "repeat_index": 0,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        },
+        {
+          "deployed_success": true,
+          "evaluable": true,
+          "probe_index": 3,
+          "regime": "reversal",
+          "repeat_index": 1,
+          "seed_success": true,
+          "semantic_delta_deployed_minus_seed": 0.0,
+          "strict_disagreement": false
+        }
+      ],
+      "planned_pairs": 8,
+      "seed_only_success_pairs": 0,
+      "unevaluable_pairs": 0
+    },
+    "probe_charged_or_reserved_calls": 149,
+    "probe_charged_or_reserved_tokens": 1734715,
+    "probe_manifest_sha256": "eaa5759d314b8decc0e7d89937b95cd27c3df67e46fb111f78038270176d745d",
+    "receipts_complete": true,
+    "same_skill": true,
+    "schema_version": 1,
+    "slots": [
+      {
+        "arm": "seed",
+        "probe_index": 0,
+        "repeat_index": 0,
+        "rollout_id": "probe-0-r0-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 0,
+        "repeat_index": 0,
+        "rollout_id": "probe-0-r0-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 1,
+        "repeat_index": 0,
+        "rollout_id": "probe-1-r0-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 1,
+        "repeat_index": 0,
+        "rollout_id": "probe-1-r0-seed",
+        "semantic_score": 0.933333,
+        "status": "completed",
+        "success": false
+      },
+      {
+        "arm": "seed",
+        "probe_index": 2,
+        "repeat_index": 0,
+        "rollout_id": "probe-2-r0-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 2,
+        "repeat_index": 0,
+        "rollout_id": "probe-2-r0-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 3,
+        "repeat_index": 0,
+        "rollout_id": "probe-3-r0-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 3,
+        "repeat_index": 0,
+        "rollout_id": "probe-3-r0-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 0,
+        "repeat_index": 1,
+        "rollout_id": "probe-0-r1-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 0,
+        "repeat_index": 1,
+        "rollout_id": "probe-0-r1-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 1,
+        "repeat_index": 1,
+        "rollout_id": "probe-1-r1-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 1,
+        "repeat_index": 1,
+        "rollout_id": "probe-1-r1-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 2,
+        "repeat_index": 1,
+        "rollout_id": "probe-2-r1-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 2,
+        "repeat_index": 1,
+        "rollout_id": "probe-2-r1-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "seed",
+        "probe_index": 3,
+        "repeat_index": 1,
+        "rollout_id": "probe-3-r1-seed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      },
+      {
+        "arm": "deployed",
+        "probe_index": 3,
+        "repeat_index": 1,
+        "rollout_id": "probe-3-r1-deployed",
+        "semantic_score": 1.0,
+        "status": "completed",
+        "success": true
+      }
+    ],
+    "slots_sha256": "ff6bdd445b715a5194d5cd3297c1ba271282f8392cbeb9f4a2c25faad8c616a6",
+    "status": "completed",
+    "totals": {
+      "budget_exhausted": 3,
+      "completed": 16,
+      "confirmed_success_fraction_planned": 0.9375,
+      "costs": {
+        "charged_tokens": {
+          "complete": true,
+          "measured_slots": 16,
+          "recorded_total": 1734715,
+          "total": 1734715,
+          "unknown_slots": 0
+        },
+        "estimated_usd": {
+          "complete": false,
+          "measured_slots": 0,
+          "recorded_total": 0,
+          "total": null,
+          "unknown_slots": 16
+        },
+        "physical_model_calls": {
+          "complete": true,
+          "measured_slots": 16,
+          "recorded_total": 149,
+          "total": 149,
+          "unknown_slots": 0
+        },
+        "simulated_operation_cost": {
+          "complete": true,
+          "measured_slots": 16,
+          "recorded_total": 12.88,
+          "total": 12.88,
+          "unknown_slots": 0
+        },
+        "tokens": {
+          "complete": true,
+          "measured_slots": 16,
+          "recorded_total": 1734715,
+          "total": 1734715,
+          "unknown_slots": 0
+        },
+        "wall_seconds": {
+          "complete": true,
+          "measured_slots": 16,
+          "recorded_total": 563.5720864940013,
+          "total": 563.5720864940013,
+          "unknown_slots": 0
+        }
+      },
+      "failures": 1,
+      "infrastructure_error": 0,
+      "infrastructure_invalid": 0,
+      "mean_semantic_score_completed": 0.9958333125000001,
+      "missing": 0,
+      "planned": 16,
+      "protocol_incomplete": 0,
+      "received": 16,
+      "skill_load_unknown": 0,
+      "skill_loaded": 16,
+      "skill_not_loaded": 0,
+      "strict_success_rate_completed": 0.9375,
+      "substantive_incomplete": 1,
+      "successes": 15
+    }
+  },
+  "schema_version": 1
+}

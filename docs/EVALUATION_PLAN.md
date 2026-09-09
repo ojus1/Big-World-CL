@@ -1,7 +1,8 @@
 # Deployment-time learning evaluation: implementation and acceptance plan
 
-Status: implementation, fixed-source native pilot, reporting correction and
-independent release review completed. Larger research calibration remains open.
+Status: implementation, fixed-source native pilot, reporting correction,
+fixed-skill native calibration and one employee's native SkillOpt proposal/gate
+completed. Independent reacting-world replication remains open.
 This document is the launch contract; checkboxes refer
 to verified deliverables, not intended capabilities. The previous 16-day artifact
 remains historical integration evidence and is not a baseline result.
@@ -183,7 +184,14 @@ independent artifact/reporting suite passes 35 tests. Automatic reporting failur
 also preserves completed execution evidence. See
 [pilot results and evidence limits](EVALUATION_RESULTS.md).
 
-M5b is the next research stage, not a condition to claim that baseline integration
-works. A strong empirical baseline still requires difficulty/noise calibration,
-future native skill adoption and prospective reuse evidence, and independent
-world replication. Do not manufacture an adoption to satisfy an integration gate.
+The next development study completed 44 native calibration attempts, followed by
+one K2/T2/V2 SkillOpt epoch. It produced four actual proposed edits, rejected the
+candidate under the recorded non-regression gate, and retained the seed skill.
+This establishes proposal and gate execution, not successful adaptation. The
+[study report](LEARNING_STUDY_RESULTS.md) records calibration variability and the
+predeclared fresh-task control; it does not mark M5b's world replication complete.
+
+M5b remains the next comparative research stage. Difficulty/noise calibration is
+now available, but repeated online updating, prospective reuse of accepted
+skills, and independent world replication still need empirical evidence. Do not
+manufacture an adoption to satisfy an integration milestone.
