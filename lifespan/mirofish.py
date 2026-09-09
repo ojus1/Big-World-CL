@@ -53,10 +53,15 @@ class MiroFishRuntime:
         return value
 
     def call(self, path, data=None, **kwargs):
+        if hasattr(self, "evaluation_deadline") and path != "/api/simulation/close-env":
+            remaining = self.evaluation_deadline - time.monotonic()
+            if remaining < 1:
+                raise TimeoutError("Evaluation actor deadline exhausted")
+            kwargs['timeout'] = min(kwargs.get('timeout', 150), remaining)
         if "files" in kwargs:
             response = self.client.post(path, data=data, **kwargs)
         else:
-            response = self.client.post(path, json=data, **kwargs) if data is not None or kwargs else self.client.get(path)
+            response = self.client.post(path, json=data, **kwargs) if data is not None else self.client.get(path, **kwargs)
         response.raise_for_status()
         payload = response.json()
         if not payload.get("success", True):
@@ -171,7 +176,7 @@ class MiroFishRuntime:
         if "social_round" not in self.state:
             # The native single-platform runner remains alive for interviews.
             # Its generic run-status does not finalize until process exit.
-            deadline = time.monotonic() + 300
+            deadline = min(time.monotonic() + 300, getattr(self, "evaluation_deadline", float("inf")))
             while time.monotonic() < deadline:
                 status_path = self.sim_dir / "env_status.json"
                 status = json.loads(status_path.read_text()) if status_path.exists() else {}
@@ -190,8 +195,13 @@ class MiroFishRuntime:
             if record["prompt"] != prompt:
                 raise ValueError("Cached MiroFish interview input differs; choose a fresh output")
             return record["response"]
+        remaining = (self.evaluation_deadline - time.monotonic()
+                     if hasattr(self, "evaluation_deadline") else 150)
+        if remaining < 1:
+            raise TimeoutError("Evaluation actor wall budget exhausted before dispatch")
         payload = self.call("/api/simulation/interview", {"simulation_id": self.state["simulation"]["simulation_id"],
-                    "agent_id": self.employee_ids[employee_id], "platform": "reddit", "prompt": prompt, "timeout": 120})
+                    "agent_id": self.employee_ids[employee_id], "platform": "reddit", "prompt": prompt,
+                    "timeout": min(120, max(1, int(remaining)))}, timeout=min(150, remaining))
         result = payload["result"]
         if "reddit" in result:
             result = result["reddit"]

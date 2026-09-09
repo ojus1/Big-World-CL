@@ -1,5 +1,6 @@
 """Persistent employee computer state and native Hermes worker supervision."""
 from __future__ import annotations
+from copy import deepcopy
 import hashlib
 import json
 import os
@@ -37,9 +38,14 @@ def file_delta(before,after):
 
 
 class Computer:
-    def __init__(self,root,eid,backend='bubblewrap'):
+    def __init__(self,root,eid,backend='bubblewrap', *, execution=None, artifact_grader=None):
         self.eid=eid
         self.backend=backend
+        self.execution=execution or {}
+        self.artifact_grader=artifact_grader
+        self.last_grade=None
+        self.committed_artifact=None
+        self.committed_hash=None
         self.root=Path(root).resolve()/eid
         self.workspace=self.root/'workspace'
         self.profile=self.root/'hermes'
@@ -74,8 +80,15 @@ class Computer:
         if not host.is_file() or host.stat().st_size>100_000:
             raise ValueError('Deliverable missing or larger than 100KB')
         raw=host.read_bytes()
-        artifact=json.loads(raw)
-        if (artifact.get('task_id')!=task_id or not isinstance(artifact.get('channel'),str)
+        def unique_object(pairs):
+            value={}
+            for key,item in pairs:
+                if key in value:
+                    raise ValueError('Duplicate artifact JSON key: '+key)
+                value[key]=item
+            return value
+        artifact=json.loads(raw,object_pairs_hook=unique_object)
+        if (not isinstance(artifact,dict) or artifact.get('task_id')!=task_id or not isinstance(artifact.get('channel'),str)
             or not isinstance(artifact.get('redact'),bool) or not isinstance(artifact.get('endpoint'),str)
             or not isinstance(artifact.get('content'),str) or not artifact['content'].strip()):
             raise ValueError('Deliverable needs matching task_id, channel, redact, endpoint and nonempty content')
@@ -96,16 +109,28 @@ class Computer:
                 if sha!=self.prepared_hash:
                     raise ValueError('Prepared artifact changed; prepare again and repeat checks/approval')
                 converted={'tool':tool,'args':{'endpoint':artifact['endpoint']}}
+                if self.artifact_grader is not None:
+                    self.last_grade=self.artifact_grader(artifact)
+                    # Content is checked in the trusted process before business
+                    # effects. The expected answer never enters a tool response.
+                    if not self.last_grade['success']:
+                        converted={'tool':'artifact.reject','args':{
+                            'feedback':self.last_grade['feedback']}}
             else:
                 converted=action
             result=env.step(converted)
+            if tool=='work.commit' and env.success:
+                # Business state is the accepted snapshot, even if the native
+                # agent edits its local file after the transaction completes.
+                self.committed_artifact=deepcopy(artifact)
+                self.committed_hash=sha
             return {'observation':result[0],'reward':result[1],'terminated':result[2],
                     'truncated':result[3],'info':result[4],
                     **({'artifact_sha256':self.prepared_hash} if tool in ('draft.prepare','work.commit') else {})}
         except (ValueError,TypeError,OSError,json.JSONDecodeError) as exc:
             return {'ok':False,'error':str(exc)}
 
-    def start(self,credentials):
+    def start(self,credentials,timeout=150):
         import yaml
         config={'model':{'default':credentials['model'],'provider':'custom','base_url':credentials['base_url'],
                          'api_mode':'codex_responses'},
@@ -119,6 +144,9 @@ class Computer:
             'memory':{'memory_enabled':True,'user_profile_enabled':True},
             'checkpoints':{'enabled':False},'display':{'tool_progress':'off'}}
         config['tools']={'tool_search':{'enabled':'off'}}
+        if self.execution.get('mode')=='evaluation':
+            config['skills']={'template_vars':False,'inline_shell':False}
+            config['memory']={'memory_enabled':False,'user_profile_enabled':False}
         if self.backend=='bubblewrap':
             config['terminal']={'backend':'local','cwd':'/workspace','timeout':30,'lifetime_seconds':86400}
             config['lifespan_sandbox']={'backend':'bubblewrap','native_environment_adapter':True}
@@ -129,11 +157,12 @@ class Computer:
             LIFESPAN_EMPLOYEE=self.eid,LIFESPAN_MODEL=credentials['model'],
             LIFESPAN_BASE_URL=credentials['base_url'],LIFESPAN_API_KEY=credentials['api_key'],
             PYTHONUNBUFFERED='1',HERMES_YOLO='1',LIFESPAN_SANDBOX=self.backend)
+        process_env['LIFESPAN_EXECUTION_CONFIG']=json.dumps(self.execution)
         self.log=(self.root/'worker.log').open('a')
         self.process=subprocess.Popen([str(HERMES/'venv/bin/python'),'-u','-m','lifespan.hermes_worker'],
             cwd=self.workspace,env=process_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,
             stderr=self.log,text=True,bufsize=1)
-        ready=self.receive(150)
+        ready=self.receive(timeout)
         if ready.get('kind')!='ready':
             raise RuntimeError(f'Hermes startup failed: {ready}')
         self.ready=ready
@@ -186,11 +215,12 @@ class Computer:
         self.process.stdin.write(json.dumps(value)+'\n')
         self.process.stdin.flush()
 
-    def run(self,env,prompt):
+    def run(self,env,prompt,timeout=420):
         self.prepared=self.prepared_hash=None
+        self.committed_artifact=self.committed_hash=None
         self.send({'kind':'run','prompt':prompt})
         rpc=[]
-        deadline=time.monotonic()+420
+        deadline=time.monotonic()+timeout
         while time.monotonic()<deadline:
             msg=self.receive(min(150,max(1,deadline-time.monotonic())))
             if msg['kind']=='action':
@@ -201,7 +231,7 @@ class Computer:
                 return {'native':msg['result'],'workplace_rpc':rpc}
             else:
                 raise RuntimeError(f'Hermes worker error: {msg}')
-        raise TimeoutError(f'Hermes session exceeded 420s: {self.eid}')
+        raise TimeoutError(f'Hermes session exceeded {timeout}s: {self.eid}')
 
     def close(self):
         if self.process and self.process.poll() is None:

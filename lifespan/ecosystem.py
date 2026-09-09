@@ -81,10 +81,13 @@ class Ecosystem:
             raise ValueError('Lifespan already finished')
         # Fictional exogenous world shocks, explicitly labeled. Agent reactions
         # and regulatory/enterprise choices are never supplied by this schedule.
-        if self.day in (4, 11):
-            disrupted = self.day == 4
-            self.geopolitics = {'corridor': 'disrupted' if disrupted else 'open',
-                'supply_delay': 2 if disrupted else 0, 'revision': self.geopolitics['revision']+1}
+        shocks = getattr(self, 'shock_schedule', [
+            {'day': 4, 'corridor': 'disrupted', 'supply_delay': 2},
+            {'day': 11, 'corridor': 'open', 'supply_delay': 0}])
+        shock = next((s for s in shocks if s['day'] == self.day), None)
+        if shock is not None:
+            self.geopolitics = {'corridor': shock['corridor'],
+                'supply_delay': shock['supply_delay'], 'revision': self.geopolitics['revision']+1}
             self.emit('geopolitical_shock', 'environment', self.geopolitics)
         for item in list(self.queue):
             if item['deliver_day'] != self.day:

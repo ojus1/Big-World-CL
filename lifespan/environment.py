@@ -145,6 +145,13 @@ class SessionEnv:
                 self._failure()
                 result = {"ok": False, "error": "work_rejected",
                           "message": "The artifact, checks, approval, or interface do not meet the current procedure."}
+        elif tool == "artifact.reject":
+            # Trusted Computer adapter emits this after substantive grading;
+            # it is not an exposed native agent operation.
+            self.first_plan_correct = False if self.first_plan_correct is None else self.first_plan_correct
+            self._failure()
+            result = {"ok": False, "error": "artifact_quality_failed",
+                      "message": str(args.get('feedback', 'Artifact failed substantive checks.'))}
         elif tool == "session.end":
             self.done = True
             result = {"ok": True, "status": "left_in_queue"}
