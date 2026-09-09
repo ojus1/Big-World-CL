@@ -2,9 +2,24 @@
 
 **Persistent synthetic workplaces for studying continual adaptation through consequential work.** Enterprises, a government agency, consumers, employees and their AI assistants share a timeline. Changes in competition, policy and geopolitics alter business objectives and procedures; work outcomes influence subsequent decisions.
 
-The current proof of concept uses actual **MiroFish/OASIS actors**, **12 distinct Persona 8B records**, and **one native Hermes agent with a persistent bubblewrap computer per employee**. It goes beyond independent episodes: files, obligations, organizational decisions, conversations and delayed consequences survive across sessions.
+The historical proof of concept uses actual **MiroFish/OASIS actors**, **12 distinct Persona 8B records**, and **one native Hermes agent with a persistent bubblewrap computer per employee**. It goes beyond independent episodes: files, obligations, organizational decisions, conversations and delayed consequences survive across sessions.
 
-[PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model and generation algorithm](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Research framing](lifespan/docs/RESEARCH_DESIGN.md) · [Run instructions](docs/SETUP.md)
+The repository now also provides a **controlled deployment-time skill-learning evaluator** comparing no-learning Hermes with pinned upstream SkillOpt-Sleep. It adds substantive work rubrics, isolated candidate replays, chronological feedback, skill versions, compute accounting and paired world-level reports. This implementation is ready for new evaluations; the historical PoC is not evidence of a SkillOpt improvement.
+
+[Run learning evaluations](docs/RUN_EVALUATION.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
+
+## Evaluate deployment-time learning
+
+The new evaluator uses native MiroFish/Persona actors and Hermes/bubblewrap execution. Each work attempt starts with fresh private agent state and an installed native `work-process` skill. No learning retains the seed skill; SkillOpt proposes revisions from available employee experience and adopts them only after separate validation and fresh final replay. Substantive tasks cover account reconciliation, renewal calculation and incident repair under changing requirements.
+
+```bash
+python3 scripts/install_skillopt.py
+MiroFish/backend/.venv/bin/python -u -m lifespan.evaluation.runner \
+  --config configs/evaluation/pilot_no_learning.json \
+  --out lifespan/artifacts/evaluation/pilot-no-learning --stop-after-sessions 2
+```
+
+Complete [runtime setup](docs/SETUP.md) and start the local stack first. Follow the [evaluation guide](docs/RUN_EVALUATION.md) for the matching SkillOpt arm, clean resume, eight-day integration pilot, 24-day development configs, rubrics and paired reports. The pilot is one world pair and does not support strong aggregate claims. Skill-load omission and declared compute exhaustion remain measured outcomes; model/provider failures and incomplete accounting are reported separately.
 
 ## What the PoC demonstrates
 
@@ -45,11 +60,11 @@ flowchart TD
     F --> T
 ```
 
-MiroFish generates institutional, consumer and employee decisions. Hermes executes delegated work with native file, terminal, memory and skill tools. The kernel owns authority, effective dates, commitments and reward accounting. An assistant cannot redefine its success criteria by changing its own memory.
+In the historical PoC, MiroFish generates institutional, consumer and employee decisions, and Hermes executes delegated work with native file, terminal, memory and skill tools. The controlled evaluator retains the reactive world while restricting private agent state to its declared comparison contract. The kernel owns authority, effective dates, commitments and reward accounting. An assistant cannot redefine its success criteria by changing its own memory.
 
 Bubblewrap uses Linux namespaces and the host kernel; it is not a VM. Only each employee's assigned files and home are writable inside its sandbox. The model transport stays outside so API credentials do not enter employee shell environments. Files persist across restarts; process state and `/tmp` do not.
 
-## Quick start
+## Historical PoC quick start
 
 See [setup](docs/SETUP.md) for pinned dependencies, MiroFish patches, Hermes installation and private API configuration. Live runs require model access and incur inference costs.
 
@@ -82,6 +97,8 @@ The archived `demo` command uses deterministic controllers and is a reference fi
 | `lifespan/mirofish.py`, `personas.py` | Native MiroFish profiles/interviews and pinned Persona import |
 | `lifespan/environment.py`, `world.py` | Trusted work tools, rules and utility |
 | `lifespan/validate_ecosystem.py` | Offline causal, trajectory, file and reward audit |
+| `lifespan/evaluation/` | Native learning comparison, semantic rubrics, SkillOpt bridge, transport budgets and paired metrics |
+| `configs/evaluation/` | Matching no-learning/SkillOpt integration-pilot and development configs |
 | `patches/`, `local-overrides/` | Reproducible MiroFish compatibility and local graph changes |
 | `scripts/export_dataset.py`, `scan_release.py` | Allowlisted public export and credential checks |
 
@@ -94,6 +111,7 @@ For future RL experiments, optimize delayed task and business outcomes while acc
 - [MiroFish](https://github.com/666ghj/MiroFish), pinned at `39d849138ef254f6c737ab4c4705e5545dbe31d4`; patched source is distributed under AGPL-3.0.
 - [MatrAIx Persona 1M / Persona 8B](https://huggingface.co/datasets/MatrAIx2026/MatrAIx_Persona_1M), pinned at `8b1073ab23d0c0ba0928386a041bac55e5365ddc`. The public release has 999,847 records; this PoC imports 12 synthetic records from one shard. [Paper](https://arxiv.org/abs/2608.04205).
 - [Hermes Agent](https://github.com/NousResearch/hermes-agent), pinned at `2c8a2b65aa148ceb178d2251c54a523af12092c9`; upstream MIT license.
+- [SkillOpt](https://github.com/microsoft/SkillOpt), pinned at `79124b37e9a6371e13b753f8bcd7adb1e493ade1`; upstream MIT license. The evaluator uses its SkillOpt-Sleep consolidation with a documented public-trajectory context adapter.
 - [Bubblewrap](https://github.com/containers/bubblewrap), tested with 0.9.0.
 
 Code in this repository is licensed under [AGPL-3.0](LICENSE), with upstream notices retained. **Persona-derived data has separate non-commercial research-only terms**, including subsets and derivatives; the code license does not relicense it. See [third-party notices](THIRD_PARTY_NOTICES.md) and [dataset terms](docs/DATASET_TERMS.md).

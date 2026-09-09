@@ -1,6 +1,6 @@
 # Deployment-time learning evaluation: implementation and acceptance plan
 
-Status: active development. This document is the launch contract; checkboxes refer
+Status: core implementation published; fixed-source native pilot running. This document is the launch contract; checkboxes refer
 to verified deliverables, not intended capabilities. The previous 16-day artifact
 remains historical integration evidence and is not a baseline result.
 
@@ -123,10 +123,10 @@ proof of aggregate superiority.
 ## Milestones
 
 - [x] M0: Active goal, explicit protocol and parallel implementation/review owners.
-- [ ] M1: Executable semantic tasks, rubric tests and deterministic scenario specs.
-- [ ] M2: Fresh-context Hermes and native versioned-skill execution with isolation tests.
+- [x] M1: Executable semantic tasks, rubric tests and deterministic scenario specs.
+- [x] M2: Fresh-context Hermes and native versioned-skill execution with isolation tests.
 - [ ] M3: Actual pinned SkillOpt-Sleep updates and gates with isolated native replay.
-- [ ] M4: Persistent-world benchmark runner, causal feedback, recurring workloads,
+- [x] M4: Persistent-world benchmark runner, causal feedback, recurring workloads,
       split/config manifests, budgets, horizon accounting and metric reports.
 - [ ] M5: Bounded live pilot showing actual task execution and skill load/update
       behavior; then paired development comparison with adequate exposure.
@@ -139,9 +139,26 @@ proof of aggregate superiority.
 2. Actual upstream SkillOpt tests with stub execution/reflection to prove gate
    behavior; clearly label stubs and never report their scores as live results.
 3. Native Hermes tool smoke check with a skill loaded through its skill tool.
-4. Bounded live world pilot; fail early on missing skill use, wrong compute
-   accounting, state contamination, infrastructure failures or empty feedback.
+4. Bounded live world pilot; retain skill-load omission and declared budget
+   exhaustion as behavioral outcomes. Fail on incomplete accounting, state
+   contamination, infrastructure failures or missing evaluation evidence.
 5. Paired development runs and reviewer audit before holding out new scenarios.
 
 No single run establishes a frontier-research result. The deliverable is a
 reproducible, reviewable evaluation system and validated baseline integration.
+
+## Verified implementation checkpoint
+
+Commit `47c7609` adds the controlled evaluator. Independent review passed 193
+offline tests, including real filesystem/transaction fixtures over eight simulated
+days, actual pinned upstream SkillOpt with fixture callbacks, rubric mutation
+tests, chronology, isolated replay and paired-report audits. The upstream/local
+verification script additionally passed 131 backend, 28 upstream integration and
+18 local adapter tests, plus the frontend build. Both staged credential scanners
+passed before publication.
+
+A native Hermes smoke executed eight physically metered Responses calls with
+69,852 total tokens, verified the exact deployed native skill content, and
+committed a substantively correct artifact. This validates execution and
+accounting; it does not demonstrate learning. The paired eight-day pilot is
+running with the committed pilot configs. Its results remain pending.

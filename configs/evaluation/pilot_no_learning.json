@@ -1,0 +1,21 @@
+{
+  "algorithm": "no_learning",
+  "seed": 101,
+  "days": 8,
+  "split": "dev",
+  "state_mode": "skill_transfer",
+  "decision_every": 4,
+  "update_every": 2,
+  "feedback_delay": 1,
+  "max_iterations": 16,
+  "max_output_tokens": 4096,
+  "max_work_sessions": 48,
+  "max_run_seconds": 14400,
+  "max_learning_calls": 320,
+  "max_learning_tokens": 4000000,
+  "train_cases": 1,
+  "val_cases": 1,
+  "edit_budget": 4,
+  "focal_employee": "firm-0__onboarding-regulated",
+  "schema_version": 1
+}
