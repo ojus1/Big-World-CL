@@ -1,0 +1,874 @@
+diff --git a/backend/app/config.py b/backend/app/config.py
+index 02aed9a..16f8f55 100644
+--- a/backend/app/config.py
++++ b/backend/app/config.py
+@@ -25,12 +25,20 @@ class Config:
+     JSON_AS_ASCII = False
+     
+     # LLM配置（统一使用OpenAI格式）
+-    LLM_API_KEY = os.environ.get('LLM_API_KEY')
++    LLM_API_KEY = os.environ.get('LLM_API_KEY') or os.environ.get('OPENAI_API_KEY')
+     LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
+     LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gpt-4o-mini')
++    LLM_REASONING_EFFORT = os.environ.get('LLM_REASONING_EFFORT', '')
+     
+-    # Zep配置
+-    ZEP_API_KEY = os.environ.get('ZEP_API_KEY')
++    # Local mode uses the same service interface with SQLite persistence.
++    GRAPH_BACKEND = os.environ.get('GRAPH_BACKEND', 'zep')
++    LOCAL_GRAPH_ALLOW_REMOTE_LLM = os.environ.get('LOCAL_GRAPH_ALLOW_REMOTE_LLM', 'false').lower() == 'true'
++    LOCAL_GRAPH_DB = os.path.abspath(os.environ.get(
++        'LOCAL_GRAPH_DB', os.path.join(os.path.dirname(__file__), '../uploads/local_graph.sqlite3')
++    ))
++    ZEP_API_KEY = os.environ.get('ZEP_API_KEY') or (
++        'local' if GRAPH_BACKEND == 'local' else None
++    )
+     
+     # 文件上传配置
+     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
+@@ -66,7 +74,9 @@ class Config:
+         errors: list[str] = []
+         if not cls.LLM_API_KEY:
+             errors.append("LLM_API_KEY 未配置")
+-        if not cls.ZEP_API_KEY:
++        if cls.GRAPH_BACKEND not in {'zep', 'local'}:
++            errors.append("GRAPH_BACKEND must be zep or local")
++        if cls.GRAPH_BACKEND == 'zep' and not cls.ZEP_API_KEY:
+             errors.append("ZEP_API_KEY 未配置")
+         if os.environ.get("ZEP_API_URL"):
+             errors.append("ZEP_API_URL 不受支持；MiroFish 仅连接 Zep Cloud")
+diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/services/oasis_profile_generator.py
+index de6ce6e..d56d4f4 100644
+--- a/backend/app/services/oasis_profile_generator.py
++++ b/backend/app/services/oasis_profile_generator.py
+@@ -19,7 +19,7 @@ from openai import OpenAI
+ from ..config import Config
+ from ..utils.logger import get_logger
+ from ..utils.locale import get_language_instruction, get_locale, set_locale, t
+-from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text
++from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text, is_local_llama_client
+ from ..utils.zep import (
+     call_zep_read_with_retry,
+     get_zep_client,
+@@ -567,6 +567,48 @@ class OasisProfileGenerator:
+         # 尝试多次生成，直到成功或达到最大重试次数
+         max_attempts = 3
+         last_error = None
++        local = is_local_llama_client(self.client)
++        response_format = {"type": "json_object"}
++        if local:
++            # Bound strings in the grammar so repetitive profiles terminate as
++            # complete JSON instead of occupying a slot until context exhaustion.
++            properties = {
++                'bio': {'type': 'string', 'minLength': 1, 'maxLength': 360},
++                'persona': {'type': 'string', 'minLength': 80, 'maxLength': 2400},
++                'age': {'type': ['integer', 'null'], 'minimum': 0, 'maximum': 120},
++                'gender': {'type': 'string', 'maxLength': 40},
++                'mbti': {'type': 'string', 'maxLength': 8},
++                'country': {'type': 'string', 'maxLength': 80},
++                'profession': {'type': 'string', 'maxLength': 120},
++                'interested_topics': {'type': 'array', 'maxItems': 8,
++                                      'items': {'type': 'string', 'maxLength': 80}},
++            }
++            response_format = {
++                'type': 'json_schema',
++                'json_schema': {'name': 'agent_profile', 'strict': True, 'schema': {
++                    'type': 'object', 'properties': properties,
++                    'required': list(properties), 'additionalProperties': False,
++                }},
++            }
++            # Upstream's fixed type list treats custom labels such as
++            # StudentRepresentative as organizations. Use source facts instead.
++            prompt = (
++                f'Generate a concise simulation profile for {entity_name} (type: {entity_type}).\n'
++                f'Source summary: {entity_summary}\n'
++                f'Source attributes: {json.dumps(entity_attributes, ensure_ascii=False)}\n'
++                f'Source context: {context[:3000]}\n'
++                'Determine from the source whether this is a person or an organization. '
++                'An unfamiliar type name does not imply an institution. '
++                'Write bio as one or two sentences of source facts. '
++                'Write persona as a useful paragraph of at least three sentences about the entity, '
++                'its stated concerns and its possible behavior in the discussion; never just a label like Person. '
++                'In the persona, distinguish source facts from '
++                'hypothetical behavior proposed for this fictional simulation. '
++                'Do not invent historical facts, affiliations, or outcomes. Do not repeat sentences. '
++                'Use null for an unknown age and unknown for other unknown personal attributes. '
++                'Keep the persona below 2400 characters and the bio below 360 characters. '
++                + get_language_instruction()
++            )
+         
+         for attempt in range(max_attempts):
+             try:
+@@ -574,18 +616,23 @@ class OasisProfileGenerator:
+                     self.client,
+                     model=self.model_name,
+                     messages=[
+-                        {"role": "system", "content": self._get_system_prompt(is_individual)},
++                        {"role": "system", "content": (
++                            'Create a coherent, source-grounded social-media simulation profile as JSON.'
++                            if local else self._get_system_prompt(is_individual)
++                        )},
+                         {"role": "user", "content": prompt}
+                     ],
+-                    response_format={"type": "json_object"},
++                    response_format=response_format,
+                     temperature=0.7 - (attempt * 0.1),  # 每次重试降低温度
+-                    # 不设置max_tokens，让LLM自由发挥
++                    max_tokens=4096 if local else None,
+                 )
+                 
+                 content = extract_chat_completion_text(response)
+                 
+                 # 检查是否被截断（finish_reason不是'stop'）
+                 finish_reason = response.choices[0].finish_reason
++                if local and finish_reason != 'stop':
++                    raise ValueError(f'Local profile generation did not complete: {finish_reason}')
+                 if finish_reason == 'length':
+                     logger.warning(f"LLM输出被截断 (attempt {attempt+1}), 尝试修复...")
+                     content = self._fix_truncated_json(content)
+@@ -593,6 +640,11 @@ class OasisProfileGenerator:
+                 # 尝试解析JSON
+                 try:
+                     result = json.loads(content)
++                    if local and not (
++                        isinstance(result.get('bio'), str) and 1 <= len(result['bio']) <= 360
++                        and isinstance(result.get('persona'), str) and 80 <= len(result['persona']) <= 2400
++                    ):
++                        raise ValueError('Local profile has an empty, trivial, or oversized bio/persona')
+                     
+                     # 验证必需字段
+                     if "bio" not in result or not result["bio"]:
+diff --git a/backend/app/services/report_agent.py b/backend/app/services/report_agent.py
+index 1bb212b..5f7eceb 100644
+--- a/backend/app/services/report_agent.py
++++ b/backend/app/services/report_agent.py
+@@ -921,6 +921,53 @@ class ReportAgent:
+         self.console_logger: Optional[ReportConsoleLogger] = None
+         
+         logger.info(t('report.agentInitDone', graphId=graph_id, simulationId=simulation_id))
++
++    def _chat_with_tools(self, messages, tool_choice='auto', max_tokens=None):
++        """Use native Responses tools for Luna; preserve other providers' protocol."""
++        model_name = getattr(self.llm, 'model', '')
++        if not isinstance(model_name, str) or not model_name.startswith('gpt-5.6-luna'):
++            kwargs = {'messages': messages, 'temperature': 0.5}
++            if max_tokens is not None:
++                kwargs['max_tokens'] = max_tokens
++            response = self.llm.chat(**kwargs)
++            return response, self._parse_tool_calls(response or ''), None
++        from ..utils.camel_responses import create_simulation_model
++        if not hasattr(self, '_responses_model'):
++            self._responses_model = create_simulation_model(model_name, self.llm.api_key, self.llm.base_url)
++        model = self._responses_model
++        model.model_config_dict.update(tool_choice=tool_choice, max_completion_tokens=max_tokens or 8192)
++        tools = []
++        for name, definition in self.tools.items():
++            properties = {key: {'type': 'boolean' if key == 'include_expired' else
++                               'integer' if key in {'limit', 'max_agents'} else 'string',
++                               'description': description}
++                          for key, description in definition['parameters'].items()}
++            tools.append({'type': 'function', 'function': {
++                'name': name, 'description': definition['description'],
++                'parameters': {'type': 'object', 'properties': properties,
++                               'required': ['interview_topic' if name == 'interview_agents' else 'query'],
++                               'additionalProperties': False}}})
++        native_messages = [dict(message) for message in messages]
++        native_messages[0]['content'] += (
++            '\nAPI protocol: The listed tools are exposed as native function tools. '
++            'Use native function calls instead of writing XML tool-call blocks. '
++            'Tool results will be supplied with the tool role. Do not invent results.'
++        )
++        completion = model.run(native_messages, tools=tools)
++        message = completion.choices[0].message
++        calls = [{'name': call.function.name, 'parameters': json.loads(call.function.arguments)}
++                 for call in message.tool_calls or []]
++        return message.content or '', calls, message
++
++    @staticmethod
++    def _append_tool_observation(messages, response, native_message, observation):
++        if native_message is not None:
++            messages.append(native_message.model_dump(exclude_none=True))
++            messages.append({'role': 'tool', 'tool_call_id': native_message.tool_calls[0].id,
++                             'content': observation})
++        else:
++            messages.append({'role': 'assistant', 'content': ReportAgent._strip_fake_tool_results(response)})
++            messages.append({'role': 'user', 'content': observation})
+     
+     def _define_tools(self) -> Dict[str, Dict[str, Any]]:
+         """定义可用工具"""
+@@ -1341,11 +1388,9 @@ class ReportAgent:
+                 )
+             
+             # 调用LLM
+-            response = self.llm.chat(
+-                messages=messages,
+-                temperature=0.5,
+-                max_tokens=4096
+-            )
++            choice = 'required' if tool_calls_count < min_tool_calls else (
++                'auto' if tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION else 'none')
++            response, tool_calls, native_message = self._chat_with_tools(messages, choice, max_tokens=4096)
+ 
+             # 检查 LLM 返回是否为 None（API 异常或内容为空）
+             if response is None:
+@@ -1361,12 +1406,11 @@ class ReportAgent:
+             logger.debug(f"LLM响应: {response[:200]}...")
+ 
+             # 解析一次，复用结果
+-            tool_calls = self._parse_tool_calls(response)
+             has_tool_calls = bool(tool_calls)
+             has_final_answer = "Final Answer:" in response
+ 
+             # ── 冲突处理：LLM 同时输出了工具调用和 Final Answer ──
+-            if has_tool_calls and has_final_answer:
++            if has_tool_calls and has_final_answer and native_message is None:
+                 conflict_retries += 1
+                 logger.warning(
+                     t('report.sectionConflict', title=section.title, iteration=iteration+1, conflictCount=conflict_retries)
+@@ -1400,6 +1444,9 @@ class ReportAgent:
+                     has_final_answer = False
+                     conflict_retries = 0
+ 
++            if native_message is not None and has_tool_calls:
++                has_final_answer = False
++
+             # 记录 LLM 响应日志
+             if self.report_logger:
+                 self.report_logger.log_llm_response(
+@@ -1495,19 +1542,15 @@ class ReportAgent:
+                 if unused_tools and tool_calls_count < self.MAX_TOOL_CALLS_PER_SECTION:
+                     unused_hint = REACT_UNUSED_TOOLS_HINT.format(unused_list="、".join(unused_tools))
+ 
+-                cleaned_response = ReportAgent._strip_fake_tool_results(response)
+-                messages.append({"role": "assistant", "content": cleaned_response})
+-                messages.append({
+-                    "role": "user",
+-                    "content": REACT_OBSERVATION_TEMPLATE.format(
++                self._append_tool_observation(messages, response, native_message,
++                    REACT_OBSERVATION_TEMPLATE.format(
+                         tool_name=call["name"],
+                         result=result,
+                         tool_calls_count=tool_calls_count,
+                         max_tool_calls=self.MAX_TOOL_CALLS_PER_SECTION,
+                         used_tools_str=", ".join(used_tools),
+                         unused_hint=unused_hint,
+-                    ),
+-                })
++                    ))
+                 continue
+ 
+             # ── 情况3：既没有工具调用，也没有 Final Answer ──
+@@ -1547,11 +1590,7 @@ class ReportAgent:
+         logger.warning(t('report.sectionMaxIter', title=section.title))
+         messages.append({"role": "user", "content": REACT_FORCE_FINAL_MSG})
+         
+-        response = self.llm.chat(
+-            messages=messages,
+-            temperature=0.5,
+-            max_tokens=4096
+-        )
++        response, _, _ = self._chat_with_tools(messages, 'none', max_tokens=4096)
+ 
+         # 检查强制收尾时 LLM 返回是否为 None
+         if response is None:
+@@ -1869,13 +1908,7 @@ class ReportAgent:
+         max_iterations = 2  # 减少迭代轮数
+         
+         for iteration in range(max_iterations):
+-            response = self.llm.chat(
+-                messages=messages,
+-                temperature=0.5
+-            )
+-            
+-            # 解析工具调用
+-            tool_calls = self._parse_tool_calls(response)
++            response, tool_calls, native_message = self._chat_with_tools(messages)
+             
+             if not tool_calls:
+                 # 没有工具调用，直接返回响应
+@@ -1902,19 +1935,11 @@ class ReportAgent:
+                 tool_calls_made.append(call)
+             
+             # 将结果添加到消息
+-            cleaned_response = ReportAgent._strip_fake_tool_results(response)
+-            messages.append({"role": "assistant", "content": cleaned_response})
+             observation = "\n".join([f"[{r['tool']}结果]\n{r['result']}" for r in tool_results])
+-            messages.append({
+-                "role": "user",
+-                "content": observation + CHAT_OBSERVATION_SUFFIX
+-            })
++            self._append_tool_observation(messages, response, native_message, observation + CHAT_OBSERVATION_SUFFIX)
+         
+         # 达到最大迭代，获取最终响应
+-        final_response = self.llm.chat(
+-            messages=messages,
+-            temperature=0.5
+-        )
++        final_response, _, _ = self._chat_with_tools(messages, 'none')
+         
+         # 清理响应
+         clean_response = re.sub(r'<tool_call>.*?</tool_call>', '', final_response, flags=re.DOTALL)
+diff --git a/backend/app/services/simulation_runner.py b/backend/app/services/simulation_runner.py
+index b1b9989..4411542 100644
+--- a/backend/app/services/simulation_runner.py
++++ b/backend/app/services/simulation_runner.py
+@@ -650,6 +650,8 @@ class SimulationRunner:
+                     reddit_position = cls._read_action_log(
+                         reddit_actions_log, reddit_position, state, "reddit"
+                     )
++
++                cls._finish_local_rounds(state)
+                 
+                 # 更新状态
+                 cls._save_run_state(state)
+@@ -679,6 +681,7 @@ class SimulationRunner:
+                 if state.runner_status not in {
+                     RunnerStatus.STOPPED,
+                     RunnerStatus.FAILED,
++                    RunnerStatus.COMPLETED,
+                 }:
+                     manual_stop = simulation_id in cls._manual_stop_requests
+                     desired_status = (
+@@ -763,6 +766,30 @@ class SimulationRunner:
+                     pass
+                 cls._stderr_files.pop(simulation_id, None)
+     
++    @classmethod
++    def _finish_local_rounds(cls, state: SimulationRunState):
++        """Drain local memory after both loops, retaining the interview worker."""
++        if Config.GRAPH_BACKEND != 'local':
++            return
++        with cls._finalization_lock(state.simulation_id):
++            if state.runner_status != RunnerStatus.RUNNING or not cls._check_all_platforms_completed(state):
++                return
++            state.runner_status = RunnerStatus.STOPPING
++            cls._save_run_state(state)
++            cls._sync_simulation_status(state.simulation_id, RunnerStatus.STOPPING)
++            try:
++                if cls._graph_memory_enabled.get(state.simulation_id, False):
++                    ZepGraphMemoryManager.stop_updater(state.simulation_id)
++                    cls._graph_memory_enabled.pop(state.simulation_id, None)
++                state.runner_status = RunnerStatus.COMPLETED
++                state.error = None
++            except Exception as error:
++                state.runner_status = RunnerStatus.FAILED
++                state.error = f'Local graph ingestion failed: {error}'
++            state.completed_at = datetime.now().isoformat()
++            cls._save_run_state(state)
++            cls._sync_simulation_status(state.simulation_id, state.runner_status, state.error)
++
+     @classmethod
+     def _read_action_log(
+         cls, 
+diff --git a/backend/app/utils/llm_client.py b/backend/app/utils/llm_client.py
+index 9d85259..651644e 100644
+--- a/backend/app/utils/llm_client.py
++++ b/backend/app/utils/llm_client.py
+@@ -7,10 +7,11 @@ import json
+ import logging
+ import re
+ from typing import Optional, Dict, Any, List
++from urllib.parse import urlparse
+ from openai import OpenAI
+ 
+ from ..config import Config
+-from .openai_chat_compat import create_chat_completion, extract_chat_completion_text
++from .openai_chat_compat import create_chat_completion, extract_chat_completion_text, is_local_llama_client
+ 
+ 
+ logger = logging.getLogger(__name__)
+@@ -162,6 +163,7 @@ class LLMClient:
+         temperature: float = 0.3,
+         max_tokens: Optional[int] = 4096,
+         max_attempts: int = 1,
++        json_schema: Optional[Dict[str, Any]] = None,
+     ) -> Dict[str, Any]:
+         """
+         发送聊天请求并返回JSON
+@@ -178,7 +180,17 @@ class LLMClient:
+         if max_attempts < 1:
+             raise ValueError("max_attempts must be at least 1")
+ 
+-        response_format: Optional[Dict[str, str]] = {"type": "json_object"}
++        response_format: Optional[Dict[str, Any]] = {"type": "json_object"}
++        # MiniCPM5's llama.cpp parser needs a nonempty schema to enable grammar.
++        if json_schema is not None or (
++            Config.GRAPH_BACKEND == 'local'
++            and urlparse(self.base_url).hostname in {'127.0.0.1', 'localhost', '::1'}
++        ):
++            response_format = {
++                'type': 'json_schema',
++                'json_schema': {'name': 'mirofish_result', 'strict': True,
++                                'schema': json_schema or {'type': 'object'}},
++            }
+         request_max_tokens = max_tokens
+         last_error: Optional[LLMResponseError] = None
+ 
+@@ -219,12 +231,15 @@ class LLMClient:
+                 # object. Omit it for the one bounded retry so the provider can
+                 # use its model-specific output limit.
+                 had_token_cap = request_max_tokens is not None
+-                request_max_tokens = None
++                local_retry = is_local_llama_client(self.client)
++                request_max_tokens = 8192 if local_retry else None
+                 logger.warning(
+                     "LLM returned unusable JSON (finish_reason=%s); "
+                     "retrying content generation%s",
+                     error.finish_reason or "unknown",
+-                    " without an output token cap" if had_token_cap else "",
++                    " with the local 8192-token limit" if local_retry else (
++                        " without an output token cap" if had_token_cap else ""
++                    ),
+                 )
+ 
+         if last_error is not None:  # pragma: no cover - defensive loop guard
+diff --git a/backend/app/utils/openai_chat_compat.py b/backend/app/utils/openai_chat_compat.py
+index f0ce937..7c5ae64 100644
+--- a/backend/app/utils/openai_chat_compat.py
++++ b/backend/app/utils/openai_chat_compat.py
+@@ -8,6 +8,15 @@ gracefully adapting request parameters for GPT-5 family models.
+ from __future__ import annotations
+ 
+ from typing import Any, Dict, List, Optional
++from urllib.parse import urlparse
++
++
++def is_local_llama_client(client: Any) -> bool:
++    """Apply local-runtime adaptations only to the configured loopback backend."""
++    from ..config import Config
++    return Config.GRAPH_BACKEND == 'local' and urlparse(
++        str(getattr(client, 'base_url', ''))
++    ).hostname in {'127.0.0.1', 'localhost', '::1'}
+ 
+ 
+ def is_gpt5_family(model: Optional[str]) -> bool:
+@@ -17,6 +26,14 @@ def is_gpt5_family(model: Optional[str]) -> bool:
+     return model.strip().lower().startswith("gpt-5")
+ 
+ 
++def reasoning_config(model: str) -> Dict[str, Any]:
++    """Share the configured reasoning effort with direct SDK and CAMEL calls."""
++    from ..config import Config
++    if is_gpt5_family(model) and Config.LLM_REASONING_EFFORT:
++        return {'reasoning_effort': Config.LLM_REASONING_EFFORT}
++    return {}
++
++
+ def create_chat_completion(
+     client: Any,
+     *,
+@@ -32,7 +49,8 @@ def create_chat_completion(
+     Compatibility strategy:
+     - For GPT-5 family, avoid sending temperature by default.
+     - For token limit, use `max_completion_tokens` on GPT-5, `max_tokens` otherwise.
+-    - Preserve the legacy request shape for every non-GPT-5 model/provider.
++    - Bound uncapped local requests and require a nonempty local JSON schema.
++    - Preserve the legacy request shape for other non-GPT-5 models/providers.
+     - Propagate provider errors unchanged instead of guessing from message text.
+     """
+     kwargs: Dict[str, Any] = {
+@@ -40,10 +58,23 @@ def create_chat_completion(
+         "messages": messages,
+     }
+ 
++    if is_local_llama_client(client):
++        # Profile/config generators also call this helper directly, bypassing
++        # LLMClient.chat_json. MiniCPM needs a nonempty schema for JSON grammar.
++        if response_format == {'type': 'json_object'}:
++            response_format = {
++                'type': 'json_schema',
++                'json_schema': {'name': 'mirofish_result', 'strict': True,
++                                'schema': {'type': 'object'}},
++            }
++        if max_tokens is None:
++            max_tokens = 8192
++
+     if response_format is not None:
+         kwargs["response_format"] = response_format
+ 
+     gpt5_family = is_gpt5_family(model)
++    kwargs.update(reasoning_config(model))
+ 
+     if temperature is not None and not gpt5_family:
+         kwargs["temperature"] = temperature
+diff --git a/backend/app/utils/zep.py b/backend/app/utils/zep.py
+index c8bd4c9..6747788 100644
+--- a/backend/app/utils/zep.py
++++ b/backend/app/utils/zep.py
+@@ -65,6 +65,10 @@ def _cached_zep_client(api_key: str, timeout: float) -> Zep:
+ def get_zep_client(api_key: str | None = None, timeout: float | None = None) -> Zep:
+     """Return a process-shared, explicitly configured Zep Cloud client."""
+ 
++    if Config.GRAPH_BACKEND == 'local':
++        from .local_graph import LocalGraphClient
++        return LocalGraphClient(Config.LOCAL_GRAPH_DB)
++
+     # zep-cloud gives ZEP_API_URL precedence even when base_url is explicit.
+     # Reject it so this Cloud-only integration cannot silently target a
+     # self-hosted or compatibility endpoint.
+diff --git a/backend/pyproject.toml b/backend/pyproject.toml
+index f972e12..235d11b 100644
+--- a/backend/pyproject.toml
++++ b/backend/pyproject.toml
+@@ -9,6 +9,7 @@ authors = [
+ ]
+ 
+ dependencies = [
++    "torch==2.9.1+cpu",
+     # 核心框架
+     "flask>=3.0.0",
+     "flask-cors>=6.0.0",
+@@ -54,3 +55,12 @@ dev = [
+ 
+ [tool.hatch.build.targets.wheel]
+ packages = ["app"]
++
++# PyTorch is used by OASIS utilities; inference runs in the ROCm llama server.
++[[tool.uv.index]]
++name = "pytorch-cpu"
++url = "https://download.pytorch.org/whl/cpu"
++explicit = true
++
++[tool.uv.sources]
++torch = { index = "pytorch-cpu" }
+diff --git a/backend/scripts/run_parallel_simulation.py b/backend/scripts/run_parallel_simulation.py
+index 2a627ff..c3115e1 100644
+--- a/backend/scripts/run_parallel_simulation.py
++++ b/backend/scripts/run_parallel_simulation.py
+@@ -1010,7 +1010,7 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
+         config_label = "[加速LLM]"
+     else:
+         # 使用通用配置
+-        llm_api_key = os.environ.get("LLM_API_KEY", "")
++        llm_api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+         llm_base_url = os.environ.get("LLM_BASE_URL", "")
+         llm_model = os.environ.get("LLM_MODEL_NAME", "")
+         config_label = "[通用LLM]"
+@@ -1031,10 +1031,8 @@ def create_model(config: Dict[str, Any], use_boost: bool = False):
+     
+     print(f"{config_label} model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+     
+-    return ModelFactory.create(
+-        model_platform=ModelPlatformType.OPENAI,
+-        model_type=llm_model,
+-    )
++    from app.utils.camel_responses import create_simulation_model
++    return create_simulation_model(llm_model, llm_api_key or None, llm_base_url or None)
+ 
+ 
+ def get_active_agents_for_round(
+diff --git a/backend/scripts/run_reddit_simulation.py b/backend/scripts/run_reddit_simulation.py
+index 14907cb..22b2178 100644
+--- a/backend/scripts/run_reddit_simulation.py
++++ b/backend/scripts/run_reddit_simulation.py
+@@ -441,7 +441,7 @@ class RedditSimulationRunner:
+         - LLM_MODEL_NAME: 模型名称
+         """
+         # 优先从 .env 读取配置
+-        llm_api_key = os.environ.get("LLM_API_KEY", "")
++        llm_api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+         llm_base_url = os.environ.get("LLM_BASE_URL", "")
+         llm_model = os.environ.get("LLM_MODEL_NAME", "")
+         
+@@ -461,10 +461,8 @@ class RedditSimulationRunner:
+         
+         print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+         
+-        return ModelFactory.create(
+-            model_platform=ModelPlatformType.OPENAI,
+-            model_type=llm_model,
+-        )
++        from app.utils.camel_responses import create_simulation_model
++        return create_simulation_model(llm_model, llm_api_key or None, llm_base_url or None)
+     
+     def _get_active_agents_for_round(
+         self, 
+diff --git a/backend/scripts/run_twitter_simulation.py b/backend/scripts/run_twitter_simulation.py
+index caab9e9..da23009 100644
+--- a/backend/scripts/run_twitter_simulation.py
++++ b/backend/scripts/run_twitter_simulation.py
+@@ -434,7 +434,7 @@ class TwitterSimulationRunner:
+         - LLM_MODEL_NAME: 模型名称
+         """
+         # 优先从 .env 读取配置
+-        llm_api_key = os.environ.get("LLM_API_KEY", "")
++        llm_api_key = os.environ.get("LLM_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+         llm_base_url = os.environ.get("LLM_BASE_URL", "")
+         llm_model = os.environ.get("LLM_MODEL_NAME", "")
+         
+@@ -454,10 +454,8 @@ class TwitterSimulationRunner:
+         
+         print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
+         
+-        return ModelFactory.create(
+-            model_platform=ModelPlatformType.OPENAI,
+-            model_type=llm_model,
+-        )
++        from app.utils.camel_responses import create_simulation_model
++        return create_simulation_model(llm_model, llm_api_key or None, llm_base_url or None)
+     
+     def _get_active_agents_for_round(
+         self, 
+diff --git a/backend/tests/test_openai_chat_compat.py b/backend/tests/test_openai_chat_compat.py
+index fe08a62..b39c71c 100644
+--- a/backend/tests/test_openai_chat_compat.py
++++ b/backend/tests/test_openai_chat_compat.py
+@@ -7,6 +7,28 @@ from app.utils.openai_chat_compat import (
+     extract_chat_completion_text,
+     is_gpt5_family,
+ )
++from app.config import Config
++
++
++@pytest.fixture(autouse=True)
++def isolate_reasoning_config(monkeypatch):
++    monkeypatch.setattr(Config, 'LLM_REASONING_EFFORT', '')
++
++
++def test_configured_low_reasoning_reaches_gpt5_request(monkeypatch):
++    monkeypatch.setattr(Config, 'LLM_REASONING_EFFORT', 'low')
++    recorder = CompletionRecorder()
++    create_chat_completion(client_for(recorder), model='gpt-5.6-luna', messages=[], max_tokens=512)
++    assert recorder.calls[0]['reasoning_effort'] == 'low'
++    assert recorder.calls[0]['max_completion_tokens'] == 512
++    assert 'temperature' not in recorder.calls[0]
++
++
++def test_low_reasoning_is_not_sent_to_legacy_provider(monkeypatch):
++    monkeypatch.setattr(Config, 'LLM_REASONING_EFFORT', 'low')
++    recorder = CompletionRecorder()
++    create_chat_completion(client_for(recorder), model='minicpm5-2b', messages=[])
++    assert 'reasoning_effort' not in recorder.calls[0]
+ 
+ 
+ class CompletionRecorder:
+diff --git a/backend/uv.lock b/backend/uv.lock
+index 7f606a1..2ee80d9 100644
+--- a/backend/uv.lock
++++ b/backend/uv.lock
+@@ -999,6 +999,7 @@ dependencies = [
+     { name = "pydantic" },
+     { name = "pymupdf" },
+     { name = "python-dotenv" },
++    { name = "torch" },
+     { name = "zep-cloud" },
+ ]
+ 
+@@ -1031,6 +1032,7 @@ requires-dist = [
+     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
+     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+     { name = "python-dotenv", specifier = ">=1.0.0" },
++    { name = "torch", specifier = "==2.9.1+cpu", index = "https://download.pytorch.org/whl/cpu" },
+     { name = "zep-cloud", specifier = "==3.25.0" },
+ ]
+ provides-extras = ["dev"]
+@@ -1206,140 +1208,6 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/2d/ee/346fa473e666fe14c52fcdd19ec2424157290a032d4c41f98127bfb31ac7/numpy-2.3.5-pp311-pypy311_pp73-win_amd64.whl", hash = "sha256:f16417ec91f12f814b10bafe79ef77e70113a2f5f7018640e7425ff979253425", size = 12967213, upload-time = "2025-11-16T22:52:39.38Z" },
+ ]
+ 
+-[[package]]
+-name = "nvidia-cublas-cu12"
+-version = "12.8.4.1"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/dc/61/e24b560ab2e2eaeb3c839129175fb330dfcfc29e5203196e5541a4c44682/nvidia_cublas_cu12-12.8.4.1-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:8ac4e771d5a348c551b2a426eda6193c19aa630236b418086020df5ba9667142", size = 594346921, upload-time = "2025-03-07T01:44:31.254Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cuda-cupti-cu12"
+-version = "12.8.90"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/f8/02/2adcaa145158bf1a8295d83591d22e4103dbfd821bcaf6f3f53151ca4ffa/nvidia_cuda_cupti_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ea0cb07ebda26bb9b29ba82cda34849e73c166c18162d3913575b0c9db9a6182", size = 10248621, upload-time = "2025-03-07T01:40:21.213Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cuda-nvrtc-cu12"
+-version = "12.8.93"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/05/6b/32f747947df2da6994e999492ab306a903659555dddc0fbdeb9d71f75e52/nvidia_cuda_nvrtc_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:a7756528852ef889772a84c6cd89d41dfa74667e24cca16bb31f8f061e3e9994", size = 88040029, upload-time = "2025-03-07T01:42:13.562Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cuda-runtime-cu12"
+-version = "12.8.90"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/0d/9b/a997b638fcd068ad6e4d53b8551a7d30fe8b404d6f1804abf1df69838932/nvidia_cuda_runtime_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:adade8dcbd0edf427b7204d480d6066d33902cab2a4707dcfc48a2d0fd44ab90", size = 954765, upload-time = "2025-03-07T01:40:01.615Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cudnn-cu12"
+-version = "9.10.2.21"
+-source = { registry = "https://pypi.org/simple" }
+-dependencies = [
+-    { name = "nvidia-cublas-cu12" },
+-]
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/ba/51/e123d997aa098c61d029f76663dedbfb9bc8dcf8c60cbd6adbe42f76d049/nvidia_cudnn_cu12-9.10.2.21-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:949452be657fa16687d0930933f032835951ef0892b37d2d53824d1a84dc97a8", size = 706758467, upload-time = "2025-06-06T21:54:08.597Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cufft-cu12"
+-version = "11.3.3.83"
+-source = { registry = "https://pypi.org/simple" }
+-dependencies = [
+-    { name = "nvidia-nvjitlink-cu12" },
+-]
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/1f/13/ee4e00f30e676b66ae65b4f08cb5bcbb8392c03f54f2d5413ea99a5d1c80/nvidia_cufft_cu12-11.3.3.83-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:4d2dd21ec0b88cf61b62e6b43564355e5222e4a3fb394cac0db101f2dd0d4f74", size = 193118695, upload-time = "2025-03-07T01:45:27.821Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cufile-cu12"
+-version = "1.13.1.3"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/bb/fe/1bcba1dfbfb8d01be8d93f07bfc502c93fa23afa6fd5ab3fc7c1df71038a/nvidia_cufile_cu12-1.13.1.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1d069003be650e131b21c932ec3d8969c1715379251f8d23a1860554b1cb24fc", size = 1197834, upload-time = "2025-03-07T01:45:50.723Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-curand-cu12"
+-version = "10.3.9.90"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/fb/aa/6584b56dc84ebe9cf93226a5cde4d99080c8e90ab40f0c27bda7a0f29aa1/nvidia_curand_cu12-10.3.9.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:b32331d4f4df5d6eefa0554c565b626c7216f87a06a4f56fab27c3b68a830ec9", size = 63619976, upload-time = "2025-03-07T01:46:23.323Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cusolver-cu12"
+-version = "11.7.3.90"
+-source = { registry = "https://pypi.org/simple" }
+-dependencies = [
+-    { name = "nvidia-cublas-cu12" },
+-    { name = "nvidia-cusparse-cu12" },
+-    { name = "nvidia-nvjitlink-cu12" },
+-]
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/85/48/9a13d2975803e8cf2777d5ed57b87a0b6ca2cc795f9a4f59796a910bfb80/nvidia_cusolver_cu12-11.7.3.90-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:4376c11ad263152bd50ea295c05370360776f8c3427b30991df774f9fb26c450", size = 267506905, upload-time = "2025-03-07T01:47:16.273Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cusparse-cu12"
+-version = "12.5.8.93"
+-source = { registry = "https://pypi.org/simple" }
+-dependencies = [
+-    { name = "nvidia-nvjitlink-cu12" },
+-]
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/c2/f5/e1854cb2f2bcd4280c44736c93550cc300ff4b8c95ebe370d0aa7d2b473d/nvidia_cusparse_cu12-12.5.8.93-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:1ec05d76bbbd8b61b06a80e1eaf8cf4959c3d4ce8e711b65ebd0443bb0ebb13b", size = 288216466, upload-time = "2025-03-07T01:48:13.779Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-cusparselt-cu12"
+-version = "0.7.1"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/56/79/12978b96bd44274fe38b5dde5cfb660b1d114f70a65ef962bcbbed99b549/nvidia_cusparselt_cu12-0.7.1-py3-none-manylinux2014_x86_64.whl", hash = "sha256:f1bb701d6b930d5a7cea44c19ceb973311500847f81b634d802b7b539dc55623", size = 287193691, upload-time = "2025-02-26T00:15:44.104Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-nccl-cu12"
+-version = "2.27.5"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/6e/89/f7a07dc961b60645dbbf42e80f2bc85ade7feb9a491b11a1e973aa00071f/nvidia_nccl_cu12-2.27.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:ad730cf15cb5d25fe849c6e6ca9eb5b76db16a80f13f425ac68d8e2e55624457", size = 322348229, upload-time = "2025-06-26T04:11:28.385Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-nvjitlink-cu12"
+-version = "12.8.93"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/f6/74/86a07f1d0f42998ca31312f998bd3b9a7eff7f52378f4f270c8679c77fb9/nvidia_nvjitlink_cu12-12.8.93-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:81ff63371a7ebd6e6451970684f916be2eab07321b73c9d244dc2b4da7f73b88", size = 39254836, upload-time = "2025-03-07T01:49:55.661Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-nvshmem-cu12"
+-version = "3.3.20"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/3b/6c/99acb2f9eb85c29fc6f3a7ac4dccfd992e22666dd08a642b303311326a97/nvidia_nvshmem_cu12-3.3.20-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:d00f26d3f9b2e3c3065be895e3059d6479ea5c638a3f38c9fec49b1b9dd7c1e5", size = 124657145, upload-time = "2025-08-04T20:25:19.995Z" },
+-]
+-
+-[[package]]
+-name = "nvidia-nvtx-cu12"
+-version = "12.8.90"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/a2/eb/86626c1bbc2edb86323022371c39aa48df6fd8b0a1647bc274577f72e90b/nvidia_nvtx_cu12-12.8.90-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:5b17e2001cc0d751a5bc2c6ec6d26ad95913324a4adb86788c944f8ce9ba441f", size = 89954, upload-time = "2025-03-07T01:42:44.131Z" },
+-]
+-
+ [[package]]
+ name = "oauthlib"
+ version = "3.3.1"
+@@ -2435,42 +2303,26 @@ wheels = [
+ 
+ [[package]]
+ name = "torch"
+-version = "2.9.1"
+-source = { registry = "https://pypi.org/simple" }
++version = "2.9.1+cpu"
++source = { registry = "https://download.pytorch.org/whl/cpu" }
+ dependencies = [
+     { name = "filelock" },
+     { name = "fsspec" },
+     { name = "jinja2" },
+     { name = "networkx" },
+-    { name = "nvidia-cublas-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cuda-cupti-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cuda-nvrtc-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cuda-runtime-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cudnn-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cufft-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cufile-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-curand-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cusolver-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cusparse-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-cusparselt-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-nccl-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-nvjitlink-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-nvshmem-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+-    { name = "nvidia-nvtx-cu12", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+     { name = "setuptools", marker = "python_full_version >= '3.12'" },
+     { name = "sympy" },
+-    { name = "triton", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+     { name = "typing-extensions" },
+ ]
+ wheels = [
+-    { url = "https://files.pythonhosted.org/packages/15/db/c064112ac0089af3d2f7a2b5bfbabf4aa407a78b74f87889e524b91c5402/torch-2.9.1-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:62b3fd888277946918cba4478cf849303da5359f0fb4e3bfb86b0533ba2eaf8d", size = 104220430, upload-time = "2025-11-12T15:20:31.705Z" },
+-    { url = "https://files.pythonhosted.org/packages/56/be/76eaa36c9cd032d3b01b001e2c5a05943df75f26211f68fae79e62f87734/torch-2.9.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:d033ff0ac3f5400df862a51bdde9bad83561f3739ea0046e68f5401ebfa67c1b", size = 899821446, upload-time = "2025-11-12T15:20:15.544Z" },
+-    { url = "https://files.pythonhosted.org/packages/47/cc/7a2949e38dfe3244c4df21f0e1c27bce8aedd6c604a587dd44fc21017cb4/torch-2.9.1-cp311-cp311-win_amd64.whl", hash = "sha256:0d06b30a9207b7c3516a9e0102114024755a07045f0c1d2f2a56b1819ac06bcb", size = 110973074, upload-time = "2025-11-12T15:21:39.958Z" },
+-    { url = "https://files.pythonhosted.org/packages/1e/ce/7d251155a783fb2c1bb6837b2b7023c622a2070a0a72726ca1df47e7ea34/torch-2.9.1-cp311-none-macosx_11_0_arm64.whl", hash = "sha256:52347912d868653e1528b47cafaf79b285b98be3f4f35d5955389b1b95224475", size = 74463887, upload-time = "2025-11-12T15:20:36.611Z" },
+-    { url = "https://files.pythonhosted.org/packages/0f/27/07c645c7673e73e53ded71705045d6cb5bae94c4b021b03aa8d03eee90ab/torch-2.9.1-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:da5f6f4d7f4940a173e5572791af238cb0b9e21b1aab592bd8b26da4c99f1cd6", size = 104126592, upload-time = "2025-11-12T15:20:41.62Z" },
+-    { url = "https://files.pythonhosted.org/packages/19/17/e377a460603132b00760511299fceba4102bd95db1a0ee788da21298ccff/torch-2.9.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:27331cd902fb4322252657f3902adf1c4f6acad9dcad81d8df3ae14c7c4f07c4", size = 899742281, upload-time = "2025-11-12T15:22:17.602Z" },
+-    { url = "https://files.pythonhosted.org/packages/b1/1a/64f5769025db846a82567fa5b7d21dba4558a7234ee631712ee4771c436c/torch-2.9.1-cp312-cp312-win_amd64.whl", hash = "sha256:81a285002d7b8cfd3fdf1b98aa8df138d41f1a8334fd9ea37511517cedf43083", size = 110940568, upload-time = "2025-11-12T15:21:18.689Z" },
+-    { url = "https://files.pythonhosted.org/packages/6e/ab/07739fd776618e5882661d04c43f5b5586323e2f6a2d7d84aac20d8f20bd/torch-2.9.1-cp312-none-macosx_11_0_arm64.whl", hash = "sha256:c0d25d1d8e531b8343bea0ed811d5d528958f1dcbd37e7245bc686273177ad7e", size = 74479191, upload-time = "2025-11-12T15:21:25.816Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:0e611cfb16724e62252b67d31073bc5c490cb83e92ecdc1192762535e0e44487", upload-time = "2026-01-23T15:12:54Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:3de2adb9b4443dc9210ef1f1b16da3647ace53553166d6360bbbd7edd6f16e4d", upload-time = "2026-01-23T15:12:58Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp311-cp311-win_amd64.whl", hash = "sha256:69b3785d28be5a9c56ab525788ec5000349ec59132a74b7d5e954b905015b992", upload-time = "2026-01-23T15:12:59Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp311-cp311-win_arm64.whl", hash = "sha256:15b4ae6fe371d96bffb8e1e9af62164797db20a0dc1337345781659cfd0b8bb1", upload-time = "2026-01-23T15:13:00Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:3bf9b442a51a2948e41216a76d7ab00f0694cfcaaa51b6f9bcab57b7f89843e6", upload-time = "2026-01-23T15:13:02Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:7417d8c565f219d3455654cb431c6d892a3eb40246055e14d645422de13b9ea1", upload-time = "2026-01-23T15:13:04Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-win_amd64.whl", hash = "sha256:a4e06b4f441675d26b462123c8a83e77c55f1ec8ebc081203be2db1ea8054add", upload-time = "2026-01-23T15:13:06Z" },
++    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.9.1%2Bcpu-cp312-cp312-win_arm64.whl", hash = "sha256:1abe31f14b560c1f062699e966cb08ef5b67518a1cfac2d8547a3dbcd8387b06", upload-time = "2026-01-23T15:13:08Z" },
+ ]
+ 
+ [[package]]
+@@ -2534,15 +2386,6 @@ wheels = [
+     { url = "https://files.pythonhosted.org/packages/6a/6b/2f416568b3c4c91c96e5a365d164f8a4a4a88030aa8ab4644181fdadce97/transformers-4.57.3-py3-none-any.whl", hash = "sha256:c77d353a4851b1880191603d36acb313411d3577f6e2897814f333841f7003f4", size = 11993463, upload-time = "2025-11-25T15:51:26.493Z" },
+ ]
+ 
+-[[package]]
+-name = "triton"
+-version = "3.5.1"
+-source = { registry = "https://pypi.org/simple" }
+-wheels = [
+-    { url = "https://files.pythonhosted.org/packages/b0/72/ec90c3519eaf168f22cb1757ad412f3a2add4782ad3a92861c9ad135d886/triton-3.5.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:61413522a48add32302353fdbaaf92daaaab06f6b5e3229940d21b5207f47579", size = 170425802, upload-time = "2025-11-11T17:40:53.209Z" },
+-    { url = "https://files.pythonhosted.org/packages/f2/50/9a8358d3ef58162c0a415d173cfb45b67de60176e1024f71fbc4d24c0b6d/triton-3.5.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:d2c6b915a03888ab931a9fd3e55ba36785e1fe70cbea0b40c6ef93b20fc85232", size = 170470207, upload-time = "2025-11-11T17:41:00.253Z" },
+-]
+-
+ [[package]]
+ name = "typing-extensions"
+ version = "4.15.0"

@@ -1,0 +1,2 @@
+# Install in the existing MiroFish backend environment.
+pyarrow==21.0.0

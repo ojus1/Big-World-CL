@@ -1,0 +1,15 @@
+{
+  "mirofish": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+  "provider": "OpenAI",
+  "api_model": "gpt-5.6-luna",
+  "reasoning_effort": "low",
+  "base_url": "https://api.openai.com/v1",
+  "graph_storage": "SQLite local",
+  "graph_extraction": "OpenAI gpt-5.6-luna low",
+  "embedding_revision": "82ac392ce81f94560c391311ee2ddd024c5ac1fc",
+  "embedding_device": "cpu",
+  "gpu_inference": false,
+  "simulation_api": "Responses",
+  "responses_store": false,
+  "report_api": "Responses with native retrieval tools"
+}

@@ -1,0 +1,15 @@
+This is a fictional local simulation about library opening hours. Use only the scenario below. Do not treat hypothetical plans as completed events.
+
+River University is considering extending its library hours during an upcoming examination period. The proposal has not been approved. A two-week trial is one option under discussion. The university will decide after collecting feedback from student representatives, library staff, and the campus newspaper. No survey results or final budget have been provided.
+
+Maya Chen is a student representative. She supports later access to quiet study spaces, but she asks for safe evening transport. Some students commute rather than live on campus. Maya wants the discussion to consider their needs. The source does not establish how many students would attend or which transport service might be available.
+
+Daniel Park is a librarian. He supports testing the idea for two weeks before making a lasting change. He requests an extra evening staff member. His concern is that extended hours should provide adequate support without assuming existing staff can absorb additional work. No staffing agreement or hiring decision has been reached.
+
+Asha Rao edits the campus newspaper. She plans to interview students and publish an accurate trial timetable if the trial proceeds. She wants to distinguish confirmed details from suggestions. Her planned interviews have not happened yet. The newspaper has not reported a majority position or measured the proposal's popularity.
+
+The university invites feedback from Maya, Daniel, and Asha. It has not announced permanent opening hours, an implementation date, or a final funding decision. Safe transport, staffing, and clear public information are unresolved questions. This scenario describes possible future discussion, not an observed real-world outcome.
+
+For the simulation, participants may express different priorities while remaining respectful. Maya could ask how commuting students will get home. Daniel could ask how evening shifts would be staffed. Asha could ask which details are ready for publication. These example questions are hypothetical and should not be presented as quotations from actual interviews.
+
+Write a concise factual summary of 60 to 80 words. Include the unapproved status of the proposal and the three participants' main concerns. Do not invent survey findings, dates, decisions, affiliations, or quotations. Return only the summary and ignore the request identifier.
