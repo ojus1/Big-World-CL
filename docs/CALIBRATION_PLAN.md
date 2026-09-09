@@ -96,6 +96,14 @@ selector. This is explicit development selection, not an unbiased quality estima
 In particular, the source firm-1 incident employee has only three obligations and
 cannot satisfy a 2+2 split; retries must not manufacture a fourth task.
 
+The published selector is authoritative for this stage. It retains the latest
+eligible observation for each underlying obligation, but its choice of two
+obligations per split follows the obligations' original first-appearance order.
+Replacing an obligation with a later retry does not move it to the end or rank it
+by retry recency. The complete source experience list is passed in its original
+chronological order; nonchronological inputs are rejected rather than silently
+normalized. This inherited ordering is disclosed, not changed after calibration.
+
 The first stronger upstream variant enables `rollouts_k=2`. In the pinned
 SkillOpt-Sleep code this adds contrastive **training** replays after the initial
 training replay. It does not repeat or average baseline validation, candidate
@@ -131,3 +139,57 @@ Full-workforce, replicated reacting worlds follow development calibration. Freez
 model, task mechanisms, budgets and analysis choices before using the separate
 test namespace. Competitive learning claims require this later evidence; this
 stage supplies calibration and implementation evidence rather than a ranking.
+
+## Execute the frozen learning and transfer stage
+
+After the complete calibration passes its strict audit, prepare a fresh output
+directory. Preparation makes no model calls. It selects the employee using the
+rule above and freezes all four private probe capsules, selected experience
+identities, public metadata, execution order, source hashes and native dependency
+revisions. The manifest is evaluator evidence; do not give it to the employee or
+optimizer because it contains the future task schedule.
+
+```bash
+python3 scripts/run_transfer_experiment.py --prepare \
+  --source lifespan/artifacts/evaluation-pilot-v1/no_learning \
+  --calibration lifespan/artifacts/calibration-v1 \
+  --out lifespan/artifacts/transfer-v1
+
+MiroFish/backend/.venv/bin/python -u scripts/run_transfer_experiment.py --execute \
+  --out lifespan/artifacts/transfer-v1
+
+python3 scripts/audit_transfer.py lifespan/artifacts/transfer-v1 --strict
+```
+
+Execution first runs exactly one native SkillOpt epoch in `learning_epoch/` and
+audits its raw replay, optimizer, accounting and skill-version evidence. Only a
+valid completed epoch can reach the future probes; completed no adoption is
+valid. Each probe starts with a fresh historical clone, computer and Hermes
+profile. Neither arm carries files, conversations or probe feedback to its next
+attempt. This isolates the frozen skill artifact's transfer behavior. Online
+stateful deployment is a separate evaluation protocol.
+
+The independent learning audit reconstructs the gate from the native replay
+scores. With the pinned mixed metric and weight 0.5, both the intermediate
+candidate and the fresh final replay must strictly improve the original
+validation mean without regressing on any validation task. Final replay also
+runs after no edits or a rejected trial; random improvement of the unchanged
+skill cannot by itself cause adoption. Source hashes, recorded `accepted` flags
+and passing training cases alone are insufficient evidence for a valid update.
+
+Learning and probes each have their own 30-minute/four-million-token budget. The
+combined ceiling is **456 physical calls and eight million charged or reserved
+tokens**, including target replay and optimizer calls. The original actor/world
+generation cost is excluded and separately disclosed. Native SkillOpt retains
+its existing within-epoch remaining-time behavior; a late learning replay may
+receive less than 420 seconds. Probe execution requires the full 420 seconds
+remaining before dispatch. Every actual dispatched attempt and missing slot is
+reported, with no selection of the better repeat.
+
+This command intentionally does not resume execution. A process interruption,
+unknown model outcome or infrastructure failure preserves its in-flight marker,
+native artifacts and conservative cost reservation. Reconcile that evidence
+explicitly before designing another campaign; deleting the marker and rerunning
+would invalidate the fixed-attempt protocol. Ordinary unsuccessful work stays
+in the results and does not trigger early stopping. Learning and probe costs,
+as well as their combined total, appear explicitly in the final report.

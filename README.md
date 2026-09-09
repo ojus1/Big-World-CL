@@ -33,6 +33,13 @@ and a native replay runner that measures fixed-skill variability before further
 learning claims. Optional `skillopt_rollouts_k` enables pinned upstream
 contrastive training replays; its validation gate remains single-shot. Matching
 24-day configurations are provided in `configs/evaluation/dev_contrastive_*.json`.
+The same plan includes a bounded employee-level experiment: one native SkillOpt
+epoch over four previously observed obligations, then four frozen fresh tasks
+under changed and reversed requirements. Both skill arms receive two attempts
+per task. A separate auditor verifies the learning receipts, exact skill versions,
+future-task isolation and every probe; no adoption produces an identical-skill
+control. These are development transfer diagnostics, not independent world
+replications or a final algorithm ranking.
 
 ## What the PoC demonstrates
 
