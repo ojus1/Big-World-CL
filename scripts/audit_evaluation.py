@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 import sys
 
@@ -18,13 +19,29 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.metrics import build_report
-from lifespan.evaluation.runtime import native_usage, skill_loaded
 from lifespan.evaluation.tasks import grade_case
 
 
 def require(condition, code):
     if not condition:
         raise ValueError(code)
+
+
+def reports_equal(left, right):
+    """Allow only finite float roundoff (relative/absolute 1e-12).
+
+    Python processes can sum equivalent groups in different orders. Structure,
+    JSON value types, integer counts, booleans, strings and null remain exact.
+    """
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return left.keys() == right.keys() and all(reports_equal(left[key], right[key]) for key in left)
+    if isinstance(left, list):
+        return len(left) == len(right) and all(reports_equal(a, b) for a, b in zip(left, right))
+    if isinstance(left, float):
+        return math.isfinite(left) and math.isfinite(right) and math.isclose(left, right, rel_tol=1e-12, abs_tol=1e-12)
+    return left == right
 
 
 def sha(data):
@@ -39,6 +56,31 @@ def child(root, relative):
     path = (root / relative).resolve()
     require(path.is_relative_to(root.resolve()), 'unsafe_artifact_path')
     return path
+
+
+def observed_skill_load(messages, file_sha):
+    """Verify native call/result evidence without importing the mutable executor."""
+    requests = set()
+    for message in messages:
+        for call in message.get('tool_calls') or []:
+            function = call.get('function', {})
+            try:
+                args = json.loads(function.get('arguments', '{}'))
+            except (ValueError, TypeError):
+                continue
+            if function.get('name') == 'skill_view' and isinstance(args, dict) and 'work-process' in args.values():
+                requests.add(call.get('id'))
+    for message in messages:
+        if message.get('role') != 'tool' or message.get('tool_call_id') not in requests:
+            continue
+        try:
+            result = json.loads(message.get('content', '{}'))
+        except (ValueError, TypeError):
+            continue
+        if (isinstance(result, dict) and result.get('success') is True and result.get('name') == 'work-process'
+                and not result.get('error') and isinstance(result.get('content'), str) and sha(result['content'].encode()) == file_sha):
+            return True
+    return False
 
 
 def meter_check(record):
@@ -64,7 +106,9 @@ def meter_check(record):
         require(meter[key] == sum(row[key] or 0 for row in rows), 'physical_total_' + key)
     complete = all(row['accounting'] == 'reported' for row in rows)
     require(meter['reported_tokens'] == meter['total_tokens'] and meter['accounting_complete'] == complete, 'physical_accounting_summary')
-    expected = native_usage(native)
+    expected = {'api_calls': len(rows), 'charged_tokens': meter['charged_tokens'],
+                'prompt_tokens': meter['input_tokens'], 'completion_tokens': meter['output_tokens'],
+                'total_tokens': meter['total_tokens'] if complete else None, 'complete': complete}
     require(all(record['usage'].get(k) == expected[k] for k in
                 ('api_calls', 'charged_tokens', 'prompt_tokens', 'completion_tokens', 'total_tokens', 'complete')), 'session_usage_mismatch')
     require(complete and record['infrastructure_valid'] is True, 'trial_infrastructure_or_accounting_invalid')
@@ -84,7 +128,7 @@ def session_check(record, directory, capsule, version=None):
         require(sha(version['skill'].encode()) == version['hash'] == sha(content)
                 and version['version'] == record['skill_version'], 'deployed_skill_version')
         require(version['adopted_after_day'] < record['day'], 'future_skill_deployment')
-    loaded = skill_loaded(record['result']['native'].get('messages', []), sha(native_file))
+    loaded = observed_skill_load(record['result']['native'].get('messages', []), sha(native_file))
     require(record['skill_loaded'] == loaded, 'native_skill_load_provenance')
     for name, text in case['public_files'].items():
         require(record['filesystem_before'][name]['sha256'] == sha(text.encode()), 'case_public_input_hash')
@@ -98,10 +142,21 @@ def session_check(record, directory, capsule, version=None):
                 and grade['checks'] == record['checks'] and grade['feedback'] == record['feedback'], 'independent_committed_artifact_grade')
     else:
         require(record['artifact'] is None and record['committed_artifact_sha256'] is None, 'failed_session_claims_commit')
+    if 'last_submitted_artifact_sha256' in record:
+        submitted = record['last_submitted_artifact_sha256']
+        grade = {'score': 0., 'checks': {}, 'feedback': 'No artifact reached substantive submission.'}
+        if submitted is not None:
+            path = child(directory / 'filesystem_objects', submitted)
+            require(path.is_file(), 'missing_immutable_submitted_bytes')
+            raw = path.read_bytes()
+            require(sha(raw) == submitted, 'submitted_artifact_hash')
+            grade = grade_case(case, json.loads(raw))
+        require(all(grade[key] == record[field] for key, field in
+                    (('score', 'semantic_score'), ('checks', 'checks'), ('feedback', 'feedback'))), 'independent_last_submission_grade')
     meter_check(record)
 
 
-def update_check(root, update, experiences, sessions):
+def update_check(root, update, experiences, sessions, feedback_delay):
     directory = child(root, f"learning/d{update['day']:03d}-{update['employee']}")
     require(read(directory / 'update.json') == update, 'checkpoint_update_mismatch')
     day, employee = update['day'], update['employee']
@@ -113,7 +168,8 @@ def update_check(root, update, experiences, sessions):
         for identifier in ids:
             item, source = experiences[identifier], sessions[identifier]
             require(item['employee'] == source['employee'] == employee and item['split'] == split, 'cross_employee_or_split_experience')
-            require(source['day'] <= item['available_day'] <= day and source['day'] <= item['feedback_available_day'] <= day, 'future_update_experience')
+            earliest = source['day'] + feedback_delay
+            require(earliest <= item['available_day'] <= day and earliest <= item['feedback_available_day'] <= day, 'future_update_experience')
             require(item['source_session'] == source['task_id'], 'experience_source_identity')
             sources[split].add(item['source_session'])
     require(not (sources['train'] & sources['val']), 'source_task_split_leakage')
@@ -182,7 +238,8 @@ def audit_run(root, strict=False):
                 read(child(root, f"skills/{r['employee']}/v{r['skill_version']:03d}.json"))))
             result['sessions_checked'] += 1
         for update in state['updates']:
-            inspect(f"learning/day-{update['day']}/{update['employee']}", lambda u=update: update_check(root, u, experiences, sessions))
+            inspect(f"learning/day-{update['day']}/{update['employee']}", lambda u=update: update_check(
+                root, u, experiences, sessions, manifest['config']['feedback_delay']))
             result['updates_checked'] += 1
         for employee, skill in state['skills'].items():
             version = read(child(root, f'skills/{employee}/v000.json'))
@@ -211,7 +268,7 @@ def audit_run(root, strict=False):
                                    Ecosystem.restore(cp['ecosystem']).snapshot(), status=status, provenance=provenance)
             result['report_audit'] = rebuilt['audit']
             if status == 'completed':
-                require(report == rebuilt, 'persisted_report_mismatch')
+                require(reports_equal(report, rebuilt), 'persisted_report_mismatch')
                 require(rebuilt['audit']['eligible_for_paired_inference'], 'completed_report_ineligible')
         pending = sorted(str(p.relative_to(root)) for pattern in ('**/INFLIGHT.json', '**/FAILURE.json') for p in root.glob(pattern))
         result['pending_or_failed_artifacts'] = pending
@@ -224,7 +281,7 @@ def audit_run(root, strict=False):
             require(not pending and not orphans and not untracked_learning, 'completed_run_has_unreconciled_artifacts')
         else:
             notes.append('Run is incomplete; current in-flight artifacts and report/checkpoint skew may be expected.')
-        failed_scores = sum(not r['success'] for r in sessions.values())
+        failed_scores = sum(not r['success'] and 'last_submitted_artifact_sha256' not in r for r in sessions.values())
         if failed_scores:
             notes.append(f'{failed_scores} unsuccessful sessions have no immutable committed output; their partial scores cannot be independently reconstructed by this audit.')
         result['status'] = 'invalid' if errors else 'valid_completed' if status == 'completed' else 'incomplete'

@@ -138,6 +138,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
             'skill_loaded': loaded, 'success': success, 'semantic_score': grade['score'],
             'feedback': grade['feedback'], 'checks': grade['checks'],
             'artifact': artifact, 'committed_artifact_sha256': computer.committed_hash,
+            'last_submitted_artifact_sha256': computer.last_submission_hash,
             'usage': usage, 'tool_calls': calls, 'elapsed_seconds': time.monotonic() - started,
             'trace': env.trace, 'result': result, 'diagnostic': env.diagnostic(),
             'filesystem_before': before, 'filesystem_after': after,

@@ -1,5 +1,6 @@
 """Chronological protocol and state-integrity tests. No model calls."""
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -87,7 +88,7 @@ class CommitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             eco=Ecosystem(12,101); eco.advance(); w=eco.worlds['firm-0']; t=next(iter(w.tasks.values()))
             case=make_case(t.workflow,101,0,t.id,'base','online',exception_window=[4,6])
-            c=Computer(root,'employee',artifact_grader=lambda a:grade_case(case,a))
+            c=Computer(Path(root)/'computers','employee',artifact_grader=lambda a:grade_case(case,a))
             env=SessionEnv(w,t); expected=w.expected(t)
             artifact=dict(task_id=t.id,channel=expected['channel'],redact=expected['redact'],
                           endpoint=expected['endpoint'],content='{"placeholder":true}')
@@ -100,17 +101,39 @@ class CommitTests(unittest.TestCase):
                 c.action(env,{'tool':'approval.request','args':{'approver':expected['approver']}})
             prepare(); c.action(env,{'tool':'work.commit','args':{}})
             self.assertFalse(env.success); self.assertEqual(t.status,'pending'); self.assertFalse(w.ledger)
+            rejected_raw=local.read_bytes()
+            rejected_sha=c.last_submission_hash
+            rejected_grade=deepcopy(c.last_grade)
+            self.assertEqual(hashlib.sha256(rejected_raw).hexdigest(),rejected_sha)
+            self.assertEqual((c.objects/rejected_sha).read_bytes(),rejected_raw)
             artifact['content']=json.dumps(solve_public(t.workflow,case['public_files']))
             prepare(); c.action(env,{'tool':'work.commit','args':{}})
             self.assertTrue(env.success); self.assertEqual(len(w.ledger),1)
             committed=deepcopy(c.committed_artifact)
+            committed_raw=local.read_bytes()
             local.write_text(json.dumps(dict(artifact,content='{"private_learning_note":"UNVALIDATED"}')))
             self.assertEqual(c.committed_artifact,committed)
             self.assertTrue(grade_case(case,c.committed_artifact)['success'])
+            local.unlink()
+            self.assertEqual((c.objects/c.committed_hash).read_bytes(),committed_raw)
+            self.assertEqual(c.last_submission_hash,c.committed_hash)
+            self.assertEqual((c.objects/rejected_sha).read_bytes(),rejected_raw)
+            self.assertEqual(grade_case(case,json.loads(rejected_raw)),rejected_grade)
+
+    def test_artifact_object_collision_is_not_silently_accepted(self):
+        with tempfile.TemporaryDirectory() as root:
+            c=Computer(Path(root)/'computers','employee')
+            raw=json.dumps(dict(task_id='x',channel='internal',redact=False,
+                                endpoint='/api/work',content='valid envelope')).encode()
+            (c.workspace/'deliverables/result.json').write_bytes(raw)
+            c.objects.mkdir(parents=True)
+            (c.objects/hashlib.sha256(raw).hexdigest()).write_bytes(b'corrupted object')
+            with self.assertRaisesRegex(ValueError,'conflicting content'):
+                c.read_artifact('/workspace/deliverables/result.json','x')
 
     def test_bad_artifact_shape_and_duplicate_keys_are_observed_errors(self):
         with tempfile.TemporaryDirectory() as root:
-            c=Computer(root,'employee'); local=c.workspace/'deliverables/result.json'
+            c=Computer(Path(root)/'computers','employee'); local=c.workspace/'deliverables/result.json'
             for raw in ('[]','1','null','{"task_id":"x","task_id":"y"}'):
                 local.write_text(raw)
                 with self.assertRaises(ValueError): c.read_artifact('/workspace/deliverables/result.json','x')

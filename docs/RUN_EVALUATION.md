@@ -3,8 +3,9 @@
 This runner compares native **no-learning Hermes** with **SkillOpt-Sleep + BigWorld
 trajectory-context adapter** in a persistent synthetic enterprise world. It adds
 controlled trials and executable work-quality rubrics to the historical integration
-PoC. The commands below create new experiments; this document reports no live
-baseline results or demonstrated learning advantage.
+PoC. The commands below create new experiments. The first completed
+[native pilot and its limitations](EVALUATION_RESULTS.md) are documented separately;
+it demonstrated no learning advantage.
 
 The world uses actual MiroFish/OASIS institutional, consumer and employee actors,
 12 pinned Persona 8B records, native Hermes agents, and bubblewrap employee
@@ -220,10 +221,15 @@ Each output directory contains:
 
 - `manifest.json`: model, source hashes, configuration, scenario and dependency
   provenance.
-- `REPORT.json`: completion/audit status; obligation and attempt success;
+- `REPORT.json`: original version-1 execution report, preserved for audit;
+  its obligation denominator counts task availability, not commitment placement.
+  It includes completion/audit status; conditional work and attempt success;
   semantic score; employee/regime breakdowns; skill loading; compute exhaustion;
   descriptive adaptation/censoring; realized business utility and delayed rewards;
   separate execution and learning costs.
+- `REPORT.v2.json`: canonical commitment fulfillment, all accepted obligations,
+  pending/scheduled work, source breakdown and the hashes of the original report
+  and checkpoint. New completed runs generate this automatically.
 - `work/`: native work sessions, graded file artifacts and private audit evidence.
 - `learning/`: isolated replay trials, upstream gate evidence, accepted/rejected
   updates and actual sanitized optimizer prompts.
@@ -253,19 +259,30 @@ artifact bytes; the audit labels that limitation instead of claiming to regrade
 their partial scores.
 
 ```bash
-python3 - <<'PY'
-import json
-from pathlib import Path
-from lifespan.evaluation.metrics import paired_report
+# Historical runs need this explicit correction; new completed runs already have it.
+python3 scripts/evaluation_report_v2.py \
+  lifespan/artifacts/evaluation/pilot-no-learning \
+  lifespan/artifacts/evaluation/pilot-skillopt
 
-root = Path('lifespan/artifacts/evaluation')
-reports = [json.loads((root / name / 'REPORT.json').read_text())
-           for name in ('pilot-no-learning', 'pilot-skillopt')]
-result = paired_report(reports)
-(root / 'pilot-paired-report.json').write_text(json.dumps(result, indent=2) + '\n')
-print(json.dumps(result, indent=2))
-PY
+python3 scripts/compare_evaluations.py \
+  lifespan/artifacts/evaluation/pilot-no-learning/REPORT.v2.json \
+  lifespan/artifacts/evaluation/pilot-skillopt/REPORT.v2.json \
+  --out lifespan/artifacts/evaluation/pilot-paired-report.json
 ```
+
+The correction preserves v1 byte-for-byte and counts accepted orders even if
+their availability lies after work stops. Fixed initial/exogenous demand is
+separate from native consumer orders. Comparison verifies the local source files,
+regenerates the correction and requires matching postprocessor hashes. Intentional
+historical v1 comparison requires `--legacy-actionable`; it is not the canonical
+business fulfillment headline. See [the correction semantics](EVALUATION_RUBRICS.md).
+
+If automatic postprocessing fails, the command fails with a separate
+`REPORTING_FAILURE.json` diagnostic while preserving completed `REPORT.json` and
+checkpoint bytes. Reconcile the reporting problem and invoke the standalone
+postprocessor; do not rerun already completed model work. The diagnostic describes
+that failed reporting attempt, and the regenerated report has its own verified
+source hashes.
 
 Pairing requires matching treatment-independent model, code, dependency and persona
 provenance, shared config, scenario and settlement window. Changed source between

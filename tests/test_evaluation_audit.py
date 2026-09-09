@@ -6,7 +6,7 @@ import sys
 import tempfile
 import unittest
 
-from scripts.audit_evaluation import ROOT, audit_run, sha
+from scripts.audit_evaluation import ROOT, audit_run, reports_equal, sha
 from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.metrics import build_report
 from lifespan.evaluation.runtime import install_skill, native_usage
@@ -170,8 +170,57 @@ class ArtifactAuditTests(unittest.TestCase):
         self.sync_session(record)
         self.assertInvalid('independent_committed_artifact_grade')
 
+    def make_failed_record(self):
+        record = self.state['sessions'][0]
+        record.update(success=False, artifact=None, committed_artifact_sha256=None)
+        world = self.eco.worlds['firm-0']
+        world.tasks[record['task_id']].status = 'pending'
+        world.tasks[record['task_id']].completed = None
+        world.ledger = [entry for entry in world.ledger if entry['task_id'] != record['task_id']]
+        return record
+
+    def test_failed_submission_regraded_from_immutable_bytes_after_file_deletion(self):
+        record = self.make_failed_record()
+        directory = self.root / 'work' / record['id']
+        capsule = json.loads((self.root / f"private/cases/{record['id']}.json").read_text())
+        artifact = {'task_id': record['task_id'], 'channel': 'fixture-channel', 'redact': False,
+                    'endpoint': 'fixture-endpoint', 'content': '{}'}
+        raw = json.dumps(artifact, indent=3).encode()
+        record['last_submitted_artifact_sha256'] = sha(raw)
+        object_path = directory / 'filesystem_objects' / sha(raw)
+        object_path.write_bytes(raw)  # No mutable workspace submission file remains.
+        grade = grade_case(capsule['case'], artifact)
+        record.update(semantic_score=grade['score'], checks=grade['checks'], feedback=grade['feedback'])
+        self.sync_session(record)
+        result = audit_run(self.root, strict=True)
+        self.assertTrue(result['ok'], result)
+        self.assertFalse(any('partial scores' in note for note in result['notes']), result)
+        record['semantic_score'] = .25
+        self.sync_session(record)
+        self.assertInvalid('independent_last_submission_grade')
+        record['semantic_score'] = grade['score']
+        self.sync_session(record)
+        object_path.write_text('{}')
+        self.assertInvalid('submitted_artifact_hash')
+        object_path.unlink()
+        self.assertInvalid('missing_immutable_submitted_bytes')
+
+    def test_null_submission_requires_default_ungraded_result(self):
+        record = self.make_failed_record()
+        record.update(last_submitted_artifact_sha256=None, semantic_score=0., checks={},
+                      feedback='No artifact reached substantive submission.')
+        self.sync_session(record)
+        result = audit_run(self.root, strict=True)
+        self.assertTrue(result['ok'], result)
+        record['feedback'] = 'Fabricated substantive feedback'
+        self.sync_session(record)
+        self.assertInvalid('independent_last_submission_grade')
+
     def test_future_and_cross_employee_update_experience(self):
         self.add_update()
+        self.state['experiences'][0]['available_day'] = 0
+        self.flush()
+        self.assertInvalid('future_update_experience')
         self.state['experiences'][0]['available_day'] = 3
         self.flush()
         self.assertInvalid('future_update_experience')
@@ -197,6 +246,26 @@ class ArtifactAuditTests(unittest.TestCase):
         self.eco.worlds['firm-0'].ledger.pop()
         self.flush()
         self.assertInvalid('completed_report_ineligible')
+
+    def test_report_roundoff_accepted_but_meaningful_score_change_rejected(self):
+        path = self.root / 'REPORT.json'
+        report = json.loads(path.read_text())
+        report['prospective']['mean_semantic_score'] -= 2e-16
+        save(path, report)
+        result = audit_run(self.root, strict=True)
+        self.assertTrue(result['ok'], result)
+        report['prospective']['mean_semantic_score'] -= 1e-6
+        save(path, report)
+        self.assertInvalid('persisted_report_mismatch')
+
+    def test_report_comparison_preserves_exact_types_counts_and_structure(self):
+        self.assertTrue(reports_equal({'nested': [425.50000000000006, .9925925555555557]},
+                                      {'nested': [425.5, .9925925555555555]}))
+        for left, right in ((1, True), (1, 1.), (10**15, 10**15 + 1), ('1', 1),
+                            ({'count': 1}, {'count': 1, 'extra': None}), ([1], [1, 2]),
+                            (float('nan'), float('nan')), (float('inf'), float('inf'))):
+            with self.subTest(left=left, right=right):
+                self.assertFalse(reports_equal(left, right))
 
     def test_incomplete_label_and_strict_cli(self):
         self.flush('paused_invocation_limit')

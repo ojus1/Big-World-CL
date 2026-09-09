@@ -255,10 +255,32 @@ class OfflineRunnerIntegrationTests(unittest.TestCase):
         self.assertTrue(result["audit"]["eligible_for_paired_inference"], result["audit"])
         self.assertEqual(result["business"]["unsettled_entries"], 0)
         self.assertEqual(result["horizon"]["observed_world_day"], 9)
+        corrected = json.loads((self.root / "complete/REPORT.v2.json").read_text())
+        self.assertEqual(corrected["headline"]["denominator"], 48)
+        self.assertEqual(corrected["headline"]["value"], 1)
+        self.assertTrue(corrected["correction_audit"]["eligible_for_paired_inference"], corrected["correction_audit"])
         # Evidence comes from real trusted checks, not the test oracle's claim.
         self.assertTrue(all(any(transition.get("action", {}).get("tool") == "work.commit" for transition in row["trace"])
                             for row in state["sessions"]))
         self.assertTrue(all(row["artifact_sha256"] for row in state["sessions"]))
+
+    def test_derived_report_failure_preserves_completed_execution_bytes(self):
+        preserved = {}
+        def fail_derivative(out):
+            for name in ("REPORT.json", "checkpoint.json"):
+                preserved[name] = (Path(out) / name).read_bytes()
+            raise ValueError("Injected conflicting corrected report")
+        with offline_dependencies(), patch("scripts.evaluation_report_v2.write_report_v2", side_effect=fail_derivative):
+            with self.assertRaises(runner.ReportPostprocessingError):
+                self.run_offline("reporting_failure")
+        out = self.root / "reporting_failure"
+        for name, raw in preserved.items():
+            self.assertEqual((out / name).read_bytes(), raw)
+        self.assertEqual(json.loads(preserved["REPORT.json"])["status"], "completed")
+        self.assertTrue(json.loads((out / "REPORTING_FAILURE.json").read_text())["execution_report_preserved"])
+        self.assertFalse((out / "FAILURE.json").exists())
+        self.assertFalse((out / "REPORT.v2.json").exists())
+        self.assertTrue(all(actor.closed for actor in FakeActors.instances))
 
     def test_pause_resume_invocation_limits_match_uninterrupted_world_and_timeline(self):
         with offline_dependencies():
@@ -267,6 +289,7 @@ class OfflineRunnerIntegrationTests(unittest.TestCase):
             self.assertEqual(first["status"], "paused_invocation_limit")
             self.assertEqual(len(read_checkpoint(self.root / "resumed")["runner"]["sessions"]), 7)
             self.assertFalse((self.root / "resumed/INFLIGHT.json").exists())
+            self.assertFalse((self.root / "resumed/REPORT.v2.json").exists())
             second = self.run_offline("resumed", stop_after_sessions=5)
             self.assertEqual(second["status"], "paused_invocation_limit")
             self.assertEqual(len(read_checkpoint(self.root / "resumed")["runner"]["sessions"]), 12)

@@ -7,8 +7,86 @@ and fresh final validation. It does not replace those operations with a locally
 invented optimizer. The native target remains the employee's Hermes execution
 harness; an independently configured optimizer model supplies reflection.
 
-This is a baseline implementation and integration contract. The offline tests
-establish behavior of the bridge and upstream gate, **not learning gains**.
+This is a baseline implementation and integration contract. Offline tests and the
+first native pilot establish execution and accounting behavior, **not learning
+gains**. The live evidence and remaining calibration work are described below.
+
+## Native pilot evidence and remaining calibration
+
+The first completed eight-day pilot exercised both native no-learning and SkillOpt
+arms. Only the focal onboarding employee was eligible for updates. Inspection of
+its recorded update traces shows:
+
+| Evidence | Native execution and outcome |
+|---|---|
+| Two prospective pilot consolidation cycles | Six isolated target replays, 54 target model calls, 527,103 tokens; every training and validation replay scored 1.0 |
+| Optimizer use in those cycles | **Zero reflection calls and zero accepted edits**; the deployed skill remained the seed document |
+| Separate optimizer-provider smoke | One real optimizer call, 4,652 tokens and four returned edits; `deployed=false`, with no candidate replay or adoption claim |
+| Separate retrospective incident diagnostic | Four perfect target replays, 39 target model calls and 437,336 tokens; zero reflection calls and zero accepted edits |
+
+These are separate evidence sets. The provider smoke and retrospective incident
+diagnostic are not prospective outcomes of the pilot and must not be added to its
+learning totals. Source artifact identifiers are
+`evaluation-pilot-v1/skillopt/learning/*/update.json`,
+`evaluation-optimizer-smoke-v1/result.json`, and
+`evaluation-incident-learning-diagnostic-v1/learning/*/update.json` under the local
+ignored `lifespan/artifacts/` directory. The pilot contains two successful no-op
+consolidation executions, not two trained skill versions.
+
+Upstream `CliBackend.reflect` returns no edits without failed **training replays**.
+Previously unsuccessful online work is not sufficient: when an isolated replay
+succeeds, that replay enters the successful set. Moreover, a validation score of
+1.0 leaves no room for the strict improvement gate. This explains the zero
+reflection calls without implying a broken optimizer connection. The separate
+provider smoke verifies that a real model can propose edits from public evidence;
+it does not establish that those edits pass validation or improve future work.
+
+Since the native pilot never changed a skill, differences between its online arms
+cannot be evidence of successful skill refinement. Native target and actor
+randomness, reactive world divergence and learning overhead still differ between
+the runs. One world pair supplies no reliable aggregate estimate, and the perfect
+retrospective replays do not show that earlier online failures were impossible or
+that the task distribution has zero difficulty.
+
+The next development calibration should be explicit and bounded:
+
+1. **Measure reproducible failure opportunities on development data.** Use
+   multiple distinct train and validation obligations across employees, task
+   families and change regimes. Diagnose whether mistakes concern substantive
+   reasoning, business protocol, skill discovery or compute exhaustion. A single
+   observed failure followed by a perfect replay is insufficient. Do not weaken
+   the frozen baseline or hide authorized specifications merely to force updates.
+2. **Characterize replay noise before tuning the gate.** Repeat incumbent
+   rollouts from identical capsules, then preregister rollout counts, matching and
+   candidate/final acceptance criteria. Count every rollout. Repeated-rollout
+   evaluation is follow-up work: the current baseline uses one rollout per task
+   per phase, and its separate final replay is not an uncertainty estimate.
+3. **Expand the declared experience pool and workforce.** The supplied
+   [24-day development configs](RUN_EVALUATION.md#larger-development-comparison)
+   use two training and two validation cases and all six employees, with equal
+   employee learning quotas. Calibrate on these development worlds before freezing
+   a separate multi-seed test campaign. Selecting difficult development tasks is
+   allowed; selecting or reusing future test outcomes to manufacture gains is not.
+4. **Budget for the full update, including rejection.** Use measured native
+   rollout costs to provision incumbent validation, training replays, reflection,
+   candidate trials and fresh final validation. Keep per-attempt bounds comparable
+   across methods, expose additional learning spend, and include failures and
+   missing receipts. Larger nominal budgets alone do not remedy an accuracy ceiling.
+5. **Require prospective evidence after an accepted revision.** Demonstrate
+   skill creation, native reuse in a fresh profile, revision after change and
+   correct behavior after reversal on later work. Report rejected/no-op updates,
+   stale-procedure errors, retained competence, assistance and compute costs,
+   followed by uncertainty across independent world pairs. If correctness remains
+   saturated but inefficiency is substantial, preregister a separate cost-aware
+   gate variant: the present hard/soft quality gate cannot accept efficiency-only
+   gains at a perfect score.
+
+This implementation faithfully calls the pinned **SkillOpt-Sleep consolidation**
+with documented native-Hermes and public-trajectory adapters. It does not reproduce
+the main paper's complete reflective-training pipeline, benchmark suite,
+hyperparameters or reported results. A strong native baseline requires this
+calibration and prospective evidence; the current integration should not be
+presented as having already demonstrated lifelong learning improvements.
 
 ## Installation and provenance
 

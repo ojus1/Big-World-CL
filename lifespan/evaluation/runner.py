@@ -24,8 +24,13 @@ from .runtime import execute_case
 from .tasks import make_case
 
 
+class ReportPostprocessingError(RuntimeError):
+    """Completed execution is preserved when its derived report cannot finish."""
+
+
 def source_hashes():
     files = sorted((ROOT / 'lifespan').rglob('*.py'))
+    files.append(ROOT / 'scripts/evaluation_report_v2.py')
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in files if '/tests/' not in str(p) and '/artifacts/' not in str(p)}
 
@@ -188,8 +193,22 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
         provenance['executor'] = executor.__module__ + '.' + executor.__name__
         result = build_report(config.public(), spec, state['sessions'], state['updates'], eco.snapshot(),
                               status=status, provenance=provenance)
-        save(out / 'REPORT.json', result)
         save(out / 'timeline.json', eco.events)
+        save(out / 'REPORT.json', result)
+        if status == 'completed':
+            # Keep the frozen availability-based report for historical auditing;
+            # publish the corrected commitment headline for every new full run.
+            try:
+                from scripts.evaluation_report_v2 import write_report_v2
+                write_report_v2(out)
+            except Exception as exc:
+                try:
+                    save(out / 'REPORTING_FAILURE.json', {'type': type(exc).__name__,
+                        'message': str(exc), 'execution_report_preserved': True})
+                except OSError:
+                    pass  # A full disk must not turn completed execution into failure.
+                raise ReportPostprocessingError(
+                    'Completed REPORT.json and checkpoint preserved; reconcile REPORT.v2.json separately') from exc
         return result
     checkpoint()
     driver = None
@@ -331,6 +350,8 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
             eco.advance()
         checkpoint()
         return report('completed')
+    except ReportPostprocessingError:
+        raise
     except Exception as exc:
         save(out / 'FAILURE.json', {'type': type(exc).__name__, 'message': str(exc), 'day': eco.day,
                                   'accounting_complete': False})

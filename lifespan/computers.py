@@ -44,6 +44,7 @@ class Computer:
         self.execution=execution or {}
         self.artifact_grader=artifact_grader
         self.last_grade=None
+        self.last_submission_hash=None
         self.committed_artifact=None
         self.committed_hash=None
         self.root=Path(root).resolve()/eid
@@ -92,7 +93,18 @@ class Computer:
             or not isinstance(artifact.get('redact'),bool) or not isinstance(artifact.get('endpoint'),str)
             or not isinstance(artifact.get('content'),str) or not artifact['content'].strip()):
             raise ValueError('Deliverable needs matching task_id, channel, redact, endpoint and nonempty content')
-        return artifact,hashlib.sha256(raw).hexdigest()
+        sha=hashlib.sha256(raw).hexdigest()
+        # Preserve the exact bytes read by the trusted process. A later workspace
+        # snapshot may see a rewritten or deleted file, including after rejection.
+        self.objects.mkdir(parents=True,exist_ok=True)
+        target=self.objects/sha
+        try:
+            with target.open('xb') as stream:
+                stream.write(raw)
+        except FileExistsError:
+            if target.read_bytes()!=raw:
+                raise ValueError('Immutable artifact object has conflicting content')
+        return artifact,sha
 
     def action(self,env,action):
         if env.done:
@@ -111,6 +123,7 @@ class Computer:
                 converted={'tool':tool,'args':{'endpoint':artifact['endpoint']}}
                 if self.artifact_grader is not None:
                     self.last_grade=self.artifact_grader(artifact)
+                    self.last_submission_hash=sha
                     # Content is checked in the trusted process before business
                     # effects. The expected answer never enters a tool response.
                     if not self.last_grade['success']:
@@ -217,6 +230,7 @@ class Computer:
 
     def run(self,env,prompt,timeout=420):
         self.prepared=self.prepared_hash=None
+        self.last_grade=self.last_submission_hash=None
         self.committed_artifact=self.committed_hash=None
         self.send({'kind':'run','prompt':prompt})
         rpc=[]

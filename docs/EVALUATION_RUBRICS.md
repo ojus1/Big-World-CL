@@ -245,8 +245,10 @@ work sessions, learning-update receipts, final world snapshot, configuration,
 scenario, and treatment-independent provenance. Candidate replay scores never
 enter prospective success metrics.
 
-The primary local completion denominator is **every obligation created before the
-exclusive work horizon**, including unattempted, pending, and abandoned tasks.
+The v1 local execution denominator is **every task available before the exclusive
+work horizon**, including unattempted, pending, and abandoned available tasks.
+`Task.created` records availability, not when the enterprise accepted the order.
+Use the corrected v2 commitment headline below for business fulfillment.
 Retries are separate execution attempts against the same obligation. Reports
 therefore distinguish obligation completion rate, attempt success rate, number
 of retry attempts, and mean partial work-quality score. Employee and regime
@@ -311,3 +313,73 @@ Synthetic reporting tests cover retries, unserved work, partial outcomes, scope
 exposure, censoring, delayed settlement, missing receipts and reservations,
 completion/ledger reconciliation, model/source provenance, incompatible budgets,
 incomplete trials, and correlated sessions within independent world pairs.
+
+## Canonical v2 headline: accepted commitments and fulfillment
+
+During the first native pilot, a reporting defect became visible: supply-delayed
+orders accepted before the action horizon could become actionable only during the
+settlement drain. The frozen v1 `obligations.created_before_horizon` field excluded
+those commitments. Its conditional execution rate is useful, but calling it total
+business fulfillment would hide accepted, unserved work.
+
+`REPORT.v2.json` is the canonical business report. It preserves the full original
+report under `legacy_actionable_report` and gives raw SHA256 hashes of the unchanged
+`REPORT.json`, checkpoint, and versioned postprocessor. Neither native execution,
+the work grader, nor historical rewards are changed by this correction.
+
+The corrected headline divides commitments fulfilled during the action horizon
+by **all orders accepted before that horizon**, including initial conditions at
+day -1. Placement comes from consumer ordered history and `order_placed` events;
+availability comes from the scheduled task. Scheduled and materialized copies
+share one `(firm, task_id)` identity. Materialized status overrides the original
+pending scheduled template. A commitment still scheduled beyond the observation
+horizon remains in the denominator and is explicitly right-censored.
+
+The report separates:
+
+- Accepted commitments, fulfilled work, and all unfulfilled commitments.
+- Work available but unfinished at the action horizon.
+- Commitments awaiting availability when work execution ends.
+- Arrivals during the outcome-only observation window.
+- Orders still scheduled beyond observation, and all pending commitments.
+- Initial/benchmark demand and endogenous native consumer purchases or switches.
+
+Source classification follows causal event links. It does not infer the source
+from a task ID. The fixed initial-plus-benchmark fulfillment rate is reported
+separately because native demand can change in response to either arm's outcomes.
+Completion evidence must refer to the same accepted obligation, and source,
+placement, availability, completion, and denominator partitions must reconcile.
+
+For the first eight-day pilot, the correction gives no-learning Hermes **36/48
+commitments fulfilled (75.0%)**, with 12 pending; its v1 rate was 36/45 available
+tasks (80.0%) with only nine of those pending commitments visible. Three accepted
+orders arrived during the drain. SkillOpt fulfilled **33/49 commitments (67.35%)**,
+with 16 pending. Its fixed initial/benchmark result was 32/48; one additional native
+consumer order was fulfilled. This is one descriptive world pair, not evidence of
+a statistically established advantage for either method.
+
+New completed runs generate v2 automatically after writing v1. To correct a
+historical completed run explicitly, first run the strict native directory audit,
+then generate the versioned report:
+
+```bash
+python3 scripts/audit_evaluation.py PATH_TO_RUN --strict
+python3 scripts/evaluation_report_v2.py PATH_TO_RUN
+python3 scripts/compare_evaluations.py \
+  PATH_TO_NO_LEARNING/REPORT.v2.json PATH_TO_SKILLOPT/REPORT.v2.json \
+  --out corrected-comparison.json
+```
+
+The postprocessor refuses incomplete or in-flight runs and invalid correction
+audits. It never overwrites v1; rerunning identical correction inputs is idempotent,
+while different inputs or implementation hashes require a new preserved version.
+Comparison verifies source-file hashes and regenerates each correction, checks
+matching postprocessor implementations, then applies the frozen configuration,
+provenance, and whole-world pairing controls. Original v1 pairing remains nested
+and explicitly labeled as legacy. Comparing v1 alone requires the intentional
+`--legacy-actionable` flag. Report consistency checks do not substitute for the
+strict native directory audit.
+
+```bash
+python3 -m unittest discover -s tests -p test_evaluation_report_v2.py -q
+```

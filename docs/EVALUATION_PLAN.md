@@ -1,6 +1,8 @@
 # Deployment-time learning evaluation: implementation and acceptance plan
 
-Status: core implementation published; fixed-source native pilot running. This document is the launch contract; checkboxes refer
+Status: implementation, fixed-source native pilot, reporting correction and
+independent release review completed. Larger research calibration remains open.
+This document is the launch contract; checkboxes refer
 to verified deliverables, not intended capabilities. The previous 16-day artifact
 remains historical integration evidence and is not a baseline result.
 
@@ -125,12 +127,16 @@ proof of aggregate superiority.
 - [x] M0: Active goal, explicit protocol and parallel implementation/review owners.
 - [x] M1: Executable semantic tasks, rubric tests and deterministic scenario specs.
 - [x] M2: Fresh-context Hermes and native versioned-skill execution with isolation tests.
-- [ ] M3: Actual pinned SkillOpt-Sleep updates and gates with isolated native replay.
+- [x] M3: Actual pinned SkillOpt-Sleep consolidation and gates with isolated native
+      replay; no edit was adopted in the live pilot.
 - [x] M4: Persistent-world benchmark runner, causal feedback, recurring workloads,
       split/config manifests, budgets, horizon accounting and metric reports.
-- [ ] M5: Bounded live pilot showing actual task execution and skill load/update
-      behavior; then paired development comparison with adequate exposure.
-- [ ] M6: Independent implementation review, material findings resolved, full
+- [x] M5a: Bounded paired native pilot showing actual task execution, exact skill
+      loading and conservative consolidation behavior.
+- [ ] M5b (research follow-up): Full-workforce development calibration and a
+      replicated comparison with adequate employee/regime exposure. The short
+      pilot is insufficient and must not be relabeled as this milestone.
+- [x] M6: Independent implementation review, material findings resolved, full
       relevant test suite, secret scans and committed/pushed release documentation.
 
 ## Validation ladder
@@ -160,5 +166,24 @@ passed before publication.
 A native Hermes smoke executed eight physically metered Responses calls with
 69,852 total tokens, verified the exact deployed native skill content, and
 committed a substantively correct artifact. This validates execution and
-accounting; it does not demonstrate learning. The paired eight-day pilot is
-running with the committed pilot configs. Its results remain pending.
+accounting; it does not demonstrate learning. The paired eight-day pilot completed
+90 prospective work attempts and six native historical replays under the exact
+28-file source manifest of `47c7609`. Both completed strict audits pass. Two
+SkillOpt consolidation cycles retained the incumbent because their training
+replays passed. A separate real optimizer smoke produced four edits that were
+never deployed. No native learning gain is claimed.
+
+Post-run review identified a reporting error: task availability was mistaken for
+commitment placement, omitting three late-arriving obligations from the
+no-learning denominator. Version-2 reporting preserves the original report and
+corrects commitment/backlog accounting from the checkpoint. A separate evidence
+fix preserves exact submitted raw bytes, including rejected submissions, even
+after file rewrite/deletion. The updated lifespan suite passes 195 tests, and the
+independent artifact/reporting suite passes 35 tests. Automatic reporting failure
+also preserves completed execution evidence. See
+[pilot results and evidence limits](EVALUATION_RESULTS.md).
+
+M5b is the next research stage, not a condition to claim that baseline integration
+works. A strong empirical baseline still requires difficulty/noise calibration,
+future native skill adoption and prospective reuse evidence, and independent
+world replication. Do not manufacture an adoption to satisfy an integration gate.

@@ -6,7 +6,7 @@ The historical proof of concept uses actual **MiroFish/OASIS actors**, **12 dist
 
 The repository now also provides a **controlled deployment-time skill-learning evaluator** comparing no-learning Hermes with pinned upstream SkillOpt-Sleep. It adds substantive work rubrics, isolated candidate replays, chronological feedback, skill versions, compute accounting and paired world-level reports. This implementation is ready for new evaluations; the historical PoC is not evidence of a SkillOpt improvement.
 
-[Run learning evaluations](docs/RUN_EVALUATION.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
+[Run learning evaluations](docs/RUN_EVALUATION.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
 ## Evaluate deployment-time learning
 
@@ -20,6 +20,13 @@ MiroFish/backend/.venv/bin/python -u -m lifespan.evaluation.runner \
 ```
 
 Complete [runtime setup](docs/SETUP.md) and start the local stack first. Follow the [evaluation guide](docs/RUN_EVALUATION.md) for the matching SkillOpt arm, clean resume, eight-day integration pilot, 24-day development configs, rubrics and paired reports. The pilot is one world pair and does not support strong aggregate claims. Skill-load omission and declared compute exhaustion remain measured outcomes; model/provider failures and incomplete accounting are reported separately.
+
+The first completed native pilot contains **90 prospective work attempts and six
+SkillOpt validation/training replays**. All sessions loaded the intended native
+skill and passed the infrastructure/accounting audit. Neither consolidation cycle
+adopted an edit because its training replay passed; this verifies integration,
+but demonstrates no learning gain. The [results and reporting correction](docs/EVALUATION_RESULTS.md)
+retain failed work and orders that arrived after the action horizon.
 
 ## What the PoC demonstrates
 
