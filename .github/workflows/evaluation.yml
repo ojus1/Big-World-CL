@@ -37,3 +37,6 @@ jobs:
         # SkillOpt code. No LLM credentials, personal agent profiles, Persona
         # downloads or native MiroFish/Hermes services are needed.
         run: python -m unittest discover -s lifespan/tests -v
+
+      - name: Test independent artifact audit and tamper detection
+        run: python -m unittest discover -s tests -p test_evaluation_audit.py -v

@@ -153,6 +153,7 @@ evaluation, not a static test set that becomes freely available to the optimizer
 | Maximum online sessions | 144 | 48 |
 | Native physical model calls per work attempt | 16 | 16 |
 | Maximum output tokens per native request | 4,096 | 4,096 |
+| Total work-attempt token reservation cap | 250,000 | 250,000 |
 | Fleet learning calls, including replay and optimizer | 2,880 | 320 |
 | Fleet learning tokens | 36,000,000 | 4,000,000 |
 | Eligible employees | 6 | 1 |
@@ -234,6 +235,22 @@ Do not publish raw run directories as learner datasets. They contain privileged
 rubrics, private world state and runtime metadata; use an audited public export.
 
 To compare completed pilot reports without additional inference:
+
+First audit each private run directory. `--strict` rejects unfinished runs,
+unreconciled artifacts, incorrect hashes, temporal leakage, accounting mismatch,
+and completed reports without matching task/settlement evidence:
+
+```bash
+python3 scripts/audit_evaluation.py lifespan/artifacts/evaluation/pilot-no-learning --strict
+python3 scripts/audit_evaluation.py lifespan/artifacts/evaluation/pilot-skillopt --strict
+```
+
+The audit independently regrades committed outputs and checks raw content-addressed
+bytes, skill versions, physical transport receipts and report regeneration. It
+does not authenticate a provider's billing system or infer that learning caused
+an observed improvement. Legacy unsuccessful sessions may lack the exact rejected
+artifact bytes; the audit labels that limitation instead of claiming to regrade
+their partial scores.
 
 ```bash
 python3 - <<'PY'
