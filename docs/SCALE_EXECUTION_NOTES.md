@@ -150,3 +150,7 @@ deadline fix. A small future evidence fix is being developed to preserve the
 original stream error through closure; it cannot recover a lost provider receipt or change current
 eligibility. Resolving transport receipt reliability remains a preflight item for
 a fresh full comparison.
+
+The [follow-up implementation and launch plan](SCALE_FOLLOWUP_PLAN.md) preserves
+the complete three-pair scope and defines the required preflight evidence before
+another native campaign can be registered.
