@@ -31,8 +31,10 @@ class ReportPostprocessingError(RuntimeError):
 def source_hashes():
     files = sorted((ROOT / 'lifespan').rglob('*.py'))
     files.append(ROOT / 'scripts/evaluation_report_v2.py')
+    files.extend(ROOT / 'scripts' / name for name in ('run_scale.py', 'audit_scale.py', 'scale_summary.py',
+                                                     'audit_evaluation.py', 'audit_transfer.py'))
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
-            for p in files if '/tests/' not in str(p) and '/artifacts/' not in str(p)}
+            for p in files if p.exists() and '/tests/' not in str(p) and '/artifacts/' not in str(p)}
 
 
 def dependency_provenance():
@@ -71,6 +73,7 @@ class NativeActors:
         cohort = json.loads(cohort_path.read_text()) if cohort_path.exists() else import_cohort(
             ROOT / 'lifespan/data/persona8b', cohort_path, count=len(participants), seed=spec['seed'])
         self.runtime = MiroFishRuntime(out / 'actors')
+        self.runtime.evaluation_max_interviews = spec.get('max_actor_interviews')
         if deadline is not None:
             self.runtime.evaluation_deadline = deadline
         if self.runtime.state.get('closed'):
@@ -82,8 +85,9 @@ class NativeActors:
                 raise RuntimeError('Native MiroFish environment no longer alive; refusing destructive database restart')
         self.runtime.bootstrap({'name': 'Big World CL controlled learning evaluation', 'employees': participants,
             'rules': [], 'project_name': 'Big World CL evaluation',
-            'ecosystem_description': 'Two competing service enterprises, one government agency, three consumers, '
-                'and six employees. A documented exogenous benchmark workload supplements consumer orders. '
+            'ecosystem_description': f'{len(eco.firms)} competing service enterprises, one government agency, '
+                f'{len(eco.consumers)} consumers, and {sum(len(w.employees) for w in eco.worlds.values())} employees. '
+                'A documented exogenous benchmark workload supplements consumer orders. '
                 'The institutions react to their own outcomes and current public conditions.'}, cohort)
 
     def set_deadline(self, deadline):
@@ -123,7 +127,8 @@ class NativeActors:
 
 
 def _new_state(config, spec):
-    eco = Ecosystem(config.days + 8, spec['seed'])
+    eco = Ecosystem(config.days + 8, spec['seed'], enterprise_count=config.enterprise_count,
+                    consumer_count=config.consumer_count)
     eco.shock_schedule = spec['shock_schedule']
     if any(w.blueprint['settlement_delay'] != spec['settlement_delay'] for w in eco.worlds.values()):
         raise ValueError('Scenario settlement delay differs from economy')
@@ -237,7 +242,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     cause = eco.emit('benchmark_demand', 'environment', {'for_day': day, 'orders_per_employee': 1})
                     for fid in eco.firms:
                         for workflow in WORKFLOWS:
-                            eco.order('consumer-' + fid[-1], fid, workflow, cause, created=day)
+                            eco.order(eco.benchmark_consumer(fid), fid, workflow, cause, created=day)
                 eco.advance()
                 for message in list(state['message_queue']):
                     if message['deliver_day'] == eco.day:
@@ -266,6 +271,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     eco.apply_decision(aid, decision, view)
                     save(out / 'actor_decisions' / (key + '.json'), {'view': view, 'decision': decision})
                     state['actor_index'] = index + 1; finish()
+                    print(f'Day {eco.day}: actor {aid} decision recorded', flush=True)
                 work = []
                 for fid, w in eco.worlds.items():
                     for emp in w.employees.values():
@@ -336,7 +342,18 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     eligible = select_experiences(state['experiences'], employee, eco.day, config.train_cases, config.val_cases)
                     enough = all(sum(e['split'] == split for e in eligible) >= n
                                  for split, n in [('train', config.train_cases), ('val', config.val_cases)])
-                    if learn and enough and eco.day + 1 < config.days and (eco.day + 1) % config.update_every == 0:
+                    scheduled = (eco.day in config.update_days if config.update_days is not None else
+                        eco.day + 1 < config.days and (eco.day + 1) % config.update_every == 0)
+                    if scheduled:
+                        pool = select_experiences(state['experiences'], employee, eco.day, 100000, 100000)
+                        entry = {'employee': employee, 'day': eco.day,
+                            'available_unique_train': sum(e['split'] == 'train' for e in pool),
+                            'available_unique_val': sum(e['split'] == 'val' for e in pool),
+                            'selected_ids': [e['id'] for e in eligible], 'eligible': enough,
+                            'treatment_enabled': learn, 'deployed_version_before': state['skill_versions'][employee],
+                            'reason': 'scheduled' if learn and enough else 'insufficient_distinct_experience' if learn else 'no_learning_treatment'}
+                        state.setdefault('learning_eligibility', []).append(entry)
+                    if learn and enough and scheduled:
                         if remaining_seconds() < 1:
                             checkpoint(); return report('exhausted_time_budget')
                         _learn(out, config, eco, state, employee, eligible, creds, executor, begin, finish,
@@ -369,48 +386,151 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
            remaining_seconds=None, next_update_index=None):
     from .optimizer import make_reflector
     from .skillopt import LearningBudget, SkillOptLearner
+    out = Path(out)
     recipients = 1 if config.focal_employee else len(state['skills'])
     own = [r['costs'] for r in state['updates'] if r['employee'] == employee]
-    remaining_calls = min(config.max_learning_calls - state['learning_calls'],
-        config.max_learning_calls // recipients - sum(c['target_model_calls'] + c['optimizer_model_calls'] for c in own))
-    remaining_tokens = min(config.max_learning_tokens - state['learning_tokens'],
-        config.max_learning_tokens // recipients - sum(c['tokens'] for c in own))
-    if remaining_calls < config.max_iterations or remaining_tokens < 100000:
+    fleet_calls = config.max_learning_calls - state['learning_calls']
+    fleet_tokens = config.max_learning_tokens - state['learning_tokens']
+    employee_calls = config.max_learning_calls // recipients - sum(c['target_model_calls'] + c['optimizer_model_calls'] for c in own)
+    employee_tokens = config.max_learning_tokens // recipients - sum(c['tokens'] for c in own)
+    caps = {name: getattr(config, name, None) for name in (
+        'max_learning_calls_per_epoch', 'max_learning_tokens_per_epoch', 'max_learning_seconds_per_epoch')}
+    if any(value is not None and (type(value) is not int or value < 1) for value in caps.values()):
+        raise ValueError('Per-epoch learning caps must be positive integers or absent')
+    remaining_calls = min(fleet_calls, employee_calls,
+        caps['max_learning_calls_per_epoch'] if caps['max_learning_calls_per_epoch'] is not None else config.max_learning_calls)
+    remaining_tokens = min(fleet_tokens, employee_tokens,
+        caps['max_learning_tokens_per_epoch'] if caps['max_learning_tokens_per_epoch'] is not None else config.max_learning_tokens)
+    epoch_seconds = min(caps['max_learning_seconds_per_epoch'] or 1800,
+        remaining_seconds() if remaining_seconds else config.max_run_seconds)
+    # Both target and optimizer buckets must fit inside the total call cap.
+    if remaining_calls < max(config.max_iterations, 2) or remaining_tokens < 100000 or epoch_seconds <= 0:
         return
     key = f'd{eco.day:03d}-{employee}'
     begin('learning', key)
     live_hash = digest(eco.checkpoint())
+    allocation = {'fleet_remaining_model_calls': fleet_calls, 'fleet_remaining_tokens': fleet_tokens,
+        'employee_remaining_model_calls': employee_calls, 'employee_remaining_tokens': employee_tokens,
+        'model_calls': remaining_calls, 'tokens': remaining_tokens, 'seconds': epoch_seconds,
+        'configured_caps': caps, 'eligible_employee_count': recipients}
+    progress = {'schema_version': 1, 'employee': employee, 'day': eco.day,
+        'employee_epoch_index': len(own) + 1, 'status': 'running', 'epoch_allocation': allocation,
+        'parent_ecosystem_sha256': live_hash,
+        'parent_skill_sha256': hashlib.sha256(state['skills'][employee].encode()).hexdigest(),
+        'replay_artifacts': [], 'optimizer_dispatches': [], 'optimizer_transport_audit': []}
+    progress_started = time.monotonic()
+
+    def persist_progress():
+        progress['elapsed_seconds'] = time.monotonic() - progress_started
+        rows = progress['replay_artifacts']
+        progress['target_progress'] = {
+            'dispatched_replays': len(rows),
+            'returned_replays': sum(row['dispatch_status'] == 'returned' for row in rows),
+            'unknown_usage_replays': sum(not row.get('usage_known', False) for row in rows),
+            'charged_or_reserved_model_calls': sum(row['usage']['api_calls'] if row.get('usage_known')
+                else row['limits']['max_model_calls'] for row in rows),
+            'charged_or_reserved_tokens': sum(row['usage']['total_tokens'] if row.get('usage_known')
+                else row['limits']['max_tokens'] for row in rows)}
+        save(out / 'learning' / key / 'progress.json', progress)
+
+    persist_progress()
     replay_index = [0]
     def replay(payload, limits):
-        capsule = json.loads((out / 'private/cases' / (payload['task']['id'] + '.json')).read_text())
+        case_path = out / 'private/cases' / (payload['task']['id'] + '.json')
+        if not case_path.resolve().is_relative_to((out / 'private/cases').resolve()):
+            raise ValueError('Learning capsule must remain inside its private case directory')
+        raw_capsule = case_path.read_bytes()
+        capsule = json.loads(raw_capsule)
         if capsule['employee'] != employee:
             raise ValueError('Cross-employee replay forbidden')
         fork = Ecosystem.restore(capsule['ecosystem']); w = fork.worlds[capsule['firm']]
         attempt = replay_index[0]; replay_index[0] += 1
-        result = executor(root=out / 'learning' / key / f'trial-{attempt:03d}',
-            employee=employee, world=w, task_id=capsule['task_id'], case=capsule['case'],
-            request=capsule['request'], skill=payload['skill'], credentials=creds,
-            objectives=capsule['objectives'], max_iterations=min(config.max_iterations, limits['max_model_calls']),
-            max_tokens=config.max_output_tokens, max_total_tokens=limits['max_tokens'],
-            business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'])
-        if digest(eco.checkpoint()) != live_hash:
-            raise RuntimeError('Candidate trial mutated the live world')
-        return {'status': 'completed' if result['infrastructure_valid'] else 'failed',
-            'hard': float(result['success']), 'soft': float(result['semantic_score']) if result['success'] else min(.99, float(result['semantic_score'])),
-            'response': safe_trajectory(result), 'feedback': result['feedback'],
-            'tokens': result['usage']['total_tokens'], 'model_calls': result['usage']['api_calls'],
-            'tool_calls': result['tool_calls'], 'latency_ms': result['elapsed_seconds'] * 1000}
-    reflector = make_reflector(creds, augment_training_context=True)
-    learner = SkillOptLearner(edit_budget=config.edit_budget, rollouts_k=config.skillopt_rollouts_k)
-    result = learner.update(state['skills'][employee], experiences, replay, reflector,
-        current_day=eco.day, night=len(state['updates']) + 1,
-        budget=LearningBudget(max_target_model_calls=max(1, remaining_calls - 4),
-            max_optimizer_model_calls=min(4, remaining_calls), max_tokens=remaining_tokens,
-            max_seconds=min(1800, remaining_seconds() if remaining_seconds else config.max_run_seconds), replay_model_calls=config.max_iterations,
-            replay_tokens=min(250000, remaining_tokens), replay_seconds=420,
-            optimizer_tokens=min(32768, remaining_tokens), optimizer_seconds=120))
+        if payload.get('attempt_index', attempt) != attempt:
+            raise ValueError('Upstream replay identity differs from its physical dispatch')
+        trial_root = out / 'learning' / key / f'trial-{attempt:03d}'
+        session_path = trial_root / 'session.json'
+        artifact = {'attempt_index': attempt, 'sample_id': payload.get('sample_id', 0),
+            'phase': payload.get('phase'), 'experience_id': payload['task']['id'],
+            'source_task_id': capsule['task_id'], 'employee': employee,
+            'capsule_path': str(case_path.relative_to(out)), 'capsule_sha256': hashlib.sha256(raw_capsule).hexdigest(),
+            'skill_sha256': hashlib.sha256(payload['skill'].encode()).hexdigest(),
+            'session_path': str(session_path.relative_to(out)), 'session_sha256': None,
+            'limits': deepcopy(limits), 'dispatch_status': 'dispatched', 'usage_known': False}
+        progress['replay_artifacts'].append(artifact)
+        persist_progress()
+        try:
+            result = executor(root=trial_root,
+                employee=employee, world=w, task_id=capsule['task_id'], case=capsule['case'],
+                request=capsule['request'], skill=payload['skill'], credentials=creds,
+                objectives=capsule['objectives'], max_iterations=min(config.max_iterations, limits['max_model_calls']),
+                max_tokens=config.max_output_tokens, max_total_tokens=limits['max_tokens'],
+                business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'])
+            usage = result['usage']
+            artifact.update(dispatch_status='returned',
+                usage={field: usage.get(field) for field in ('api_calls', 'total_tokens', 'charged_tokens',
+                    'input_tokens', 'output_tokens', 'complete')},
+                usage_known=usage.get('complete') is True and all(type(usage.get(field)) is int and usage[field] >= 0
+                    for field in ('api_calls', 'total_tokens')),
+                success=result['success'], semantic_score=result['semantic_score'],
+                infrastructure_valid=result['infrastructure_valid'], skill_loaded=result.get('skill_loaded'))
+            if not session_path.is_file():
+                raise RuntimeError('Native replay returned without its durable session record')
+            if digest(eco.checkpoint()) != live_hash:
+                raise RuntimeError('Candidate trial mutated the live world')
+            print(f"Day {eco.day}: SkillOpt {employee} replay={attempt:03d} phase={payload.get('phase')} "
+                  f"success={result['success']} calls={usage['api_calls']}", flush=True)
+            return {'status': 'completed' if result['infrastructure_valid'] else 'failed',
+                'hard': float(result['success']), 'soft': float(result['semantic_score']) if result['success'] else min(.99, float(result['semantic_score'])),
+                'response': safe_trajectory(result), 'feedback': result['feedback'],
+                'tokens': usage['total_tokens'], 'model_calls': usage['api_calls'],
+                'tool_calls': result['tool_calls'], 'latency_ms': result['elapsed_seconds'] * 1000}
+        except BaseException as exc:
+            artifact.update(dispatch_status='failed_or_interrupted', error_class=type(exc).__name__)
+            raise
+        finally:
+            if session_path.is_file():
+                artifact['session_sha256'] = hashlib.sha256(session_path.read_bytes()).hexdigest()
+            persist_progress()
+
+    reflector = None
+    def reflect(payload, limits):
+        dispatch = {'attempt_index': len(progress['optimizer_dispatches']), 'phase': payload.get('phase'),
+            'prompt_sha256': hashlib.sha256(payload['prompt'].encode()).hexdigest(),
+            'max_output_tokens': payload.get('max_output_tokens'), 'limits': deepcopy(limits),
+            'dispatch_status': 'dispatched'}
+        progress['optimizer_dispatches'].append(dispatch)
+        persist_progress()
+        try:
+            receipt = reflector(payload, limits)
+            dispatch.update(dispatch_status='returned', receipt={field: receipt.get(field)
+                for field in ('status', 'model_calls', 'tokens', 'tool_calls', 'latency_ms')})
+            return receipt
+        except BaseException as exc:
+            dispatch.update(dispatch_status='failed_or_interrupted', error_class=type(exc).__name__)
+            raise
+        finally:
+            progress['optimizer_transport_audit'] = deepcopy(getattr(reflector, 'audit_records', []))
+            persist_progress()
+
+    optimizer_calls = min(4, remaining_calls - 1)
+    try:
+        reflector = make_reflector(creds, augment_training_context=True)
+        learner = SkillOptLearner(edit_budget=config.edit_budget, rollouts_k=config.skillopt_rollouts_k)
+        result = learner.update(state['skills'][employee], experiences, replay, reflect,
+            current_day=eco.day, night=len(own) + 1,
+            budget=LearningBudget(max_target_model_calls=remaining_calls - optimizer_calls,
+                max_optimizer_model_calls=optimizer_calls, max_tokens=remaining_tokens,
+                max_seconds=epoch_seconds, replay_model_calls=config.max_iterations,
+                replay_tokens=min(250000, remaining_tokens), replay_seconds=420,
+                optimizer_tokens=min(32768, remaining_tokens), optimizer_seconds=120))
+    except BaseException as exc:
+        progress.update(status='failed_or_interrupted', error_class=type(exc).__name__)
+        persist_progress()
+        raise
     result.update(employee=employee, day=eco.day, available_from_day=eco.day + 1,
                   parent_version=state['skill_versions'][employee],
+                  employee_epoch_index=len(own) + 1, epoch_allocation=allocation,
+                  replay_artifacts=deepcopy(progress['replay_artifacts']),
                   optimizer_transport_audit=getattr(reflector, 'audit_records', []))
     state['learning_calls'] += result['costs']['target_model_calls'] + result['costs']['optimizer_model_calls']
     state['learning_tokens'] += result['costs']['tokens']
@@ -423,12 +543,17 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         save(out / 'skills' / employee / f"v{state['skill_versions'][employee]:03d}.json",
              {'skill': state['skills'][employee], 'hash': hashlib.sha256(state['skills'][employee].encode()).hexdigest(),
               'adopted_after_day': eco.day, 'version': state['skill_versions'][employee]})
+    progress.update(status=result['status'], accepted=result['accepted'],
+        deployed_version=result['deployed_version'], costs=deepcopy(result['costs']),
+        optimizer_transport_audit=deepcopy(result['optimizer_transport_audit']))
+    persist_progress()
     print(f"Day {eco.day}: SkillOpt {employee} {result['status']} accepted={result['accepted']}", flush=True)
     if result['status'] == 'failed' or not result['costs']['accounting_complete']:
         raise RuntimeError('Learning failed with incomplete evaluation/accounting; run is not a valid pair')
     if next_update_index is not None:
         state['update_index'] = next_update_index
     finish()
+    return result
 
 
 def main():

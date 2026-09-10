@@ -428,6 +428,7 @@ def _transfer(root, output):
         require(False, 'missing_completed_transfer_report')
     if status == 'completed':
         require(len(results) == output['checked_slots'] == 16 and not pending, 'completed_transfer_has_missing_or_failed_slots')
+        output['accounting_verified'] = True
     else:
         output['notes'].append('Incomplete probe schedule; missing or infrastructure-invalid attempts are not model failures.')
     output['status'] = 'valid_completed' if status == 'completed' else 'incomplete'

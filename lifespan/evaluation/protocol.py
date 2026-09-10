@@ -26,6 +26,7 @@ class ExperimentConfig:
     state_mode: str = 'skill_transfer'
     decision_every: int = 4
     update_every: int = 4
+    update_days: tuple[int, ...] | None = None
     feedback_delay: int = 1
     max_iterations: int = 16
     max_output_tokens: int = 4096
@@ -37,6 +38,12 @@ class ExperimentConfig:
     val_cases: int = 2
     edit_budget: int = 4
     skillopt_rollouts_k: int = 1
+    enterprise_count: int = 2
+    consumer_count: int = 3
+    max_learning_calls_per_epoch: int | None = None
+    max_learning_tokens_per_epoch: int | None = None
+    max_learning_seconds_per_epoch: int | None = None
+    max_actor_interviews: int | None = None
     focal_employee: str | None = None
     schema_version: int = 1
 
@@ -47,16 +54,33 @@ class ExperimentConfig:
             raise ValueError('Unknown scenario split or state mode')
         for key in ('days','decision_every','update_every','feedback_delay','max_iterations',
                     'max_output_tokens','max_work_sessions','max_run_seconds','max_learning_calls',
-                    'max_learning_tokens','train_cases','val_cases','edit_budget','skillopt_rollouts_k'):
+                    'max_learning_tokens','train_cases','val_cases','edit_budget','skillopt_rollouts_k',
+                    'enterprise_count','consumer_count'):
             if type(getattr(self, key)) is not int or getattr(self, key) < 1:
                 raise ValueError(key + ' must be a positive integer')
+        if self.enterprise_count < 2 or self.consumer_count < self.enterprise_count:
+            raise ValueError('At least two enterprises and one consumer per enterprise are required')
+        for key in ('max_learning_calls_per_epoch', 'max_learning_tokens_per_epoch',
+                    'max_learning_seconds_per_epoch', 'max_actor_interviews'):
+            value = getattr(self, key)
+            if value is not None and (type(value) is not int or value < 1):
+                raise ValueError(key + ' must be None or a positive integer')
         if type(self.seed) is not int or not 0 <= self.seed < 1_000_000:
             raise ValueError('seed must be an integer in [0,1000000)')
         if self.days < 8:
             raise ValueError('At least eight days are required for separated change/exception/reversal phases')
+        if self.update_days is not None:
+            if (not isinstance(self.update_days, (list, tuple)) or not self.update_days
+                    or any(type(day) is not int or not 0 <= day < self.days - 1 for day in self.update_days)
+                    or list(self.update_days) != sorted(set(self.update_days))):
+                raise ValueError('update_days must be sorted distinct action days with future work remaining')
+            object.__setattr__(self, 'update_days', tuple(self.update_days))
 
     def public(self):
-        return asdict(self)
+        result = asdict(self)
+        if result['update_days'] is not None:
+            result['update_days'] = list(result['update_days'])
+        return result
 
     @property
     def fingerprint(self):
@@ -72,6 +96,9 @@ def scenario(config):
     exception = max(change + 1, config.days // 2)
     reversal = min(config.days - 1, max(exception + 1, 3 * config.days // 4))
     return {'seed': seed, 'split': config.split, 'days': config.days,
+            'population': {'firms': config.enterprise_count, 'employees': config.enterprise_count * 3,
+                           'consumers': config.consumer_count, 'agencies': 1},
+            'max_actor_interviews': config.max_actor_interviews,
             'change_day': change, 'exception_window': [exception, reversal],
             'reversal_day': reversal, 'settlement_delay': 2,
             'shock_schedule': [{'day': change, 'corridor': 'disrupted', 'supply_delay': 2},

@@ -45,6 +45,14 @@ regression; its deployed skill remained unchanged. See the
 [learning study](docs/LEARNING_STUDY_RESULTS.md) for native evidence, compute,
 fresh-task controls and remaining research limits.
 
+The [larger study plan](docs/SCALE_STUDY_PLAN.md) expands to three paired seeds,
+four enterprises and twelve employees per world, and twenty action days. It
+plans up to 1,440 online native sessions, repeated SkillOpt epochs for every
+employee with sufficient released experience, and future work after learning
+from reversal feedback. Population configuration, per-epoch limits, actor request
+ledgers, a concurrent world supervisor and independent campaign audits support
+this next study. Planned scale is not a completed result.
+
 ## What the PoC demonstrates
 
 | Accepted run | Result |

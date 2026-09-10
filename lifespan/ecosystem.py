@@ -13,7 +13,13 @@ WORKFLOWS = ('onboarding', 'renewal', 'incident')
 
 
 class Ecosystem:
-    def __init__(self, days=16, seed=7):
+    def __init__(self, days=16, seed=7, *, enterprise_count=2, consumer_count=None):
+        if type(enterprise_count) is not int or enterprise_count < 1:
+            raise ValueError('enterprise_count must be a positive integer')
+        if consumer_count is None:
+            consumer_count = max(3, enterprise_count)
+        if type(consumer_count) is not int or consumer_count < enterprise_count:
+            raise ValueError('consumer_count must be an integer with at least one consumer per enterprise')
         self.days, self.day = days, -1
         self.events, self.queue, self.decisions = [], [], []
         self.notes, self.feedback = {}, {}
@@ -23,7 +29,11 @@ class Ecosystem:
                        'policy': 'baseline', 'effective_day': 0, 'expires': None,
                        'complaints': [], 'objective': 'consumer_protection_and_service_continuity'}
         self.firms, self.worlds = {}, {}
-        for i, name in enumerate(('Harbor Services', 'Juniper Services')):
+        names = ('Harbor', 'Juniper', 'Meridian', 'Cedar', 'Summit', 'Orchard')
+        for i in range(enterprise_count):
+            name = names[i % len(names)] + ' Services'
+            if i >= len(names):
+                name += ' ' + str(i // len(names) + 1)
             fid = f'firm-{i}'
             bp = generate_blueprint(seed+i, max(28, days), fid, drift=False)
             bp.update(name=name, days=days, arrivals=[], endogenous_failure_rule=False, automatic_renewals=False)
@@ -31,19 +41,33 @@ class Ecosystem:
             for e in bp['employees']:
                 e['reading_delay'] = 0
             self.worlds[fid] = World(bp)
-            self.firms[fid] = {'id': fid, 'name': name, 'objective': 'growth', 'price': 10+i*2,
-                'target_market': 'cross_border' if i == 0 else 'domestic', 'priority_workflow': 'onboarding',
+            self.firms[fid] = {'id': fid, 'name': name, 'objective': 'growth', 'price': 10+(i % 6)*2,
+                'target_market': 'cross_border' if i % 2 == 0 else 'domestic', 'priority_workflow': 'onboarding',
                 'cash': 100.0, 'revenue': 0.0, 'orders': 0, 'completed': 0,
                 'route': 'standard_route', 'daily_capacity': 2,
                 'strategy_revision': 0, 'public_announcements': [], 'last_decision': None}
         self.consumers = {f'consumer-{i}': {'id': f'consumer-{i}', 'budget': 160.0,
-            'provider': f'firm-{i%2}' if i < 2 else None, 'satisfaction': 0.65,
-            'market': 'cross_border' if i != 1 else 'domestic', 'pending': [], 'history': []}
-            for i in range(3)}
+            'provider': f'firm-{i}' if i < enterprise_count else None, 'satisfaction': 0.65,
+            'market': self.firms[f'firm-{i % enterprise_count}']['target_market'], 'pending': [], 'history': []}
+            for i in range(consumer_count)}
         # Initial obligations are initial conditions, not invented actor decisions.
         for fid in self.firms:
             for workflow in WORKFLOWS:
-                self.order(f'consumer-{int(fid[-1])}', fid, workflow, cause=None, created=0)
+                self.order(self.benchmark_consumer(fid), fid, workflow, cause=None, created=0)
+
+    def benchmark_consumer(self, firm_id):
+        """Return the firm's deterministic primary demand account.
+
+        The full numeric firm identity matters: firm-10 belongs to consumer-10,
+        not consumer-0. Deriving this from existing identities also supports old
+        checkpoints without adding mandatory population metadata to their state.
+        """
+        if firm_id not in self.firms or not firm_id.startswith('firm-') or not firm_id[5:].isdigit():
+            raise ValueError('Unknown enterprise primary demand account')
+        consumer = 'consumer-' + str(int(firm_id[5:]))
+        if consumer not in self.consumers:
+            raise ValueError('Enterprise primary demand consumer is missing')
+        return consumer
 
     def emit(self, kind, actor, payload, causes=()):
         event = {'id': f'event-{len(self.events):06d}', 'day': self.day, 'kind': kind,

@@ -6,6 +6,7 @@ compiler uses its native profile/config/state classes for a new simulation.
 from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -199,6 +200,26 @@ class MiroFishRuntime:
                      if hasattr(self, "evaluation_deadline") else 150)
         if remaining < 1:
             raise TimeoutError("Evaluation actor wall budget exhausted before dispatch")
+        # This counts logical interview requests, not physical model calls or
+        # tokens inside OASIS. Persist intent before dispatch; an uncertain
+        # request remains charged and must never be replayed automatically.
+        limit = getattr(self, "evaluation_max_interviews", None)
+        ledger_path = self.out / 'evaluation_interview_ledger.json'
+        ledger = None
+        if limit is not None:
+            ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {
+                'schema_version': 1, 'limit': limit, 'requests': [],
+                'accounting_unit': 'logical_mirofish_interview_request',
+                'physical_model_calls': None, 'tokens': None}
+            if ledger['limit'] != limit:
+                raise ValueError('Actor interview budget changed')
+            if any(row['key'] == cache_key for row in ledger['requests']):
+                raise RuntimeError('An actor request lacks its completed cache; refusing automatic replay')
+            if len(ledger['requests']) >= limit:
+                raise RuntimeError('Actor interview request budget exhausted')
+            ledger['requests'].append({'key': cache_key, 'actor': employee_id,
+                'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest(), 'status': 'dispatched'})
+            save(ledger_path, ledger)
         payload = self.call("/api/simulation/interview", {"simulation_id": self.state["simulation"]["simulation_id"],
                     "agent_id": self.employee_ids[employee_id], "platform": "reddit", "prompt": prompt,
                     "timeout": min(120, max(1, int(remaining)))}, timeout=min(150, remaining))
@@ -209,6 +230,10 @@ class MiroFishRuntime:
         if not isinstance(response, str) or not response.strip():
             raise RuntimeError(f"MiroFish returned no employee response: {result}")
         save(path, {"employee_id": employee_id, "prompt": prompt, "response": response, "native_result": payload})
+        if ledger is not None:
+            ledger['requests'][-1].update(status='completed',
+                response_sha256=hashlib.sha256(response.encode()).hexdigest())
+            save(ledger_path, ledger)
         return response
 
     def close(self):

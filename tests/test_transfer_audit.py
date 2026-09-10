@@ -202,6 +202,7 @@ class TransferAuditTests(unittest.TestCase):
     def test_complete_all_attempts_and_combined_cost(self):
         result = audit.audit_transfer(self.out, strict=True)
         self.assertTrue(result['ok'], result)
+        self.assertTrue(result['accounting_verified'])
         self.assertEqual(result['checked_slots'], 16)
         self.assertEqual(result['probe_model_calls'], 48)
         self.assertEqual(self.raw_audit.call_count, 16)
@@ -238,6 +239,7 @@ class TransferAuditTests(unittest.TestCase):
         self.flush()
         result = audit.audit_transfer(self.out)
         self.assertTrue(result['ok'], result); self.assertEqual(result['status'], 'incomplete')
+        self.assertFalse(result['accounting_verified'])
         self.assertFalse(audit.audit_transfer(self.out, strict=True)['ok'])
 
     def test_completed_cannot_claim_learning_phase(self):

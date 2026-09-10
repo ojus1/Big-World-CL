@@ -31,7 +31,7 @@ cost_control favors high-value work. Existing obligations survive a market exit.
 backlog and realized outcomes before setting these fields.
 Government agency role: policy (keep|baseline|enhanced_review), duration (integer 2..10).
 The authority balances continuity and consumer protection. Enhanced review requires jurisdiction_review and
-redacted deliverables at both regulated firms, takes effect tomorrow and expires after duration days.
+redacted deliverables at all regulated firms, takes effect tomorrow and expires after duration days.
 A policy is your decision, not prescribed by the geopolitical shock. You may issue, revise or withdraw it.
 Consumer role: action (wait|purchase|switch|complain), firm (a visible firm ID, or null for wait).
 Compare actual offers and own experience. Purchase/switch requires no pending orders, sufficient budget,
