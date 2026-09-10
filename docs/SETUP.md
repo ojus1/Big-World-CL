@@ -32,6 +32,14 @@ chmod 600 MiroFish/.env
 
 Edit `MiroFish/.env` locally and set `OPENAI_API_KEY`. Do not place keys in commands, source files, notebooks or dataset cards. The template sets the model, base URL, low reasoning effort, local graph storage, remote extraction opt-in and loopback ports 5001/3000. It contains no credential. Review `README.local.md` for adapter limitations and service management.
 
+Before starting a service or preparing a new study, check the complete installation:
+
+```bash
+python3 -m scripts.check_mirofish_installation
+```
+
+This checks every Git-tracked override against its installed bytes, including both actor contract files; untracked bytecode caches are ignored. It also checks the pinned MiroFish revision and whether the checked-in patch can be reverse-applied without changing files. Only then does a bounded child use the actual Flask test client to call the actor-contract support route and verify its exact capability descriptor. It starts no server or model work, blocks Python socket/subprocess dispatch, preserves configuration, and may initialize normal app logs. Failure requires repairing the installation before proceeding; the checker performs no repair. A pass checks local installation and the capability route, not native worker or long-running study behavior.
+
 ## Hermes and employee computers
 
 Use a dedicated installation or point at an existing compatible checkout. The PoC creates new run-local employee profiles and does not reuse personal Hermes configuration.
