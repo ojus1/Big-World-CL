@@ -20,7 +20,13 @@ VERSION = 'scale-v2-six-world-registration'
 POPULATION = {'firms': 4, 'employees': 12, 'consumers': 8, 'agencies': 1}
 ACTOR_CONTRACT = {'version': 'actor-json-v1', 'max_output_tokens': 4096, 'timeout_seconds': 120}
 EVIDENCE_KINDS = ('actor_native_capability', 'employee_native_capability', 'horizon_feasibility')
-REGISTRATION_TOOLS = ('scripts/scale_v2_contract.py', 'scripts/prepare_scale_v2.py')
+REGISTRATION_TOOLS = ('scripts/scale_v2_contract.py', 'scripts/prepare_scale_v2.py',
+    'scripts/run_scale_v2.py', 'scripts/scale_v2_process.py', 'scripts/audit_scale_v2.py',
+    'scripts/scale_v2_prerequisites.py', 'scripts/audit_hermes_readback_v2.py',
+    'scripts/audit_hermes_preflight.py', 'scripts/hermes_transport_preflight.py',
+    'scripts/hermes_preflight_process.py', 'scripts/scale_horizon_observations.py')
+LAUNCH_LIMITS = {'world_cleanup_seconds': 120, 'service_cleanup_seconds': 30,
+                'service_startup_seconds': 120, 'observation_interval_seconds': 0.25}
 
 
 def require(condition, code):
@@ -83,6 +89,7 @@ def budgets(launch_policy):
     p = policy(launch_policy)
     return {**deepcopy(BUDGETS), 'max_parallel_worlds': p['workers'],
             'per_world_wall_seconds': p['per_world_wall_seconds'],
+            'launch_limits': deepcopy(LAUNCH_LIMITS),
             'contracted_interview_physical_requests': 3972,
             'contracted_interview_output_tokens_per_request': 4096,
             'contracted_interview_timeout_seconds': 120}

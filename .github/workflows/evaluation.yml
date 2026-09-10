@@ -66,6 +66,9 @@ jobs:
       - name: Test population scale, campaign supervision and independent audit
         run: python -m unittest discover -s tests -p 'test_scale_*.py' -v
 
+      - name: Test concurrent six-world follow-up supervision
+        run: python -m unittest tests.test_run_scale_v2 -v
+
       - name: Test fixed Hermes transport preflight and independent evidence audit
         # Standard-library synthetic receipts and owned local process/socket
         # fixtures only; no Hermes install, provider key or native calls.
