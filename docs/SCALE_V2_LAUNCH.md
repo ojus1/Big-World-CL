@@ -62,3 +62,10 @@ files remain untouched. See [execution](SCALE_V2_EXECUTION.md),
 [lifecycle](SCALE_V2_LIFECYCLE.md) and [audit](SCALE_V2_AUDIT.md) for the exact
 one-shot command and evidence rules. Raw traces, task content, personas and
 credentials stay in ignored private directories.
+
+The additive [completed-study reporter](SCALE_V2_REPORTING.md) selects the
+registered fixed-demand primary and retains all employee learning histories,
+actual skill-loading observations and historical gate diagnostics. The
+[interpretation guide](SCALE_V2_INTERPRETATION.md) explains what the paired
+comparison can establish and how to report a completed study with no adoptions
+or a negative difference. These additions do not change the running study.
