@@ -1,0 +1,1498 @@
+{
+  "aggregate": {
+    "accepted_updates": 0,
+    "applied_edits": 0,
+    "candidate_no_strict_improvement": 2,
+    "candidate_per_task_regression": 3,
+    "completed_epochs": 14,
+    "cost_scope": "completed learning epochs only; online work and environment-actor compute excluded",
+    "costs_by_seed": {
+      "211": {
+        "optimizer_model_calls": 3,
+        "replays": 76,
+        "target_model_calls": 746,
+        "tokens": 8089617
+      },
+      "401": {
+        "optimizer_model_calls": 2,
+        "replays": 74,
+        "target_model_calls": 741,
+        "tokens": 7727750
+      }
+    },
+    "currency_cost": null,
+    "currency_cost_status": "unknown",
+    "day7_eligible_in_two_observed_worlds": 16,
+    "day7_ineligible_in_two_observed_worlds": 8,
+    "deployed_version_changes": 0,
+    "distinct_selected_obligation_exposure": {
+      "train": {
+        "base": 19,
+        "changed": 9
+      },
+      "val": {
+        "base": 23,
+        "changed": 5
+      }
+    },
+    "eligible_not_in_fixed_completed_inventory": 2,
+    "epochs_with_changed_in_both_train_and_val": 0,
+    "epochs_with_changed_in_train": 9,
+    "epochs_with_changed_in_val": 5,
+    "incumbent_repeated_measurements": {
+      "epochs_with_incumbent_variation": 5,
+      "hard_disagreements": 3,
+      "hard_or_soft_disagreements": 6,
+      "paired_incumbent_cases": 28
+    },
+    "new_epochs_beyond_first_two": {
+      "completed_epochs": 12,
+      "optimizer_model_calls": 3,
+      "parsed_edits": 12,
+      "replays": 126,
+      "target_model_calls": 1232,
+      "tokens": 12862698
+    },
+    "no_edits_proposed": 9,
+    "optimizer_model_calls": 5,
+    "parsed_edits": 20,
+    "rejected_edits": 20,
+    "replays": 150,
+    "target_model_calls": 1487,
+    "tokens": 15817367,
+    "unmatched_edits": 0
+  },
+  "eligibility": {
+    "day3_skillopt_boundary": {
+      "eligible": 0,
+      "employees": 36,
+      "ineligible": 36
+    },
+    "day7_recomputed_from_feedback_available_by_day7": [
+      {
+        "cells": [
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-0__incident-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 4,
+            "eligible": true,
+            "employee": "firm-0__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-0__renewal-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-1__incident-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 4,
+            "eligible": true,
+            "employee": "firm-1__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 6,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-1__renewal-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 5,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-2__incident-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 6,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-2__onboarding-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-2__renewal-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 2,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-3__incident-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 3,
+            "eligible": true,
+            "employee": "firm-3__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-3__renewal-regulated",
+            "in_fixed_completed_inventory": false
+          }
+        ],
+        "eligible": 8,
+        "eligible_not_in_fixed_inventory": 1,
+        "employees": 12,
+        "fixed_completed": 7,
+        "ineligible": 4,
+        "remaining_employee": "firm-3__renewal-regulated",
+        "remaining_status_at_observation": "in_flight",
+        "seed": 211
+      },
+      {
+        "cells": [
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-0__incident-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 4,
+            "eligible": true,
+            "employee": "firm-0__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 3,
+            "eligible": true,
+            "employee": "firm-0__renewal-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 5,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-1__incident-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 3,
+            "available_unique_val": 4,
+            "eligible": true,
+            "employee": "firm-1__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 6,
+            "available_unique_val": 0,
+            "eligible": false,
+            "employee": "firm-1__renewal-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-2__incident-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 6,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-2__onboarding-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 2,
+            "eligible": true,
+            "employee": "firm-2__renewal-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 1,
+            "available_unique_val": 1,
+            "eligible": false,
+            "employee": "firm-3__incident-regulated",
+            "in_fixed_completed_inventory": false
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 3,
+            "eligible": true,
+            "employee": "firm-3__onboarding-regulated",
+            "in_fixed_completed_inventory": true
+          },
+          {
+            "available_unique_train": 4,
+            "available_unique_val": 3,
+            "eligible": true,
+            "employee": "firm-3__renewal-regulated",
+            "in_fixed_completed_inventory": false
+          }
+        ],
+        "eligible": 8,
+        "eligible_not_in_fixed_inventory": 1,
+        "employees": 12,
+        "fixed_completed": 7,
+        "ineligible": 4,
+        "remaining_employee": "firm-3__renewal-regulated",
+        "remaining_status_at_observation": "in_flight",
+        "seed": 401
+      }
+    ],
+    "seed307_day7": "learning_boundary_not_reached_after_work_phase_interruption"
+  },
+  "epochs": [
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [
+        {
+          "accepted": false,
+          "baseline_score": 1.0,
+          "blocked_by_regression": false,
+          "candidate_score": 1.0,
+          "target": "skill",
+          "task_status_counts": {
+            "unchanged": 2
+          }
+        }
+      ],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 1,
+        "replays": 12,
+        "target_model_calls": 128,
+        "tokens": 1493894
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__incident-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 0.5,
+        "final_mixed_score": 0.73333325
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 4,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "gate_trial:skill": {
+          "all_use_incumbent_hash": false,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 3,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 4,
+      "rejection_classification": "candidate_no_strict_improvement",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 2
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "ade32aef1cacb370fac92e4056f2a6dac9515c30c559ef4acd1ffb16b85b10a5"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 85,
+        "tokens": 828921
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 1
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "845a3e9a17d4d17723a8ec2825b07d3c53da1210e252510d14064cb7d1d02eff"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 92,
+        "tokens": 917116
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__renewal-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 5
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 0
+          },
+          {
+            "regime": "base",
+            "source_day": 2
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "72d3372ce00b24e7d03e6c3707690902b1b316ce22f37b33fe094916340ee95b"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [
+        {
+          "accepted": false,
+          "baseline_score": 1.0,
+          "blocked_by_regression": false,
+          "candidate_score": 1.0,
+          "target": "skill",
+          "task_status_counts": {
+            "unchanged": 2
+          }
+        }
+      ],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 1,
+        "replays": 12,
+        "target_model_calls": 122,
+        "tokens": 1405998
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-1__incident-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 4,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "gate_trial:skill": {
+          "all_use_incumbent_hash": false,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 5,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 4,
+      "rejection_classification": "candidate_no_strict_improvement",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 2
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 0
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "36f1c7a8831cd5f65974e46dcc2e0322e7b8ba142434d23a6d4bd8a732fc6e05"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 88,
+        "tokens": 874816
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-1__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "7950696c56d1dff98367e9dfbc85cb6fb8d4129eab91d454268b9b55d45fb8c7"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [
+        {
+          "accepted": false,
+          "baseline_score": 0.44999999999999996,
+          "blocked_by_regression": true,
+          "candidate_score": 0.71666675,
+          "target": "skill",
+          "task_status_counts": {
+            "improved": 1,
+            "regressed": 1
+          }
+        }
+      ],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 1,
+        "replays": 12,
+        "target_model_calls": 146,
+        "tokens": 1763039
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-3__incident-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 0.0,
+        "baseline_mixed_score": 0.44999999999999996,
+        "final_hard_score": 0.0,
+        "final_mixed_score": 0.44999999999999996
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 4,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 0,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 0,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "gate_trial:skill": {
+          "all_use_incumbent_hash": false,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 3,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 4,
+      "rejection_classification": "candidate_per_task_regression",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "c2bccbd9a4e85fbcafdec204c8aa8d3e045012d770c6057b02726af5a462efee"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 85,
+        "tokens": 805833
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-3__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 211,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 5
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "base",
+            "source_day": 4
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "c6afc301cc930c53e5577c4e7544603a087875b73c811b6e31898edf74663097"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [
+        {
+          "accepted": false,
+          "baseline_score": 0.73333325,
+          "blocked_by_regression": true,
+          "candidate_score": 0.73333325,
+          "target": "skill",
+          "task_status_counts": {
+            "improved": 1,
+            "regressed": 1
+          }
+        }
+      ],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 1,
+        "replays": 12,
+        "target_model_calls": 127,
+        "tokens": 1460775
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__incident-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 0.5,
+        "baseline_mixed_score": 0.73333325,
+        "final_hard_score": 0.5,
+        "final_mixed_score": 0.71666675
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 4,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "gate_trial:skill": {
+          "all_use_incumbent_hash": false,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 4,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 4,
+      "rejection_classification": "candidate_per_task_regression",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "c0eddf4c925f70707d0985f791c81351cd2929d5cdf5140d7eee098dffb2043f"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 92,
+        "tokens": 871946
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 1
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "26f894006b1e874dc9a06f69ee9415f0338d6e9ce9b55995601e9f1cd45f87b6"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 105,
+        "tokens": 1081008
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-0__renewal-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 0.5,
+        "final_mixed_score": 0.63571425
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 2
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "1cbab21b7608183e4401f5d728895f5835a35c266ec4d72858ba9403e7a3e377"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [
+        {
+          "accepted": false,
+          "baseline_score": 0.71666675,
+          "blocked_by_regression": true,
+          "candidate_score": 0.73333325,
+          "target": "skill",
+          "task_status_counts": {
+            "improved": 1,
+            "regressed": 1
+          }
+        }
+      ],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 1,
+        "replays": 12,
+        "target_model_calls": 137,
+        "tokens": 1571091
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-1__incident-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 0.5,
+        "baseline_mixed_score": 0.71666675,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 4,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "gate_trial:skill": {
+          "all_use_incumbent_hash": false,
+          "hard_successes": 1,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 3,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 4,
+      "rejection_classification": "candidate_per_task_regression",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 5
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 0
+          },
+          {
+            "regime": "base",
+            "source_day": 4
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "2cb68ecfbdb6a0c0b0f9d0436d7ebb60f1bdf7c7b17ccbe3a65c5affe5f31071"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 90,
+        "tokens": 846575
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-1__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "f2cf8f5ed17fcbadf25c54666c54cc3682d9ead711120d85d79bfefc72d73414"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 105,
+        "tokens": 1098059
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-2__renewal-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 4
+          },
+          {
+            "regime": "base",
+            "source_day": 5
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 1
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "398865c69f779c08cecd2bcadf1c50c5efe9caf89bad0868708a4fcbe817a432"
+    },
+    {
+      "accepted": false,
+      "applied_edit_count": 0,
+      "candidate_gate_trials": [],
+      "costs": {
+        "accounting_complete": true,
+        "optimizer_model_calls": 0,
+        "replays": 10,
+        "target_model_calls": 85,
+        "tokens": 798296
+      },
+      "day": 7,
+      "deployed_version": 0,
+      "employee": "firm-3__onboarding-regulated",
+      "incumbent_final_replay": {
+        "all_receipts_use_incumbent_hash": true,
+        "baseline_hard_score": 1.0,
+        "baseline_mixed_score": 1.0,
+        "final_hard_score": 1.0,
+        "final_mixed_score": 1.0
+      },
+      "parent_version": 0,
+      "parsed_edit_count": 0,
+      "phases": {
+        "baseline_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "final_val": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 2,
+          "replays": 2,
+          "unique_historical_obligations": 2
+        },
+        "train": {
+          "all_use_incumbent_hash": true,
+          "hard_successes": 6,
+          "replays": 6,
+          "unique_historical_obligations": 2
+        }
+      },
+      "rejected_edit_count": 0,
+      "rejection_classification": "no_edits_proposed",
+      "review": {
+        "frozen_update_check_passed": true,
+        "gate_score_and_per_task_regression_recomputed": true,
+        "update_bytes_stable_during_audit": true
+      },
+      "seed": 401,
+      "selected_curriculum": {
+        "train": [
+          {
+            "regime": "base",
+            "source_day": 5
+          },
+          {
+            "regime": "changed",
+            "source_day": 6
+          }
+        ],
+        "val": [
+          {
+            "regime": "base",
+            "source_day": 3
+          },
+          {
+            "regime": "base",
+            "source_day": 4
+          }
+        ]
+      },
+      "skill_after_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "skill_before_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+      "status": "completed",
+      "unmatched_edit_count": 0,
+      "update_sha256": "514eeb38169ddff0516eb0727f4126347d863d497c42edfcf7f19d676096e38b"
+    }
+  ],
+  "hash_encoding": "sha256_exact_file_bytes",
+  "interpretation_limits": [
+    "All conclusions refer only to the fixed fourteen completed day-seven updates, not later epochs or the complete campaign.",
+    "All final_val receipts used the unchanged incumbent skill; their changes are repeated-measurement variation, not edited-candidate performance.",
+    "No completed epoch exposed both TRAIN and VAL to changed-regime examples at this early boundary.",
+    "One-sample per-obligation gate comparisons cannot distinguish stochastic variation from a genuine candidate tradeoff.",
+    "No confidence interval or causal learning-effect claim is attached to these dependent early observations.",
+    "No active protocol, employee skill, native process, or prior artifact was changed."
+  ],
+  "observation_id": "scale-v1-day7-learning-14epochs-v1",
+  "observation_kind": "during_execution_descriptive_addition_not_preregistered_endpoint",
+  "observed_at_utc": "2026-09-10T03:59:31.470222+00:00",
+  "schema_version": 1,
+  "scope": {
+    "algorithm": "skillopt",
+    "campaign": "scale-v1",
+    "campaign_efficacy_inference": false,
+    "day11_and_day17": "unobserved_in_this_fixed_observation",
+    "evidence_unit": "employee_epoch_in_a_world; repeated replay attempts are not independent new obligations",
+    "fixed_completed_epochs": 14,
+    "later_updates_excluded": true,
+    "learning_day": 7,
+    "new_epochs_beyond_first_firm0_incident_per_seed": 12,
+    "seeds": [
+      211,
+      401
+    ]
+  },
+  "source_sha256": {
+    "lifespan/evaluation/protocol.py": "77a8627c1c61aef5a586ff3be8af6efab16cbae0f8bc1a9a72ab796856e53da6",
+    "lifespan/evaluation/runner.py": "9033a15681456a3b1411182dec2b353ba17fbb9ad4db72cf685878b5493da577",
+    "lifespan/evaluation/skillopt.py": "4e01ade02d56fa9182dc639907f49c48a075c60c4d6b0a6f04b3d2f4ffb7a38b",
+    "scripts/audit_evaluation.py": "5dc647c04d5081506d0dea9cb679e0f9a572070d27a537e6297bb233c3931dce"
+  },
+  "upstream_skillopt_revision": "79124b37e9a6371e13b753f8bcd7adb1e493ade1"
+}

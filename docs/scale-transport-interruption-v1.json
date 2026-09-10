@@ -1,0 +1,69 @@
+{
+  "campaign_raw_sha256": "6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa",
+  "checkpointed_learning_updates": 0,
+  "checkpointed_session_records": 106,
+  "committed_artifact_sha256": "40fe14fd5c3814b837cfed994e4a44ee8a95a71f1c24c4e15e132750aeee326d",
+  "complete_employee_prefix": {
+    "charged_tokens": 12362220,
+    "measured_tokens": 12362220,
+    "recorded_model_calls": 1135,
+    "sessions": 105,
+    "usage_receipts_complete": true
+  },
+  "day": 8,
+  "eligible_for_paired_inference": false,
+  "interpretation": "The committed artifact passed trusted grading, but missing work-stream usage makes the session and world ineligible under the frozen accounting contract. Known measurements and an uncertain charged reservation are distinct. ReadError does not identify the underlying provider or network cause. No request was retried by this observation, no world was restarted, and no original evidence or audit rule was changed.",
+  "interrupted_action": {
+    "accounting_complete": false,
+    "artifact_independently_regraded": true,
+    "artifact_semantic_score": 1.0,
+    "artifact_success": true,
+    "budget_exhausted": false,
+    "charged_tokens_including_reservation": 183819,
+    "elapsed_seconds": 135.8211980890046,
+    "error_type": "ReadError",
+    "hermes_dispatched": true,
+    "infrastructure_valid": false,
+    "known_measured_input_tokens": 119873,
+    "known_measured_output_tokens": 1917,
+    "known_measured_tokens": 121790,
+    "output_artifact_is_not_complete_session_accounting": true,
+    "physical_model_calls": 12,
+    "recorded_budget_overrun": false,
+    "recorded_terminal_status": "stream_closed_without_receipt",
+    "reported_physical_requests": 11,
+    "retry_layer": "native_hermes_conversation_loop",
+    "sdk_retries_enabled": false,
+    "skill_loaded": true,
+    "true_total_tokens": null,
+    "unknown_request_token_reservation": 62029,
+    "unknown_usage_requests": 1
+  },
+  "kind": "during_execution_transport_interruption_observation",
+  "learning_gain": null,
+  "native_artifact_audit": {
+    "error_count": 1,
+    "interpretation": "Frozen raw audit retains the incomplete-accounting rejection; artifact success does not override it.",
+    "sessions_checked": 106,
+    "status": "invalid",
+    "updates_checked": 0
+  },
+  "native_session_raw_sha256": "85ab0ae9288dfe5deae8f7a3102fd5cb2442bc4051b31a36c900f514a817b0e4",
+  "observed_at": "2026-09-10T03:23:19.971638+00:00",
+  "raw_input_sha256": {
+    "FAILURE.json": "91885687cde3cc754138da736443ac64e1fd68c9a4792e31930ca41b59c98595",
+    "INFLIGHT.json": "e99a3743fa49499e0a6d8ff488bc4c987cb15cbda796af050d8b443b0fe26969",
+    "REPORT.json": "2832b32bfe164c95a61e99e8657fee362595e41286e2135c3627327595e7d139",
+    "SUPERVISOR_ACTOR_CLEANUP.json": "c0ff451fd20fd804671d82fc8661f9b2d35a7bc0dcdcc03410cb5fe147805514",
+    "checkpoint.json": "f7001e5e2172407e6fdab0d83af14d376fca76bbb4141fed6b3ea230d092e018"
+  },
+  "recovery": {
+    "actor_environment_closed": true,
+    "lossless_native_reopen_supported": false,
+    "replacement_world_launched": false,
+    "restarted": false
+  },
+  "run_id": "seed-401-no_learning",
+  "run_status": "failed",
+  "schema_version": 1
+}
