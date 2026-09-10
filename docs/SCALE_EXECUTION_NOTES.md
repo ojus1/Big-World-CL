@@ -91,7 +91,8 @@ employee working notes are useful evidence, but they are not a complete restart
 checkpoint. The evaluation runner correctly refuses this destructive restart.
 
 The failed world stays closed and its artifacts remain intact. The other five
-worlds continue within their original budgets. No replacement world has been
+worlds initially continued within their original budgets; the second interruption
+below later reduced the active count to four. No replacement world has been
 launched. An infrastructure interruption is not an employee task failure, and
 missing future outcomes must not be converted to zeros or omitted from the
 planned-world inventory.
@@ -109,3 +110,43 @@ completion/usage receipts. These fixes require offline validation and prospectiv
 registration before new native comparisons. They do not establish that SkillOpt
 improves future work, nor do they justify resuming a reconstructed actor state as
 the original world.
+
+## Day-8 transport interruption in seed 401, no-learning arm
+
+This world's employee actor returned valid JSON. Hermes then produced an
+immutable committed artifact that independently passed trusted grading with
+strict success and semantic score 1.0. The intended skill was loaded. However,
+one of twelve physical model requests had a stream `ReadError` without a usage
+receipt. A retry in the native Hermes conversation loop succeeded. SDK retries
+were disabled, and both physical requests passed through the budget meter.
+
+The [transport observation receipt](scale-transport-interruption-v1.json) keeps
+the successful artifact separate from incomplete session accounting:
+
+| Interrupted action accounting | Recorded amount |
+| --- | ---: |
+| Physical model requests | 12 |
+| Requests with usage receipts | 11 |
+| Known measured tokens | 121,790 |
+| Retained reservation for the unknown request | 62,029 |
+| Charged tokens, including that reservation | 183,819 |
+| True total tokens | Unknown |
+
+There was no recorded physical-call, output-token, reservation or wall-limit
+overrun. The full action took approximately 135.82 seconds under its 420-second
+limit. The request's retained `error_type` is `ReadError`; stream closure overwrote
+its status with `stream_closed_without_receipt`. This records a stream transport
+failure but does not establish an underlying provider or network cause.
+
+The checkpoint contains 105 earlier sessions with complete usage receipts
+(1,135 calls and 12,362,220 measured tokens), followed by the interrupted action.
+The frozen accounting gate correctly marks that action infrastructure-invalid
+and terminates the world. Its supervisor closed the actor environment. The world
+cannot be resumed losslessly, and a successful artifact does not make its missing
+usage known. No retry or replacement was initiated after the failure.
+
+This is separate from the malformed actor JSON failure and the future learning
+deadline fix. A small future evidence fix is being developed to preserve the
+original stream error through closure; it cannot recover a lost provider receipt or change current
+eligibility. Resolving transport receipt reliability remains a preflight item for
+a fresh full comparison.

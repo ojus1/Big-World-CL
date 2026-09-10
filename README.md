@@ -52,9 +52,10 @@ employee with sufficient released experience, and future work after learning
 from reversal feedback. Population configuration, per-epoch limits, actor request
 ledgers, a concurrent world supervisor and independent campaign audits support
 this next study. Planned scale is not a completed result. The
-[execution observations](docs/SCALE_EXECUTION_NOTES.md) retain a day-7 actor-output
-interruption in one world and explain why it cannot be resumed as the same native
-state; the remaining worlds continue within the frozen limits.
+[execution observations](docs/SCALE_EXECUTION_NOTES.md) retain actor-output and
+work-stream accounting interruptions and explain why those worlds cannot be
+resumed as the same native state; the remaining worlds continue within the frozen
+limits.
 
 ## What the PoC demonstrates
 
