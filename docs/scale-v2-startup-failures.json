@@ -1,0 +1,433 @@
+{
+  "all_in_accounting_complete": false,
+  "cleanup": {
+    "confirmed_worlds": 0,
+    "current_known_process_states": {
+      "absent": 1365
+    },
+    "interpretation": "Known process absence and env_alive=false do not replace missing startup instance evidence; frozen cleanup remains unconfirmed. Orphan files/sockets were not removed.",
+    "known_recorded_processes": 1365,
+    "remaining_unbound_startup_control_sockets": 4,
+    "service_cleanup_confirmed": true,
+    "service_current_state": "absent",
+    "supervisor_current_state": "absent",
+    "unconfirmed_worlds": 6
+  },
+  "clocks": {
+    "filesystem_mtime": "Observed raw failure-file modification time, not independently measured failure onset. Wall timestamps are kept separate from the recorded host monotonic execution/cleanup clocks.",
+    "monotonic_scope": "Same-host lifecycle start through cleanup; no reconstructed exact UTC failure timestamp."
+  },
+  "comparison": null,
+  "complete_pairs": 0,
+  "completed_worlds": 0,
+  "contracted_actor_interviews": {
+    "logical_requests": 358,
+    "measured_physical_requests": 358,
+    "measured_tokens": 1023469,
+    "reserved_output_tokens": 0,
+    "scope": "Saved final audit of reconciled client-cache receipts; ledger counts/hashes independently checked. Native server orphan, bootstrap and social compute excluded.",
+    "unknown_requests": 0
+  },
+  "currency_cost": null,
+  "failed_worlds": 6,
+  "kind": "scale_v2_terminal_startup_failure_public_observation",
+  "learning_gain": null,
+  "learning_target_calls": 0,
+  "learning_updates": 0,
+  "limitations": [
+    "Engineering observation; no complete-world comparison or learning-effect estimate.",
+    "All six failed slots are retained. Missing failed-start usage stays reserved and unknown.",
+    "Known-process absence does not replace the missing startup-instance receipt or upgrade cleanup confirmation.",
+    "The original saved strict audit was retained; copied checkpoint physical meters were independently reconciled without rerunning native work.",
+    "Raw checkpoints, profiles, prompts, answers and credentials remain private.",
+    "File modification timestamps are observations, not provider timestamps or independently measured failure onset."
+  ],
+  "online_prefix": {
+    "accounting_complete": true,
+    "charged_or_reserved_model_calls": 2905,
+    "charged_or_reserved_tokens": 30483779,
+    "known_input_tokens": 30040667,
+    "known_output_tokens": 443112,
+    "known_physical_calls": 2905,
+    "known_tokens": 30483779,
+    "records": 274,
+    "unresolved_records": 0
+  },
+  "optimizer_calls": 0,
+  "planned_worlds": 6,
+  "primary_endpoint_available": false,
+  "provenance": {
+    "campaign_raw_sha256": "4315bd53cc14870a291accbe5c71d7556a458ac0a9260d181dc30735c8f4b801",
+    "capture_manifest_raw_sha256": "a229e6365de6fb6c9b4666c7a1296139d57d30528f3c88754357692a4d1fe5c6",
+    "capture_verification_raw_sha256": "e0cfa7e57c32f499028097596cd1897a017cb3eda4a7b2c17ecfdb728b37bb59",
+    "copied_raw_files": 89,
+    "hash_encoding": "sha256_raw_file_bytes",
+    "independent_review_raw_sha256": "6a57c4a1478be7887176270992744620096fcaaf12280c4e34605acb0cedfa3b",
+    "private_summary_raw_sha256": "268b0dde388a94d0c207a6e55b5c64cf41abeb3b0ab126e898e239e30251e89f",
+    "registered_source_files": 48,
+    "saved_audit_raw_sha256": "8fecc6b5470021a41719e8db6c34ae4384f198a9a27dd33635b10b5e63ad87ec"
+  },
+  "resource_pressure": {
+    "captured_host_observation_raw_sha256": "f348437789baa3aedaf7a322700b71d0f056bac3f69ffed2bb4d9a0c419ad946",
+    "interpretation": "A hypothesis, not an established cause. Empty worker logs do not identify the stalled initialization stage or prove a provider failure.",
+    "last_recorded_startup_children_D": 5,
+    "last_recorded_startup_children_R": 1
+  },
+  "saved_audit": {
+    "errors": [],
+    "meaning": "Consistent failed prefixes; strict completed-study audit refuses the incomplete campaign.",
+    "ok": false,
+    "status": "incomplete"
+  },
+  "saved_audit_employee_accounting": {
+    "accounting_complete": false,
+    "all_world_costs_reconciled": false,
+    "charged_or_reserved_model_calls": 3001,
+    "charged_or_reserved_tokens": 31983779,
+    "known_input_tokens": 30040667,
+    "known_output_tokens": 443112,
+    "known_physical_calls": 2905,
+    "known_tokens": 30483779,
+    "records": 280,
+    "unresolved_records": 6
+  },
+  "schema_version": 1,
+  "startup_reservations": {
+    "meaning": "Conservative full target-slot reservation, not measured startup inference. Work loop did not start.",
+    "model_calls": 96,
+    "tokens": 1500000,
+    "unresolved_actions": 6
+  },
+  "worlds": [
+    {
+      "algorithm": "no_learning",
+      "bound_native_instances": 47,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 29.60156311099854,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 61,
+        "measured_physical_requests": 61,
+        "measured_tokens": 174624,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 240
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3871.506214111003,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:04:17.679717+00:00",
+      "known_recorded_processes": 240,
+      "last_recorded_startup_child_state": "D",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 478,
+        "charged_or_reserved_tokens": 5043705,
+        "known_input_tokens": 4970578,
+        "known_output_tokens": 73127,
+        "known_physical_calls": 478,
+        "known_tokens": 5043705,
+        "records": 47,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-211-no_learning",
+      "saved_sessions": 47,
+      "seed": 211,
+      "startup_control_socket_present": false,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    },
+    {
+      "algorithm": "skillopt",
+      "bound_native_instances": 46,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 47.318663978003315,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 60,
+        "measured_physical_requests": 60,
+        "measured_tokens": 169626,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 229
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3789.4788906289978,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:02:56.693667+00:00",
+      "known_recorded_processes": 229,
+      "last_recorded_startup_child_state": "D",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 484,
+        "charged_or_reserved_tokens": 5043982,
+        "known_input_tokens": 4972318,
+        "known_output_tokens": 71664,
+        "known_physical_calls": 484,
+        "known_tokens": 5043982,
+        "records": 46,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-211-skillopt",
+      "saved_sessions": 46,
+      "seed": 211,
+      "startup_control_socket_present": true,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    },
+    {
+      "algorithm": "skillopt",
+      "bound_native_instances": 45,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 5.710369640000863,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 59,
+        "measured_physical_requests": 59,
+        "measured_tokens": 169408,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 220
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3911.777325128998,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:05:00.796456+00:00",
+      "known_recorded_processes": 220,
+      "last_recorded_startup_child_state": "D",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 483,
+        "charged_or_reserved_tokens": 5064711,
+        "known_input_tokens": 4990816,
+        "known_output_tokens": 73895,
+        "known_physical_calls": 483,
+        "known_tokens": 5064711,
+        "records": 45,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-307-skillopt",
+      "saved_sessions": 45,
+      "seed": 307,
+      "startup_control_socket_present": false,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    },
+    {
+      "algorithm": "no_learning",
+      "bound_native_instances": 45,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 46.87746631600021,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 59,
+        "measured_physical_requests": 59,
+        "measured_tokens": 168617,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 237
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3786.2783509790024,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:02:50.618406+00:00",
+      "known_recorded_processes": 237,
+      "last_recorded_startup_child_state": "R",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 495,
+        "charged_or_reserved_tokens": 5153379,
+        "known_input_tokens": 5076474,
+        "known_output_tokens": 76905,
+        "known_physical_calls": 495,
+        "known_tokens": 5153379,
+        "records": 45,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-307-no_learning",
+      "saved_sessions": 45,
+      "seed": 307,
+      "startup_control_socket_present": true,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    },
+    {
+      "algorithm": "no_learning",
+      "bound_native_instances": 45,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 57.51964178599883,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 59,
+        "measured_physical_requests": 59,
+        "measured_tokens": 170858,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 220
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3818.364106861998,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:03:24.551018+00:00",
+      "known_recorded_processes": 220,
+      "last_recorded_startup_child_state": "D",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 482,
+        "charged_or_reserved_tokens": 5173627,
+        "known_input_tokens": 5097409,
+        "known_output_tokens": 76218,
+        "known_physical_calls": 482,
+        "known_tokens": 5173627,
+        "records": 45,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-401-no_learning",
+      "saved_sessions": 45,
+      "seed": 401,
+      "startup_control_socket_present": true,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    },
+    {
+      "algorithm": "skillopt",
+      "bound_native_instances": 46,
+      "bound_socket_cleanup_all_absent": true,
+      "cleanup_confirmed": false,
+      "cleanup_elapsed_seconds": 38.320227529002295,
+      "cleanup_failure_codes": [
+        "UnboundNativeInstance"
+      ],
+      "contracted_actor_interviews": {
+        "accounting_complete": true,
+        "logical_requests": 60,
+        "measured_physical_requests": 60,
+        "measured_tokens": 170336,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "current_known_process_states": {
+        "absent": 219
+      },
+      "day": 3,
+      "error_type": "TimeoutError",
+      "execution_elapsed_seconds": 3745.3785818489996,
+      "failure_class": "hermes_startup_ready_wait_timeout",
+      "failure_file_mtime_utc": "2026-09-10T08:02:11.322927+00:00",
+      "known_recorded_processes": 219,
+      "last_recorded_startup_child_state": "D",
+      "learning_updates": 0,
+      "online_prefix": {
+        "accounting_complete": true,
+        "charged_or_reserved_model_calls": 483,
+        "charged_or_reserved_tokens": 5004375,
+        "known_input_tokens": 4933072,
+        "known_output_tokens": 71303,
+        "known_physical_calls": 483,
+        "known_tokens": 5004375,
+        "records": 46,
+        "unresolved_records": 0
+      },
+      "outer_wall_budget_exceeded": false,
+      "run_id": "seed-401-skillopt",
+      "saved_sessions": 46,
+      "seed": 401,
+      "startup_control_socket_present": true,
+      "startup_reservation": {
+        "measurement": false,
+        "model_calls": 16,
+        "tokens": 250000
+      },
+      "startup_wait_limit_seconds": 150,
+      "status": "failed",
+      "supervisor_termination_reason": "exited",
+      "worker_log_bytes": 0,
+      "world_exit_code": 1
+    }
+  ]
+}
