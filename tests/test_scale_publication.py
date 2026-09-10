@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.metrics import _execution_costs, _learning_costs
 from scripts.audit_scale import expected_config
 from scripts import report_scale as publication
@@ -49,6 +50,7 @@ def fixture(root):
                 'algorithm': algorithm, 'config': expected_config(seed, algorithm)}
             campaign['slots'].append(slot)
             learned = algorithm == 'skillopt'
+            native_n, native_f = (3, 2) if learned else (2, 1)
             employee = 'firm-0__incident-regulated'
             experiences = [{'id': f'experience-{i}', 'source_session': f'obligation-{i}', 'employee': employee,
                 'split': 'train' if i < 2 else 'val', 'available_day': i + 1, 'feedback_available_day': i + 1,
@@ -87,7 +89,18 @@ def fixture(root):
                         'gate_evidence': gate, 'skill': PRIVATE, 'replay_evidence': PRIVATE,
                         'costs': {'tokens': 1000, 'target_model_calls': 10, 'optimizer_model_calls': 1,
                             'replays': 4, 'wall_seconds': 5., 'accounting_complete': True, 'operations': PRIVATE}})
-            cp = {'ecosystem': {'day': 21, 'private': PRIVATE}, 'runner': {'phase': 'advance',
+            fixture_world = Ecosystem(days=22, seed=seed, enterprise_count=4, consumer_count=8)
+            fixture_world.advance()
+            for index in range(4, 4 + native_n):
+                consumer = f'consumer-{index}'
+                fixture_world.apply_decision(consumer,
+                    {'action': 'purchase', 'firm': f'firm-{index % 4}', 'notes': PRIVATE, 'reason': PRIVATE, 'evidence_ids': []},
+                    fixture_world.actor_view(consumer))
+            for _ in range(21):
+                fixture_world.advance()
+            ecosystem = fixture_world.checkpoint()
+            ecosystem['private'] = PRIVATE
+            cp = {'ecosystem': ecosystem, 'runner': {'phase': 'advance',
                 'sessions': sessions, 'updates': updates, 'experiences': experiences, 'learning_eligibility': logs,
                 'skills': PRIVATE, 'private': PRIVATE}}
             v1 = {'status': 'completed', 'algorithm': algorithm, 'private': PRIVATE,
@@ -98,7 +111,6 @@ def fixture(root):
                     'distinct_obligations_attempted': 4, 'retry_attempts': 0, 'strict_success_rate': 1. if learned else .75,
                     'mean_semantic_score': 1. if learned else .875, 'budget_exhausted_attempts': 0 if learned else 1}}
             fixed_fulfilled = 192 if learned else 180
-            native_n, native_f = (3, 2) if learned else (2, 1)
             v2 = {'status': 'completed', 'algorithm': algorithm, 'metric_schema_version': 2,
                 'correction_audit': {'eligible_for_paired_inference': True, 'issues': []},
                 'commitments': commitment(240 + native_n, fixed_fulfilled + native_f),
@@ -199,6 +211,33 @@ class ScalePublicationTests(unittest.TestCase):
         self.assertAlmostEqual(result['comparison']['equal_world_mean_deltas']['fixed_demand_fulfillment_rate'], .05)
         self.assertEqual(len(result['comparison']['pairs']), 3)
         self.assertIsNone(result['comparison']['confidence_interval'])
+
+    def test_world_dynamics_remain_a_hash_bound_descriptive_supplement(self):
+        result = self.generate()
+        for world in result['worlds']:
+            dynamics = world['world_dynamics']
+            self.assertTrue(dynamics['evidence_complete'])
+            self.assertEqual(len(dynamics['enterprises']), 4)
+            self.assertEqual(len(dynamics['consumers']), 8)
+            self.assertEqual(dynamics['analysis_registration'], 'during_execution_descriptive_addition_not_preregistered_endpoint')
+        self.assertEqual(result['provenance']['postprocessor']['supplemental_source_sha256'],
+            {'scripts/scale_world_dynamics.py': publication.sha(Path(publication.scale_world_dynamics.__file__).read_bytes())})
+        self.assertEqual(result['primary_endpoint'], 'Equal-world mean paired difference in fixed initial/benchmark commitment fulfillment.')
+
+    def test_missing_world_history_blocks_draft_without_changing_raw_reports(self):
+        self.mutate(0, 'checkpoint.json', lambda cp: cp['ecosystem'].pop('events'))
+        with self.assertRaisesRegex(ValueError, 'world_dynamics_evidence_incomplete'):
+            self.generate()
+        self.assertFalse(self.out.exists())
+
+    def test_native_order_count_must_match_world_event_history(self):
+        def change(v2):
+            v2['source_breakdown']['native_consumer'] = commitment(3, 1)
+            v2['commitments'] = commitment(243, 181)
+        self.mutate(0, 'REPORT.v2.json', change)
+        with self.assertRaisesRegex(ValueError, 'world_dynamics_native_commitment_count_mismatch'):
+            self.generate()
+        self.assertFalse(self.out.exists())
 
     def test_gate_proposals_edits_trials_unknown_bookkeeping_and_adoption_differ(self):
         opt = self.generate()['worlds'][1]['optimizer']

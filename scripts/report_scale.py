@@ -19,7 +19,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from lifespan.evaluation.metrics import _execution_costs, _learning_costs
-from scripts import audit_scale_cli
+from scripts import audit_scale_cli, scale_world_dynamics
 from scripts.scale_summary import build_scale_summary
 
 VERSION = 'scale-publication-v1'
@@ -42,6 +42,7 @@ CAVEATS = [
     'The primary endpoint is the equal-world mean paired difference in fixed initial/benchmark commitment fulfillment. All six planned worlds remain visible; native consumer orders are reported separately.',
     'Employees, tasks, retries, learning replays, and regime exposures within a world are dependent. No session-level confidence interval or effective sample-size claim is made.',
     'Paired arms share starting cohorts and exogenous schedules, but native actors can react differently. These reacting worlds are not an isolated causal test of a skill edit.',
+    'World-state trajectories are a descriptive reporting supplement introduced during execution before learning began; they are not an additional preregistered endpoint.',
     'Work is limited to days 0–19, with settlement-only days 20–21. Pending and delayed commitments remain visible; results do not demonstrate indefinite lifelong learning.',
     'Optimizer training and gate replay outcomes are separate from prospective online work. Adoption counts describe the recorded gate decision, not proven out-of-sample benefit.',
     'Measured employee/optimizer calls and tokens exclude unmetered environment inference. Logical actor requests are not physical model calls. Currency and all-in costs remain unknown.',
@@ -270,6 +271,19 @@ def _markdown(summary):
     lines.extend(['', f'Equal-world mean fixed-demand difference: **{mean:+.4f}**. No confidence interval or causal efficacy claim is made.', '',
         'The JSON draft retains every employee, scheduled eligibility boundary, regime, deployed-version exposure, and optimizer gate count. '
         'Rejected and unmatched edits are counted separately; absent gate bookkeeping remains unknown.', '',
+        'World trajectories below are a descriptive supplement added during execution before learning began. '
+        'Recorded decisions that leave strategy or route values unchanged are retained separately in JSON. '
+        'These are not additional preregistered endpoints.', '',
+        '| World | Firm strategy changes / decisions | Delivered route changes | Delivered policy value changes | Native consumer orders |',
+        '| --- | --- | --- | --- | --- |'])
+    for row in summary['worlds']:
+        dynamics = row['world_dynamics']; firms = dynamics['enterprises']
+        changes = sum(firm['strategy_change_events'] for firm in firms)
+        decisions = sum(firm['recorded_decision_opportunities'] for firm in firms)
+        routes = sum(firm['delivered_route_changes'] for firm in firms)
+        lines.append(f"| {row['run_id']} | {changes} / {decisions} | {routes} | "
+            f"{dynamics['government']['delivered_policy_value_changes']} | {dynamics['endogenous_order_count']} |")
+    lines.extend(['',
         '| Measured scope | Physical calls | Tokens | Charged/reserved tokens |', '| --- | --- | --- | --- |'])
     costs = summary['costs']
     for label, scope, call_keys, token_key in (
@@ -303,6 +317,7 @@ def report_scale(campaign_dir, out_dir, *, preregistration_path):
         identifier = f"seed-{slot['seed']}-{slot['algorithm']}"
         require(slot['run_id'] == identifier and slot['relative_path'] == 'runs/' + identifier, 'unsafe_or_unplanned_run_identity')
     processor_sha = sha(Path(__file__).read_bytes())
+    dynamics_sha = sha(Path(scale_world_dynamics.__file__).read_bytes())
     hashes = {'campaign.json': campaign_sha}
     for name in ('CLI_LAUNCH_RECEIPTS.json', 'EXECUTION.json', 'execution_results.json', 'AUDIT.json'):
         if name == 'AUDIT.json' and not (root / name).exists():
@@ -343,10 +358,16 @@ def report_scale(campaign_dir, out_dir, *, preregistration_path):
         business = {'realized_utility': number(v1['business']['realized_utility'], nonnegative=False),
             'unit': 'synthetic_utility_not_currency', **{key: count(v1['business'][key]) for key in ('settled_entries', 'unsettled_entries', 'reward_censored_obligations')}}
         state = cp['runner']
+        dynamics = scale_world_dynamics.summarize_world_dynamics(cp)
+        require(dynamics['evidence_complete'] is True and not dynamics['evidence_issues'], 'world_dynamics_evidence_incomplete')
+        native_orders = [order for consumer in dynamics['consumers'] for order in consumer['endogenous_orders']
+            if order['day'] < slot['config']['days']]
+        require(len(native_orders) == breakdown['native_consumer']['accepted_before_work_horizon'],
+            'world_dynamics_native_commitment_count_mismatch')
         worlds.append({'run_id': identifier, 'seed': slot['seed'], 'algorithm': slot['algorithm'], 'status': 'completed',
             'primary_fixed_demand': breakdown['fixed_initial_and_benchmark'], 'all_commitments': all_work,
             'commitment_sources': breakdown, 'business': business, 'online': _online(state, v1),
-            'optimizer': _optimizer(state['updates']), 'costs': _costs(v1, state)})
+            'optimizer': _optimizer(state['updates']), 'costs': _costs(v1, state), 'world_dynamics': dynamics})
         records.append({'run_id': identifier, 'checkpoint': cp, 'report': v1})
     exposure = build_scale_summary(campaign, records)
     require(exposure['complete'] is True and not exposure['evidence_issues'], 'incomplete_learning_exposure')
@@ -367,7 +388,8 @@ def report_scale(campaign_dir, out_dir, *, preregistration_path):
         'primary_endpoint': 'Equal-world mean paired difference in fixed initial/benchmark commitment fulfillment.',
         'provenance': {'hash_encoding': 'sha256_raw_file_bytes', 'campaign_raw_sha256': campaign_sha,
             'published_preregistration_raw_sha256': prereg_sha,
-            'postprocessor': {'path': 'scripts/report_scale.py', 'sha256': processor_sha, 'version': VERSION},
+            'postprocessor': {'path': 'scripts/report_scale.py', 'sha256': processor_sha, 'version': VERSION,
+                'supplemental_source_sha256': {'scripts/scale_world_dynamics.py': dynamics_sha}},
             'execution_source_sha256': source_hashes, 'raw_input_sha256': hashes,
             'audit': audit_provenance},
         'worlds': worlds, 'comparison': _pairs(worlds), 'learning_exposure': exposure,
@@ -376,6 +398,7 @@ def report_scale(campaign_dir, out_dir, *, preregistration_path):
     markdown = _markdown(summary)
     # Recheck bytes after aggregation, including the independent postprocessor.
     require(sha(prereg.read_bytes()) == prereg_sha and sha(Path(__file__).read_bytes()) == processor_sha
+            and sha(Path(scale_world_dynamics.__file__).read_bytes()) == dynamics_sha
             and sha(Path(audit_scale_cli.__file__).read_bytes()) == audit_provenance['correction']['corrected_auditor_sha256']
             and all(sha((ROOT / name).read_bytes()) == value for name, value in source_hashes.items())
             and all(sha((root / name).read_bytes()) == value for name, value in hashes.items()), 'raw_inputs_changed_during_reporting')

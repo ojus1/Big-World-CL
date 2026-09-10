@@ -69,3 +69,8 @@ Review the separate [learning deadline observations](SCALE_DEADLINE_OBSERVATIONS
 alongside the campaign audit before publication. That diagnostic records timing
 and cost evidence; it does not change this actor-name correction or the frozen
 auditor's acceptance rules.
+
+The draft also includes [descriptive world trajectories](SCALE_WORLD_DYNAMICS.md)
+with a separately hashed postprocessor. This supplement distinguishes recorded
+decisions from actual enterprise, route and policy changes; the preregistered
+primary endpoint remains unchanged.
