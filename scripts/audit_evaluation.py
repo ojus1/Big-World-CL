@@ -141,6 +141,38 @@ def transport_manifest_check(manifest):
     return descriptor
 
 
+def mirofish_service_check(root, manifest, report=None):
+    """Bind opt-in routing metadata to the native client's persisted settings.
+
+    Historical runs have no URL markers or binding. A client receipt is local
+    provenance, not authentication of a listening service or its remote models.
+    """
+    from lifespan.mirofish import SERVICE_BINDING_FILE, normalize_service_url, service_binding
+    key = 'mirofish_service_url'
+    containers = [manifest.get('config', {}), manifest.get('scenario', {}), manifest]
+    path = child(Path(root), 'actors/' + SERVICE_BINDING_FILE)
+    if report is not None:
+        containers += [report.get('config', {}), report.get('scenario', {}), report.get('provenance', {})]
+    enabled = key in containers[0]
+    if not enabled:
+        require(all(key not in data for data in containers) and not path.exists()
+                and (report is None or 'mirofish_service_binding_sha256' not in report.get('provenance', {})),
+                'mirofish_service_marker_downgrade')
+        return None
+    url = containers[0][key]
+    require(normalize_service_url(url) == url, 'mirofish_service_noncanonical_configuration')
+    require(all(data.get(key) == url for data in containers), 'mirofish_service_metadata_mismatch')
+    required = ('lifespan/mirofish.py', 'lifespan/evaluation/protocol.py',
+                'lifespan/evaluation/runner.py', 'scripts/audit_evaluation.py')
+    require(all(manifest.get('source_sha256', {}).get(name) == sha((ROOT / name).read_bytes()) for name in required),
+            'mirofish_service_source_binding')
+    require(path.is_file() and read(path) == service_binding(url), 'mirofish_service_native_client_binding')
+    if report is not None:
+        require(report['provenance'].get('mirofish_service_binding_sha256') == sha(path.read_bytes()),
+                'mirofish_service_report_binding')
+    return {'service_url': url, 'binding_sha256': sha(path.read_bytes())}
+
+
 def transport_check(record, manifest=None):
     expected = transport_manifest_check(manifest) if manifest is not None else None
     descriptor = record.get('hermes_transport')
@@ -316,6 +348,9 @@ def audit_run(root, strict=False):
     try:
         manifest, cp = read(root / 'manifest.json'), read(root / 'checkpoint.json')
         transport_manifest_check(manifest)
+        service = mirofish_service_check(root, manifest)
+        if service is not None:
+            result['mirofish_service_audit'] = service
         for name in ('lifespan/evaluation/tasks.py', 'lifespan/evaluation/metrics.py', 'lifespan/ecosystem.py', 'lifespan/world.py'):
             require(sha((ROOT / name).read_bytes()) == manifest['source_sha256'][name], 'audit_source_revision_mismatch')
         state = cp['runner']
@@ -368,6 +403,7 @@ def audit_run(root, strict=False):
         report_path = root / 'REPORT.json'
         if report_path.exists():
             report = read(report_path)
+            mirofish_service_check(root, manifest, report)
             provenance = dict(report['provenance'])
             for key in ('target_model', 'model_base_url', 'dependencies', 'source_sha256'):
                 require(provenance[key] == manifest[key], 'report_provenance_' + key)
