@@ -22,6 +22,7 @@ if str(ROOT) not in sys.path:
 from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import SEED_SKILL, digest
 from lifespan.evaluation.runner import credentials, dependency_provenance, source_hashes
+from lifespan.evaluation.hermes_transport import executor_options, manifest_fields, mode
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_calibration import audit_calibration
@@ -104,11 +105,14 @@ def prepare(source, calibration, out):
     public_probes = public_probe_manifest(probes)
     code = {**source_hashes(), **{name: sha(ROOT / name) for name in CODE_FILES}}
     original = read(source / 'manifest.json')
+    if mode(read(calibration / 'manifest.json')) != mode(original['config']):
+        raise ValueError('Calibration transport differs from source transport')
     out.mkdir(parents=True)
     for index, capsule in enumerate(probes):
         save(out / 'private/probes' / f'probe-{index}.json', capsule)
     save(out / 'private/experiences.json', selection['experiences'])
     manifest = {'schema_version': 1, 'kind': 'native_employee_learning_transfer_diagnostic',
+                **manifest_fields(original['config']),
                 'source_directory': str(source), 'calibration_directory': str(calibration),
                 'source_checkpoint_sha256': sha(source / 'checkpoint.json'),
                 'source_manifest_sha256': sha(source / 'manifest.json'),
@@ -159,6 +163,8 @@ def validate_prepared(out):
     if Path(read(calibration / 'manifest.json')['source_directory']).resolve() != source:
         raise ValueError('Calibration source mismatch')
     original = read(source / 'manifest.json')
+    if mode(manifest) != mode(original['config']) or mode(read(calibration / 'manifest.json')) != mode(original['config']):
+        raise ValueError('Transfer transport differs from source or calibration')
     if any(manifest[key] != original[key] for key in ('target_model', 'model_base_url')):
         raise ValueError('Transfer model/provider differs from historical source')
     selection = select_employee(read(source / 'checkpoint.json'), read(calibration / 'bank.json'),
@@ -275,12 +281,13 @@ def execute(out, *, creds=None, executor=execute_case, learning_executor=None, l
                 task_id=capsule['task_id'], case=capsule['case'], request=capsule['request'], skill=skill,
                 credentials=creds, objectives=capsule['objectives'], business_files=capsule['business_files'],
                 max_iterations=CONFIG['max_iterations'], max_tokens=CONFIG['max_output_tokens'],
-                max_total_tokens=CONFIG['max_rollout_tokens'], timeout_seconds=CONFIG['max_rollout_seconds'])
+                max_total_tokens=CONFIG['max_rollout_tokens'], timeout_seconds=CONFIG['max_rollout_seconds'],
+                **executor_options(manifest))
             receipt = {**slot, 'status': 'completed' if record['infrastructure_valid'] else 'infrastructure_invalid',
                        **{key: deepcopy(record[key]) for key in RECEIPT_FIELDS},
                        'session_path': str((root / 'session.json').relative_to(out)), 'session_sha256': sha(root / 'session.json')}
             if record['infrastructure_valid']:
-                session_check(record, root, capsule)
+                session_check(record, root, capsule, transport_manifest=manifest)
                 if record['skill']['content_sha256'] != skill_hash(skill):
                     raise ValueError('Probe did not load its assigned frozen skill')
             if digest(capsule) != manifest['probe_manifest']['probes'][slot['probe_index']]['capsule_sha256']:

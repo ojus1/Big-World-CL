@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "kind": "hermes-transport-capability-v1",
+  "config": {
+    "fixture_seed": 930117,
+    "fixture_day": 0,
+    "max_iterations": 16,
+    "max_output_tokens": 4096,
+    "max_rollout_tokens": 250000,
+    "max_rollout_seconds": 420,
+    "max_cleanup_seconds": 30,
+    "max_run_seconds": 2700,
+    "max_model_calls": 96,
+    "max_charged_tokens": 1500000,
+    "fixed_slots": 6
+  },
+  "slots": [
+    {
+      "index": 0,
+      "slot_id": "00-onboarding-streaming",
+      "workflow": "onboarding",
+      "mode": "streaming",
+      "employee": "firm-0__onboarding-regulated",
+      "task_id": "hermes-capability-onboarding-v1",
+      "capsule_path": "private/cases/onboarding.json",
+      "capsule_sha256": "34c6c77967b89e0a9bf5e7b8f7d5ac0bde67cf422fec0c50bf8fa66c239cd7a9"
+    },
+    {
+      "index": 1,
+      "slot_id": "01-onboarding-nonstreaming",
+      "workflow": "onboarding",
+      "mode": "nonstreaming",
+      "employee": "firm-0__onboarding-regulated",
+      "task_id": "hermes-capability-onboarding-v1",
+      "capsule_path": "private/cases/onboarding.json",
+      "capsule_sha256": "34c6c77967b89e0a9bf5e7b8f7d5ac0bde67cf422fec0c50bf8fa66c239cd7a9"
+    },
+    {
+      "index": 2,
+      "slot_id": "02-renewal-nonstreaming",
+      "workflow": "renewal",
+      "mode": "nonstreaming",
+      "employee": "firm-0__renewal-regulated",
+      "task_id": "hermes-capability-renewal-v1",
+      "capsule_path": "private/cases/renewal.json",
+      "capsule_sha256": "9120b505adefcec73d7c56bba4c518220d37a8d3b5be5fbda1fb529acc0d07ab"
+    },
+    {
+      "index": 3,
+      "slot_id": "03-renewal-streaming",
+      "workflow": "renewal",
+      "mode": "streaming",
+      "employee": "firm-0__renewal-regulated",
+      "task_id": "hermes-capability-renewal-v1",
+      "capsule_path": "private/cases/renewal.json",
+      "capsule_sha256": "9120b505adefcec73d7c56bba4c518220d37a8d3b5be5fbda1fb529acc0d07ab"
+    },
+    {
+      "index": 4,
+      "slot_id": "04-incident-streaming",
+      "workflow": "incident",
+      "mode": "streaming",
+      "employee": "firm-0__incident-regulated",
+      "task_id": "hermes-capability-incident-v1",
+      "capsule_path": "private/cases/incident.json",
+      "capsule_sha256": "3343271521e9b2833cdcea1b6dd75a56dd554493241d53de0f97a3edb57a275a"
+    },
+    {
+      "index": 5,
+      "slot_id": "05-incident-nonstreaming",
+      "workflow": "incident",
+      "mode": "nonstreaming",
+      "employee": "firm-0__incident-regulated",
+      "task_id": "hermes-capability-incident-v1",
+      "capsule_path": "private/cases/incident.json",
+      "capsule_sha256": "3343271521e9b2833cdcea1b6dd75a56dd554493241d53de0f97a3edb57a275a"
+    }
+  ],
+  "source_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "a62c5c56c0e780c469d090a5f8b4926304b8518683794f6cf67922599ac4d0b1",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "891038f812204ef586918ffa475b9e87849529c741bc7da1a3208ac4272ee7be",
+    "lifespan/evaluation/hermes_transport.py": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "265b1535e67ea9a7657c1dd84fb480250a334435a12c907ed646004f0bc99a5e",
+    "lifespan/evaluation/runner.py": "28d3fad9516f8bd10adc7b956aad67a705ab3984c4ae942a13d3611968839200",
+    "lifespan/evaluation/runtime.py": "7264f56d085d6c045a3cc7496dfcb1037a2b694417d127ce9e7d00e4687cd6de",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "b0684cd355d091d948dabbee34f7fbe0e87a8ebc2e01845c06299b91eefbaff2",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "0d59f091acf62b726721a380e54ad8423ae7e99ea536d0e7f78a2650bd3ef341",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0",
+    "scripts/evaluation_report_v2.py": "56e346e2342fa930b6ee98dcc069e758595e4db4115a639b6c8a6aa0e8d2664b",
+    "scripts/run_scale.py": "661ff24937aa06bfd86797d0ef219374411122f1aedde6ed8e5534f9d0f9f18f",
+    "scripts/audit_scale.py": "198006354cb2c8eb5ee8bc051c2607e68b75ce7787d3fbfb5b86115f11e4b012",
+    "scripts/scale_summary.py": "01ffc9d1a05e0c1ec8155647199b3487da96e8bb5f9d2bfb6b99bc161923cf8e",
+    "scripts/audit_evaluation.py": "a3774a1ca1de3f38c7e28eaa39818f294f1dc9e5cc6aee7cecee9ae275a1e718",
+    "scripts/audit_transfer.py": "139415b32a566460d2a90a3dfa6a8a0bb27f75af0703d13b921b31b4ab92f2dd",
+    "scripts/audit_learning_v2.py": "d910434e9bc3acf9f081b0f18c267fd7164620d810132bd0f7a0ac1bbd32f1ef",
+    "scripts/hermes_transport_preflight.py": "9d360dad57e8275ce58abc1d20fd4ea15150a6ef07f2afa3dcbea9531aca5865",
+    "scripts/hermes_preflight_process.py": "62eabba97ae43143ed943e31aa1f7c5912e5e5a1494046a0b46f3ef4b1e8c516",
+    "scripts/audit_hermes_preflight.py": "5d3ffac487a00effd1ae026104b4d99d8757962bf51979ea292efb2639e9c18f"
+  },
+  "dependencies": {
+    "hermes": {
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "native_source_sha256": {
+        "run_agent.py": "a26e5264738f1c62347e63c1265e562d3cfae439dadc313db48572f3e9cc751b",
+        "agent/codex_runtime.py": "37bd92f2c3573d70558602c5438b8198b4854ac86cefb9d5757cedc5a841ba0b",
+        "agent/codex_responses_adapter.py": "539dabc336212a0b00488d779496dd39d40c0afa4daee266cdb5d3a578f856e9",
+        "agent/chat_completion_helpers.py": "b88c4cc9428eb8d26cfcff2037dad2942970d13fc3e46a0f2ae41106d6d7fa50",
+        "agent/conversation_loop.py": "9904134bef009978bf95477a7ba8663421448e3e7735e0ba041ca672dfd33b45",
+        "agent/transports/codex.py": "a9765ee5e9a93ded4aec1fca562007893ad2f717f7516fa23f0295a7a7b6ceac",
+        "agent/transports/base.py": "e9b0d020f9cf1aae5d0a470363c7694cb3f3f0257fbeff00fc80435e9b80befe",
+        "agent/transports/types.py": "148b1f6389d10952a70da2a79c7a6baf056f7a41178b9b5e0b673626dad2fa2b",
+        "agent/transports/__init__.py": "fe832003b28c5470608eb51a055e5cc759f1fb81d93174b54dbbd217f97bbffe",
+        "agent/relay_llm.py": "955d10af9eebe807f0a5e8cae934470196f7d8ccded8eae1311d2aa6b3228189"
+      },
+      "python_sha256": "2874a0b9344d06b7767aebb1e6e25a759ffcbdb544e99400ecc74dc6092d1174",
+      "packages": {
+        "openai": "2.24.0",
+        "httpx": "0.28.1"
+      }
+    },
+    "harness": {
+      "python_version": "3.11.16",
+      "python_sha256": "2874a0b9344d06b7767aebb1e6e25a759ffcbdb544e99400ecc74dc6092d1174",
+      "pyyaml_version": "6.0.3"
+    },
+    "bubblewrap": {
+      "binary_sha256": "52231e1caf55bcbc667b269f49c63599a6f7db4767ae6a039580d0ff853db712",
+      "version": "bubblewrap 0.9.0"
+    }
+  },
+  "repository_commit": "cf25e505fe11a0b3f128229f7dea1599f53d4d2d",
+  "source_commit_verified": true,
+  "target_model": "gpt-5.6-luna",
+  "model_base_url": "https://api.openai.com/v1",
+  "initial_skill_sha256": "11bee14caf0c412b922087e3d59b243d165973480cb9cee47fd9efef48918d77",
+  "transports": {
+    "streaming": {
+      "schema_version": 1,
+      "mode": "streaming",
+      "store": false,
+      "adapter": "native-hermes-codex-responses"
+    },
+    "nonstreaming": {
+      "schema_version": 1,
+      "mode": "nonstreaming",
+      "store": false,
+      "adapter": "bigworld-hermes-responses-final-v1",
+      "hermes_revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "native_source_sha256": {
+        "run_agent.py": "a26e5264738f1c62347e63c1265e562d3cfae439dadc313db48572f3e9cc751b",
+        "agent/codex_runtime.py": "37bd92f2c3573d70558602c5438b8198b4854ac86cefb9d5757cedc5a841ba0b",
+        "agent/codex_responses_adapter.py": "539dabc336212a0b00488d779496dd39d40c0afa4daee266cdb5d3a578f856e9",
+        "agent/chat_completion_helpers.py": "b88c4cc9428eb8d26cfcff2037dad2942970d13fc3e46a0f2ae41106d6d7fa50",
+        "agent/conversation_loop.py": "9904134bef009978bf95477a7ba8663421448e3e7735e0ba041ca672dfd33b45",
+        "agent/transports/codex.py": "a9765ee5e9a93ded4aec1fca562007893ad2f717f7516fa23f0295a7a7b6ceac",
+        "agent/transports/base.py": "e9b0d020f9cf1aae5d0a470363c7694cb3f3f0257fbeff00fc80435e9b80befe",
+        "agent/transports/types.py": "148b1f6389d10952a70da2a79c7a6baf056f7a41178b9b5e0b673626dad2fa2b",
+        "agent/transports/__init__.py": "fe832003b28c5470608eb51a055e5cc759f1fb81d93174b54dbbd217f97bbffe",
+        "agent/relay_llm.py": "955d10af9eebe807f0a5e8cae934470196f7d8ccded8eae1311d2aa6b3228189"
+      },
+      "adapter_source_sha256": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+      "sdk_max_retries": 0,
+      "receipt_recovery": false,
+      "cancellation": "unchanged_native_outer_watchdogs_and_client_abort"
+    }
+  },
+  "execution_driver": "scripts.hermes_transport_preflight.execute",
+  "native_executor": "lifespan.evaluation.runtime.execute_case",
+  "scope": "fixed_synthetic_component_tasks; no_native_actors_or_learning_or_study_cohort"
+}

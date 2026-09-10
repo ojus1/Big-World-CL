@@ -358,6 +358,10 @@ respecting the total-token and time budgets in `limits`.
 
 ## Budgets, failures and audit
 
+Future runs use the explicit [V2 learning-stop evidence contract](LEARNING_STOP_EVIDENCE_V2.md).
+It reconciles fully accounted, unadopted timing stops without inventing terminal
+replay scores; historical V1 audits retain their original rules.
+
 Before each callback the bridge reserves its maximum permitted calls and tokens.
 `limits` supplies `max_model_calls`, `max_tokens`, `timeout_seconds`, and remaining
 totals. The callback must enforce these bounds, including native skill-loading

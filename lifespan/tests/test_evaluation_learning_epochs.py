@@ -79,7 +79,7 @@ class LearningEpochTests(unittest.TestCase):
             self.assertEqual(progress['optimizer_dispatches'][-1]['dispatch_status'], 'dispatched')
             self.reflections.append(deepcopy(payload))
             receipt = {'status': 'completed', 'model_calls': 1, 'tokens': 3,
-                'tool_calls': 0, 'latency_ms': 1.0,
+                'tool_calls': 0, 'latency_ms': 0.0,
                 'response': json.dumps([{'op': 'add', 'content': 'Use the accurate offline fixture procedure.',
                                          'rationale': 'Contract fixture, not learning evidence.'}])}
             reflect.audit_records.append({'accounting_complete': True, 'model_calls': 1,
@@ -107,7 +107,7 @@ class LearningEpochTests(unittest.TestCase):
             'infrastructure_valid': True, 'success': success, 'semantic_score': float(success),
             'feedback': 'Fixture passed.' if success else 'Fixture procedure missing.',
             'usage': {'complete': True, 'api_calls': calls, 'total_tokens': tokens, 'charged_tokens': tokens},
-            'elapsed_seconds': .001, 'tool_calls': 1, 'skill_loaded': True,
+            'elapsed_seconds': 0.0, 'tool_calls': 1, 'skill_loaded': True,
             'result': {'native': {'messages': [{'role': 'tool', 'content': 'Observed public fixture output.'}]}}}
         save(kwargs['root'] / 'session.json', record)
         return record
@@ -161,6 +161,12 @@ class LearningEpochTests(unittest.TestCase):
         result = self.run_epoch(remaining_seconds=lambda: 45)
         self.assertEqual(result['configuration']['budget']['max_seconds'], 45)
         self.assertTrue(all(call['timeout_seconds'] <= 45 for call in self.calls))
+
+    def test_opt_in_transport_reaches_every_learning_replay(self):
+        self.config.hermes_transport = 'nonstreaming'
+        self.run_epoch()
+        self.assertEqual(len(self.calls), 10)
+        self.assertTrue(all(call['hermes_transport'] == 'nonstreaming' for call in self.calls))
 
     def test_replay_progress_binds_every_actual_upstream_phase_and_session(self):
         parent = digest(self.eco.checkpoint())
@@ -237,6 +243,58 @@ class LearningEpochTests(unittest.TestCase):
         self.assertEqual(self.begins, [])
         self.assertEqual(self.calls, [])
         self.assertFalse((self.out / 'learning').exists())
+
+    def test_known_wall_stop_retains_unscored_native_identity_and_finishes_without_adoption(self):
+        clock = [0.]
+        def late(**kwargs):
+            record = self.execute(**kwargs)
+            clock[0] += 421.
+            return record
+        with patch('lifespan.evaluation.skillopt.time', SimpleNamespace(monotonic=lambda: clock[0])):
+            result = self.run_epoch(executor=late)
+        self.assertEqual(result['status'], 'budget_exhausted')
+        self.assertFalse(result['accepted'])
+        self.assertTrue(result['costs']['accounting_complete'])
+        self.assertEqual(result['costs']['target_model_calls'], 16)
+        self.assertEqual(result['replay_evidence'], [])
+        self.assertEqual(len(result['unscored_replay_evidence']), 1)
+        self.assertEqual(result['unscored_replay_evidence'][0]['attempt_index'], 0)
+        self.assertEqual(self.state['skills'][self.employee], SEED_SKILL)
+        self.assertEqual(self.finishes, [True])
+        self.assertEqual(self.read_progress()['replay_artifacts'], result['replay_artifacts'])
+
+    def test_physical_overrun_keeps_actual_cost_and_blocks_epoch_finish(self):
+        def overrun(**kwargs):
+            record = self.execute(**kwargs)
+            record['usage']['api_calls'] = kwargs['max_iterations'] + 1
+            save(kwargs['root'] / 'session.json', record)
+            return record
+        with self.assertRaises(RuntimeError):
+            self.run_epoch(executor=overrun)
+        result = self.state['updates'][0]
+        self.assertFalse(result['accepted'])
+        self.assertTrue(result['costs']['accounting_complete'])
+        self.assertEqual(result['costs']['target_model_calls'], 17)
+        self.assertIn('model_calls', result['costs']['stop_evidence']['violations'])
+        self.assertEqual(self.state['skills'][self.employee], SEED_SKILL)
+        self.assertEqual(self.finishes, [])
+
+    def test_failed_callback_with_known_timing_overrun_blocks_finish(self):
+        clock = [0.]
+        def late_failure(**kwargs):
+            record = self.execute(**kwargs)
+            record['infrastructure_valid'] = False
+            save(kwargs['root'] / 'session.json', record)
+            clock[0] += 421.
+            return record
+        with patch('lifespan.evaluation.skillopt.time', SimpleNamespace(monotonic=lambda: clock[0])):
+            with self.assertRaises(RuntimeError):
+                self.run_epoch(executor=late_failure)
+        result = self.state['updates'][0]
+        self.assertEqual(result['status'], 'failed')
+        self.assertTrue(result['costs']['accounting_complete'])
+        self.assertEqual(result['costs']['target_model_calls'], 16)
+        self.assertEqual(self.finishes, [])
 
 
 if __name__ == '__main__':

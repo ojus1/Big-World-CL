@@ -44,10 +44,21 @@ class ExperimentConfig:
     max_learning_tokens_per_epoch: int | None = None
     max_learning_seconds_per_epoch: int | None = None
     max_actor_interviews: int | None = None
+    actor_output_contract: dict | None = None
+    mirofish_service_url: str | None = None
     focal_employee: str | None = None
+    hermes_transport: str = 'streaming'
     schema_version: int = 1
 
     def __post_init__(self):
+        from .hermes_transport import mode
+        mode(self)
+        if self.mirofish_service_url is not None:
+            from ..mirofish import normalize_service_url
+            object.__setattr__(self, 'mirofish_service_url', normalize_service_url(self.mirofish_service_url))
+        if self.actor_output_contract is not None:
+            from ..actor_contract import options
+            object.__setattr__(self, 'actor_output_contract', options(self.actor_output_contract))
         if self.algorithm not in ('no_learning', 'skillopt'):
             raise ValueError('algorithm must be no_learning or skillopt')
         if self.split not in ('dev', 'test') or self.state_mode not in ('skill_transfer', 'full_deployment'):
@@ -78,6 +89,12 @@ class ExperimentConfig:
 
     def public(self):
         result = asdict(self)
+        if self.hermes_transport == 'streaming':
+            result.pop('hermes_transport')
+        if result['actor_output_contract'] is None:
+            del result['actor_output_contract']
+        if result['mirofish_service_url'] is None:
+            del result['mirofish_service_url']
         if result['update_days'] is not None:
             result['update_days'] = list(result['update_days'])
         return result
@@ -99,6 +116,8 @@ def scenario(config):
             'population': {'firms': config.enterprise_count, 'employees': config.enterprise_count * 3,
                            'consumers': config.consumer_count, 'agencies': 1},
             'max_actor_interviews': config.max_actor_interviews,
+            **({'actor_output_contract': config.actor_output_contract} if config.actor_output_contract is not None else {}),
+            **({'mirofish_service_url': config.mirofish_service_url} if config.mirofish_service_url is not None else {}),
             'change_day': change, 'exception_window': [exception, reversal],
             'reversal_day': reversal, 'settlement_delay': 2,
             'shock_schedule': [{'day': change, 'corridor': 'disrupted', 'supply_delay': 2},
