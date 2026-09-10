@@ -23,6 +23,7 @@ from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import SEED_SKILL, digest
 from lifespan.evaluation.runner import credentials, dependency_provenance, source_hashes
 from lifespan.evaluation.hermes_transport import executor_options, manifest_fields, mode
+from lifespan.startup_observability import executor_options as startup_options, manifest_fields as startup_fields
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_calibration import audit_calibration
@@ -112,7 +113,7 @@ def prepare(source, calibration, out):
         save(out / 'private/probes' / f'probe-{index}.json', capsule)
     save(out / 'private/experiences.json', selection['experiences'])
     manifest = {'schema_version': 1, 'kind': 'native_employee_learning_transfer_diagnostic',
-                **manifest_fields(original['config']),
+                **manifest_fields(original['config']), **startup_fields(original['config']),
                 'source_directory': str(source), 'calibration_directory': str(calibration),
                 'source_checkpoint_sha256': sha(source / 'checkpoint.json'),
                 'source_manifest_sha256': sha(source / 'manifest.json'),
@@ -282,7 +283,7 @@ def execute(out, *, creds=None, executor=execute_case, learning_executor=None, l
                 credentials=creds, objectives=capsule['objectives'], business_files=capsule['business_files'],
                 max_iterations=CONFIG['max_iterations'], max_tokens=CONFIG['max_output_tokens'],
                 max_total_tokens=CONFIG['max_rollout_tokens'], timeout_seconds=CONFIG['max_rollout_seconds'],
-                **executor_options(manifest))
+                **executor_options(manifest), **startup_options(manifest))
             receipt = {**slot, 'status': 'completed' if record['infrastructure_valid'] else 'infrastructure_invalid',
                        **{key: deepcopy(record[key]) for key in RECEIPT_FIELDS},
                        'session_path': str((root / 'session.json').relative_to(out)), 'session_sha256': sha(root / 'session.json')}
