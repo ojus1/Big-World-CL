@@ -1,0 +1,258 @@
+{
+  "counts": {
+    "GATE_receipts": 1,
+    "HELLO_receipts": 1,
+    "attempted_slots_with_receipts": 1,
+    "declared_skipped_slots": 8,
+    "missing_audited_slot_receipts": 8,
+    "native_child_directories": 0,
+    "planned_slots": 9,
+    "qualified_slots": 0
+  },
+  "diagnostics": [
+    {
+      "diagnostic_id": "scope-environment-diagnostic-v1",
+      "exit_code": 1,
+      "failure_cause": null,
+      "hermes_constructor_or_work_requested_by_reviewed_payload": false,
+      "interpretation": "The payload included dependency metadata lookup. Exit1 and1199 stderr bytes were retained; stderr text was not. The failing operation and cause cannot be determined from these records, and this is not environment-key evidence.",
+      "launch_kind": "systemd_user_scope",
+      "new_user_network_namespaces_requested": true,
+      "payload_hash_verified": true,
+      "payload_utf8_sha256": "025173086c322d6141cf8269f554a70209b375915a80cb68710a5edd0cfd302a",
+      "physical_model_usage_meter_available": false,
+      "raw_evidence_sha256": {
+        "INTENT.json": "9f66a4744532380d4635e4500656cb84e8dbd64a7b3eb07d962c3cb563a33ca3",
+        "RESULT.json": "425c31dbb794ae276e2c8d683cd2e640a390aacec18428e70c7b0e1452125669"
+      },
+      "status": "failed_without_result",
+      "stderr_bytes_reported": 1199,
+      "stderr_text_persisted": false
+    },
+    {
+      "diagnostic_id": "scope-environment-diagnostic-v2",
+      "environment_keys": [
+        "HERMES_AGENT_ROOT",
+        "HOME",
+        "INVOCATION_ID",
+        "LANG",
+        "LOGNAME",
+        "PATH",
+        "USER",
+        "XDG_RUNTIME_DIR"
+      ],
+      "exit_code": 0,
+      "extra_key_value_recorded": false,
+      "extra_keys": [
+        "INVOCATION_ID"
+      ],
+      "hermes_constructor_or_work_requested_by_reviewed_payload": false,
+      "interpretation": "Only INVOCATION_ID was additional to the registered environment-key allowlist in this separate diagnostic. Its value was not recorded, so the diagnostic does not prove equality to an independently verified scope InvocationID.",
+      "launch_kind": "systemd_user_scope",
+      "new_user_network_namespaces_requested": true,
+      "payload_hash_verified": true,
+      "payload_utf8_sha256": "a3143a39dbcaf1abbde0169b38d8c2856a41c8af935c6502a914132e47027993",
+      "physical_model_usage_meter_available": false,
+      "raw_evidence_sha256": {
+        "INTENT.json": "5face0be0d648ebfcf61bdb54ab818caca3fd9957624e37256723823754d9ea7",
+        "RESULT.json": "1e7d9f11fffe84b89c8233bef8b4c6ccce86e72f10248d0ffe2e14209189bc33",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "scope_invocation_value_equality_proven": false,
+      "status": "environment_keys_observed",
+      "stderr_bytes_reported": 0,
+      "stderr_text_persisted": true
+    }
+  ],
+  "failed_attempt": {
+    "cleanup": {
+      "confirmed": true,
+      "errors": [],
+      "recorded_controller_state": "absent",
+      "released_for_normal_return": false,
+      "remaining_cgroup_members": 0,
+      "removed_alias_count": 0,
+      "scope_already_absent_at_stop_check": true,
+      "scope_stop_requested": false,
+      "socket_cleanup_confirmed": true,
+      "terminal_scope_active_state": "inactive",
+      "terminal_scope_load_state": "not-found",
+      "terminal_scope_sub_state": "dead",
+      "underlying_socket_removed": false
+    },
+    "cleanup_elapsed_seconds": 0.009942570000021078,
+    "controller_error_code": "controller_environment_not_scrubbed",
+    "controller_exit_code": 1,
+    "controller_log_bytes": 527,
+    "current_namespace_loopback_state_recorded": false,
+    "elapsed_attempt_through_cleanup_seconds": 0.42729007700017974,
+    "elapsed_before_cleanup_seconds": 0.41734750700015866,
+    "failure_stage": "post_gate_environment_check_before_native_startup",
+    "held_controller_identity_and_parent_verified": true,
+    "inherited_security_context_matches_supervisor": true,
+    "live_kernel_limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "4294967296",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "native_boundary_verified_before_and_after": false,
+    "native_startup_result_present": false,
+    "parent_error_codes": [
+      {
+        "code": "controller_exited_before_native_result",
+        "error_type": "ValueError"
+      }
+    ],
+    "scope_binding_rebuilt_matches_receipts": true,
+    "slot_id": "start-00",
+    "status": "infrastructure_failed",
+    "user_and_network_namespaces_differ_from_supervisor": true
+  },
+  "failure_interpretation": "The frozen controller rejects every environment key outside its seven-key allowlist before calling native startup. Its log reports that rejection; the separate successful scope diagnostic identifies INVOCATION_ID as the sole extra key. This supports the systemd scope environment mismatch explanation without fabricating a missing native result.",
+  "kind": "hermes-startup-scope-v2-outcome",
+  "limitations": [
+    "Live scope identity, namespace separation and resource controls passed their recorded checks, while the separate native before/after boundary and Hermes startup were not reached.",
+    "Confirmed cleanup of the failed controller does not turn its nonzero return into a successful qualification.",
+    "The earlier diagnostic failed without preserved stderr text; its cause remains unknown and it is not corroborating environment-key evidence.",
+    "The successful diagnostic recorded environment-key names only, not the INVOCATION_ID value or its equality with live scope identity.",
+    "These results do not measure native startup latency, provider reliability, learning gain, or full-world performance."
+  ],
+  "observation_kind": "post_execution_engineering_observation",
+  "preregistration_protocol_sha256": "796f602948ae9d6490be463271d9dcb5970c01bacb6e83beefcc68d964a51abe",
+  "preregistration_sha256": "e40ae39fbc094705255ca371d37da33994341fe48a8095162e442359a2feae64",
+  "private_manifest_sha256": "bee0bbe3f6d4942922125d7b2d001a66799424b5f0daa393686642fd4797f1f7",
+  "qualification_passed": false,
+  "raw_evidence_sha256": {
+    "EXECUTION.json": "ff0b20fcc5d82828c19649aedf86e9fd900eb5c9a286717bb34b0dcc4185db91",
+    "REPORT.json": "dbcd3970cbf82eb02b480bf9f8453fc0894ee0a91b5ea9fba69e24f187fc40b8",
+    "manifest.json": "bee0bbe3f6d4942922125d7b2d001a66799424b5f0daa393686642fd4797f1f7",
+    "slots/start-00/CLEANUP.json": "978e8e48a60e5c6884d18be63d1b2737766c2c7d008d5281501dc5d14f2882f1",
+    "slots/start-00/GATE.json": "c46664564ba41c675e239feae17af54bec8f05334da034444d8c7a89c3119372",
+    "slots/start-00/HELLO.json": "6286758f9617ab710328be3e562fdb0faed18b40668ee54f45ad778d3152330a",
+    "slots/start-00/INTENT.json": "c1a88f10c1fecf80b40af41e563c62a7b564f0b8d9c9373618c1ab3352139abe",
+    "slots/start-00/LAUNCH.json": "c320ab8f79bd92a3f50997caa545215d214803c575f2a22f0832ad4d082c3fc5",
+    "slots/start-00/RECEIPT.json": "0d7ba61ea48ab7f387913e831326e6918a126b33a6132a12456fa866d74be18f",
+    "slots/start-00/controller.log": "f3346c4bdf47f9b0716fa786eb26ae4dde123ca2633bb9d84abe3069006bf6d6"
+  },
+  "raw_file_count_including_diagnostics": 15,
+  "repository_commit": "ee7e34b44560d0430fb3daba9a6076e9e42f75a8",
+  "retry_or_replacement_in_this_registration": false,
+  "schema_version": 1,
+  "slots": [
+    {
+      "audit_status": "infrastructure_failed",
+      "batch": 0,
+      "declared_status": "infrastructure_failed",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": true,
+      "receipt_sha256": "0d7ba61ea48ab7f387913e831326e6918a126b33a6132a12456fa866d74be18f",
+      "slot_id": "start-00"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 1,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-01"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 2,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-02"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 3,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-03"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 3,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-04"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 4,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-05"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 4,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-06"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 5,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-07"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 5,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-08"
+    }
+  ],
+  "source_verification": {
+    "execution_source_and_dependency_bindings_match_manifest": true,
+    "registered_source_count": 35,
+    "registered_sources_changed": false,
+    "working_and_committed_source_bytes_match": true
+  },
+  "status": "incomplete",
+  "strict_audit": {
+    "auditor_source_sha256": "5a2fa036d5eb5f67a5e02de5d79588d4b22f3cf02270a3a5ea75b7be009f6a89",
+    "errors": [],
+    "full_recomputed_result_canonical_sha256": "b497260e64aac2d0672cfd1d9f76eaaac805c292ed0f55a5d6784939001b0d10",
+    "hash_encoding": "SHA-256 of UTF-8 json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False)",
+    "interpretation": "The failed receipt and eight missing receipts prevent completion. An empty audit error list does not certify qualification.",
+    "ok": false,
+    "qualification_passed": false,
+    "status": "incomplete"
+  },
+  "usage": {
+    "native_cost": null,
+    "native_inference_requests": null,
+    "native_tokens": null,
+    "physical_usage_meter_available": false,
+    "scope": "Failure preceded the native-startup call in the reviewed control flow. Missing native results remain unknown usage rather than a measured zero."
+  }
+}
