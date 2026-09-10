@@ -85,8 +85,10 @@ def skill_loaded(messages, native_file_sha256=None):
 
 def execute_case(*, root, employee, world, task_id, case, request, skill, credentials,
                  objectives, max_iterations=16, max_tokens=4096, business_files=None,
-                 max_total_tokens=None, timeout_seconds=420):
+                 max_total_tokens=None, timeout_seconds=420, hermes_transport='streaming'):
     from .tasks import grade_case
+    from .hermes_transport import contract
+    transport = contract(hermes_transport)
     root = Path(root).resolve()
     if root.exists():
         raise ValueError('Rollout destination exists; trials must start from a fresh state')
@@ -94,7 +96,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     started = time.monotonic()
     computer = Computer(root / 'computers', employee,
         execution={'mode': 'evaluation', 'max_iterations': max_iterations, 'max_tokens': max_tokens,
-                   'max_total_tokens': max_total_tokens},
+                   'max_total_tokens': max_total_tokens, 'hermes_transport': hermes_transport},
         artifact_grader=lambda artifact: grade_case(case, artifact))
     task = world.tasks[task_id]
     brief = request + '\n' + case['request']
@@ -111,6 +113,8 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     save(root / 'INFLIGHT.json', {'employee': employee, 'task_id': task_id, 'skill': skill_info})
     try:
         ready = computer.start(credentials, timeout=min(150, timeout_seconds))
+        if ready.get('evaluation_transport') != transport:
+            raise RuntimeError('Native worker transport differs from requested contract')
         forbidden = set(ready['tool_names']) & {'memory', 'skill_manage'}
         if forbidden:
             raise RuntimeError('Private learning tools exposed in controlled target: ' + str(forbidden))
@@ -122,6 +126,13 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
         grade = computer.last_grade or {'success': False, 'score': 0.0, 'checks': {},
                                         'feedback': 'No artifact reached substantive submission.'}
         native = result['native']
+        # A returned receipt must survive even when provenance is invalid.
+        # Preserve the raw native body and costs, then stop at the existing
+        # infrastructure gate instead of losing incurred usage in an exception.
+        transport_valid = (native.get('evaluation_transport') == transport
+            and all(type(op.get('request_stream')) is bool
+                and op['request_stream'] == (hermes_transport == 'streaming')
+                for op in native.get('evaluation_budget', {}).get('operations', [])))
         calls = sum(len(m.get('tool_calls') or []) for m in native.get('messages', []))
         usage = native_usage(native)
         loaded = skill_loaded(native.get('messages', []), skill_info['native_file_sha256'])
@@ -134,6 +145,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
             if artifact is None:
                 raise RuntimeError('Successful work has no committed artifact snapshot')
         record = {'employee': employee, 'day': world.day, 'task_id': task_id,
+            'hermes_transport': transport,
             'case_id': case['id'], 'regime': case['regime'], 'skill': skill_info,
             'skill_loaded': loaded, 'success': success, 'semantic_score': grade['score'],
             'feedback': grade['feedback'], 'checks': grade['checks'],
@@ -148,7 +160,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
             'filesystem_delta': file_delta(before, after),
             'world_before': before_world, 'world_after': world.snapshot(),
             'budget_exhausted': bool(native.get('evaluation_budget', {}).get('exhausted', False)),
-            'infrastructure_valid': usage['complete'] and (not native.get('failed', False)
+            'infrastructure_valid': transport_valid and usage['complete'] and (not native.get('failed', False)
                 or native.get('evaluation_budget', {}).get('exhausted', False))
                 and not any(op.get('status') == 'provider_budget_overrun'
                     for op in native.get('evaluation_budget', {}).get('operations', []))}

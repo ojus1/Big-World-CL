@@ -40,6 +40,7 @@ class LegacyStopAuditTests(unittest.TestCase):
 class NativeFileStopAuditTests(unittest.TestCase):
     def fixture(self, kind):
         f = fixtures.ArtifactAuditTests(); f.setUp(); self.addCleanup(f.doCleanups)
+        f.use_modern_streaming_transport()
         directory = f.root / ('learning/d002-' + f.employee)
         public = [{k: v for k, v in e.items() if k != 'employee'} for e in f.state['experiences']]
         artifacts, transports, clock = [], [], [0.]

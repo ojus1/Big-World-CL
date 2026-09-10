@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
 from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import SEED_SKILL, digest
 from lifespan.evaluation.runner import credentials, dependency_provenance, source_hashes
+from lifespan.evaluation.hermes_transport import executor_options, manifest_fields
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_evaluation import audit_run, session_check
@@ -81,6 +82,7 @@ def _manifest(source, bank, config, creds, slots):
     if (creds['model'], creds['base_url']) != (original['target_model'], original['model_base_url']):
         raise ValueError('Calibration must use the declared source model and provider')
     return {'schema_version': 1, 'kind': 'native_historical_replay_calibration',
+            **manifest_fields(original['config']),
             'source_directory': str(source), 'bank_sha256': digest(bank),
             'config': deepcopy(config), 'slots': slots, 'source_sha256': hashes,
             'target_model': creds['model'], 'model_base_url': creds['base_url'],
@@ -139,7 +141,7 @@ def run_calibration(source, out, config, *, stop_after=None, executor=execute_ca
             if not path.is_relative_to((out / 'replays').resolve()) or file_hash(path) != result['session_sha256']:
                 raise ValueError('Prior calibration evidence changed')
             record = json.loads(path.read_bytes())
-            session_check(record, path.parent, _capsule(source, selections[result['selection_id']]))
+            session_check(record, path.parent, _capsule(source, selections[result['selection_id']]), transport_manifest=manifest)
             if (record['skill']['content_sha256'] != manifest['skill_sha256']
                     or any(result[key] != record[key] for key in ('success', 'semantic_score', 'infrastructure_valid',
                         'budget_exhausted', 'usage', 'diagnostic', 'elapsed_seconds', 'skill_loaded'))):
@@ -204,14 +206,15 @@ def run_calibration(source, out, config, *, stop_after=None, executor=execute_ca
                 request=capsule['request'], skill=SEED_SKILL, credentials=creds,
                 objectives=capsule['objectives'], business_files=capsule['business_files'],
                 max_iterations=config['max_iterations'], max_tokens=config['max_output_tokens'],
-                max_total_tokens=config['max_rollout_tokens'], timeout_seconds=config['max_rollout_seconds'])
+                max_total_tokens=config['max_rollout_tokens'], timeout_seconds=config['max_rollout_seconds'],
+                **executor_options(manifest))
             receipt = {**slot, 'status': 'completed' if record['infrastructure_valid'] else 'infrastructure_invalid',
                 **{key: deepcopy(record[key]) for key in ('success', 'semantic_score', 'infrastructure_valid',
                     'budget_exhausted', 'usage', 'diagnostic', 'elapsed_seconds', 'skill_loaded')},
                 'session_path': str((root / 'session.json').relative_to(out)),
                 'session_sha256': file_hash(root / 'session.json')}
             if record['infrastructure_valid']:
-                session_check(record, root, capsule)
+                session_check(record, root, capsule, transport_manifest=manifest)
                 if record['skill']['content_sha256'] != manifest['skill_sha256']:
                     raise ValueError('Calibration target skill changed')
             # Source bytes must stay unchanged after a mutable native replay.

@@ -114,7 +114,59 @@ def meter_check(record):
     require(complete and record['infrastructure_valid'] is True, 'trial_infrastructure_or_accounting_invalid')
 
 
-def session_check(record, directory, capsule, version=None):
+def transport_manifest_check(manifest):
+    from lifespan.evaluation.hermes_transport import contract, mode
+    config = manifest.get('config', {})
+    declared = mode({'hermes_transport': manifest.get('hermes_transport', mode(config))})
+    descriptor = manifest.get('hermes_transport_provenance')
+    sources = manifest.get('source_sha256', {})
+    required_sources = ('lifespan/evaluation/hermes_transport.py', 'lifespan/hermes_worker.py',
+                        'lifespan/evaluation/runtime.py', 'lifespan/evaluation/runner.py')
+    current_sources = {name: sha((ROOT / name).read_bytes()) for name in required_sources}
+    current_transport_source = any(sources.get(name) == value for name, value in current_sources.items())
+    required = ('lifespan/evaluation/hermes_transport.py' in sources or current_transport_source
+                or 'hermes_transport' in manifest or 'hermes_transport' in config
+                or 'hermes_transport_provenance' in manifest)
+    if not required:
+        return None  # Historical default execution had no transport descriptor.
+    require(manifest.get('hermes_transport') == declared and descriptor == contract(declared),
+            'hermes_transport_manifest_contract')
+    require(all(sources.get(name) == value for name, value in current_sources.items()),
+            'hermes_transport_execution_source_binding')
+    if declared == 'nonstreaming':
+        require(sources['lifespan/evaluation/hermes_transport.py'] == descriptor['adapter_source_sha256'],
+                'hermes_transport_adapter_source_binding')
+    if 'algorithm' in config:
+        require(mode(config) == declared, 'hermes_transport_config_mismatch')
+    return descriptor
+
+
+def transport_check(record, manifest=None):
+    expected = transport_manifest_check(manifest) if manifest is not None else None
+    descriptor = record.get('hermes_transport')
+    native = record.get('result', {}).get('native', {})
+    if expected is None and descriptor is None:
+        require('evaluation_transport' not in native and 'hermes_transport' not in record
+                and not any('request_stream' in row for row in
+                            native.get('evaluation_budget', {}).get('operations', [])),
+                'hermes_transport_missing_session_contract')
+        return
+    from lifespan.evaluation.hermes_transport import contract
+    require(isinstance(descriptor, dict) and descriptor == contract(descriptor.get('mode')),
+            'hermes_transport_session_contract')
+    if expected is not None:
+        require(descriptor == expected, 'hermes_transport_session_mode_mismatch')
+    elif manifest is not None:
+        require(descriptor['mode'] == 'streaming', 'hermes_transport_legacy_manifest_mode_mismatch')
+    require(native.get('evaluation_transport') == descriptor, 'hermes_transport_native_binding')
+    for row in native['evaluation_budget']['operations']:
+        require(type(row.get('request_stream')) is bool
+                and row['request_stream'] == (descriptor['mode'] == 'streaming'),
+                'hermes_transport_physical_mode_mismatch')
+
+
+def session_check(record, directory, capsule, version=None, transport_manifest=None):
+    transport_check(record, transport_manifest)
     disk = read(directory / 'session.json')
     require({k: v for k, v in record.items() if k not in ('id', 'skill_version')} == disk, 'checkpoint_session_mismatch')
     case = capsule['case']
@@ -202,7 +254,8 @@ def update_check(root, update, experiences, sessions, feedback_delay):
         require(row['task_id'] in train + val and receipt['id'] == row['task_id'], 'replay_source_identity')
         trial = directory / f'trial-{index:03d}'
         record = read(trial / 'session.json')
-        session_check(record, trial, read(child(root, 'private/cases/' + row['task_id'] + '.json')))
+        session_check(record, trial, read(child(root, 'private/cases/' + row['task_id'] + '.json')),
+                      transport_manifest=read(root / 'manifest.json'))
         require(record['skill']['content_sha256'] == receipt['skill_sha256']
                 and record['usage']['total_tokens'] == row['tokens'] and record['usage']['api_calls'] == row['model_calls'], 'replay_physical_evidence_mismatch')
         if index < len(update['replay_evidence']):
@@ -262,6 +315,7 @@ def audit_run(root, strict=False):
             errors.append({'location': label, 'code': str(exc) if type(exc) is ValueError else type(exc).__name__})
     try:
         manifest, cp = read(root / 'manifest.json'), read(root / 'checkpoint.json')
+        transport_manifest_check(manifest)
         for name in ('lifespan/evaluation/tasks.py', 'lifespan/evaluation/metrics.py', 'lifespan/ecosystem.py', 'lifespan/world.py'):
             require(sha((ROOT / name).read_bytes()) == manifest['source_sha256'][name], 'audit_source_revision_mismatch')
         state = cp['runner']
@@ -282,7 +336,8 @@ def audit_run(root, strict=False):
         for identifier, record in sessions.items():
             inspect('work/' + identifier, lambda r=record, i=identifier: session_check(r, child(root, 'work/' + i),
                 read(child(root, 'private/cases/' + i + '.json')),
-                read(child(root, f"skills/{r['employee']}/v{r['skill_version']:03d}.json"))))
+                read(child(root, f"skills/{r['employee']}/v{r['skill_version']:03d}.json")),
+                transport_manifest=manifest))
             result['sessions_checked'] += 1
         for update in state['updates']:
             inspect(f"learning/day-{update['day']}/{update['employee']}", lambda u=update: update_check(
@@ -311,6 +366,9 @@ def audit_run(root, strict=False):
                 require(provenance[key] == manifest[key], 'report_provenance_' + key)
             cohort = root / 'persona_cohort.json'
             require(provenance['persona_cohort_sha256'] == (sha(cohort.read_bytes()) if cohort.exists() else 'offline-fixture-no-personas'), 'persona_cohort_provenance')
+            if transport_manifest_check(manifest) is not None:
+                require(all(provenance.get(key) == manifest[key] for key in
+                            ('hermes_transport', 'hermes_transport_provenance')), 'hermes_transport_report_provenance')
             rebuilt = build_report(manifest['config'], manifest['scenario'], state['sessions'], state['updates'],
                                    Ecosystem.restore(cp['ecosystem']).snapshot(), status=status, provenance=provenance)
             result['report_audit'] = rebuilt['audit']

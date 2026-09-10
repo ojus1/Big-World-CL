@@ -74,7 +74,8 @@ class ResponsesBudget:
                    "charged_tokens": reserve, "accounting": "reservation",
                    "status": "dispatched", "input_tokens": None, "output_tokens": None,
                    "total_tokens": None, "cache_read_tokens": None, "reasoning_tokens": None,
-                   "output_cap": request["max_output_tokens"]}
+                   "output_cap": request["max_output_tokens"],
+                   "request_stream": request.get("stream", False)}
             self.rows.append(row)
             self.charged_tokens += reserve
         return request, row
@@ -122,6 +123,10 @@ class ResponsesBudget:
                 response = original(**request)
                 if request.get("stream"):
                     return _MeteredStream(self, row, response, started)
+                provider_status = _get(response, "status")
+                row["provider_response_status"] = (provider_status if type(provider_status) is str
+                    and provider_status in ("completed", "incomplete", "failed", "cancelled", "queued", "in_progress")
+                    else None)
                 self._receipt(row, response, "completed")
                 row["wall_seconds"] = time.monotonic() - started
                 return response
