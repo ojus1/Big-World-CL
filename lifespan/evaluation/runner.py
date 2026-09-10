@@ -582,4 +582,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # -m first executes this file as __main__. Use the canonical module's
+    # defaults so recorded native actor provenance matches ordinary imports.
+    from lifespan.evaluation.runner import main as canonical_main
+    canonical_main()
