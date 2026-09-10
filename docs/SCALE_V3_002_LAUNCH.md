@@ -1,9 +1,15 @@
-# Fresh complete comparison after repairing the installation
+# Six-world registration after repairing the installation
+
+**Terminal status:** This registration stopped during day-7 work after the API
+reported exhausted credits. Two worlds stopped with confirmed cleanup and four
+were never launched. See the [reviewed termination evidence](SCALE_V3_002_CREDIT_EXHAUSTION.md).
+There is no completed learning comparison. The launch details below are historical;
+do not dispatch or resume this registration.
 
 This new six-world study uses
 [scale-preregistration-v3-002.json](scale-preregistration-v3-002.json), raw SHA-256
 `72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce`.
-All six private run directories are fresh. The
+All six private run directories were fresh at registration. The
 [failed first registration](SCALE_V3_LAUNCH_FAILURE.md) remains unchanged, with
 two initialization failures and four unlaunched slots.
 The [independent registration review](scale-v3-002-registration-review.json)
@@ -26,15 +32,15 @@ frozen execution/reporting implementation previously passed 163 tests. The
 capability check is separate from the nine native Hermes startup passes and
 does not establish full-world reliability or learning benefit.
 
-Use the [v3 execution guide](SCALE_V3_EXECUTION.md), substituting private output
+The launch used the [v3 execution guide](SCALE_V3_EXECUTION.md) with private output
 `lifespan/artifacts/scale-v3-002`, the above reviewed hash, and the new public
-registration path when reporting. Both baselines run over 20 action days plus
+registration path. Both baselines were planned over 20 action days plus
 settlement, with 4 enterprises, 12 employees, 8 consumers and 1 agency per world.
 Three fixed paired waves allow up to 1,440 online sessions and repeated SkillOpt
 training and validation. Registration is not a completed result; no learning
 gain is claimed here.
 
-The campaign has been dispatched. The [dated startup observation](SCALE_V3_002_PROGRESS.md)
+The campaign was dispatched once. The [dated startup observation](SCALE_V3_002_PROGRESS.md)
 records both first-pair worlds running with native actor simulations and returned
 employee sessions. Inspect current local progress with the independently reviewed
 [status command](SCALE_STATUS.md):
@@ -48,7 +54,7 @@ python3 -m scripts.scale_status lifespan/artifacts/scale-v3-002 \
 This only reads operational state. The existing registration has one dispatch;
 do not invoke the launcher again or resume its worlds.
 
-Once all six worlds pass the completed-study audit and the public report is
-reviewed, the separate [figure command](SCALE_V3_FIGURES.md) renders all three
+For a future registration whose six worlds pass the completed-study audit and
+whose public report is reviewed, the separate [figure command](SCALE_V3_FIGURES.md) renders all three
 paired primary outcomes from that report. It requires the reviewed summary hash
 and preserves negative and zero differences; it does not plot active prefixes.

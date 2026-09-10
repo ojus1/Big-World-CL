@@ -1,5 +1,9 @@
 # Scale-v3-002 progress observations
 
+**Later terminal event:** The campaign stopped during day-7 work after provider
+credit exhaustion. The [termination observation](SCALE_V3_002_CREDIT_EXHAUSTION.md)
+supersedes these snapshots for current status. The dated evidence below is preserved.
+
 ## Day-3 work and eligibility checks completed
 
 At 2026-09-10 11:23:50 UTC, both first-pair worlds had advanced to day 4 with

@@ -8,20 +8,22 @@ The repository now also provides a **controlled deployment-time skill-learning e
 
 [Run learning evaluations](docs/RUN_EVALUATION.md) · [Learning study](docs/LEARNING_STUDY_RESULTS.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
-The current scaling work is running a [fresh six-world comparison](docs/SCALE_V3_002_LAUNCH.md) in three paired
-waves, with four enterprises and twelve employee agents per world. All nine
-slots in the [native startup qualification](docs/HERMES_STARTUP_SCOPE_V3_OUTCOME.md)
-passed, including concurrent starts and cleanup. The new
-[execution design](docs/SCALE_V3_RESOURCE_DESIGN.md) bounds the complete campaign
-inside one resource scope and requires all six worlds for its primary endpoint.
-The first v3 launch stopped before employee sessions because two MiroFish
-overlay files were missing. The installation is repaired and its actual
-capability endpoint now passes; that failed registration remains preserved.
-The [dated progress observations](docs/SCALE_V3_002_PROGRESS.md) show both first-pair
-worlds completing day-3 work and all scheduled employee eligibility checks. Use the
-[read-only progress command](docs/SCALE_STATUS.md) for current local status.
-Startup qualification is complete; the larger learning comparison is not yet
-complete, and no learning gain is claimed.
+The [scaled six-world study](docs/SCALE_V3_002_LAUNCH.md) plans three paired
+waves, four enterprises and twelve employee agents per world, and up to 1,440
+online sessions. Its first pair reached day 7 and recorded 175 returned sessions
+before the API reported exhausted credits. The supervisor stopped the pair and
+left four worlds unlaunched. The [reviewed termination evidence](docs/SCALE_V3_002_CREDIT_EXHAUSTION.md)
+records the failure, partial accounting and confirmed cleanup. No learning epoch
+ran in this registration; no completed comparison or learning gain is claimed.
+
+All nine slots in the [native startup qualification](docs/HERMES_STARTUP_SCOPE_V3_OUTCOME.md)
+passed, including concurrent starts and cleanup. The [execution design](docs/SCALE_V3_RESOURCE_DESIGN.md)
+bounds the full campaign inside one resource scope and requires all six worlds
+for its primary endpoint. The earlier missing-overlay launch failure is
+preserved separately. The [dated progress observations](docs/SCALE_V3_002_PROGRESS.md)
+retain evidence from before the credit failure. The [read-only status command](docs/SCALE_STATUS.md)
+also reports replay and optimizer-dispatch progress during an active learning epoch.
+Further native evaluation requires a funded API endpoint and a fresh registration.
 
 ## Evaluate deployment-time learning
 
