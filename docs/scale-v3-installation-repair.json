@@ -1,0 +1,78 @@
+{
+  "capability_check": {
+    "checker_sha256": "334c4f1723e92f87dd29e62bb937ddd0049aa8c524c10aa59370a7ca9163d8b0",
+    "elapsed_seconds": 3.0683096119992115,
+    "result": {
+      "kind": "mirofish-installation-check-v1",
+      "ok": true,
+      "route": {
+        "http_status": 200,
+        "ok": true,
+        "status": "verified",
+        "support_sha256": "3fbee0f5b1328a656c40c6bbdccaad46560cff811b51d6f758cb2f94ac0b143f"
+      },
+      "schema_version": 1,
+      "scope": "tracked_override_installation_and_local_capability_GET_only; not_native_worker_or_study_qualification",
+      "side_effect_scope": "app_import_may_initialize_logs; configuration_is_not_modified",
+      "static": {
+        "client_verifier_sha256": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+        "mirofish_revision": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+        "ok": true,
+        "patch_check": "pinned_revision_and_reverse_apply_feasibility; not_full_tree_identity",
+        "tracked_override_files": [
+          {
+            "installed_sha256": "88433537babb5c522186e054a80b2df8de7fac794233b83d8b3686d7c062b225",
+            "path": "backend/app/utils/actor_contract_transport.json",
+            "source_sha256": "88433537babb5c522186e054a80b2df8de7fac794233b83d8b3686d7c062b225",
+            "status": "matched"
+          },
+          {
+            "installed_sha256": "267342533d1f252c238cde5fde2e5ef268bdfe5120d2c7ef922320b7d81452fb",
+            "path": "backend/app/utils/actor_output_contract.py",
+            "source_sha256": "267342533d1f252c238cde5fde2e5ef268bdfe5120d2c7ef922320b7d81452fb",
+            "status": "matched"
+          },
+          {
+            "installed_sha256": "4a06a70ee686e662e13db6be2458f5ce5ce2783b6d00894de4498a832b5a68a1",
+            "path": "backend/app/utils/camel_responses.py",
+            "source_sha256": "4a06a70ee686e662e13db6be2458f5ce5ce2783b6d00894de4498a832b5a68a1",
+            "status": "matched"
+          },
+          {
+            "installed_sha256": "40cdf029f09c089107d6719b68d81b8a28733d1d1c8cb905d7901c80252ffafd",
+            "path": "backend/app/utils/local_graph.py",
+            "source_sha256": "40cdf029f09c089107d6719b68d81b8a28733d1d1c8cb905d7901c80252ffafd",
+            "status": "matched"
+          }
+        ],
+        "tracked_patch_sha256": "7c1ea45a338413f2bac7c61fe2ede706ba952111a0551607c4e105c999f10038"
+      }
+    }
+  },
+  "capability_check_receipt_sha256": "b12382746c9b792d6b928407cfbf816174a4abc5aba6632149f870454cded002",
+  "checker_commit": "253a946e5ddbca5a7d60e45e425b1cba5d18b8c1",
+  "failed_campaign_restarted": false,
+  "failed_campaign_sha256": "ca6a3d2b890ebdf1a5142dbccd2d019b60179b5d8e61946725b33b743eb0b229",
+  "kind": "mirofish_complete_overlay_repair_and_local_capability_observation",
+  "limitations": [
+    "Local Flask capability check only; no listening service, actor simulation or employee work was started.",
+    "Python socket and subprocess dispatch were blocked in the route-check child. This is not a general OS sandbox qualification.",
+    "The pinned revision and patch reverse-check do not establish full-tree identity.",
+    "The first failed six-slot campaign remains unchanged. A new complete registration is required for future work."
+  ],
+  "registered_execution_and_reporting_files_changed": false,
+  "repair_receipt_sha256": "ec34e9ff0fc3ba9836cba953d6854223bd56fe371b3ac1d15af94e09df7bb709",
+  "restored_files": [
+    {
+      "action": "restored_missing",
+      "relative_path": "app/utils/actor_contract_transport.json",
+      "sha256": "88433537babb5c522186e054a80b2df8de7fac794233b83d8b3686d7c062b225"
+    },
+    {
+      "action": "restored_missing",
+      "relative_path": "app/utils/actor_output_contract.py",
+      "sha256": "267342533d1f252c238cde5fde2e5ef268bdfe5120d2c7ef922320b7d81452fb"
+    }
+  ],
+  "schema_version": 1
+}

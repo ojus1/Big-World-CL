@@ -8,12 +8,15 @@ The repository now also provides a **controlled deployment-time skill-learning e
 
 [Run learning evaluations](docs/RUN_EVALUATION.md) · [Learning study](docs/LEARNING_STUDY_RESULTS.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
-The current scaling work prepares a fresh six-world comparison in three paired
+The current scaling work prepares a [fresh six-world comparison](docs/SCALE_V3_002_LAUNCH.md) in three paired
 waves, with four enterprises and twelve employee agents per world. All nine
 slots in the [native startup qualification](docs/HERMES_STARTUP_SCOPE_V3_OUTCOME.md)
 passed, including concurrent starts and cleanup. The new
 [execution design](docs/SCALE_V3_RESOURCE_DESIGN.md) bounds the complete campaign
 inside one resource scope and requires all six worlds for its primary endpoint.
+The first v3 launch stopped before employee sessions because two MiroFish
+overlay files were missing. The installation is repaired and its actual
+capability endpoint now passes; that failed registration remains preserved.
 Startup qualification is complete; the larger learning comparison is not yet
 complete, and no learning gain is claimed.
 

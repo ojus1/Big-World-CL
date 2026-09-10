@@ -1,0 +1,532 @@
+{
+  "schema_version": 3,
+  "kind": "scale-v3-six-world-registration",
+  "created_at": "2026-09-10T10:33:48.026907+00:00",
+  "seeds": [
+    211,
+    307,
+    401
+  ],
+  "algorithms": [
+    "no_learning",
+    "skillopt"
+  ],
+  "population": {
+    "firms": 4,
+    "employees": 12,
+    "consumers": 8,
+    "agencies": 1
+  },
+  "days": 20,
+  "slots": [
+    {
+      "seed": 211,
+      "algorithm": "no_learning",
+      "run_id": "seed-211-no_learning",
+      "relative_path": "runs/seed-211-no_learning",
+      "config": {
+        "algorithm": "no_learning",
+        "seed": 211,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "6a04ee4b6052a0415daf9b795dc8e07584aca0f2110b154f96a8f802de70007b",
+      "persona_cohort_sha256": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925"
+    },
+    {
+      "seed": 211,
+      "algorithm": "skillopt",
+      "run_id": "seed-211-skillopt",
+      "relative_path": "runs/seed-211-skillopt",
+      "config": {
+        "algorithm": "skillopt",
+        "seed": 211,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "c775181f60b8ed21b2533e5f9f0ed10ecd2f935df168ac37da293f833483432c",
+      "persona_cohort_sha256": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925"
+    },
+    {
+      "seed": 307,
+      "algorithm": "skillopt",
+      "run_id": "seed-307-skillopt",
+      "relative_path": "runs/seed-307-skillopt",
+      "config": {
+        "algorithm": "skillopt",
+        "seed": 307,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "1086cf1f70082a3df3552c240f7f1295a2f0fd35595f8925fcbbd63b29e6d654",
+      "persona_cohort_sha256": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9"
+    },
+    {
+      "seed": 307,
+      "algorithm": "no_learning",
+      "run_id": "seed-307-no_learning",
+      "relative_path": "runs/seed-307-no_learning",
+      "config": {
+        "algorithm": "no_learning",
+        "seed": 307,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "a408ed9672c60e5e0afe1340c38ea940419699c174ef8769d9816d49c4498585",
+      "persona_cohort_sha256": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9"
+    },
+    {
+      "seed": 401,
+      "algorithm": "no_learning",
+      "run_id": "seed-401-no_learning",
+      "relative_path": "runs/seed-401-no_learning",
+      "config": {
+        "algorithm": "no_learning",
+        "seed": 401,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "3fba7fbf5206827fbe1b4c816762366c79801d95ff3969a9507b3427fd3b9011",
+      "persona_cohort_sha256": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287"
+    },
+    {
+      "seed": 401,
+      "algorithm": "skillopt",
+      "run_id": "seed-401-skillopt",
+      "relative_path": "runs/seed-401-skillopt",
+      "config": {
+        "algorithm": "skillopt",
+        "seed": 401,
+        "days": 20,
+        "split": "dev",
+        "state_mode": "skill_transfer",
+        "decision_every": 4,
+        "update_every": 4,
+        "update_days": [
+          3,
+          7,
+          11,
+          17
+        ],
+        "feedback_delay": 1,
+        "max_iterations": 16,
+        "max_output_tokens": 4096,
+        "max_work_sessions": 240,
+        "max_run_seconds": 86400,
+        "max_learning_calls": 7200,
+        "max_learning_tokens": 144000000,
+        "train_cases": 2,
+        "val_cases": 2,
+        "edit_budget": 4,
+        "skillopt_rollouts_k": 2,
+        "enterprise_count": 4,
+        "consumer_count": 8,
+        "max_learning_calls_per_epoch": 200,
+        "max_learning_tokens_per_epoch": 4000000,
+        "max_learning_seconds_per_epoch": 1800,
+        "max_actor_interviews": 662,
+        "actor_output_contract": {
+          "version": "actor-json-v1",
+          "max_output_tokens": 4096,
+          "timeout_seconds": 120
+        },
+        "mirofish_service_url": "http://127.0.0.1:5002",
+        "focal_employee": null,
+        "hermes_transport": "nonstreaming",
+        "hermes_startup_observability": true,
+        "schema_version": 2
+      },
+      "config_sha256": "a02c51d2a1ee4e78cd073105ddbf9128fd384d4a898ace3e4245937baa9f6b3a",
+      "persona_cohort_sha256": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287"
+    }
+  ],
+  "source_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "63ad57a3392379ed314d4130a09b156399efc371342ef0d983b323e50db4c318",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "891038f812204ef586918ffa475b9e87849529c741bc7da1a3208ac4272ee7be",
+    "lifespan/evaluation/hermes_transport.py": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "08898100a6d5e36da89bbdea77ad7162db3280b9eef7b51f4b0596b9111a4713",
+    "lifespan/evaluation/runner.py": "6ec5a9e1e881ab96eaef42e64d04bdf241dc3b2a2e0e51d50b173587e816eb9a",
+    "lifespan/evaluation/runtime.py": "a242bb7ae8740e97ccc589ec73c735d6f370a4f090bb2c01f3153188754fd1bd",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "74548e6429296cacbd01cf0f322880a02fc179fa9de3bb258e39243c6a8c1f03",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "0d59f091acf62b726721a380e54ad8423ae7e99ea536d0e7f78a2650bd3ef341",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/startup_observability.py": "d9c798ddab653d486d16bb63f0064e18cc7d302ea3b387361e627a939bf80f59",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0",
+    "scripts/evaluation_report_v2.py": "56e346e2342fa930b6ee98dcc069e758595e4db4115a639b6c8a6aa0e8d2664b",
+    "scripts/run_scale.py": "661ff24937aa06bfd86797d0ef219374411122f1aedde6ed8e5534f9d0f9f18f",
+    "scripts/audit_scale.py": "198006354cb2c8eb5ee8bc051c2607e68b75ce7787d3fbfb5b86115f11e4b012",
+    "scripts/scale_summary.py": "01ffc9d1a05e0c1ec8155647199b3487da96e8bb5f9d2bfb6b99bc161923cf8e",
+    "scripts/audit_evaluation.py": "a3774a1ca1de3f38c7e28eaa39818f294f1dc9e5cc6aee7cecee9ae275a1e718",
+    "scripts/audit_transfer.py": "139415b32a566460d2a90a3dfa6a8a0bb27f75af0703d13b921b31b4ab92f2dd",
+    "scripts/audit_learning_v2.py": "d910434e9bc3acf9f081b0f18c267fd7164620d810132bd0f7a0ac1bbd32f1ef"
+  },
+  "dependencies": {
+    "hermes": {
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "mirofish": {
+      "revision": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+      "tracked_python_diff_sha256": "5daa09bbc0fcd5022e39bec793fefcb19173cbbea80677820b959aafa43ad6ba"
+    },
+    "skillopt": {
+      "revision": "79124b37e9a6371e13b753f8bcd7adb1e493ade1",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "registration_tools_sha256": {
+    "scripts/scale_v2_contract.py": "738c9984c331b08100a20ad0330652d3edd7b56be2ef85b1d274fe1e6cf358a3",
+    "scripts/prepare_scale_v2.py": "67eebcf05f00878cd69c7e0da774a29c05f8640cad5d48e3ee2c87ce40f03d71",
+    "scripts/run_scale_v2.py": "a5eb5a017827eb25e5477046c46868a37805550c6dc7c1cf169d4559d53a1ff8",
+    "scripts/scale_v2_process.py": "8e1a2707f03bbb16888952ccd932d73c16e5e9d364060181b4de857ce1a3e828",
+    "scripts/audit_scale_v2.py": "6baa298ccfee790301969a49452d3277d7a0284b706cb66b5d2ae56ef3b7275e",
+    "scripts/scale_v2_prerequisites.py": "40678026dd98f0d0521cc93fd484b0359a0493e70f3ebbe78668a1cc41206022",
+    "scripts/audit_hermes_readback_v2.py": "d2d0c8bdfd24cef367ed9816698f65d7e39e7dc1f748e74daf7c336780040426",
+    "scripts/audit_hermes_preflight.py": "5d3ffac487a00effd1ae026104b4d99d8757962bf51979ea292efb2639e9c18f",
+    "scripts/hermes_transport_preflight.py": "9d360dad57e8275ce58abc1d20fd4ea15150a6ef07f2afa3dcbea9531aca5865",
+    "scripts/hermes_preflight_process.py": "62eabba97ae43143ed943e31aa1f7c5912e5e5a1494046a0b46f3ef4b1e8c516",
+    "scripts/scale_horizon_observations.py": "7bd43a99860ef916129934446fc1c645fc7fa466c20de3b6a76b85cc437fea2d",
+    "scripts/scale_v3_contract.py": "f700301e21801c3877a4b3ef2d0c5907010d41a25f66100b39c4048f100322f6",
+    "scripts/prepare_scale_v3.py": "0398b3d10cbbadfb77fbc0b7dd06233ca4166ebbfe0cfda96d383a33c98ba041",
+    "scripts/run_scale_v3_inner.py": "b198074bc205c4f0fb9c3dc55a47678e9b222c32163136ff50da024e257b5432",
+    "scripts/run_scale_v3.py": "bb1fda1a0c2eb5694df7912e9c4a9f52e7217ff2a65182c148985b481538bc7f",
+    "scripts/audit_scale_v3.py": "e8456804c6a72f0aa4c23091bc36a5b90db1777b03b681e090f7b8886cffefcb",
+    "scripts/scale_v3_prerequisites.py": "f5c6105c53b183e729ea816d99026b4103b8f5aa974e7d867b42614ca11aa146",
+    "scripts/hermes_startup_scope_qualification.py": "5a2fa036d5eb5f67a5e02de5d79588d4b22f3cf02270a3a5ea75b7be009f6a89",
+    "scripts/hermes_startup_scope_qualification_v3.py": "bbc16bdf899e70b4545e25177ba49b7fa20270b1fc4531d98ba6135ecb9e5c19",
+    "scripts/hermes_startup_qualification.py": "f7d55234d4e8c0d31ede4c20527171bd10ebaeff2a26263672e5e864f5c472fe",
+    "scripts/hermes_startup_probe.py": "4cdd36706154a74efb856d719eb37742631006342b6655df7721bac74f7633fb",
+    "scripts/startup_resource_controls.py": "7addaee721ece988ea48c0a5d8afda6310b72d77b3d2b0451e2ed71584e0c3a3",
+    "scripts/report_scale_v3.py": "48bd3e2553ad0054d18150db8c8d10239d3b841f98121e7cbd2c9aa8bb6fe538",
+    "scripts/report_scale_v2.py": "395a234d35b4e98dc86680652cf9af567d3e803a48874fbbd04e53a4cb5bda03",
+    "scripts/report_scale.py": "3d254e4816e4d0921115450d4700450072ab9cb8bf3062a4ef6574511296d439",
+    "scripts/scale_world_dynamics.py": "6fc16a910e9d89e23674a78df6ce932a01def4f24bee078defc669b2ac5f562c",
+    "scripts/audit_scale_cli.py": "f5429e70f8b65e8fe0d215bcbc62c417c3b24ea7aeab16cc879c496e780d7360",
+    "scripts/audit_calibration.py": "9e486374a7840df9a02cb18bd06d864edab395607900cc52b876278104f7a711",
+    "scripts/calibration_bank.py": "e2e04f85d61e48051fe60fb28758875b844170168c966b8cb6e66547995652fd",
+    "scripts/transfer_analysis.py": "93ecb1bbd7dc838f90b33a8e75942b3338132e3fa526ef6d36ce651b52974247",
+    "scripts/transfer_probes.py": "a2c01f42753a07548afc0e07b8d90694cc7121fa30048b3905ec3f0db9507799"
+  },
+  "target_model": "gpt-5.6-luna",
+  "model_base_url": "https://api.openai.com/v1",
+  "launch_policy": {
+    "dispatch_policy": "fixed_pair_waves_stop_on_infrastructure_failure",
+    "evidence": [
+      {
+        "artifact_sha256": "49730030d4d52f94d2808327dfeeaca278f8d11cddabb2a95d23d04a07c8e77d",
+        "kind": "actor_native_capability",
+        "review_sha256": "2ccf80a002d4836586a5dde62fa2ecc3e2e4442b247016d6445f484eabb30266"
+      },
+      {
+        "artifact_sha256": "10baad3472af3a6ceb01b0a1bcaf2af0e814a8e9fbb926c1b4a210311339a87d",
+        "kind": "employee_native_capability",
+        "review_sha256": "4094c48281ec36f8a8fe0a69a263761cc02b647ba7a60a98548f32e6937980da"
+      },
+      {
+        "artifact_sha256": "80d9dd728299f23646478c529c1ad7ff49010253dd31a86a926bbdaaeb1d7f13",
+        "kind": "horizon_feasibility",
+        "review_sha256": "de7665b75edb196b7efd63fd81081f29969635f959553aa246c106f2954cfd8c"
+      },
+      {
+        "artifact_sha256": "78b0d6058ead87caf6ae0d6484a3bbdebc640f6cfe114cc5ff0ee5037fde317c",
+        "kind": "scope_startup_qualification",
+        "review_sha256": "638d81e81bb15d0637d7154172656a6e2efef92a5fa020b421b6a5fffecd35cd"
+      },
+      {
+        "artifact_sha256": "60bb34510e34700180d59a815c5eb4e5650a97bcd3b1b2d6e5125d4e11b5ba94",
+        "kind": "employee_source_compatibility",
+        "review_sha256": "5ba9c32cacd992fc224a072fa2a016b370918c64c9996189c781fc13cb1f2682"
+      }
+    ],
+    "mirofish_service_url": "http://127.0.0.1:5002",
+    "per_world_wall_seconds": 86400,
+    "scope_limits": {
+      "cleanup_seconds": 180,
+      "controller_startup_seconds": 120,
+      "cpu_max_usec": 400000,
+      "cpu_quota_percent": 400,
+      "cpu_quota_period_usec": 100000,
+      "execution_seconds": 260310,
+      "memory_max_bytes": 12884901888,
+      "memory_swap_max_bytes": 0,
+      "runtime_max_seconds": 260490,
+      "tasks_max": 512,
+      "timeout_stop_seconds": 5
+    },
+    "wall_budget_rationale": "Three fixed paired waves retain the prospective 24-hour per-world ceiling and unchanged task/epoch caps. Historical duration observations do not forecast nonstreaming completion. Nine fresh startup slots passed at concurrency at most two. A shared 12 GiB, four-CPU scope bounds the full campaign; it provides no per-world fairness or guaranteed I/O isolation. Failed slots remain in the denominator and halt subsequent dispatch.",
+    "workers": 2
+  },
+  "budgets": {
+    "max_parallel_worlds": 2,
+    "per_world_wall_seconds": 86400,
+    "max_online_sessions": 1440,
+    "max_learning_epochs": 108,
+    "max_learning_target_replays": 1296,
+    "employee_target_and_optimizer_physical_calls": 44640,
+    "employee_target_and_optimizer_charged_tokens": 792000000,
+    "logical_actor_interviews": 3972,
+    "actor_physical_model_calls": null,
+    "actor_tokens": null,
+    "currency_cost": null,
+    "launch_limits": {
+      "world_cleanup_seconds": 120,
+      "service_cleanup_seconds": 30,
+      "service_startup_seconds": 120,
+      "observation_interval_seconds": 0.25
+    },
+    "scope_limits": {
+      "memory_max_bytes": 12884901888,
+      "memory_swap_max_bytes": 0,
+      "tasks_max": 512,
+      "cpu_quota_percent": 400,
+      "cpu_quota_period_usec": 100000,
+      "cpu_max_usec": 400000,
+      "controller_startup_seconds": 120,
+      "execution_seconds": 260310,
+      "cleanup_seconds": 180,
+      "runtime_max_seconds": 260490,
+      "timeout_stop_seconds": 5
+    },
+    "pair_waves": [
+      [
+        "seed-211-no_learning",
+        "seed-211-skillopt"
+      ],
+      [
+        "seed-307-skillopt",
+        "seed-307-no_learning"
+      ],
+      [
+        "seed-401-no_learning",
+        "seed-401-skillopt"
+      ]
+    ],
+    "contracted_interview_physical_requests": 3972,
+    "contracted_interview_output_tokens_per_request": 4096,
+    "contracted_interview_timeout_seconds": 120
+  },
+  "design": {
+    "primary": "Equal-world mean difference in fixed initial/benchmark commitment fulfillment.",
+    "secondary": [
+      "all commitment fulfillment",
+      "net utility",
+      "native skill adoption",
+      "future online sessions by deployed skill version",
+      "measured learner compute"
+    ],
+    "inference_unit": "world pair; three development pairs are descriptive",
+    "updates": "Days 7, 11 and 17 when 2 TRAIN + 2 VAL distinct tasks have released feedback; day 3 cannot be eligible.",
+    "selection": "All employees; no outcome-conditioned selection, replacement, extension or stopping.",
+    "actor_compute": "Contracted interviews have per-request physical/usage receipts and caps; bootstrap and social calls remain outside this meter.",
+    "randomness": "Scenario/persona seeds fixed; hosted actor and Hermes sampling not controlled.",
+    "state": "Persistent institutional/employee actor histories and business state; fresh Hermes task profile carrying only deployed skill.",
+    "recovery": "One-shot campaign. No automatic retry or resume of uncertain native work.",
+    "development_reuse": "All three scale-v1 seeds and paired cohorts are reused in six fresh worlds; this is development evidence, not held-out confirmation.",
+    "completion": "All six fresh worlds and all three valid complete pairs; no surviving-pair endpoint.",
+    "adoption": "No minimum adoption count or positive learning gain is required.",
+    "execution_envelope": "One shared scope: no per-world fairness or guaranteed I/O isolation.",
+    "dispatch": "Three fixed pair waves; both prior worlds must exit normally with confirmed cleanup before the next wave. No failed replacements or rolling refill.",
+    "startup_observability": "Enabled in both arms and all replays; diagnostic stages do not score work.",
+    "prerequisites": "References bind independently reviewed evidence. Registration validation does not re-audit native capability or certify execution readiness."
+  }
+}

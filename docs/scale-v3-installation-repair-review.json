@@ -1,0 +1,32 @@
+{
+  "capability_check_receipt_sha256": "b12382746c9b792d6b928407cfbf816174a4abc5aba6632149f870454cded002",
+  "capability_support_sha256": "3fbee0f5b1328a656c40c6bbdccaad46560cff811b51d6f758cb2f94ac0b143f",
+  "checker_commit": "253a946e5ddbca5a7d60e45e425b1cba5d18b8c1",
+  "checker_sha256": "334c4f1723e92f87dd29e62bb937ddd0049aa8c524c10aa59370a7ca9163d8b0",
+  "checks": {
+    "all_tracked_overlays_match": 4,
+    "failed_campaign_raw_files_unchanged": 61,
+    "frozen_execution_and_reporting_files_unchanged": 69,
+    "native_or_model_calls_by_review": false,
+    "native_transport_files_match_manifest": 4,
+    "public_projection_matches_private_receipts": true,
+    "restored_missing_files": 2,
+    "route_rerun_by_review": false,
+    "saved_http_status": 200,
+    "saved_support_matches_exact_current_client": true
+  },
+  "decision": "approved_as_setup_evidence_for_new_full_registration",
+  "kind": "independent_mirofish_installation_repair_review",
+  "limitations": [
+    "This is a local installation and Flask capability observation, not native actor work or a completed six-world comparison.",
+    "The saved checker blocks Python socket and subprocess dispatch; it is not an OS isolation qualification.",
+    "The revision and reverse-patch check do not establish full-tree identity.",
+    "The failed six-slot registration remains unchanged. Future execution requires a new complete six-world registration with no replacement or resume of failed slots.",
+    "Unknown provider or all-in usage is not converted to zero by this setup check."
+  ],
+  "public_observation_sha256": "d3d015c75b6722d5793cf78462c4050a1ae483ea27cfdedd878b46be1876a30e",
+  "recorded_elapsed_seconds": 3.0683096119992115,
+  "repair_receipt_sha256": "ec34e9ff0fc3ba9836cba953d6854223bd56fe371b3ac1d15af94e09df7bb709",
+  "reviewed_at": "2026-09-10T10:34:02.654182+00:00",
+  "schema_version": 1
+}

@@ -1,0 +1,55 @@
+{
+  "counts": {
+    "distinct_profiles": 75,
+    "execution_sources": 38,
+    "fixed_commitments_per_world": 240,
+    "fresh_worlds": 6,
+    "paired_seeds": 3,
+    "registration_tools": 31,
+    "unchanged_prerequisite_references": 5
+  },
+  "current_checks": {
+    "all_five_artifact_and_review_reference_hashes_match": true,
+    "configured_private_environment_file_mode_0600": true,
+    "fixed_contract_and_live_source_tool_dependency_maps": true,
+    "fresh_isolated_mirofish_module_upload_graph_binding": true,
+    "installed_four_overlays_match_approved_repair": true,
+    "no_scope_or_execution_receipt": true,
+    "paired_configs_and_cohort_bytes_match_original_registration": true,
+    "qualified_source_dependencies_boot_uid_security_context_and_environment_match": true,
+    "service_port_has_no_listener": true,
+    "six_pristine_run_directories": true
+  },
+  "decision": "approved_for_new_registered_one_shot_execution",
+  "kind": "independent_scale_v3_002_registration_review",
+  "limitations": [
+    "This new output contains all six fresh worlds. It is not a restart or replacement of individual failed slots in the preserved earlier campaign.",
+    "Scientific configuration, paired cohorts, all69 frozen production files, limits and five prerequisite references are unchanged; the manifest differs only in creation time.",
+    "The additional installation observation and review are explicitly bound here as setup evidence; they are not an added scientific endpoint or a new native-provider experiment.",
+    "A full comparison still requires all six valid complete worlds and all three pairs; no positive-gain, adoption, survivor-only or zero-filled-future requirement is introduced.",
+    "Shared resource caps provide no per-world fairness or guaranteed I/O isolation; readiness does not guarantee completion.",
+    "No route, native actor, employee model, server or simulation was launched by this review."
+  ],
+  "manifest_fields_changed_from_failed_registration": [
+    "created_at"
+  ],
+  "manifest_sha256": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+  "observed_repository_commit": "253a946e5ddbca5a7d60e45e425b1cba5d18b8c1",
+  "previous_failed_manifest_sha256": "ca6a3d2b890ebdf1a5142dbccd2d019b60179b5d8e61946725b33b743eb0b229",
+  "public_registration_byte_identical": true,
+  "reused_evidence": {
+    "historical_and_component_prerequisite_audits": "All five passed the prior independent review; only their exact reference bytes were rechecked in this timestamp-only review. The production outer and inner still require their normal fresh audits.",
+    "historical_prerequisite_audits_rerun": false,
+    "installation_observation_sha256": "d3d015c75b6722d5793cf78462c4050a1ae483ea27cfdedd878b46be1876a30e",
+    "installation_review_sha256": "5c922a51cc4e799ad146eed9c8be9dcb08181f0103ad397d7e985d6d218c2c6d",
+    "installed_route_rerun": false,
+    "original_registration_review_sha256": "29c4a4dd9f4f78b0673155ed17f3d4e6b3211fbf6e300c4552b72e2fa6522d8d"
+  },
+  "reviewed_at": "2026-09-10T10:35:17.232128+00:00",
+  "runtime_evidence": {
+    "current_installation_binding_canonical_sha256": "6506f4980fb87af7c4d13a44fd79bc9a1b8ef2400c3e029b9eaa026b3c515bd2",
+    "qualified_dependencies_canonical_sha256": "d54042fa704a97894374d6889f87f008ff782f0d7237937883b05ff4e0e8aecc",
+    "qualified_manifest_sha256": "094dbd85fe01c49ef5d3e847c8a6b8b042ce8b2b7d077e58e9a465b14511b588"
+  },
+  "schema_version": 1
+}
