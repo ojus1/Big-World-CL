@@ -145,6 +145,10 @@ class Computer:
 
     def start(self,credentials,timeout=150):
         import yaml
+        from .startup_observability import Observer, enabled
+        startup_started = time.monotonic()
+        observer = Observer(self.root, 'parent') if enabled(self.execution) else None
+        self.startup_observer = observer
         config={'model':{'default':credentials['model'],'provider':'custom','base_url':credentials['base_url'],
                          'api_mode':'codex_responses'},
             'terminal':{'backend':'docker','docker_image':'python:3.12-slim','cwd':'/workspace',
@@ -170,14 +174,45 @@ class Computer:
             LIFESPAN_EMPLOYEE=self.eid,LIFESPAN_MODEL=credentials['model'],
             LIFESPAN_BASE_URL=credentials['base_url'],LIFESPAN_API_KEY=credentials['api_key'],
             PYTHONUNBUFFERED='1',HERMES_YOLO='1',LIFESPAN_SANDBOX=self.backend)
-        process_env['LIFESPAN_EXECUTION_CONFIG']=json.dumps(self.execution)
+        worker_execution = dict(self.execution)
+        if observer:
+            worker_execution['_startup_observation_attempt_id'] = observer.attempt
+        process_env['LIFESPAN_EXECUTION_CONFIG']=json.dumps(worker_execution)
         self.log=(self.root/'worker.log').open('a')
-        self.process=subprocess.Popen([str(HERMES/'venv/bin/python'),'-u','-m','lifespan.hermes_worker'],
-            cwd=self.workspace,env=process_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,
-            stderr=self.log,text=True,bufsize=1)
-        ready=self.receive(timeout)
+        if observer and time.monotonic() - startup_started >= timeout:
+            error = TimeoutError('Hermes startup deadline exhausted before worker launch')
+            observer.event('startup_exception', exception=error)
+            raise error
+        try:
+            self.process=subprocess.Popen([str(HERMES/'venv/bin/python'),'-u','-m','lifespan.hermes_worker'],
+                cwd=self.workspace,env=process_env,stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+                stderr=self.log,text=True,bufsize=1)
+        except BaseException as exc:
+            if observer: observer.event('startup_exception', exception=exc)
+            raise
+        if observer:
+            observer.event('popen_returned', pid=self.process.pid)
+        try:
+            remaining = timeout - (time.monotonic() - startup_started) if observer else timeout
+            if observer and remaining <= 0:
+                raise TimeoutError('Hermes startup deadline exhausted during observation')
+            ready=self.receive(remaining)
+            if observer and time.monotonic() - startup_started > timeout:
+                observer.event('ready_observed_after_deadline', pid=self.process.pid)
+                raise TimeoutError('Hermes ready observed after startup deadline')
+        except BaseException as exc:
+            if observer: observer.event('startup_exception', pid=self.process.pid, exception=exc)
+            raise
         if ready.get('kind')!='ready':
-            raise RuntimeError(f'Hermes startup failed: {ready}')
+            error = RuntimeError(f'Hermes startup failed: {ready}')
+            if observer: observer.event('startup_exception', pid=self.process.pid, exception=error)
+            raise error
+        if observer:
+            observer.event('ready_received', pid=self.process.pid)
+            if time.monotonic() - startup_started > timeout:
+                error = TimeoutError('Hermes startup deadline exhausted during observation')
+                observer.event('startup_exception', pid=self.process.pid, exception=error)
+                raise error
         self.ready=ready
         self.container_id=ready.get('container_id')
         self.runtime_state()
@@ -232,11 +267,21 @@ class Computer:
         self.prepared=self.prepared_hash=None
         self.last_grade=self.last_submission_hash=None
         self.committed_artifact=self.committed_hash=None
+        observer = getattr(self, 'startup_observer', None)
+        deadline = time.monotonic()+timeout if observer else None
+        if observer:
+            observer.event('run_request_write_attempt', pid=self.process.pid)
+            if time.monotonic() >= deadline:
+                raise TimeoutError('Hermes run deadline exhausted before request write')
         self.send({'kind':'run','prompt':prompt})
+        if observer: observer.event('run_request_write_returned', pid=self.process.pid)
         rpc=[]
-        deadline=time.monotonic()+timeout
+        deadline=deadline if observer else time.monotonic()+timeout
         while time.monotonic()<deadline:
-            msg=self.receive(min(150,max(1,deadline-time.monotonic())))
+            remaining = deadline-time.monotonic()
+            if observer and remaining <= 0:
+                break
+            msg=self.receive(min(150,remaining if observer else max(1,remaining)))
             if msg['kind']=='action':
                 response=self.action(env,msg['action'])
                 rpc.append({'action':msg['action'],'response':response})

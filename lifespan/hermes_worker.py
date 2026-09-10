@@ -11,7 +11,7 @@ import sys
 import traceback
 
 
-def main():
+def _main(observer=None):
     wire = sys.stdout
     sys.stdout = sys.stderr  # Hermes logging must not corrupt JSON RPC.
     def send(record):
@@ -22,11 +22,16 @@ def main():
         if not line:
             raise EOFError('Simulator closed worker pipe')
         return json.loads(line)
+    def stage(value):
+        if observer: observer.event(value)
+    stage('imports_before')
     from tools.registry import registry
     from toolsets import create_custom_toolset
     from run_agent import AIAgent, IterationBudget
     from hermes_state import SessionDB
     from tools.terminal_tool import terminal_tool, register_task_env_overrides, _active_environments
+    stage('imports_after')
+    stage('registry_before')
     execution=json.loads(os.environ.get('LIFESPAN_EXECUTION_CONFIG','{}'))
     benchmark=execution.get('mode')=='evaluation'
 
@@ -51,18 +56,21 @@ def main():
         # native skills, but cannot autonomously mutate memory or skill stores.
         from tools import skills_tool
         create_custom_toolset('lifespan_skill_read','Read deployed employee skills',tools=['skills_list','skill_view'])
+    stage('registry_after')
     profile=Path(os.environ['HERMES_HOME'])
     eid=os.environ['LIFESPAN_EMPLOYEE']
     computer_id='lifespan-'+hashlib.sha256(str(profile).encode()).hexdigest()[:16]
     # Hermes classifies arbitrary HERMES_HOME paths as profile "custom" and
     # collapses ordinary tool task IDs to "default". Its native benchmark
     # override API is required to prevent cross-employee container reuse.
+    stage('sandbox_before')
     backend=os.environ.get('LIFESPAN_SANDBOX','bubblewrap')
     if backend=='bubblewrap':
         from lifespan.bubblewrap import install_hermes_backend
         sandbox_env=install_hermes_backend(profile.parent)
     else:
         register_task_env_overrides(computer_id,{'env_type':'docker','docker_image':'python:3.12-slim','cwd':'/workspace'})
+    stage('sandbox_after')
     system=(f'You are the persistent Hermes assistant of employee {eid} in a fictional business simulation. '
         'Complete the employee request using the real filesystem and enterprise_action tool. '
         'Your computer is /workspace. Read /workspace/inbox/current.json and /workspace/company/objectives.json, '
@@ -87,6 +95,7 @@ def main():
             'work.commit is required for completion. The artifact must satisfy the substantive task '
             'requirements, not just the envelope. Never claim success from prose alone. '
             'Do not contact outside users/services. employee.ask reaches your simulated employee.')
+    stage('agent_before')
     agent=AIAgent(model=os.environ['LIFESPAN_MODEL'],provider='custom',
         api_key=os.environ['LIFESPAN_API_KEY'],base_url=os.environ['LIFESPAN_BASE_URL'],
         api_mode='codex_responses',enabled_toolsets=(['terminal','file','lifespan_skill_read','enterprise_lifespan']
@@ -96,6 +105,8 @@ def main():
         quiet_mode=True,save_trajectories=True,session_id='lifespan-'+eid,
         session_db=SessionDB(),skip_context_files=True,skip_background_review=True,
         checkpoints_enabled=False)
+    stage('agent_after')
+    stage('budget_transport_before')
     if benchmark:
         from lifespan.evaluation.budget import install_native_budget
         meter=install_native_budget(agent,
@@ -105,6 +116,8 @@ def main():
         from lifespan.evaluation.hermes_transport import install
         from lifespan.computers import HERMES
         transport=install(agent, execution.get('hermes_transport','streaming'), hermes_root=HERMES)
+    stage('budget_transport_after')
+    stage('probe_before')
     # Materialize and exercise the native backend even before the first model turn.
     probe=terminal_tool(command='pwd; cat /workspace/.employee_identity; test ! -S /var/run/docker.sock',
                         task_id=computer_id)
@@ -112,12 +125,16 @@ def main():
     if probe_result.get('exit_code')!=0 or eid not in probe_result.get('output','').splitlines():
         raise RuntimeError('Native sandbox workspace identity probe failed: '+probe)
     sandbox=_active_environments.get(computer_id,_active_environments.get('default'))
+    stage('probe_after')
+    stage('ready_write_attempt')
     send({'kind':'ready','employee':eid,'pid':os.getpid(),'probe':probe,
+          **({'startup_observation': observer.summary()} if observer else {}),
           'backend':backend,'computer_id':computer_id,
           **({'evaluation_transport':transport} if benchmark else {}),
           **({'sandbox_pid':sandbox.sandbox.process.pid,'rpc_socket':str(sandbox.sandbox.rpc_socket)}
              if backend=='bubblewrap' else {'container_id':sandbox._container_id}),
           'tool_names':[t['function']['name'] if 'function' in t else t.get('name') for t in agent.tools]})
+    stage('ready_write_returned')
     history_path=profile/'lifespan_history.json'
     history=json.loads(history_path.read_text()) if history_path.exists() else []
     if benchmark and history:
@@ -150,6 +167,23 @@ def main():
         except Exception as exc:
             traceback.print_exc()
             send({'kind':'error','error':str(exc)})
+
+def main():
+    observer = None
+    # Only stdlib/helper work precedes the first event; Hermes is imported in _main.
+    execution = json.loads(os.environ.get('LIFESPAN_EXECUTION_CONFIG', '{}'))
+    from lifespan.startup_observability import Observer, enabled
+    if enabled(execution):
+        observer = Observer(Path(os.environ['HERMES_HOME']).parent, 'worker',
+                            expected_attempt=execution.get('_startup_observation_attempt_id'))
+        observer.event('worker_entered')
+    try:
+        return _main(observer)
+    except BaseException as exc:
+        if observer and observer.last_stage != 'ready_write_returned':
+            observer.event('startup_exception', exception=exc)
+        raise
+
 
 if __name__=='__main__':
     main()

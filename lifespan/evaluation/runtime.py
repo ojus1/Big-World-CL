@@ -85,9 +85,11 @@ def skill_loaded(messages, native_file_sha256=None):
 
 def execute_case(*, root, employee, world, task_id, case, request, skill, credentials,
                  objectives, max_iterations=16, max_tokens=4096, business_files=None,
-                 max_total_tokens=None, timeout_seconds=420, hermes_transport='streaming'):
+                 max_total_tokens=None, timeout_seconds=420, hermes_transport='streaming',
+                 hermes_startup_observability=False):
     from .tasks import grade_case
     from .hermes_transport import contract
+    from ..startup_observability import executor_options as startup_options
     transport = contract(hermes_transport)
     root = Path(root).resolve()
     if root.exists():
@@ -96,7 +98,8 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     started = time.monotonic()
     computer = Computer(root / 'computers', employee,
         execution={'mode': 'evaluation', 'max_iterations': max_iterations, 'max_tokens': max_tokens,
-                   'max_total_tokens': max_total_tokens, 'hermes_transport': hermes_transport},
+                   'max_total_tokens': max_total_tokens, 'hermes_transport': hermes_transport,
+                   **startup_options({'hermes_startup_observability': hermes_startup_observability})},
         artifact_grader=lambda artifact: grade_case(case, artifact))
     task = world.tasks[task_id]
     brief = request + '\n' + case['request']
@@ -164,12 +167,16 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
                 or native.get('evaluation_budget', {}).get('exhausted', False))
                 and not any(op.get('status') == 'provider_budget_overrun'
                     for op in native.get('evaluation_budget', {}).get('operations', []))}
+        if getattr(computer, 'startup_observer', None):
+            record['startup_observation'] = computer.startup_observer.summary()
         save(root / 'session.json', record)
         (root / 'INFLIGHT.json').unlink()
         return record
     except Exception as exc:
         save(root / 'FAILURE.json', {'type': type(exc).__name__, 'message': str(exc),
-                                    'usage_complete': False, 'elapsed_seconds': time.monotonic() - started})
+                                    'usage_complete': False, 'elapsed_seconds': time.monotonic() - started,
+            **({'startup_observation': computer.startup_observer.summary()}
+               if getattr(computer, 'startup_observer', None) else {})})
         raise
     finally:
         computer.close()

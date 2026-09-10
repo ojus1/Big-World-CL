@@ -1,0 +1,165 @@
+{
+  "all_six_slots": [
+    {
+      "accepted_updates": 0,
+      "current_observation": "previously_reported_completed",
+      "day": 21,
+      "run_id": "seed-211-no_learning",
+      "sessions": 233,
+      "status": "completed",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 0
+    },
+    {
+      "accepted_updates": 1,
+      "current_observation": "previously_reported_failed",
+      "day": 11,
+      "run_id": "seed-211-skillopt",
+      "sessions": 143,
+      "status": "failed",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 15
+    },
+    {
+      "accepted_updates": 0,
+      "current_observation": "previously_reported_failed",
+      "day": 7,
+      "run_id": "seed-307-skillopt",
+      "sessions": 93,
+      "status": "failed",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 0
+    },
+    {
+      "accepted_updates": 0,
+      "current_observation": "previously_reported_completed",
+      "day": 21,
+      "run_id": "seed-307-no_learning",
+      "sessions": 239,
+      "status": "completed",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 0
+    },
+    {
+      "accepted_updates": 0,
+      "current_observation": "previously_reported_failed",
+      "day": 8,
+      "run_id": "seed-401-no_learning",
+      "sessions": 106,
+      "status": "failed",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 0
+    },
+    {
+      "accepted_updates": 0,
+      "current_observation": "interrupted_without_terminal_receipt",
+      "day": 17,
+      "run_id": "seed-401-skillopt",
+      "sessions": 215,
+      "status": "running",
+      "status_scope": "saved_status_report_not_reaudited_here",
+      "updates": 22
+    }
+  ],
+  "boot_observation": {
+    "boot_changed": true,
+    "current_boot_sha256": "4f2fd917b9e8d59868f0528ad93dc95b6d3e996933ec6cb20333e3ed6acc6700",
+    "previous_boot_sha256": "825c249d88dca5c940ee204db571520bd8addf1f0f402d4872046bf7c8bb080b",
+    "reboot_reason": "unknown",
+    "recorded_process_ids_absent": 6,
+    "recorded_processes_checked": 6,
+    "scope": "Known prior identities only; ended old process lifetimes do not prove graceful cleanup."
+  },
+  "campaign_sha256": "6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa",
+  "inflight_learning": {
+    "complete_epoch_measured_calls": null,
+    "complete_epoch_measured_tokens": null,
+    "current_observation": "interrupted_with_unreturned_replay",
+    "day": 17,
+    "dispatched_replays": 2,
+    "employee": "firm-1__incident-regulated",
+    "known_plus_reserved_calls": 24,
+    "known_plus_reserved_tokens": 331914,
+    "optimizer_dispatch_records": 0,
+    "recorded_status": "running",
+    "returned_replay": {
+      "accounting_complete": true,
+      "attempt_index": 0,
+      "independent_check": "selected_native_meter_operations_and_session_usage_only",
+      "input_tokens": 80408,
+      "output_tokens": 1506,
+      "phase": "baseline_val",
+      "physical_calls": 8,
+      "total_tokens": 81914
+    },
+    "returned_replays": 1,
+    "unreturned_replay": {
+      "attempt_index": 1,
+      "instance_present": true,
+      "native_inflight_present": true,
+      "phase": "baseline_val",
+      "physical_calls": null,
+      "reserved_calls": 16,
+      "reserved_tokens": 250000,
+      "session_receipt_present": false,
+      "tokens": null
+    }
+  },
+  "interrupted_run": {
+    "checkpoint_session_complete_usage_flags": 215,
+    "checkpoint_update_complete_accounting_flags": 22,
+    "day": 17,
+    "endpoint_raw_records_match_checkpoint": true,
+    "full_prefix_native_audit_performed": false,
+    "phase": "learn",
+    "recorded_accepted_updates": 0,
+    "recorded_completed_updates": 22,
+    "recorded_online_sessions": 215,
+    "run_id": "seed-401-skillopt"
+  },
+  "kind": "scale_v1_reboot_interruption_observation",
+  "limitations": [
+    "This is a bounded interruption observation, not recursive certification of the 215 sessions or 22 updates.",
+    "Saved outcomes for all six slots are retained as prior reported states; only the surviving learner is newly classified as interrupted.",
+    "A current-boot process absence does not manufacture missing terminal, timing, usage or cleanup receipts.",
+    "The unreturned replay has unknown actual usage; its reservation is not measured consumption.",
+    "The reason for the host reboot is unknown. Earlier cleanup uncertainty remains unchanged.",
+    "No resume, replacement, new model call, process signal, or original artifact rewrite was performed."
+  ],
+  "observed_at": "2026-09-10T08:49:02.585803+00:00",
+  "original_status_as_of": "2026-09-10T08:32:18.027613+00:00",
+  "provenance": {
+    "hash_encoding": "sha256_raw_file_bytes",
+    "private_capture_manifest_sha256": "a53e6ef0c943a8c1ce7a90675789214e22a07f837e9f21c49f9ef86b6a4125fb",
+    "process_observation_sha256": "ea8e0f080293126b6b3f0b5da1152e93a67adfa449d0f18b899ca45c7ba3b008",
+    "selected_input_sha256": {
+      "actor_state": "2e48cd90152cf32fd8cd4a0ca0d65fde961b0e8604ab3fbe126c4ed3c5b113cd",
+      "campaign": "6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa",
+      "checkpoint": "0fdb664184c6a5932158aff9622217f64572664a6a90f7b598b12eca8a8b02a3",
+      "epoch_progress": "569c8c1fa0469863df6f42d3cac32132430ab5f45eda3b3be8b7bac6616209bf",
+      "execution": "31174327230b6c644a828f4c71e0f1d35f065ba6bd0c0ac10c50d78342f53d48",
+      "inflight_marker": "ba9ad618d359b30c524f80770768f100a638b34392b4b1fe3df3be0e7f0efb2a",
+      "last_completed_update": "9c998199cd2c2d53b5069ecda061d28c22a01718b2505132d6cc15c89d4f4bf0",
+      "last_online_session": "426c82e2d28be6c136328bd7053885d2808ff14d92f6f3d706af209f5d003205",
+      "launch_observations": "e9356a3ddc08579697c648593b840db505ff51d8a8191cda86f7b3d99c088ec1",
+      "native_run_state": "f2711997c2dea5103d3a893a20d1a01c11bf4962139fc115ae01dc511c554929",
+      "pending_native_inflight": "81a4008b6549acb6897612ddc7a2cfb0d0c319eb41cc1257aff061f2b48699d8",
+      "pending_native_instance": "3d0fef8696de01ac75f71180acbf99a86a7fd54cf6b73dca3772b2815bcdabdf",
+      "returned_inflight_replay": "71b06dcc6affab10c419c592b1b59b408ca585cc3927e5628809545813bae12a",
+      "run_manifest": "14c005c0b143f5bda7fd9e85331a95fc69c5d3b2400f6cfce39ed2e5241448cf",
+      "status": "4f5b8f171e7331601e572af5450444e4d51918b4568206189c5356cd4c5daddc",
+      "supervisor_results": "534ff773c6f73330bcfd5fdb03fa8e2042f6da03fbf3821598cccf460dcfaafa"
+    }
+  },
+  "schema_version": 1,
+  "terminal_evidence": {
+    "graceful_or_bounded_cleanup_verified": false,
+    "inflight_epoch_update_present": false,
+    "interrupted_run_has_supervisor_result": false,
+    "primary_endpoint_available": false,
+    "run_failure_present": false,
+    "run_report_present": false,
+    "run_report_v2_present": false,
+    "supervisor_result_rows": 5
+  }
+}

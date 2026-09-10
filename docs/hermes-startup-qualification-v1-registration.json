@@ -1,0 +1,193 @@
+{
+  "child_execution": {
+    "hermes_startup_observability": true,
+    "hermes_transport": "nonstreaming",
+    "max_iterations": 16,
+    "max_tokens": 4096,
+    "max_total_tokens": 250000,
+    "mode": "evaluation"
+  },
+  "config": {
+    "batch_sizes": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "cleanup_seconds": 30,
+    "failure_policy": "halt_later_batches_on_any_failed_start_or_uncertain_boundary_or_cleanup",
+    "io_isolation_qualified": false,
+    "kernel_limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "4294967296",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "max_parallel": 2,
+    "planned_slots": 9,
+    "poll_seconds": 0.1,
+    "provider_network": "new_user_and_net_namespaces_loopback_down",
+    "startup_seconds": 150,
+    "work_requests": 0
+  },
+  "created_at": "2026-09-10T09:19:13.011986+00:00",
+  "dependencies": {
+    "bubblewrap": {
+      "binary_sha256": "52231e1caf55bcbc667b269f49c63599a6f7db4767ae6a039580d0ff853db712",
+      "version": "bubblewrap 0.9.0"
+    },
+    "control_binaries": {
+      "systemctl": {
+        "path": "/usr/bin/systemctl",
+        "sha256": "e0d3d0e9444da1b2b58c792c3f5028b69f049b77d5ca17b3ec0d09f89117225b"
+      },
+      "systemd-run": {
+        "path": "/usr/bin/systemd-run",
+        "sha256": "dbc8b988a849d5c9d7ef2de7068a6f107021bc6c11e0d7864c73f373eef726a7"
+      },
+      "unshare": {
+        "path": "/usr/bin/unshare",
+        "sha256": "a23c8863860669003dc4660039fe642f5795c8c2195898ebc5d01afa1ac3d11c"
+      }
+    },
+    "global_configuration_absence": {
+      "installed_repo_dotenv": true,
+      "managed_etc_hermes": true
+    },
+    "harness": {
+      "python_sha256": "2874a0b9344d06b7767aebb1e6e25a759ffcbdb544e99400ecc74dc6092d1174",
+      "python_version": "3.11.16",
+      "pyyaml_version": "6.0.3"
+    },
+    "hermes": {
+      "native_source_sha256": {
+        "agent/chat_completion_helpers.py": "b88c4cc9428eb8d26cfcff2037dad2942970d13fc3e46a0f2ae41106d6d7fa50",
+        "agent/codex_responses_adapter.py": "539dabc336212a0b00488d779496dd39d40c0afa4daee266cdb5d3a578f856e9",
+        "agent/codex_runtime.py": "37bd92f2c3573d70558602c5438b8198b4854ac86cefb9d5757cedc5a841ba0b",
+        "agent/conversation_loop.py": "9904134bef009978bf95477a7ba8663421448e3e7735e0ba041ca672dfd33b45",
+        "agent/relay_llm.py": "955d10af9eebe807f0a5e8cae934470196f7d8ccded8eae1311d2aa6b3228189",
+        "agent/transports/__init__.py": "fe832003b28c5470608eb51a055e5cc759f1fb81d93174b54dbbd217f97bbffe",
+        "agent/transports/base.py": "e9b0d020f9cf1aae5d0a470363c7694cb3f3f0257fbeff00fc80435e9b80befe",
+        "agent/transports/codex.py": "a9765ee5e9a93ded4aec1fca562007893ad2f717f7516fa23f0295a7a7b6ceac",
+        "agent/transports/types.py": "148b1f6389d10952a70da2a79c7a6baf056f7a41178b9b5e0b673626dad2fa2b",
+        "run_agent.py": "a26e5264738f1c62347e63c1265e562d3cfae439dadc313db48572f3e9cc751b"
+      },
+      "packages": {
+        "httpx": "0.28.1",
+        "openai": "2.24.0"
+      },
+      "python_sha256": "2874a0b9344d06b7767aebb1e6e25a759ffcbdb544e99400ecc74dc6092d1174",
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9"
+    }
+  },
+  "interpretation": "Startup component qualification only; no learning, provider reliability, I/O isolation, or long-horizon reliability claim.",
+  "kind": "hermes-startup-qualification-v1",
+  "limits_are_containment_not_latency_reservation": true,
+  "private_execution_context_sha256": "d2fe417ca6148d6a8853ff7244b320f553ef880cf3630dea8ef3e81dfa6f0c3b",
+  "private_manifest_sha256": "e709a7a5d5a405abf18becb27ebfc43bc95d61db78d0b207d19b1efb16d1fca1",
+  "projection_kind": "allowlisted_preregistration_not_raw_manifest",
+  "repository_commit": "8763faad91ed18e77e385e017d7039ccd6c1b29a",
+  "resource_receipt_sha256": {
+    "CLEANUP.json": "24610a63c212d2020db25c5d7b370842bf3f66d26872164e1280410fe67025fc",
+    "INTENT.json": "e7d504e7d9a9d52ce6564923c21775ba989fcfdc189791d93e94344ffaa984f9",
+    "OBSERVATION.json": "38b801c6f8cff31f0156820a895d01177b99153420af3918c65c3cc2fde30adb",
+    "REPORT.json": "8c25c5112c160271dac81466e0ead3dc2a12b474ecc4a036e102fe1b4821d64b",
+    "START.json": "e8613e504bcb35ea387d126c3ecee55fafec40716f1b6e1e54b1bbfb798a0527"
+  },
+  "schema_version": 1,
+  "slots": [
+    {
+      "batch": 0,
+      "index": 0,
+      "slot_id": "start-00",
+      "unit_sha256": "fadd7b59ca8f1b4984bf2f450b4a429d433e53d87e2f1e5f1e676f2986c29c04"
+    },
+    {
+      "batch": 1,
+      "index": 1,
+      "slot_id": "start-01",
+      "unit_sha256": "3fcbe7c056ed579adf199971966f8b7775cc0fda5630d2e0d2f14b75a9ff5eee"
+    },
+    {
+      "batch": 2,
+      "index": 2,
+      "slot_id": "start-02",
+      "unit_sha256": "3a953352ccb993e04708df642522cad79249c445d2b5ab7901d7254720036ecb"
+    },
+    {
+      "batch": 3,
+      "index": 3,
+      "slot_id": "start-03",
+      "unit_sha256": "a514819a10b3c0978516937b607c5af3ee68bcc77b1056ed365c842cc088ae54"
+    },
+    {
+      "batch": 3,
+      "index": 4,
+      "slot_id": "start-04",
+      "unit_sha256": "4e372f7b2e64f05ac9cefff8e3f3ba392bf085f1609b375a7bf8620df8d98f6a"
+    },
+    {
+      "batch": 4,
+      "index": 5,
+      "slot_id": "start-05",
+      "unit_sha256": "3e0c35acc01befd2c7563d52f1902e78e45edad4aaebc9d99f1e39756731d149"
+    },
+    {
+      "batch": 4,
+      "index": 6,
+      "slot_id": "start-06",
+      "unit_sha256": "8a8b286dea068d1dadb1716d02c2bbdcabff11ce200cf135a8a3bf2e0e7dacec"
+    },
+    {
+      "batch": 5,
+      "index": 7,
+      "slot_id": "start-07",
+      "unit_sha256": "8d45e0991be2ff5f790d9bf41a1faf43b659bd69ec22e7eb238b6115cae8c190"
+    },
+    {
+      "batch": 5,
+      "index": 8,
+      "slot_id": "start-08",
+      "unit_sha256": "e71b4706eb1d3a0d087bf14f9ecbfae5b03f47563f2f5b8006a8daeecd9603f5"
+    }
+  ],
+  "source_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "63ad57a3392379ed314d4130a09b156399efc371342ef0d983b323e50db4c318",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "891038f812204ef586918ffa475b9e87849529c741bc7da1a3208ac4272ee7be",
+    "lifespan/evaluation/hermes_transport.py": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "08898100a6d5e36da89bbdea77ad7162db3280b9eef7b51f4b0596b9111a4713",
+    "lifespan/evaluation/runner.py": "6ec5a9e1e881ab96eaef42e64d04bdf241dc3b2a2e0e51d50b173587e816eb9a",
+    "lifespan/evaluation/runtime.py": "a242bb7ae8740e97ccc589ec73c735d6f370a4f090bb2c01f3153188754fd1bd",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "74548e6429296cacbd01cf0f322880a02fc179fa9de3bb258e39243c6a8c1f03",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "0d59f091acf62b726721a380e54ad8423ae7e99ea536d0e7f78a2650bd3ef341",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/startup_observability.py": "d9c798ddab653d486d16bb63f0064e18cc7d302ea3b387361e627a939bf80f59",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0",
+    "scripts/hermes_startup_probe.py": "4cdd36706154a74efb856d719eb37742631006342b6655df7721bac74f7633fb",
+    "scripts/hermes_startup_qualification.py": "f7d55234d4e8c0d31ede4c20527171bd10ebaeff2a26263672e5e864f5c472fe",
+    "scripts/startup_resource_controls.py": "7addaee721ece988ea48c0a5d8afda6310b72d77b3d2b0451e2ed71584e0c3a3"
+  },
+  "state_at_registration": "prepared_not_executed"
+}

@@ -24,6 +24,7 @@ from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import SEED_SKILL, digest
 from lifespan.evaluation.runner import credentials, dependency_provenance, source_hashes
 from lifespan.evaluation.hermes_transport import executor_options, manifest_fields
+from lifespan.startup_observability import executor_options as startup_options, manifest_fields as startup_fields
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_evaluation import audit_run, session_check
@@ -82,7 +83,7 @@ def _manifest(source, bank, config, creds, slots):
     if (creds['model'], creds['base_url']) != (original['target_model'], original['model_base_url']):
         raise ValueError('Calibration must use the declared source model and provider')
     return {'schema_version': 1, 'kind': 'native_historical_replay_calibration',
-            **manifest_fields(original['config']),
+            **manifest_fields(original['config']), **startup_fields(original['config']),
             'source_directory': str(source), 'bank_sha256': digest(bank),
             'config': deepcopy(config), 'slots': slots, 'source_sha256': hashes,
             'target_model': creds['model'], 'model_base_url': creds['base_url'],
@@ -207,7 +208,7 @@ def run_calibration(source, out, config, *, stop_after=None, executor=execute_ca
                 objectives=capsule['objectives'], business_files=capsule['business_files'],
                 max_iterations=config['max_iterations'], max_tokens=config['max_output_tokens'],
                 max_total_tokens=config['max_rollout_tokens'], timeout_seconds=config['max_rollout_seconds'],
-                **executor_options(manifest))
+                **executor_options(manifest), **startup_options(manifest))
             receipt = {**slot, 'status': 'completed' if record['infrastructure_valid'] else 'infrastructure_invalid',
                 **{key: deepcopy(record[key]) for key in ('success', 'semantic_score', 'infrastructure_valid',
                     'budget_exhausted', 'usage', 'diagnostic', 'elapsed_seconds', 'skill_loaded')},

@@ -48,11 +48,14 @@ class ExperimentConfig:
     mirofish_service_url: str | None = None
     focal_employee: str | None = None
     hermes_transport: str = 'streaming'
+    hermes_startup_observability: bool = False
     schema_version: int = 1
 
     def __post_init__(self):
         from .hermes_transport import mode
         mode(self)
+        from ..startup_observability import enabled
+        enabled(self)
         if self.mirofish_service_url is not None:
             from ..mirofish import normalize_service_url
             object.__setattr__(self, 'mirofish_service_url', normalize_service_url(self.mirofish_service_url))
@@ -89,6 +92,8 @@ class ExperimentConfig:
 
     def public(self):
         result = asdict(self)
+        if not self.hermes_startup_observability:
+            result.pop('hermes_startup_observability')
         if self.hermes_transport == 'streaming':
             result.pop('hermes_transport')
         if result['actor_output_contract'] is None:

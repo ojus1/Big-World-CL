@@ -69,6 +69,11 @@ jobs:
       - name: Test concurrent six-world follow-up supervision
         run: python -m unittest tests.test_run_scale_v2 -v
 
+      - name: Test bounded resource probe and isolated startup child
+        # Mocked services, kernel receipts and computers only; no systemd units,
+        # native Hermes workers or model/provider requests are started.
+        run: python -S -m unittest tests.test_startup_resource_controls tests.test_hermes_startup_probe tests.test_hermes_startup_qualification -v
+
       - name: Test fixed Hermes transport preflight and independent evidence audit
         # Standard-library synthetic receipts and owned local process/socket
         # fixtures only; no Hermes install, provider key or native calls.

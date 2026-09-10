@@ -23,6 +23,7 @@ from .protocol import ExperimentConfig, SEED_SKILL, digest, experience_split, re
 from .runtime import execute_case
 from .tasks import make_case
 from .hermes_transport import executor_options, manifest_fields
+from lifespan.startup_observability import executor_options as startup_options, manifest_fields as startup_fields
 
 
 class ReportPostprocessingError(RuntimeError):
@@ -160,7 +161,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     creds = creds or credentials()
     started = time.monotonic()
     manifest = {'config': config.public(), 'scenario': spec, 'source_sha256': source_hashes(),
-                **manifest_fields(config),
+                **manifest_fields(config), **startup_fields(config),
                 'learning_evidence_version': 2,
                 'target_model': creds['model'], 'model_base_url': creds['base_url'],
                 'dependencies': dependency_provenance(),
@@ -202,6 +203,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
         from .metrics import build_report
         provenance = {k: manifest[k] for k in ('target_model', 'model_base_url', 'dependencies', 'source_sha256')}
         provenance.update(manifest_fields(config))
+        provenance.update(startup_fields(config))
         if 'actor_output_contract_provenance' in manifest:
             provenance['actor_output_contract_provenance'] = manifest['actor_output_contract_provenance']
         if config.mirofish_service_url is not None:
@@ -334,7 +336,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     record = executor(root=out / 'work' / key, employee=employee, world=w, task_id=tid,
                         case=case, request=decision['request'], skill=state['skills'][employee], credentials=creds,
                         objectives=eco.firms[fid], max_iterations=config.max_iterations,
-                        max_tokens=config.max_output_tokens, max_total_tokens=250000, **executor_options(config),
+                        max_tokens=config.max_output_tokens, max_total_tokens=250000, **executor_options(config), **startup_options(config),
                         business_files=archived, timeout_seconds=min(420, remaining_seconds()))
                     record.update(id=key, skill_version=state['skill_versions'][employee])
                     state['sessions'].append(record)
@@ -483,7 +485,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
                 objectives=capsule['objectives'], max_iterations=min(config.max_iterations, limits['max_model_calls']),
                 max_tokens=config.max_output_tokens, max_total_tokens=limits['max_tokens'],
                 business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'],
-                **executor_options(config))
+                **executor_options(config), **startup_options(config))
             usage = result['usage']
             artifact.update(dispatch_status='returned',
                 usage={field: usage.get(field) for field in ('api_calls', 'total_tokens', 'charged_tokens',

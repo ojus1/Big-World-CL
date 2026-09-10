@@ -1,0 +1,218 @@
+{
+  "counts": {
+    "HELLO_receipts": 0,
+    "native_child_directories": 0,
+    "planned_slots": 9,
+    "slots_declared_infrastructure_failed": 1,
+    "slots_declared_skipped_after_stop": 8,
+    "slots_missing_audited_receipts": 8,
+    "slots_qualified": 0,
+    "slots_with_launch_intent": 1,
+    "slots_with_receipt": 1
+  },
+  "failed_attempt": {
+    "attempt_through_cleanup_seconds": 30.108610125999803,
+    "boundary_verified": false,
+    "cgroup_remaining_member_count": null,
+    "cleanup_confirmed": false,
+    "cleanup_declared_limit_seconds": 30,
+    "cleanup_elapsed_seconds": 30.00012517999994,
+    "cleanup_end_past_declared_deadline_seconds": 0.00012517999994088314,
+    "cleanup_error_types": [
+      "ValueError"
+    ],
+    "controller_error_classification": "unshare_uid_map_operation_not_permitted",
+    "controller_log_bytes": 66,
+    "controller_log_lines": 1,
+    "failure_stage": "user_namespace_setup_before_worker_HELLO",
+    "native_start_latency_seconds": null,
+    "slot_id": "start-00",
+    "socket_cleanup_confirmed": false,
+    "supervisor_error_types": [
+      "RuntimeError"
+    ],
+    "systemd_run_client_exit_code": 1,
+    "time_until_cleanup_started_seconds": 0.10848494599986225,
+    "unit_binding_present": false,
+    "unit_exec_main_status": 1,
+    "unit_main_pid_zero": true,
+    "unit_result": "exit-code",
+    "unit_state": "failed"
+  },
+  "interpretation": "Startup qualification failed before native Hermes initialization was observed. This does not measure Hermes startup latency, provider reliability, learning, or full-world performance. All nine slots are retained; no retry or replacement occurred in this registration.",
+  "kernel_context": {
+    "controller_shell_apparmor_label": "chatgpt (unconfined)",
+    "host_policy_changed_by_this_observation": false,
+    "interpretation": "The namespace transition and sys_admin denial explain the uid_map permission failure in this service context. The direct tool shell had a different AppArmor label. This does not establish native cleanup or qualify a different launch context.",
+    "records": [
+      {
+        "apparmor": "AUDIT",
+        "capability": null,
+        "class": "namespace",
+        "operation": "userns_create",
+        "profile": "unconfined",
+        "seconds_after_attempt_start": 0.029230219000055513,
+        "target_profile": "unprivileged_userns"
+      },
+      {
+        "apparmor": "DENIED",
+        "capability": "sys_admin",
+        "class": "cap",
+        "operation": "capable",
+        "profile": "unprivileged_userns",
+        "seconds_after_attempt_start": 0.029281219000040437,
+        "target_profile": null
+      }
+    ],
+    "restrict_unprivileged_userns": 1,
+    "scope": "Two targeted records for the parent-observed unshare PID, same boot and within the failed attempt; no successful audited unit/native identity binding was created."
+  },
+  "kernel_observation_sha256": {
+    "CONTEXT.json": "213de798b16c0ea2af4ef4c67dc5b316c6d9c6685f9750a321c40a852a7b974c",
+    "KERNEL.json": "4ac73430dcdfe656e868fd9a80fa8a0c871815d9b46fa3f9800ee0401058a22b"
+  },
+  "kind": "hermes-startup-qualification-v1-outcome",
+  "observation_kind": "post_execution_engineering_observation",
+  "preregistration_protocol_sha256": "a23e035d3f2dd50a5da39eb31034a7aad059a6f5d5bf2cda1710cf6f76b84e07",
+  "preregistration_sha256": "6ad1e4a5554f2cfc34887a2f5bb301a6e19a44c9ad70931618d06c5e5be1032a",
+  "private_manifest_sha256": "e709a7a5d5a405abf18becb27ebfc43bc95d61db78d0b207d19b1efb16d1fca1",
+  "qualification_passed": false,
+  "raw_evidence_sha256": {
+    "EXECUTION.json": "8ecc2183674cef4817c2ced402f65518e281c3eaaff5ddad1c64b802e4ce9bbc",
+    "REPORT.json": "7c8ebb2feea82bd0422ca2b452740612a1bd033cbe5ca41dd8a36228c8df02c5",
+    "manifest.json": "e709a7a5d5a405abf18becb27ebfc43bc95d61db78d0b207d19b1efb16d1fca1",
+    "resource/CLEANUP.json": "24610a63c212d2020db25c5d7b370842bf3f66d26872164e1280410fe67025fc",
+    "resource/INTENT.json": "e7d504e7d9a9d52ce6564923c21775ba989fcfdc189791d93e94344ffaa984f9",
+    "resource/OBSERVATION.json": "38b801c6f8cff31f0156820a895d01177b99153420af3918c65c3cc2fde30adb",
+    "resource/REPORT.json": "8c25c5112c160271dac81466e0ead3dc2a12b474ecc4a036e102fe1b4821d64b",
+    "resource/START.json": "e8613e504bcb35ea387d126c3ecee55fafec40716f1b6e1e54b1bbfb798a0527",
+    "slots/start-00/CLEANUP.json": "76673c0bbcf9b2234d435a7970e269de32cdf44f8d42e79894027197c68712fd",
+    "slots/start-00/CLIENT.json": "eb67a27e8680f3e60f0b0802090d72140698f29c650044395c311a63028f50f1",
+    "slots/start-00/INTENT.json": "df2c57b53cb5e8d794269fce96031938080d0c007b2d4ac7891e24c55fa8875d",
+    "slots/start-00/RECEIPT.json": "d4ecb24ddae644d87d5f8d9aa41f69a7d9da8460b4c6bc7165b41e91dafe47e8",
+    "slots/start-00/controller.log": "6b50086233b9e3c0f8f5ac5e8094da06d7a05f1c3be0b88baf49578943392a94"
+  },
+  "repository_commit": "8763faad91ed18e77e385e017d7039ccd6c1b29a",
+  "schema_version": 1,
+  "slots": [
+    {
+      "audit_status": "infrastructure_failed",
+      "batch": 0,
+      "declared_status": "infrastructure_failed",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": true,
+      "receipt_sha256": "d4ecb24ddae644d87d5f8d9aa41f69a7d9da8460b4c6bc7165b41e91dafe47e8",
+      "slot_id": "start-00"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 1,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-01"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 2,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-02"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 3,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-03"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 3,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-04"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 4,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-05"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 4,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-06"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 5,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-07"
+    },
+    {
+      "audit_status": "missing",
+      "batch": 5,
+      "declared_status": "skipped_after_stop",
+      "native_inference_requests": null,
+      "qualification_passed": false,
+      "receipt_present": false,
+      "receipt_sha256": null,
+      "slot_id": "start-08"
+    }
+  ],
+  "source_verification": {
+    "current_boot_matches_manifest_and_kernel_observation": true,
+    "current_dependencies_match_manifest": true,
+    "execution_source_and_dependency_bindings_match_manifest": true,
+    "registered_execution_source_changed": false,
+    "registered_source_count": 34,
+    "resource_receipts_match_manifest": true,
+    "working_and_committed_source_bytes_match": true
+  },
+  "status": "incomplete",
+  "strict_audit": {
+    "auditor_source_sha256": "f7d55234d4e8c0d31ede4c20527171bd10ebaeff2a26263672e5e864f5c472fe",
+    "errors": [],
+    "full_recomputed_result_canonical_sha256": "f8a4d350e89b0ac651f6b6bb498a5b5d6be3f82ab8ebc4230ff3ec2614bda952",
+    "hash_encoding": "sha256 of UTF-8 json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False)",
+    "interpretation": "The failed receipt and eight missing receipts prevent completion. Empty errors does not mean qualification passed.",
+    "ok": false,
+    "qualification_passed": false,
+    "saved_raw_AUDIT_present": false,
+    "status": "incomplete"
+  },
+  "usage": {
+    "declared_work_requests_sent": 0,
+    "native_cost": null,
+    "native_inference_requests": null,
+    "native_tokens": null,
+    "physical_usage_meter_available": false,
+    "scope": "No worker HELLO or native child record exists. The failed boundary leaves native usage unknown; the declared zero work requests is not a measured inference count."
+  }
+}

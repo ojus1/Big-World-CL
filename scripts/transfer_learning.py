@@ -22,6 +22,7 @@ from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import ExperimentConfig, SEED_SKILL, digest, experience_split
 from lifespan.evaluation.runner import _learn, credentials, dependency_provenance, source_hashes
 from lifespan.evaluation.hermes_transport import mode, manifest_fields
+from lifespan.startup_observability import manifest_fields as startup_fields, enabled as startup_enabled
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_evaluation import audit_run, session_check
@@ -163,12 +164,13 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
         feedback_delay=original["config"]["feedback_delay"], max_iterations=16,
         max_output_tokens=4096, max_learning_calls=200, max_learning_tokens=4_000_000,
         max_run_seconds=1800, train_cases=2, val_cases=2, edit_budget=4,
-        skillopt_rollouts_k=2, focal_employee=employee, hermes_transport=mode(original['config']))
+        skillopt_rollouts_k=2, focal_employee=employee, hermes_transport=mode(original['config']),
+        hermes_startup_observability=startup_enabled(original['config']))
     sources = source_hashes()
     sources["scripts/transfer_learning.py"] = file_hash(Path(__file__))
     parent_hash = digest(eco.checkpoint())
     manifest = {"schema_version": 1, "version": VERSION, "kind": "one_historical_learning_epoch",
-        **manifest_fields(config),
+        **manifest_fields(config), **startup_fields(config),
         "learning_evidence_version": 2,
         "execution_mode": "native" if executor is execute_case else "injected_executor_fixture",
         "source_directory": str(source), "source_files_sha256": bindings,
