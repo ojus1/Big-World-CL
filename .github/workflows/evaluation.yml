@@ -32,6 +32,19 @@ jobs:
       - name: Fetch reviewed upstream SkillOpt
         run: python scripts/install_skillopt.py
 
+      - name: Fetch pinned Hermes source for pure tool-envelope parity
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: NousResearch/hermes-agent
+          ref: 2c8a2b65aa148ceb178d2251c54a523af12092c9
+          path: .cache/Hermes-readback-source
+          persist-credentials: false
+
+      - name: Test native readback warning compatibility and tamper rejection
+        env:
+          BIGWORLD_TEST_HERMES_SOURCE: ${{ github.workspace }}/.cache/Hermes-readback-source
+        run: python -m unittest tests.test_hermes_readback_v2 -v
+
       - name: Run offline evaluation and existing lifespan tests
         # The suite uses standard-library fixtures and the actual pinned
         # SkillOpt code. No LLM credentials, personal agent profiles, Persona
@@ -52,6 +65,9 @@ jobs:
 
       - name: Test population scale, campaign supervision and independent audit
         run: python -m unittest discover -s tests -p 'test_scale_*.py' -v
+
+      - name: Test concurrent six-world follow-up supervision
+        run: python -m unittest tests.test_run_scale_v2 -v
 
       - name: Test fixed Hermes transport preflight and independent evidence audit
         # Standard-library synthetic receipts and owned local process/socket

@@ -57,6 +57,13 @@ work-stream accounting interruptions and explain why those worlds cannot be
 resumed as the same native state; the remaining worlds continue within the frozen
 limits.
 
+The scale study's [first accepted employee update](docs/SCALE_ADOPTION_INTERRUPTION.md)
+passed the pinned gate on day 11. A later replay in that world lost a usage
+receipt and stopped execution before any future work used the new skill.
+Adoption therefore has zero prospective exposures and establishes no learning
+gain. The [full follow-up plan](docs/SCALE_FOLLOWUP_PLAN.md) preserves all three
+pairs in six fresh worlds with reviewed transport and accounting fixes.
+
 ## What the PoC demonstrates
 
 | Accepted run | Result |

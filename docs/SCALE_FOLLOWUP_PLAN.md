@@ -1,9 +1,10 @@
 # Full comparison after scale-v1 hardening
 
 This is an implementation and launch plan, **not a preregistration or permission
-to modify scale-v1**. Its four surviving worlds continue within their original
-limits. The two interrupted worlds remain in the evidence inventory described in
-[execution observations](SCALE_EXECUTION_NOTES.md). The active objective remains a
+to modify scale-v1**. All six original slots remain in its evidence inventory;
+any still-running worlds continue within their original limits. Interruptions
+remain documented in the [execution observations](SCALE_EXECUTION_NOTES.md) and
+[later learning interruption](SCALE_ADOPTION_INTERRUPTION.md). The active objective remains a
 full multi-enterprise, multi-employee, three-seed comparison with repeated
 employee learning and prospective work after learning.
 
