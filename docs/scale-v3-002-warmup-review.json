@@ -1,0 +1,306 @@
+{
+  "boundary_reconstruction": [
+    {
+      "day": 3,
+      "distinct_obligations": 2,
+      "eligible": false,
+      "employee": "firm-0__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 2,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-0__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-0__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 1,
+      "val": 2
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 1,
+      "eligible": false,
+      "employee": "firm-1__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 0,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-1__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 1,
+      "val": 2
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-1__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 3,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-2__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 3,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 2,
+      "eligible": false,
+      "employee": "firm-2__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 1,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-2__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 1,
+      "val": 2
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-no_learning",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-0__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-0__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-0__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 1,
+      "val": 2
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 2,
+      "eligible": false,
+      "employee": "firm-1__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 1,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-1__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 1,
+      "val": 2
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-1__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 3,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-2__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 3,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-2__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-2__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__incident-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 3,
+      "val": 0
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__onboarding-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 2,
+      "val": 1
+    },
+    {
+      "day": 3,
+      "distinct_obligations": 3,
+      "eligible": false,
+      "employee": "firm-3__renewal-regulated",
+      "released_session_records": 3,
+      "run_id": "seed-211-skillopt",
+      "train": 1,
+      "val": 2
+    }
+  ],
+  "campaign_raw_sha256": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+  "checks": {
+    "all_24_world_employee_identities_matched": true,
+    "distinct_obligations_and_selected_ids_reconstructed": true,
+    "experience_session_identity_bijection": true,
+    "logged_eligibility_counts_match": true,
+    "public_projection_matches_snapshot": true,
+    "raw_snapshot_unchanged_after_review": true,
+    "release_days_match_source_session_day_plus_one": true,
+    "split_recomputed_from_obligation_digest": true,
+    "summary_canonical_hashes_distinguished_from_raw_hashes": true
+  },
+  "copied_raw_input_sha256": {
+    "campaign.json": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+    "runs/seed-211-no_learning/checkpoint.json": "a9ab506a5eb3fd6503334ec3b8c090699ad8688832efa43f9afe475d1f6eca36",
+    "runs/seed-211-skillopt/checkpoint.json": "37fafc0c80906bcc3a5be07f1390eb9d8c5489e4b27fdb77a495efcd1134edd5"
+  },
+  "counts": {
+    "eligible_observed_boundaries": 0,
+    "future_or_unreached_boundaries_unknown": 264,
+    "observed_employee_boundaries": 24,
+    "observed_worlds": 2,
+    "planned_employee_boundaries": 288,
+    "planned_worlds": 6,
+    "recorded_infrastructure_valid": 96,
+    "recorded_skill_loaded": 96,
+    "recorded_skill_version_zero": 96,
+    "recorded_updates": 0,
+    "returned_sessions": 96
+  },
+  "decision": "consistent_with_captured_checkpoint_evidence",
+  "kind": "scale_v3_day3_eligibility_independent_review",
+  "limitations": [
+    "Checkpoint and released-experience consistency only; recorded infrastructure and skill-load flags were checked, not independently proven from native task artifacts.",
+    "No task quality, physical call or token accounting, skill efficacy, completed-study acceptance, or six-world endpoint audit was performed.",
+    "The operational status was separately sampled and is not globally atomic with the copied checkpoints; this review did not read current processes or live outcome traces.",
+    "Missing and future boundaries remain unknown; no result is imputed for unobserved worlds or epochs."
+  ],
+  "operational_status": {
+    "observed_at": "2026-09-10T11:23:50.799550+00:00",
+    "process_identity_not_reaudited_by_this_review": true,
+    "recorded_state_counts": {
+      "running": 2,
+      "unlaunched": 4
+    },
+    "separately_sampled": true
+  },
+  "public_observation_sha256": "fd6d49be8098a6dbab078bf44ff1b54b48d469da86609ff5f218c40ffa36ba23",
+  "registered_sources": {
+    "checked_again_after_review": true,
+    "execution_files": 38,
+    "matched_files": 69,
+    "registration_tools": 31
+  },
+  "schema_version": 1,
+  "snapshot_metadata_sha256": {
+    "INVENTORY.json": "19d89320e228003aa07d2c6e8f352bed3977c43c099f0edad8cbfb08a104f751",
+    "OBSERVATION.json": "74dcaa41065adbd1f8f21fdcfadbde33117734a8d2d756306f36d30931f29b63",
+    "SOURCE_INVENTORY.json": "76f2dd5f40677e7cc91a125015aeab25aa53fe1db68968633d4ab1a98452508f",
+    "STATUS.json": "398d7152f0a5824cb5bfde8e7f8e16c993e97cfc5d2301089a75c9dcec50e714",
+    "SUMMARY.json": "4e8de2ac5c8cc2c06f215f38bf0bf0d8fe83b288f8524dc7b97004c6a705d02f"
+  }
+}

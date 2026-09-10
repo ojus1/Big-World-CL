@@ -17,8 +17,8 @@ inside one resource scope and requires all six worlds for its primary endpoint.
 The first v3 launch stopped before employee sessions because two MiroFish
 overlay files were missing. The installation is repaired and its actual
 capability endpoint now passes; that failed registration remains preserved.
-The [dated startup observation](docs/SCALE_V3_002_PROGRESS.md) records native actor
-simulations and returned employee sessions in both first-pair worlds. Use the
+The [dated progress observations](docs/SCALE_V3_002_PROGRESS.md) show both first-pair
+worlds completing day-3 work and all scheduled employee eligibility checks. Use the
 [read-only progress command](docs/SCALE_STATUS.md) for current local status.
 Startup qualification is complete; the larger learning comparison is not yet
 complete, and no learning gain is claimed.
