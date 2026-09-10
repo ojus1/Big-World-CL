@@ -1,0 +1,49 @@
+{
+  "cleanup": {
+    "confirmed": true,
+    "original_process_state": "absent",
+    "systemd_run_exit_code": 0,
+    "unit_active_state": "inactive",
+    "unit_identity_verified_or_collected": true,
+    "unit_load_state": "not-found",
+    "unit_stop_or_kill_issued": false,
+    "unit_sub_state": "dead"
+  },
+  "controls": {
+    "cpu_quota_cores": 1,
+    "io": {
+      "kernel_file_present": false,
+      "qualified": false,
+      "readback_sha256": null,
+      "requested": false,
+      "status": "unavailable"
+    },
+    "kernel": {
+      "cpu.max": "100000 100000",
+      "memory.max": "67108864",
+      "memory.swap.max": "0",
+      "pids.max": "32"
+    },
+    "verified": true
+  },
+  "elapsed_seconds": 0.09088023799995426,
+  "errors": [],
+  "existing_workload_controls_changed": false,
+  "helper_sha256": "7addaee721ece988ea48c0a5d8afda6310b72d77b3d2b0451e2ed71584e0c3a3",
+  "kind": "startup-resource-controls-v1",
+  "native_or_model_calls": 0,
+  "observed_at": "2026-09-10T08:58:17.406679+00:00",
+  "ok": true,
+  "own_client_forced_termination": false,
+  "payload_sha256": "9559f4f1081dc9c1f5ed686fdc83f823f311108a496a5d2108e1bcaea02b45c6",
+  "receipt_sha256": {
+    "CLEANUP.json": "24610a63c212d2020db25c5d7b370842bf3f66d26872164e1280410fe67025fc",
+    "INTENT.json": "e7d504e7d9a9d52ce6564923c21775ba989fcfdc189791d93e94344ffaa984f9",
+    "OBSERVATION.json": "38b801c6f8cff31f0156820a895d01177b99153420af3918c65c3cc2fde30adb",
+    "START.json": "e8613e504bcb35ea387d126c3ecee55fafec40716f1b6e1e54b1bbfb798a0527"
+  },
+  "report_sha256": "8c25c5112c160271dac81466e0ead3dc2a12b474ecc4a036e102fe1b4821d64b",
+  "schema_version": 1,
+  "scope": "Own fixed harmless user-unit probe only; no native startup or latency guarantee.",
+  "status": "verified"
+}
