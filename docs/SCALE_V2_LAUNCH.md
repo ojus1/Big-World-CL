@@ -7,8 +7,11 @@ the private campaign manifest. Its raw SHA-256 is
 The campaign has started from source commit
 `317b08c9b1fb5e436e06c0fed70eb1fded2b4211`. All six world roots and six distinct
 native MiroFish simulations passed the initial source/identity inspection;
-see the [startup observation](scale-v2-startup-observation.json). This establishes
-startup, with no completed-campaign or learning-gain claim.
+see the [startup observation](scale-v2-startup-observation.json). All six later
+failed during day-3 employee startup, after 274 returned sessions and before
+any learning update. The [terminal failure observation](SCALE_V2_STARTUP_FAILURES.md)
+preserves all slots, measured costs and unresolved startup evidence. No completed
+comparison or learning gain is claimed.
 
 Both no-learning Hermes and pinned SkillOpt run for each of seeds 211, 307 and
 401. Each fresh world contains four enterprises, twelve employees, eight
