@@ -85,4 +85,4 @@ jobs:
         # Fake actors + mocked HTTP only. The fixture reads pinned git source,
         # applies the tracked patch in a temporary directory and starts no native
         # server, OASIS environment or provider request. Missing source is fatal.
-        run: python -m pytest tests/test_actor_output_contract.py -q
+        run: python -m pytest tests/test_actor_output_contract.py tests/test_actor_preflight.py -q
