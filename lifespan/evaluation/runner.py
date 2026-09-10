@@ -17,7 +17,7 @@ from ..computers import HERMES
 from ..ecosystem import Ecosystem, WORKFLOWS
 from ..ecosystem_run import actor_prompt, native_decision
 from ..integrated import EMPLOYEE_PROMPT, employee_view, validate_decision, enact_proposal
-from ..mirofish import MiroFishRuntime, ROOT, imports, save
+from ..mirofish import MiroFishRuntime, ROOT, SERVICE_BINDING_FILE, imports, save
 from ..personas import import_cohort
 from .protocol import ExperimentConfig, SEED_SKILL, digest, experience_split, regime_at, scenario, select_experiences
 from .runtime import execute_case
@@ -73,7 +73,9 @@ class NativeActors:
         cohort_path = out / 'persona_cohort.json'
         cohort = json.loads(cohort_path.read_text()) if cohort_path.exists() else import_cohort(
             ROOT / 'lifespan/data/persona8b', cohort_path, count=len(participants), seed=spec['seed'])
-        self.runtime = MiroFishRuntime(out / 'actors', actor_output_contract=spec.get('actor_output_contract'))
+        service_url = spec.get('mirofish_service_url')
+        self.runtime = MiroFishRuntime(out / 'actors', actor_output_contract=spec.get('actor_output_contract'),
+            **({'base_url': service_url, 'evaluation_service_url': service_url} if service_url is not None else {}))
         self.runtime.evaluation_max_interviews = spec.get('max_actor_interviews')
         if deadline is not None:
             self.runtime.evaluation_deadline = deadline
@@ -169,6 +171,8 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     if config.actor_output_contract is not None:
         from ..actor_contract import provenance as actor_contract_provenance
         manifest['actor_output_contract_provenance'] = actor_contract_provenance(config.actor_output_contract)
+    if config.mirofish_service_url is not None:
+        manifest['mirofish_service_url'] = config.mirofish_service_url
     saved = out / 'checkpoint.json'
     if (out / 'INFLIGHT.json').exists():
         raise RuntimeError('An interrupted action needs reconciliation; refusing automatic replay')
@@ -200,6 +204,11 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
         provenance.update(manifest_fields(config))
         if 'actor_output_contract_provenance' in manifest:
             provenance['actor_output_contract_provenance'] = manifest['actor_output_contract_provenance']
+        if config.mirofish_service_url is not None:
+            provenance['mirofish_service_url'] = manifest['mirofish_service_url']
+            service_path = out / 'actors' / SERVICE_BINDING_FILE
+            provenance['mirofish_service_binding_sha256'] = (hashlib.sha256(service_path.read_bytes()).hexdigest()
+                if service_path.exists() else None)
         cohort_path = out / 'persona_cohort.json'
         provenance['persona_cohort_sha256'] = (hashlib.sha256(cohort_path.read_bytes()).hexdigest()
             if cohort_path.exists() else 'offline-fixture-no-personas')

@@ -7,13 +7,44 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict
 import hashlib
+import ipaddress
 import json
 from pathlib import Path
 import sys
 import time
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "MiroFish/backend"
+DEFAULT_SERVICE_URL = "http://127.0.0.1:5001"
+SERVICE_BINDING_FILE = "evaluation_service.json"
+
+
+def normalize_service_url(value):
+    """Canonical opt-in local service origin; no DNS, credentials or URL suffix."""
+    if type(value) is not str or not value or any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in value):
+        raise ValueError('mirofish_service_url must be a loopback HTTP origin with an explicit port')
+    try:
+        parsed = urlsplit(value)
+        host = parsed.hostname
+        port = parsed.port
+        if (parsed.scheme != 'http' or parsed.username is not None or parsed.password is not None
+                or parsed.path not in ('', '/') or '?' in value or '#' in value or '%' in value
+                or port is None or not 1 <= port <= 65535 or not host):
+            raise ValueError
+        address = ipaddress.ip_address('127.0.0.1' if host == 'localhost' else host)
+        if not address.is_loopback:
+            raise ValueError
+    except ValueError:
+        raise ValueError('mirofish_service_url must be a loopback HTTP origin with an explicit port') from None
+    host = '[' + str(address) + ']' if address.version == 6 else str(address)
+    return f'http://{host}:{port}'
+
+
+def service_binding(url):
+    canonical = normalize_service_url(url)
+    return {'schema_version': 1, 'configured_url': canonical, 'client_base_url': canonical,
+            'trust_env': False, 'follow_redirects': False}
 
 
 def imports():
@@ -39,21 +70,52 @@ def parse_object(text):
 
 class MiroFishRuntime:
     actor_output_contract = None
+    evaluation_service_url = None
 
-    def __init__(self, out, base_url="http://127.0.0.1:5001", *, actor_output_contract=None):
+    def __init__(self, out, base_url=DEFAULT_SERVICE_URL, *, actor_output_contract=None,
+                 evaluation_service_url=None):
         import httpx
+        explicit = normalize_service_url(evaluation_service_url) if evaluation_service_url is not None else None
+        if explicit is not None and normalize_service_url(base_url) != explicit:
+            raise ValueError('Configured MiroFish service differs from native client URL')
         self.out = Path(out)
         self.out.mkdir(parents=True, exist_ok=True)
         self.client = httpx.Client(base_url=base_url, timeout=httpx.Timeout(150, connect=10),
-                                  headers={"Accept-Language": "en", "X-Language": "en"})
+                                  headers={"Accept-Language": "en", "X-Language": "en"},
+                                  **({'trust_env': False, 'follow_redirects': False} if explicit is not None else {}))
         self.state_path = self.out / "mirofish_state.json"
-        self.state = json.loads(self.state_path.read_text()) if self.state_path.exists() else {}
-        self.actor_output_contract = None
-        if actor_output_contract is not None:
-            from .actor_contract import options, verify_support
-            self.actor_output_contract = options(actor_output_contract)
-            # Old servers must fail before bootstrap or any actor generation.
-            verify_support(self.call('/api/simulation/actor-contract-support'))
+        self.evaluation_service_url = explicit
+        try:
+            self.state = json.loads(self.state_path.read_text()) if self.state_path.exists() else {}
+            binding_path = self.out / SERVICE_BINDING_FILE
+            if explicit is None:
+                if binding_path.exists():
+                    raise ValueError('Explicit MiroFish service binding cannot be removed')
+            else:
+                self._check_evaluation_service()
+                binding = service_binding(explicit)
+                if binding_path.exists():
+                    if json.loads(binding_path.read_text()) != binding:
+                        raise ValueError('Native MiroFish service binding differs; choose a fresh output')
+                elif self.state:
+                    raise ValueError('Existing native state lacks a MiroFish service binding')
+                else:
+                    save(binding_path, binding)
+            self.actor_output_contract = None
+            if actor_output_contract is not None:
+                from .actor_contract import options, verify_support
+                self.actor_output_contract = options(actor_output_contract)
+                # Old servers must fail before bootstrap or any actor generation.
+                verify_support(self.call('/api/simulation/actor-contract-support'))
+        except Exception:
+            self.client.close()
+            raise
+
+    def _check_evaluation_service(self):
+        if self.evaluation_service_url is not None and (
+                normalize_service_url(str(self.client.base_url)) != self.evaluation_service_url
+                or self.client.trust_env is not False or self.client.follow_redirects is not False):
+            raise ValueError('Native MiroFish client service or routing settings changed')
 
     def put(self, key, value):
         self.state[key] = value
@@ -62,6 +124,7 @@ class MiroFishRuntime:
         return value
 
     def call(self, path, data=None, **kwargs):
+        self._check_evaluation_service()
         if hasattr(self, "evaluation_deadline") and path != "/api/simulation/close-env":
             remaining = self.evaluation_deadline - time.monotonic()
             if remaining < 1:
