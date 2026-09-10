@@ -38,7 +38,9 @@ def parse_object(text):
 
 
 class MiroFishRuntime:
-    def __init__(self, out, base_url="http://127.0.0.1:5001"):
+    actor_output_contract = None
+
+    def __init__(self, out, base_url="http://127.0.0.1:5001", *, actor_output_contract=None):
         import httpx
         self.out = Path(out)
         self.out.mkdir(parents=True, exist_ok=True)
@@ -46,6 +48,12 @@ class MiroFishRuntime:
                                   headers={"Accept-Language": "en", "X-Language": "en"})
         self.state_path = self.out / "mirofish_state.json"
         self.state = json.loads(self.state_path.read_text()) if self.state_path.exists() else {}
+        self.actor_output_contract = None
+        if actor_output_contract is not None:
+            from .actor_contract import options, verify_support
+            self.actor_output_contract = options(actor_output_contract)
+            # Old servers must fail before bootstrap or any actor generation.
+            verify_support(self.call('/api/simulation/actor-contract-support'))
 
     def put(self, key, value):
         self.state[key] = value
@@ -93,6 +101,10 @@ class MiroFishRuntime:
             SimulationParameters, TimeSimulationConfig, AgentActivityConfig, EventConfig, PlatformConfig)
         from app.config import Config
         employees = blueprint["employees"]
+        if self.actor_output_contract is not None:
+            from .actor_contract import wire
+            self.actor_roles = {emp['id']: wire.ROLE_TYPES.get(emp.get('entity_type', 'Employee')) for emp in employees}
+            wire.require(all(self.actor_roles.values()), 'unsupported_registered_actor_type')
         count = len(employees)
         if len(employees) != len(cohort["personas"]):
             raise ValueError("Each employee must have a distinct imported persona")
@@ -187,26 +199,48 @@ class MiroFishRuntime:
                 time.sleep(2)
             else:
                 raise TimeoutError("MiroFish did not enter interview-ready state within 300 seconds")
+        if self.actor_output_contract is not None:
+            from .actor_contract import verify_support
+            status = json.loads((self.sim_dir / 'env_status.json').read_text())
+            verify_support(status.get('actor_output_contract'))
         return self.state
 
+    def validate_output_contract(self, raw, actor):
+        if self.actor_output_contract is not None:
+            from .actor_contract import wire
+            if not wire.shape_valid(raw, self.actor_roles[actor]):
+                raise ValueError('Actor output violates the requested wire shape; business validation is still required')
+
     def interview(self, employee_id, prompt, cache_key):
+        request_key = hashlib.sha256(cache_key.encode()).hexdigest()
+        contract = None
+        if self.actor_output_contract is not None:
+            from .actor_contract import descriptor, verify_record
+            contract = descriptor(self.actor_output_contract, self.actor_roles[employee_id])
         path = self.out / "mirofish_interviews" / f"{cache_key}.json"
         if path.exists():
             record = json.loads(path.read_text())
             if record["prompt"] != prompt:
                 raise ValueError("Cached MiroFish interview input differs; choose a fresh output")
+            if contract is not None:
+                verify_record(record, actor=employee_id, agent_id=self.employee_ids[employee_id],
+                    simulation_id=self.state['simulation']['simulation_id'], original_prompt=prompt, contract=contract, request_key=request_key)
+            elif record.get('output_contract') is not None:
+                raise ValueError('A contracted actor cache cannot be reused in an uncontracted run')
             return record["response"]
         remaining = (self.evaluation_deadline - time.monotonic()
                      if hasattr(self, "evaluation_deadline") else 150)
         if remaining < 1:
             raise TimeoutError("Evaluation actor wall budget exhausted before dispatch")
+        if contract is not None and remaining < contract['timeout_seconds'] + 2:
+            raise TimeoutError('Actor contract window does not fit the remaining evaluation budget')
         # This counts logical interview requests, not physical model calls or
         # tokens inside OASIS. Persist intent before dispatch; an uncertain
         # request remains charged and must never be replayed automatically.
         limit = getattr(self, "evaluation_max_interviews", None)
         ledger_path = self.out / 'evaluation_interview_ledger.json'
         ledger = None
-        if limit is not None:
+        if limit is not None or contract is not None:
             ledger = json.loads(ledger_path.read_text()) if ledger_path.exists() else {
                 'schema_version': 1, 'limit': limit, 'requests': [],
                 'accounting_unit': 'logical_mirofish_interview_request',
@@ -215,21 +249,38 @@ class MiroFishRuntime:
                 raise ValueError('Actor interview budget changed')
             if any(row['key'] == cache_key for row in ledger['requests']):
                 raise RuntimeError('An actor request lacks its completed cache; refusing automatic replay')
-            if len(ledger['requests']) >= limit:
+            if limit is not None and len(ledger['requests']) >= limit:
                 raise RuntimeError('Actor interview request budget exhausted')
             ledger['requests'].append({'key': cache_key, 'actor': employee_id,
                 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest(), 'status': 'dispatched'})
+            if contract is not None:
+                ledger['requests'][-1].update(output_contract=contract, physical_model_calls=None,
+                    tokens=None, reserved_output_tokens=contract['max_output_tokens'], accounting_complete=False)
             save(ledger_path, ledger)
         payload = self.call("/api/simulation/interview", {"simulation_id": self.state["simulation"]["simulation_id"],
                     "agent_id": self.employee_ids[employee_id], "platform": "reddit", "prompt": prompt,
-                    "timeout": min(120, max(1, int(remaining)))}, timeout=min(150, remaining))
+                    "timeout": min(120, max(1, int(remaining))),
+                    **({'output_contract': contract, 'contract_request_key': request_key} if contract is not None else {})}, timeout=min(150, remaining))
         result = payload["result"]
         if "reddit" in result:
             result = result["reddit"]
         response = result.get("response")
         if not isinstance(response, str) or not response.strip():
             raise RuntimeError(f"MiroFish returned no employee response: {result}")
-        save(path, {"employee_id": employee_id, "prompt": prompt, "response": response, "native_result": payload})
+        record = {"employee_id": employee_id, "prompt": prompt, "response": response, "native_result": payload}
+        if contract is not None:
+            record['output_contract'] = contract
+            record['contract_request_key'] = request_key
+            # Persist the returned receipt even when acceptance fails. The
+            # dispatched ledger then blocks silent retry of that uncertain key.
+            save(self.out / 'actor_returned_receipts' / f'{cache_key}.json', record)
+            receipt = verify_record(record, actor=employee_id, agent_id=self.employee_ids[employee_id],
+                simulation_id=self.state['simulation']['simulation_id'], original_prompt=prompt, contract=contract, request_key=request_key)
+            ledger['requests'][-1].update(physical_model_calls=receipt['physical_requests_dispatched'],
+                tokens=receipt['total_tokens'], input_tokens=receipt['input_tokens'], output_tokens=receipt['output_tokens'],
+                reserved_output_tokens=receipt['reserved_output_tokens'], accounting_complete=True,
+                native_request_id=receipt['binding']['request_id'])
+        save(path, record)
         if ledger is not None:
             ledger['requests'][-1].update(status='completed',
                 response_sha256=hashlib.sha256(response.encode()).hexdigest())

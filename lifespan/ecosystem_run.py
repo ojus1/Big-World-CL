@@ -45,6 +45,8 @@ def native_decision(runtime,aid,prompt,key,validate):
     raw=runtime.interview(aid,prompt,key)
     for attempt in range(2):
         try:
+            if hasattr(runtime, 'validate_output_contract'):
+                runtime.validate_output_contract(raw, aid)
             result=parse_object(raw)
             validate(result)
             return result

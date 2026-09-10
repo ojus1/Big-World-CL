@@ -73,7 +73,7 @@ class NativeActors:
         cohort_path = out / 'persona_cohort.json'
         cohort = json.loads(cohort_path.read_text()) if cohort_path.exists() else import_cohort(
             ROOT / 'lifespan/data/persona8b', cohort_path, count=len(participants), seed=spec['seed'])
-        self.runtime = MiroFishRuntime(out / 'actors')
+        self.runtime = MiroFishRuntime(out / 'actors', actor_output_contract=spec.get('actor_output_contract'))
         self.runtime.evaluation_max_interviews = spec.get('max_actor_interviews')
         if deadline is not None:
             self.runtime.evaluation_deadline = deadline
@@ -166,6 +166,9 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                 'environment_actor_usage': {'tokens': None, 'currency_cost': None,
                     'reason': 'Native MiroFish interview API does not expose complete aggregate usage.'},
                 'sampling': 'Hosted model randomness is not controlled by the scenario seed.'}
+    if config.actor_output_contract is not None:
+        from ..actor_contract import provenance as actor_contract_provenance
+        manifest['actor_output_contract_provenance'] = actor_contract_provenance(config.actor_output_contract)
     saved = out / 'checkpoint.json'
     if (out / 'INFLIGHT.json').exists():
         raise RuntimeError('An interrupted action needs reconciliation; refusing automatic replay')
@@ -195,6 +198,8 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
         from .metrics import build_report
         provenance = {k: manifest[k] for k in ('target_model', 'model_base_url', 'dependencies', 'source_sha256')}
         provenance.update(manifest_fields(config))
+        if 'actor_output_contract_provenance' in manifest:
+            provenance['actor_output_contract_provenance'] = manifest['actor_output_contract_provenance']
         cohort_path = out / 'persona_cohort.json'
         provenance['persona_cohort_sha256'] = (hashlib.sha256(cohort_path.read_bytes()).hexdigest()
             if cohort_path.exists() else 'offline-fixture-no-personas')

@@ -5,10 +5,12 @@ installed version only implements Chat Completions, so translate its messages
 and results while retaining encrypted reasoning across each tool round trip.
 """
 import json
+import asyncio
 from threading import RLock
 
 from camel.models import OpenAIModel
 from openai.types.chat import ChatCompletion
+from .actor_output_contract import CURRENT, ContractError, role_schema
 
 
 class OpenAIResponsesModel(OpenAIModel):
@@ -66,6 +68,14 @@ class OpenAIResponsesModel(OpenAIModel):
             'reasoning': {'effort': config.get('reasoning_effort', 'low')},
             'max_output_tokens': config.get('max_completion_tokens') or config.get('max_tokens') or 8192,
         }
+        scope = CURRENT.get()
+        if scope is not None:
+            # Contract applies only to this native interview task. Do not mutate
+            # the shared model's config or affect concurrent social/tool calls.
+            request['max_output_tokens'] = scope.contract['max_output_tokens']
+            request['text'] = {'format': {'type': 'json_schema', 'name': 'actor_' + scope.contract['role'] + '_v1',
+                'strict': True, 'schema': role_schema(scope.contract['role'])}}
+            return request
         tools = tools if tools is not None else config.get('tools')
         if tools:
             if any(tool['type'] != 'function' for tool in tools):
@@ -80,10 +90,6 @@ class OpenAIResponsesModel(OpenAIModel):
         return request
 
     def _completion(self, response):
-        if response.status != 'completed':
-            # Never execute a partial function call or label truncation a success.
-            reason = getattr(response.incomplete_details, 'reason', None)
-            raise RuntimeError(f'Responses generation did not complete: {response.status}, {reason}')
         output = [item.model_dump(exclude_none=True) for item in response.output]
         calls, texts, refusals = [], [], []
         for item in output:
@@ -96,6 +102,17 @@ class OpenAIResponsesModel(OpenAIModel):
                         texts.append(part['text'])
                     elif part['type'] == 'refusal':
                         refusals.append(part['refusal'])
+        scope = CURRENT.get()
+        if scope is not None:
+            scope.provider_returned(response, '\n'.join(texts + refusals))
+            if calls or refusals:
+                raise ContractError('contracted_interview_returned_tools_or_refusal')
+            if scope.receipt['output_tokens'] is not None and scope.receipt['output_tokens'] > scope.contract['max_output_tokens']:
+                raise ContractError('actor_output_token_limit_exceeded')
+        if response.status != 'completed':
+            # Account for partial output before failing; never execute it.
+            reason = getattr(response.incomplete_details, 'reason', None)
+            raise RuntimeError(f'Responses generation did not complete: {response.status}, {reason}')
         if not calls and not texts and not refusals:
             raise RuntimeError('Responses generation returned no text or function call')
         if calls:
@@ -117,11 +134,28 @@ class OpenAIResponsesModel(OpenAIModel):
         )
 
     def _run(self, messages, response_format=None, tools=None):
+        if CURRENT.get() is not None:
+            raise ContractError('contracted_interviews_require_async_native_execution')
         return self._completion(self._client.responses.create(**self._request(messages, response_format, tools)))
 
     async def _arun(self, messages, response_format=None, tools=None):
-        response = await self._async_client.responses.create(**self._request(messages, response_format, tools))
-        return self._completion(response)
+        request = self._request(messages, response_format, tools)
+        scope = CURRENT.get()
+        if scope is None:
+            response = await self._async_client.responses.create(**request)
+            return self._completion(response)
+        remaining = scope.before_dispatch(request)
+        try:
+            # SDK and CAMEL retry layers must not hide extra physical attempts.
+            client = self._async_client.with_options(max_retries=0, timeout=remaining)
+            response = await asyncio.wait_for(client.responses.create(**request), timeout=remaining)
+            # Preserve independently observed usage before output normalization:
+            # a malformed body must not erase known physical consumption.
+            scope.provider_returned(response)
+            return self._completion(response)
+        except Exception as exc:
+            scope.failed(exc)
+            raise ContractError('contracted_actor_provider_failure') from None
 
 
 def create_simulation_model(model, api_key, url):
