@@ -192,6 +192,8 @@ class _Ledger:
         self.optimizer_model_calls = 0
         self.replays = 0
         self.accounting_complete = True
+        self.stop_evidence = None
+        self.decision_elapsed_seconds = None
 
     def invoke(self, kind: str, callback: Callable, payload: dict) -> dict:
         b = self.budget
@@ -200,10 +202,14 @@ class _Ledger:
         remaining_calls = getattr(b, f"max_{category}") - getattr(self, category)
         remaining_tokens = b.max_tokens - self.tokens
         remaining_seconds = b.max_seconds - (time.monotonic() - self.started)
-        if target and self.replays >= b.max_replays:
-            raise BudgetExhausted("Replay budget exhausted")
-        if remaining_calls < 1 or remaining_tokens < 1 or remaining_seconds <= 0:
-            raise BudgetExhausted(f"{kind} budget exhausted")
+        reason = ("replays" if target and self.replays >= b.max_replays else
+                  "model_calls" if remaining_calls < 1 else "tokens" if remaining_tokens < 1 else
+                  "wall_seconds" if remaining_seconds <= 0 else None)
+        if reason:
+            self.stop_evidence = {"stage": "pre_dispatch", "kind": kind, "reason": reason,
+                "remaining_model_calls": remaining_calls, "remaining_tokens": remaining_tokens,
+                "remaining_seconds": remaining_seconds}
+            raise BudgetExhausted(f"{kind} budget exhausted before dispatch")
         limits = {
             "remaining_model_calls": remaining_calls, "remaining_tokens": remaining_tokens,
             "remaining_seconds": remaining_seconds,
@@ -222,6 +228,9 @@ class _Ledger:
                "attempt_index": payload.get("attempt_index"), "sample_id": payload.get("sample_id"),
                "tokens": limits["max_tokens"], "model_calls": limits["max_model_calls"],
                "tool_calls": None, "accounting": "reservation", "status": "dispatched"}
+        if target:
+            row["skill_sha256"] = _hash(payload["skill"])
+        row["budget_violations"] = []
         self.rows.append(row)
         started = time.monotonic()
         try:
@@ -238,25 +247,45 @@ class _Ledger:
             self.accounting_complete = False
             row["status"] = "invalid_receipt"
             raise ReplayFailure("Callback must return an execution receipt")
-        for name in ("tokens", "model_calls", "tool_calls"):
-            value = result.get(name)
-            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        # Preserve each independently known cost even when a different receipt
+        # field is missing. Unknown dimensions retain their full reservation.
+        observed = {name: result[name] if type(result.get(name)) is int and result[name] >= 0 else None
+                    for name in ("tokens", "model_calls", "tool_calls")}
+        row["reported_usage"] = observed
+        if observed["tokens"] is not None:
+            self.tokens += observed["tokens"] - limits["max_tokens"]
+            row["tokens"] = observed["tokens"]
+        if observed["model_calls"] is not None:
+            setattr(self, category, getattr(self, category) + observed["model_calls"] - limits["max_model_calls"])
+            row["model_calls"] = observed["model_calls"]
+        row["tool_calls"] = observed["tool_calls"]
+        row.update(accounting="reported" if all(v is not None for v in observed.values()) else "reservation",
+                   callback_status=str(result.get("status", "missing_status")))
+        for name, value in observed.items():
+            if value is None:
                 self.accounting_complete = False
                 row["status"] = "invalid_receipt"
                 raise ReplayFailure(f"Callback omitted valid {name} accounting")
         latency = result.get("latency_ms")
         if (isinstance(latency, bool) or not isinstance(latency, (int, float))
                 or not math.isfinite(latency) or latency < 0):
-            self.accounting_complete = False
             row["status"] = "invalid_receipt"
             raise ReplayFailure("Callback omitted valid latency accounting")
-        self.tokens += result["tokens"] - limits["max_tokens"]
-        setattr(self, category, getattr(self, category) + result["model_calls"] - limits["max_model_calls"])
-        row.update({key: result[key] for key in ("tokens", "model_calls", "tool_calls", "latency_ms")})
+        row["latency_ms"] = latency
         row.update(accounting="reported", status=str(result.get("status", "missing_status")))
-        if (result["tokens"] > limits["max_tokens"] or result["model_calls"] > limits["max_model_calls"]
-                or wall_seconds > limits["timeout_seconds"] or latency > limits["timeout_seconds"] * 1000):
+        violations = [name for name, exceeded in (
+            ("model_calls", result["model_calls"] > limits["max_model_calls"]),
+            ("tokens", result["tokens"] > limits["max_tokens"]),
+            ("callback_wall_seconds", wall_seconds > limits["timeout_seconds"]),
+            ("receipt_latency_ms", latency > limits["timeout_seconds"] * 1000)) if exceeded]
+        row["budget_violations"] = violations
+        if violations:
             row["status"] = "budget_exceeded"
+            self.stop_evidence = {"stage": "post_dispatch", "kind": kind,
+                "operation_index": len(self.rows) - 1, "violations": violations}
+            allowed_statuses = ("completed",) if target else ("completed", "budget_exhausted")
+            if result.get("status") not in allowed_statuses:
+                raise ReplayFailure(f"{kind} execution failed as well as exceeding its budget")
             raise BudgetExhausted("Callback exceeded its reserved budget; candidate cannot be accepted")
         if result.get("status") != "completed":
             raise ReplayFailure(f"{kind} execution did not complete")
@@ -268,6 +297,8 @@ class _Ledger:
             "optimizer_model_calls": self.optimizer_model_calls, "replays": self.replays,
             "wall_seconds": time.monotonic() - self.started,
             "accounting_complete": self.accounting_complete, "operations": self.rows,
+            "stop_evidence": self.stop_evidence,
+            "decision_elapsed_seconds": self.decision_elapsed_seconds,
         }
 
 
@@ -313,6 +344,7 @@ class SkillOptLearner:
         ledger = _Ledger(budget)
         attempts, optimizer_inputs = [], []
         result = {
+            "learning_evidence_version": 2,
             "algorithm": self.name, "upstream_revision": REVISION,
             "accepted": False, "skill": skill, "skill_before_sha256": _hash(skill),
             "current_day": current_day, "train_ids": [x["id"] for x in safe if x["split"] == "train"],
@@ -411,6 +443,11 @@ class SkillOptLearner:
                 # copies are removed from the public gate record.
                 evidence.pop("reflect_raw", None)
                 evidence.pop("call_error", None)
+                ledger.decision_elapsed_seconds = time.monotonic() - ledger.started
+                if ledger.decision_elapsed_seconds > budget.max_seconds:
+                    ledger.stop_evidence = {"stage": "post_consolidation", "reason": "wall_seconds",
+                        "elapsed_seconds": ledger.decision_elapsed_seconds}
+                    raise BudgetExhausted("Epoch deadline expired before the adoption decision")
                 result.update(status="completed", accepted=consolidated.accepted,
                               skill=consolidated.new_skill if consolidated.accepted else skill,
                               gate_evidence=evidence)
@@ -418,5 +455,11 @@ class SkillOptLearner:
                 result.update(status="budget_exhausted" if isinstance(exc, BudgetExhausted) else "failed",
                               error=str(exc), gate_evidence={"accepted": False, "gate_action": "reject_incomplete"})
         result.update(skill_after_sha256=_hash(result["skill"]), costs=ledger.report(),
-                      replay_evidence=attempts, optimizer_inputs=optimizer_inputs)
+                      replay_evidence=attempts, optimizer_inputs=optimizer_inputs,
+                      unscored_replay_evidence=[
+                          {"id": row["task_id"], "phase": row["phase"], "sample_id": row["sample_id"],
+                           "attempt_index": row["attempt_index"], "skill_sha256": row["skill_sha256"],
+                           "score_consumed": False, "reason": "not_delivered_to_upstream"}
+                          for row in ledger.rows if row["kind"] == "target"
+                          and row["attempt_index"] >= len(attempts)])
         return result

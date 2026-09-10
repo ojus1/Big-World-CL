@@ -157,6 +157,8 @@ def session_check(record, directory, capsule, version=None):
 
 
 def update_check(root, update, experiences, sessions, feedback_delay):
+    from scripts.audit_learning_v2 import reconcile, version
+    evidence_version = version(update)
     directory = child(root, f"learning/d{update['day']:03d}-{update['employee']}")
     require(read(directory / 'update.json') == update, 'checkpoint_update_mismatch')
     day, employee = update['day'], update['employee']
@@ -190,8 +192,10 @@ def update_check(root, update, experiences, sessions, feedback_delay):
             and costs['target_model_calls'] == sum(row['model_calls'] for row in targets)
             and costs['optimizer_model_calls'] == sum(row['model_calls'] for row in optimizers)
             and costs['replays'] == len(targets) and costs['accounting_complete'] is True, 'learning_receipt_totals')
-    evidence = update['replay_evidence']
+    evidence = reconcile(update) if evidence_version == 2 else update['replay_evidence']
     require(len(evidence) == len(targets), 'missing_replay_evidence')
+    if evidence_version == 2:
+        require(len(update['replay_artifacts']) == len(targets), 'v2_native_artifact_inventory')
     require({p.parent.name for p in directory.glob('trial-*/session.json')} ==
             {f'trial-{index:03d}' for index in range(len(targets))}, 'unreconciled_replay_sessions')
     for index, (row, receipt) in enumerate(zip(targets, evidence)):
@@ -199,9 +203,36 @@ def update_check(root, update, experiences, sessions, feedback_delay):
         trial = directory / f'trial-{index:03d}'
         record = read(trial / 'session.json')
         session_check(record, trial, read(child(root, 'private/cases/' + row['task_id'] + '.json')))
-        require(record['skill']['content_sha256'] == receipt['skill_sha256'] and float(record['success']) == receipt['hard']
-                and (record['semantic_score'] if record['success'] else min(.99, record['semantic_score'])) == receipt['soft']
+        require(record['skill']['content_sha256'] == receipt['skill_sha256']
                 and record['usage']['total_tokens'] == row['tokens'] and record['usage']['api_calls'] == row['model_calls'], 'replay_physical_evidence_mismatch')
+        if index < len(update['replay_evidence']):
+            require(float(record['success']) == receipt['hard']
+                    and (record['semantic_score'] if record['success'] else min(.99, record['semantic_score'])) == receipt['soft'],
+                    'replay_physical_evidence_mismatch')
+        if evidence_version == 2:
+            artifact = update['replay_artifacts'][index]
+            case_path = 'private/cases/' + row['task_id'] + '.json'
+            relative = str((trial / 'session.json').relative_to(root))
+            require(artifact['capsule_path'] == case_path and artifact['capsule_sha256'] == sha(child(root, case_path).read_bytes())
+                    and artifact['session_path'] == relative and artifact['session_sha256'] == sha((trial / 'session.json').read_bytes())
+                    and artifact['attempt_index'] == row['attempt_index'] == index
+                    and artifact['experience_id'] == row['task_id'] and artifact['source_task_id'] == record['task_id']
+                    and artifact['employee'] == employee == record['employee']
+                    and artifact['phase'] == row['phase'] and artifact['sample_id'] == row['sample_id']
+                    and artifact['skill_sha256'] == row['skill_sha256'] == receipt['skill_sha256']
+                    and artifact['limits'] == row['limits'] and artifact['dispatch_status'] == 'returned'
+                    and artifact['usage_known'] is True, 'v2_terminal_native_binding')
+            require(artifact['usage'] == {key: record['usage'].get(key) for key in
+                        ('api_calls', 'total_tokens', 'charged_tokens', 'input_tokens', 'output_tokens', 'complete')}
+                    and all(artifact[key] == record[key] for key in
+                        ('success', 'semantic_score', 'infrastructure_valid', 'skill_loaded')), 'v2_native_artifact_receipt')
+            timing = record['timing']
+            require(timing == {'schema_version': 2, 'timeout_seconds': row['limits']['timeout_seconds'],
+                        'elapsed_seconds_scope': 'runtime_start_through_snapshot_before_session_write_and_cleanup',
+                        'physical_inference_seconds': None}
+                    and abs(record['elapsed_seconds'] * 1000 - row['latency_ms']) < 1e-6
+                    and record['tool_calls'] == row['tool_calls'],
+                    'v2_native_timing_scope_or_receipt')
     audits = update['optimizer_transport_audit']
     require(len(audits) == len(optimizers), 'missing_optimizer_transport_evidence')
     for row, receipt in zip(optimizers, audits):
@@ -209,6 +240,13 @@ def update_check(root, update, experiences, sessions, feedback_delay):
                 and receipt['model_calls'] == row['model_calls'] and receipt['input_tokens'] + receipt['output_tokens'] == receipt['tokens'], 'optimizer_transport_usage')
         if receipt['model_calls']:
             require(sha(receipt['optimizer_prompt'].encode()) == receipt['optimizer_prompt_sha256'], 'optimizer_prompt_hash')
+        if evidence_version == 2:
+            require(receipt['status'] == row['callback_status'] and receipt['latency_ms'] == row['latency_ms']
+                    and receipt['tool_calls'] == row['tool_calls'],
+                    'v2_optimizer_receipt_status_or_timing')
+            if receipt['model_calls']:
+                require(type(receipt['max_output_tokens']) is int and receipt['max_output_tokens'] > 0
+                        and receipt['output_tokens'] <= receipt['max_output_tokens'], 'v2_optimizer_output_cap_overrun')
     require(update['status'] != 'failed', 'learning_trial_failed')
 
 
@@ -227,6 +265,15 @@ def audit_run(root, strict=False):
         for name in ('lifespan/evaluation/tasks.py', 'lifespan/evaluation/metrics.py', 'lifespan/ecosystem.py', 'lifespan/world.py'):
             require(sha((ROOT / name).read_bytes()) == manifest['source_sha256'][name], 'audit_source_revision_mismatch')
         state = cp['runner']
+        from scripts.audit_learning_v2 import manifest_version, version
+        declared_version = manifest_version(manifest, ROOT)
+        require(all(version(update) == declared_version for update in state['updates']),
+                'learning_evidence_manifest_version')
+        if any(update.get('learning_evidence_version', 1) == 2 for update in state['updates']):
+            for name in ('lifespan/evaluation/skillopt.py', 'lifespan/evaluation/runtime.py',
+                         'lifespan/evaluation/runner.py', 'scripts/audit_learning_v2.py', 'scripts/audit_evaluation.py'):
+                require(sha((ROOT / name).read_bytes()) == manifest['source_sha256'][name],
+                        'v2_audit_source_revision_mismatch')
         status = read(root / 'REPORT.json')['status'] if (root / 'REPORT.json').exists() else 'running'
         result['run_status'] = status
         sessions = {record['id']: record for record in state['sessions']}

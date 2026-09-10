@@ -32,7 +32,7 @@ def source_hashes():
     files = sorted((ROOT / 'lifespan').rglob('*.py'))
     files.append(ROOT / 'scripts/evaluation_report_v2.py')
     files.extend(ROOT / 'scripts' / name for name in ('run_scale.py', 'audit_scale.py', 'scale_summary.py',
-                                                     'audit_evaluation.py', 'audit_transfer.py'))
+                                                     'audit_evaluation.py', 'audit_transfer.py', 'audit_learning_v2.py'))
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in files if p.exists() and '/tests/' not in str(p) and '/artifacts/' not in str(p)}
 
@@ -157,6 +157,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     creds = creds or credentials()
     started = time.monotonic()
     manifest = {'config': config.public(), 'scenario': spec, 'source_sha256': source_hashes(),
+                'learning_evidence_version': 2,
                 'target_model': creds['model'], 'model_base_url': creds['base_url'],
                 'dependencies': dependency_provenance(),
                 'state_contract': 'Fresh private agent state each task; native skill is the learning treatment.',
@@ -548,7 +549,15 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         optimizer_transport_audit=deepcopy(result['optimizer_transport_audit']))
     persist_progress()
     print(f"Day {eco.day}: SkillOpt {employee} {result['status']} accepted={result['accepted']}", flush=True)
-    if result['status'] == 'failed' or not result['costs']['accounting_complete']:
+    operations = (result['costs']['operations'] if result.get('learning_evidence_version', 1) == 2
+                  else result['costs'].get('operations', []))
+    physical_overrun = any(set(op.get('budget_violations', [])) & {'model_calls', 'tokens'}
+                           for op in operations)
+    physical_overrun |= any(type(receipt.get('output_tokens')) is int
+                           and type(receipt.get('max_output_tokens')) is int
+                           and receipt['output_tokens'] > receipt['max_output_tokens']
+                           for receipt in result.get('optimizer_transport_audit', []))
+    if result['status'] == 'failed' or not result['costs']['accounting_complete'] or physical_overrun:
         raise RuntimeError('Learning failed with incomplete evaluation/accounting; run is not a valid pair')
     if next_update_index is not None:
         state['update_index'] = next_update_index
