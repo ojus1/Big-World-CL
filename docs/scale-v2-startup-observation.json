@@ -1,0 +1,67 @@
+{
+  "all_registered_source_bytes_match": true,
+  "all_six_world_roots_live": true,
+  "campaign_sha256": "4315bd53cc14870a291accbe5c71d7556a458ac0a9260d181dc30735c8f4b801",
+  "completion_claim": false,
+  "distinct_native_simulations": 6,
+  "execution_sha256": "76eb5e8b743753597404c603100077bd0a2e135b3f8e3306b29bc95d68575c3d",
+  "independent_startup_inspection": {
+    "employee_instances_observed_at_that_inspection": 0,
+    "finished_at": "2026-09-10T07:01:48.214+00:00",
+    "issues": 0,
+    "native_simulation_bindings_checked": 6,
+    "source_files_checked": 48,
+    "started_at": "2026-09-10T07:01:48.205+00:00",
+    "world_root_identities_checked": 6
+  },
+  "kind": "scale-v2-native-startup-observation",
+  "learning_gain": null,
+  "observed_at": "2026-09-10T07:04:14.238454+00:00",
+  "original_scale_v1": "Its remaining world continues on the original service and original ten-hour cap; no original slot is replaced or combined with this campaign.",
+  "prerequisites_sha256": "90f1344d516d3e54df5dda87a54e16ad161f31c80dd0697a4ecd45e31c87ada9",
+  "registered_source_files": 37,
+  "registered_tool_files": 11,
+  "schema_version": 1,
+  "scope": "Start and live local identity evidence only; no completed world, employee quality, whole-campaign accounting or long-horizon reliability claim.",
+  "service_ready_sha256": "a71056b3b873e5b854e111a744d86219d84d7dfc979eb5df62d3f22cd38d6a43",
+  "service_start_sha256": "c1682c20c839d0166f20e68f864cb50bdc46e477c412751761cdfce9437a6156",
+  "source_commit": "317b08c9b1fb5e436e06c0fed70eb1fded2b4211",
+  "worlds": [
+    {
+      "run_id": "seed-211-no_learning",
+      "simulation_id": "sim_9930fd97d676",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "3d15fa64ecb4c75b46c81cdb46d0f857a32ee039752afe006ee2018ce94f6f9e"
+    },
+    {
+      "run_id": "seed-211-skillopt",
+      "simulation_id": "sim_346dfc962bfd",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "05a28680413dd08ff9201a924f8da059603e761fa20134315edf0f18d9b1ebf4"
+    },
+    {
+      "run_id": "seed-307-skillopt",
+      "simulation_id": "sim_ec867be2465c",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "9dcd76df2df7ca807530a82c9cf8a60eb2ce66ebf69229b08d20b244efbb745a"
+    },
+    {
+      "run_id": "seed-307-no_learning",
+      "simulation_id": "sim_79e9669be806",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "cd9b986a82f23007a72950f26ce99fd4b6b4fcb50e120a4f62768df25dc65370"
+    },
+    {
+      "run_id": "seed-401-no_learning",
+      "simulation_id": "sim_3f0fa28724f5",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "d44e2cf9fe254d52e49955096242c624c1511c09ee8f834c534741e913c505a5"
+    },
+    {
+      "run_id": "seed-401-skillopt",
+      "simulation_id": "sim_8ba36524d76f",
+      "world_root_live_at_observation": true,
+      "world_start_sha256": "d11c927991291a8d7432ddadc1c1ff025d6fc5b48053255c0b9aa1e4c3f6242b"
+    }
+  ]
+}

@@ -4,8 +4,11 @@ The full follow-up is registered in
 [scale-preregistration-v2.json](scale-preregistration-v2.json), byte-identical to
 the private campaign manifest. Its raw SHA-256 is
 `4315bd53cc14870a291accbe5c71d7556a458ac0a9260d181dc30735c8f4b801`.
-Registration and reviewed prerequisites are complete; this document does not
-claim that the campaign has executed or produced a learning gain.
+The campaign has started from source commit
+`317b08c9b1fb5e436e06c0fed70eb1fded2b4211`. All six world roots and six distinct
+native MiroFish simulations passed the initial source/identity inspection;
+see the [startup observation](scale-v2-startup-observation.json). This establishes
+startup, with no completed-campaign or learning-gain claim.
 
 Both no-learning Hermes and pinned SkillOpt run for each of seeds 211, 307 and
 401. Each fresh world contains four enterprises, twelve employees, eight
