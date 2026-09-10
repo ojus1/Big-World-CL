@@ -1,0 +1,39 @@
+{
+  "artifact_sha256": "60bb34510e34700180d59a815c5eb4e5650a97bcd3b1b2d6e5125d4e11b5ba94",
+  "decision": "compatible_for_prospective_evaluation",
+  "kind": "employee-startup-source-compatibility-review",
+  "limits": [
+    "This is a source compatibility judgment, not execution equivalence, a new provider observation, or evidence that native model quality or learning improves.",
+    "Journal, setup and request-write time consume existing deadlines. Late readiness is rejected, and opt-in receive no longer has the legacy one-second floor. These stricter timing checks and added I/O overhead can change timeout outcomes despite unchanged nominal caps.",
+    "Best-effort flushed journals have no crash-durability guarantee. Missing stages do not establish zero inference usage, complete cleanup or a behavioral failure.",
+    "A network-isolated startup qualification sends no work request. Even nine successful starts do not revalidate provider inference or guarantee twenty-day world completion under shared resource and I/O contention.",
+    "Future dispatch must retain the original historical evidence hashes, exact reviewed current source maps, successful current-source nine-slot raw qualification, current installed dependency/binary checks and live boot/security-context/resource binding. Any unreviewed source change requires another review.",
+    "The six-world endpoint still requires all three valid completed pairs; failed or missing slots cannot be replaced by historical worlds or zero-valued future outcomes."
+  ],
+  "new_native_provider_observation": false,
+  "qualification_pass_assumed": false,
+  "rationale": [
+    "Historical native provider/tool/file capability remains an observation at its original exact source and must pass its original corrected raw audit.",
+    "The reviewed delta adds opt-in local startup and parent-pipe observations, process/source identifiers and explicit observation errors; it propagates the same option to online and learning replays.",
+    "The model and task prompts, trusted grader, filesystem/work protocol, native transport request construction, token/call meter, split chronology and SkillOpt adoption rules are unchanged in the bound library maps.",
+    "The observation flag is enabled equally in both prospective arms. Current-source startup and resource-boundary capability must be established by the separate complete nine-slot scope qualification before any full-world dispatch."
+  ],
+  "reviewed_source_changes": [
+    "lifespan/computers.py",
+    "lifespan/evaluation/protocol.py",
+    "lifespan/evaluation/runner.py",
+    "lifespan/evaluation/runtime.py",
+    "lifespan/hermes_worker.py",
+    "lifespan/startup_observability.py"
+  ],
+  "schema_version": 1,
+  "source_diff_sha256": "5dabc2887195018c44c3d7860cf9b8ed1aab9f9ac2960116e7bacb6597cac473",
+  "source_verification": {
+    "current_files_match_declared_hashes": true,
+    "current_library_files": 31,
+    "historical_blobs_match_declared_hashes": true,
+    "historical_git_revision": "cf25e505fe11a0b3f128229f7dea1599f53d4d2d",
+    "historical_library_files": 30,
+    "source_diff_reconstructed_exactly": true
+  }
+}

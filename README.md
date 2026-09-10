@@ -8,6 +8,15 @@ The repository now also provides a **controlled deployment-time skill-learning e
 
 [Run learning evaluations](docs/RUN_EVALUATION.md) · [Learning study](docs/LEARNING_STUDY_RESULTS.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
+The current scaling work prepares a fresh six-world comparison in three paired
+waves, with four enterprises and twelve employee agents per world. All nine
+slots in the [native startup qualification](docs/HERMES_STARTUP_SCOPE_V3_OUTCOME.md)
+passed, including concurrent starts and cleanup. The new
+[execution design](docs/SCALE_V3_RESOURCE_DESIGN.md) bounds the complete campaign
+inside one resource scope and requires all six worlds for its primary endpoint.
+Startup qualification is complete; the larger learning comparison is not yet
+complete, and no learning gain is claimed.
+
 ## Evaluate deployment-time learning
 
 The new evaluator uses native MiroFish/Persona actors and Hermes/bubblewrap execution. Each work attempt starts with fresh private agent state and an installed native `work-process` skill. No learning retains the seed skill; SkillOpt proposes revisions from available employee experience and adopts them only after separate validation and fresh final replay. Substantive tasks cover account reconciliation, renewal calculation and incident repair under changing requirements.
@@ -54,8 +63,9 @@ ledgers, a concurrent world supervisor and independent campaign audits support
 this next study. Planned scale is not a completed result. The
 [execution observations](docs/SCALE_EXECUTION_NOTES.md) retain actor-output and
 work-stream accounting interruptions and explain why those worlds cannot be
-resumed as the same native state; the remaining worlds continue within the frozen
-limits.
+resumed as the same native state. A later host reboot interrupted the original
+campaign, and the six-world v2 follow-up failed during employee startup; the
+[v2 failure evidence](docs/SCALE_V2_STARTUP_FAILURES.md) retains every slot.
 
 The scale study's [first accepted employee update](docs/SCALE_ADOPTION_INTERRUPTION.md)
 passed the pinned gate on day 11. A later replay in that world lost a usage
