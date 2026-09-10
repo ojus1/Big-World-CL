@@ -23,6 +23,8 @@ REPORT_STATUSES = {'completed', 'failed', 'exhausted_time_budget', 'exhausted_wo
                    'paused_invocation_limit'}
 HELPER = 'scripts/scale_v2_process.py'
 RUNNER = 'lifespan/evaluation/runner.py'
+TARGET_PHASES = {'baseline_val', 'train', 'gate_trial:skill', 'train_post_skill', 'final_val'}
+DISPATCH_STATES = {'dispatched', 'returned', 'failed_or_interrupted'}
 
 
 class StatusError(ValueError):
@@ -193,6 +195,67 @@ def terminal_evidence(slot, results, records, sources):
     return {'exit_code': row['exit_code'], 'cleanup_reported_confirmed': row['cleanup_confirmed']}
 
 
+def learning_progress(slot, run, records, *, active):
+    """Project one bound in-flight epoch; dispatch records are not model calls."""
+    inflight = records['inflight']
+    if inflight['state'] != 'read' or type(inflight['value']) is not dict or inflight['value'].get('kind') != 'learning':
+        return None
+    unknown = {'state': 'updating_unknown', 'dispatched_replays': None, 'returned_replays': None,
+               'optimizer_dispatch_records': None, 'latest_target_phase': None, 'active_recorded_phase': None}
+    try:
+        require(active, 'world_not_verified_running')
+        cp, config = records['checkpoint'], records['config']
+        require(cp['state'] == config['state'] == 'read' and type(cp['value']) is dict, 'checkpoint_unavailable')
+        require(slot['algorithm'] == slot['config'].get('algorithm') == 'skillopt'
+                and canonical(config['value']) == canonical(slot['config']), 'learning_algorithm_mismatch')
+        runner, eco = cp['value']['runner'], cp['value']['ecosystem']
+        require(type(runner) is dict and type(eco) is dict and runner.get('phase') == 'learn', 'learning_phase_mismatch')
+        value = inflight['value']; day, key = value.get('day'), value.get('key')
+        require(type(day) is int and 0 <= day < 20 and type(eco.get('day')) is int and eco['day'] == day,
+                'learning_day_mismatch')
+        schedule = slot['config'].get('update_days')
+        require(type(schedule) is list and all(type(d) is int and 0 <= d < 20 for d in schedule)
+                and day in schedule, 'learning_day_not_scheduled')
+        require(type(key) is str and len(key) <= 110, 'learning_key_shape')
+        match = re.fullmatch(r'd([0-9]{3})-(firm-[0-3]__[A-Za-z0-9][A-Za-z0-9_-]{0,80})', key)
+        require(match is not None and int(match[1]) == day, 'learning_key_shape')
+        employee = match[2]
+        require(type(runner.get('skills')) is dict and employee in runner['skills']
+                and type(runner['skills'][employee]) is str, 'learning_employee_mismatch')
+        # No derived path is read until key/day/employee/configuration agree.
+        progress = safe_read(run / 'learning' / key / 'progress.json')
+        if progress['state'] != 'read':
+            return {**unknown, 'state': progress['state']}
+        p = progress['value']
+        require(type(p) is dict and type(p.get('schema_version')) is int and p['schema_version'] == 1
+                and type(p.get('day')) is int and p['day'] == day and p.get('employee') == employee,
+                'progress_identity_mismatch')
+        replays, optimizers, counts = p.get('replay_artifacts'), p.get('optimizer_dispatches'), p.get('target_progress')
+        require(type(replays) is list and type(optimizers) is list and type(counts) is dict, 'progress_shape')
+        for rows, phases in ((replays, TARGET_PHASES), (optimizers, {'reflect'})):
+            for index, record in enumerate(rows):
+                require(type(record) is dict and type(record.get('attempt_index')) is int and record['attempt_index'] == index
+                        and type(record.get('phase')) is str and record['phase'] in phases
+                        and type(record.get('dispatch_status')) is str and record['dispatch_status'] in DISPATCH_STATES,
+                        'dispatch_shape')
+                require(record['dispatch_status'] != 'dispatched' or index == len(rows) - 1, 'pending_dispatch_not_last')
+        require(all(r.get('employee') == employee for r in replays), 'replay_employee_mismatch')
+        returned = sum(r['dispatch_status'] == 'returned' for r in replays)
+        require(type(counts.get('dispatched_replays')) is int and counts['dispatched_replays'] == len(replays)
+                and type(counts.get('returned_replays')) is int and counts['returned_replays'] == returned,
+                'progress_count_mismatch')
+        pending = [r['phase'] for r in [*replays, *optimizers] if r['dispatch_status'] == 'dispatched']
+        require(len(pending) <= 1, 'ambiguous_pending_dispatch')
+        final = safe_read(run / 'INFLIGHT.json')
+        require(final['state'] == 'read' and final['sha256'] == inflight['sha256'], 'inflight_changed_during_read')
+        return {'state': 'read', 'dispatched_replays': len(replays), 'returned_replays': returned,
+                'optimizer_dispatch_records': len(optimizers),
+                'latest_target_phase': replays[-1]['phase'] if replays else None,
+                'active_recorded_phase': pending[0] if pending else None}
+    except (StatusError, ValueError, KeyError, TypeError):
+        return unknown
+
+
 def project_slot(slot, run, root, sources, results, *, now, monotonic, boot_id, identity_reader):
     paths = {'checkpoint': 'checkpoint.json', 'inflight': 'INFLIGHT.json', 'report': 'REPORT.json',
              'config': 'config.json', 'start': 'lifecycle/WORLD_START.json',
@@ -242,6 +305,8 @@ def project_slot(slot, run, root, sources, results, *, now, monotonic, boot_id, 
         row['state'] = 'unlaunched'
     elif records['intent']['state'] == 'read' and records['start']['state'] == 'missing':
         row['state'] = 'launch_recorded'
+    row['learning_progress'] = learning_progress(slot, run, records,
+                                                active=row['state'] == 'running' and row['owned_process_verified'])
     # A missing/reused PID, old boot, malformed record, or stale report is never
     # transformed into failure or completion. Report status is separately labeled.
     return row
@@ -300,6 +365,13 @@ def table(value):
         lines.append(f"{row['slot']:<24} {row['state']:<19} {show('phase'):<9} {show('day'):>3}  "
                      f"{show('returned_sessions'):>8}  {show('recorded_updates'):>7}  {show('recorded_adoptions'):>7}  "
                      f"{show('checkpoint_age_seconds'):>6}  {show('elapsed_seconds'):>10}  {show('remaining_seconds'):>7}")
+        learning = row.get('learning_progress')
+        if learning is not None:
+            shown = lambda key: '?' if learning[key] is None else str(learning[key])
+            lines.append(f"  Learning receipt {learning['state']}: returned/dispatched replays "
+                         f"{shown('returned_replays')}/{shown('dispatched_replays')}; "
+                         f"optimizer dispatch records {shown('optimizer_dispatch_records')} (not physical calls); "
+                         f"pending phase {shown('active_recorded_phase')}; last target phase {shown('latest_target_phase')}")
     lines.append(f"6 planned slots; source bytes: {value['registered_sources']['state']}. Operational snapshot; not an audit or forecast.")
     return '\n'.join(lines)
 

@@ -28,6 +28,20 @@ produce unknown counts, never fabricated zeroes or failures.
 `unlaunched` means no launch evidence was found, not a promise of future dispatch.
 The fixed protocol can leave later slots unlaunched after an earlier failure.
 
+When the world is verified currently running and a SkillOpt learning operation
+is recorded as in flight, an extra line shows
+returned/dispatched target replay records, optimizer dispatch records, and
+allowlisted phase names from that epoch's `progress.json`. The key, day,
+employee membership, registered update day and SkillOpt configuration must agree before its derived
+path is read. Missing, malformed, mismatched or changing receipts leave these
+counts unknown. A known initial empty receipt can legitimately show zeroes.
+Optimizer dispatch records count callback attempts, not physical model calls;
+returned replays are not necessarily scored or successful. Pending phase means
+an unreturned dispatch record, not independently verified current inference.
+A stale in-flight receipt after exit or reboot leaves learning counts unknown.
+No prompts, task or
+employee identifiers, scores, costs, adoption predictions or ETA are added.
+
 Running elapsed/remaining seconds require a matching launch-intent chain,
 configuration, command, working directory, current boot and PID/start/UID
 identity. Remaining seconds refer to the registered wall ceiling, not expected

@@ -22,7 +22,8 @@ class StatusTests(unittest.TestCase):
             path.write_text('# fixture source\n'); self.sources[name] = q.sha(path.read_bytes())
         slots = []
         for seed, arm in q.SCHEDULE:
-            name = f'seed-{seed}-{arm}'; cfg = {'max_run_seconds': 1000, 'seed': seed, 'algorithm': arm}
+            name = f'seed-{seed}-{arm}'; cfg = {'max_run_seconds': 1000, 'seed': seed, 'algorithm': arm,
+                                               'update_days': [3, 7, 11, 17]}
             slot = {'seed': seed, 'algorithm': arm, 'run_id': name, 'relative_path': 'runs/' + name,
                     'config': cfg, 'config_sha256': q.sha(q.canonical(cfg))}
             slots.append(slot); self.save(self.campaign / slot['relative_path'] / 'config.json', cfg)
@@ -77,12 +78,149 @@ class StatusTests(unittest.TestCase):
                       'lifecycle': {'start_sha256': q.sha(start.read_bytes()), 'cleanup_sha256': cleanup_hash}}]})
         self.processes.clear()
 
+    def learning_fixture(self, index=1):
+        self.launch(index)
+        run = self.run_dir(index); employee = 'firm-0__incident-regulated'; key = 'd007-' + employee
+        self.save(run / 'checkpoint.json', {'ecosystem': {'day': 7}, 'runner': {'phase': 'learn',
+            'skills': {employee: 'PRIVATE_SKILL'}, 'sessions': [{}] * 5, 'updates': []}})
+        self.save(run / 'INFLIGHT.json', {'kind': 'learning', 'day': 7, 'key': key})
+        progress = {'schema_version': 1, 'employee': employee, 'day': 7,
+                    'replay_artifacts': [{'attempt_index': i, 'phase': phase, 'employee': employee,
+                        'dispatch_status': state, 'experience_id': 'PRIVATE_TASK', 'semantic_score': 0.987654321}
+                        for i, (phase, state) in enumerate((('baseline_val', 'returned'), ('baseline_val', 'returned'), ('train', 'dispatched')))],
+                    'optimizer_dispatches': [], 'target_progress': {'dispatched_replays': 3, 'returned_replays': 2}}
+        path = run / 'learning' / key / 'progress.json'; self.save(path, progress)
+        return path, progress
+
     def test_prepared_keeps_all_six_unlaunched_and_unknown_counts(self):
         value = self.read()
         self.assertEqual(value['planned_slots'], 6)
         self.assertEqual(value['state_counts'], {'unlaunched': 6})
         self.assertTrue(all(r['returned_sessions'] is None and r['recorded_adoptions'] is None for r in value['slots']))
         self.assertEqual(value['registered_sources']['matched_files'], 69)
+
+    def test_learning_receipt_counts_phases_and_physical_call_distinction(self):
+        path, progress = self.learning_fixture()
+        value = self.read(); row = value['slots'][1]
+        self.assertEqual(row['learning_progress'], {'state': 'read', 'dispatched_replays': 3,
+            'returned_replays': 2, 'optimizer_dispatch_records': 0, 'latest_target_phase': 'train', 'active_recorded_phase': 'train'})
+        progress['replay_artifacts'][-1]['dispatch_status'] = 'returned'
+        progress['target_progress']['returned_replays'] = 3
+        progress['optimizer_dispatches'] = [{'attempt_index': 0, 'phase': 'reflect', 'dispatch_status': 'dispatched',
+                                             'receipt': {'model_calls': 99}, 'prompt': 'PRIVATE_PROMPT'}]
+        self.save(path, progress); value = self.read(); learning = value['slots'][1]['learning_progress']
+        self.assertEqual(learning['optimizer_dispatch_records'], 1)
+        self.assertEqual(learning['active_recorded_phase'], 'reflect')
+        text = json.dumps(value) + q.table(value)
+        for secret in ('PRIVATE', '0.987654321', 'model_calls', 'incident-regulated', str(path)):
+            self.assertNotIn(secret, text)
+        self.assertIn('optimizer dispatch records 1 (not physical calls)', text)
+        self.assertEqual(value['slots'][1]['returned_sessions'], 5)
+        self.assertEqual(len(value['slots']), 6)
+
+    def test_known_empty_learning_receipt_is_zero_not_missing_receipt(self):
+        path, progress = self.learning_fixture()
+        progress.update(replay_artifacts=[], optimizer_dispatches=[], target_progress={'dispatched_replays': 0, 'returned_replays': 0})
+        self.save(path, progress)
+        value = self.read()['slots'][1]['learning_progress']
+        self.assertEqual((value['dispatched_replays'], value['returned_replays'], value['optimizer_dispatch_records']), (0, 0, 0))
+        self.assertIsNone(value['active_recorded_phase'])
+
+    def test_learning_binding_rejects_derived_path_before_any_read(self):
+        path, _ = self.learning_fixture(); run = self.run_dir(1)
+        checkpoint = json.loads((run / 'checkpoint.json').read_bytes())
+        original_inflight = json.loads((run / 'INFLIGHT.json').read_bytes())
+        for change in ('traversal', 'key_day', 'inflight_day', 'unknown_employee', 'wrong_phase', 'wrong_config'):
+            with self.subTest(change=change):
+                cp = json.loads(json.dumps(checkpoint)); inflight = dict(original_inflight)
+                config = dict(self.registration['slots'][1]['config'])
+                if change == 'traversal': inflight['key'] = '../PRIVATE_ESCAPE'
+                elif change == 'key_day': inflight['key'] = 'd008-firm-0__incident-regulated'
+                elif change == 'inflight_day': inflight['day'] = 8
+                elif change == 'unknown_employee': inflight['key'] = 'd007-firm-1__incident-regulated'
+                elif change == 'wrong_phase': cp['runner']['phase'] = 'work'
+                elif change == 'wrong_config': config['algorithm'] = 'no_learning'
+                self.save(run / 'checkpoint.json', cp); self.save(run / 'INFLIGHT.json', inflight); self.save(run / 'config.json', config)
+                with patch.object(q, 'safe_read', wraps=q.safe_read) as reader:
+                    value = self.read()['slots'][1]['learning_progress']
+                self.assertEqual(value['state'], 'updating_unknown'); self.assertIsNone(value['returned_replays'])
+                self.assertFalse(any('/learning/' in str(call.args[0]) for call in reader.call_args_list))
+        self.learning_fixture(index=0)
+        with patch.object(q, 'safe_read', wraps=q.safe_read) as reader:
+            value = self.read()['slots'][0]['learning_progress']
+        self.assertEqual(value['state'], 'updating_unknown')
+        self.assertFalse(any(str(self.run_dir(0) / 'learning') in str(call.args[0]) for call in reader.call_args_list))
+
+    def test_learning_missing_partial_or_mismatched_receipt_remains_unknown(self):
+        path, original = self.learning_fixture()
+        for change in ('missing', 'partial', 'employee', 'day', 'boolean_count', 'count_disagrees', 'phase', 'replay_owner', 'attempt', 'two_pending'):
+            with self.subTest(change=change):
+                progress = json.loads(json.dumps(original))
+                if change == 'employee': progress['employee'] = 'firm-1__incident-regulated'
+                elif change == 'day': progress['day'] = 8
+                elif change == 'boolean_count': progress['target_progress']['returned_replays'] = True
+                elif change == 'count_disagrees': progress['target_progress']['returned_replays'] = 3
+                elif change == 'phase': progress['replay_artifacts'][-1]['phase'] = 'PRIVATE_PROMPT'
+                elif change == 'replay_owner': progress['replay_artifacts'][-1]['employee'] = 'firm-1__incident-regulated'
+                elif change == 'attempt': progress['replay_artifacts'][-1]['attempt_index'] = 0
+                elif change == 'two_pending': progress['optimizer_dispatches'] = [{'attempt_index': 0, 'phase': 'reflect', 'dispatch_status': 'dispatched'}]
+                self.save(path, progress)
+                if change == 'missing': path.unlink()
+                elif change == 'partial': path.write_text('{')
+                value = self.read()['slots'][1]['learning_progress']
+                self.assertEqual(value['state'], 'missing' if change == 'missing' else 'updating_unknown')
+                self.assertIsNone(value['dispatched_replays']); self.assertIsNone(value['optimizer_dispatch_records'])
+
+    def test_learning_coherent_unscheduled_day_refuses_before_derived_read(self):
+        _, progress = self.learning_fixture(); run = self.run_dir(1)
+        cp = json.loads((run / 'checkpoint.json').read_bytes()); cp['ecosystem']['day'] = 4
+        self.save(run / 'checkpoint.json', cp)
+        key = 'd004-' + progress['employee']; progress['day'] = 4
+        self.save(run / 'INFLIGHT.json', {'kind': 'learning', 'day': 4, 'key': key})
+        self.save(run / 'learning' / key / 'progress.json', progress)
+        with patch.object(q, 'safe_read', wraps=q.safe_read) as reader:
+            value = self.read()['slots'][1]['learning_progress']
+        self.assertEqual(value['state'], 'updating_unknown'); self.assertIsNone(value['returned_replays'])
+        self.assertFalse(any('/learning/' in str(call.args[0]) for call in reader.call_args_list))
+
+    def test_learning_pending_dispatch_cannot_precede_later_return_in_same_stream(self):
+        path, original = self.learning_fixture()
+        for stream in ('target', 'optimizer'):
+            with self.subTest(stream=stream):
+                progress = json.loads(json.dumps(original))
+                if stream == 'target':
+                    progress['replay_artifacts'][0]['dispatch_status'] = 'dispatched'
+                    progress['replay_artifacts'][-1]['dispatch_status'] = 'returned'
+                else:
+                    progress['replay_artifacts'][-1]['dispatch_status'] = 'returned'
+                    progress['target_progress']['returned_replays'] = 3
+                    progress['optimizer_dispatches'] = [{'attempt_index': i, 'phase': 'reflect', 'dispatch_status': state}
+                        for i, state in enumerate(('dispatched', 'returned'))]
+                self.save(path, progress)
+                value = self.read()['slots'][1]['learning_progress']
+                self.assertEqual(value['state'], 'updating_unknown'); self.assertIsNone(value['active_recorded_phase'])
+
+    def test_learning_inflight_replacement_during_read_does_not_claim_same_epoch(self):
+        path, _ = self.learning_fixture(); original = q.safe_read
+        def replace_after_progress(p, **kwargs):
+            result = original(p, **kwargs)
+            if p == path: self.save(self.run_dir(1) / 'INFLIGHT.json', {'kind': 'work', 'key': 'PRIVATE_NEXT'})
+            return result
+        with patch.object(q, 'safe_read', side_effect=replace_after_progress):
+            value = self.read()['slots'][1]['learning_progress']
+        self.assertEqual(value['state'], 'updating_unknown'); self.assertIsNone(value['returned_replays'])
+
+    def test_learning_stale_inflight_after_exit_or_reboot_is_not_active(self):
+        self.learning_fixture()
+        for change in ('boot', 'exit'):
+            with self.subTest(change=change):
+                if change == 'exit': self.processes.clear()
+                with patch.object(q, 'safe_read', wraps=q.safe_read) as reader:
+                    value = self.read(boot_id='different-boot' if change == 'boot' else 'fixture-boot')['slots'][1]
+                self.assertFalse(value['owned_process_verified'])
+                self.assertEqual(value['learning_progress']['state'], 'updating_unknown')
+                self.assertIsNone(value['learning_progress']['returned_replays'])
+                self.assertFalse(any('/learning/' in str(call.args[0]) for call in reader.call_args_list))
 
     def test_two_owned_worlds_without_first_checkpoint_and_four_unlaunched(self):
         self.launch(0); self.launch(1)
