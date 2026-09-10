@@ -22,6 +22,7 @@ from ..personas import import_cohort
 from .protocol import ExperimentConfig, SEED_SKILL, digest, experience_split, regime_at, scenario, select_experiences
 from .runtime import execute_case
 from .tasks import make_case
+from .hermes_transport import executor_options, manifest_fields
 
 
 class ReportPostprocessingError(RuntimeError):
@@ -157,6 +158,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     creds = creds or credentials()
     started = time.monotonic()
     manifest = {'config': config.public(), 'scenario': spec, 'source_sha256': source_hashes(),
+                **manifest_fields(config),
                 'learning_evidence_version': 2,
                 'target_model': creds['model'], 'model_base_url': creds['base_url'],
                 'dependencies': dependency_provenance(),
@@ -192,6 +194,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     def report(status):
         from .metrics import build_report
         provenance = {k: manifest[k] for k in ('target_model', 'model_base_url', 'dependencies', 'source_sha256')}
+        provenance.update(manifest_fields(config))
         cohort_path = out / 'persona_cohort.json'
         provenance['persona_cohort_sha256'] = (hashlib.sha256(cohort_path.read_bytes()).hexdigest()
             if cohort_path.exists() else 'offline-fixture-no-personas')
@@ -317,7 +320,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     record = executor(root=out / 'work' / key, employee=employee, world=w, task_id=tid,
                         case=case, request=decision['request'], skill=state['skills'][employee], credentials=creds,
                         objectives=eco.firms[fid], max_iterations=config.max_iterations,
-                        max_tokens=config.max_output_tokens, max_total_tokens=250000,
+                        max_tokens=config.max_output_tokens, max_total_tokens=250000, **executor_options(config),
                         business_files=archived, timeout_seconds=min(420, remaining_seconds()))
                     record.update(id=key, skill_version=state['skill_versions'][employee])
                     state['sessions'].append(record)
@@ -465,7 +468,8 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
                 request=capsule['request'], skill=payload['skill'], credentials=creds,
                 objectives=capsule['objectives'], max_iterations=min(config.max_iterations, limits['max_model_calls']),
                 max_tokens=config.max_output_tokens, max_total_tokens=limits['max_tokens'],
-                business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'])
+                business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'],
+                **executor_options(config))
             usage = result['usage']
             artifact.update(dispatch_status='returned',
                 usage={field: usage.get(field) for field in ('api_calls', 'total_tokens', 'charged_tokens',

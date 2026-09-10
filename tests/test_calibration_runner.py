@@ -32,7 +32,7 @@ class CalibrationRunnerTests(unittest.TestCase):
                        'case': case, 'ecosystem': eco.checkpoint(), 'request': 'offline fixture',
                        'objectives': {}, 'business_files': {}}
         save(self.source / 'private/cases/first.json', self.capsule)
-        save(self.source / 'manifest.json', {'target_model': 'offline-fixture', 'model_base_url': 'https://fixture.example.invalid'})
+        save(self.source / 'manifest.json', {'target_model': 'offline-fixture', 'model_base_url': 'https://fixture.example.invalid', 'config': {}})
         save(self.source / 'checkpoint.json', {'runner': {'skills': {self.employee: SEED_SKILL}}})
         self.creds = {'model': 'offline-fixture', 'base_url': 'https://fixture.example.invalid', 'api_key': 'unused'}
         self.bank = {'bank_version': VERSION, 'repeats_per_selection': 2, 'expected_cell_count': 1,
@@ -53,9 +53,19 @@ class CalibrationRunnerTests(unittest.TestCase):
         self.success = True
         self.valid = True
 
-    def check_record(self, record, directory, capsule):
+    def check_record(self, record, directory, capsule, *, transport_manifest=None):
         self.assertEqual(json.loads((directory / 'session.json').read_bytes()), record)
         self.assertEqual(record['task_id'], capsule['task_id'])
+
+    def test_transport_is_inherited_by_every_calibration_replay(self):
+        path = self.source/'manifest.json'
+        manifest = json.loads(path.read_text()); manifest['config']['hermes_transport'] = 'nonstreaming'
+        save(path, manifest)
+        result = self.run_fixture()
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(len(self.calls), 2)
+        self.assertTrue(all(call['hermes_transport'] == 'nonstreaming' for call in self.calls))
+        self.assertEqual(json.loads((self.out/'manifest.json').read_text())['hermes_transport'], 'nonstreaming')
 
     def execute(self, **kwargs):
         self.calls.append(kwargs)

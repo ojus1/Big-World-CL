@@ -15,6 +15,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from lifespan.evaluation.hermes_transport import mode
 from lifespan.evaluation.protocol import SEED_SKILL, digest, experience_split
 from lifespan.evaluation.runner import dependency_provenance
 from scripts.audit_evaluation import audit_run, child, read, reports_equal, require, session_check, update_check
@@ -35,6 +36,8 @@ def skill_hash(skill):
 
 
 def sources_check(manifest, extra):
+    from scripts.audit_evaluation import transport_manifest_check
+    transport_manifest_check(manifest)
     sources = manifest['source_sha256']
     require(CORE | set(extra) <= sources.keys(), 'missing_execution_source_provenance')
     for name, expected in sources.items():
@@ -135,6 +138,7 @@ def _learning(root, output):
             and all(w['day'] == day for w in parent['ecosystem']['worlds'].values()), 'learning_cutoff_mismatch')
     require(cp['ecosystem'] == parent['ecosystem'] and digest(cp['ecosystem']) == manifest['parent_ecosystem_sha256'], 'learning_changed_parent_world')
     require(all(manifest[k] == original[k] for k in ('target_model', 'model_base_url')), 'historical_model_mismatch')
+    require(mode(manifest) == mode(original['config']), 'historical_transport_mismatch')
     limits = manifest['limits']
     expected = {'max_model_calls': 200, 'max_target_model_calls': 196, 'max_optimizer_model_calls': 4,
                 'max_tokens': 4000000, 'max_seconds': 1800, 'max_iterations': 16, 'max_output_tokens': 4096,
@@ -177,7 +181,7 @@ def _learning(root, output):
             require(type(item[key]) is int and earliest <= item[key] <= day and item[key] == row[key], 'future_historical_feedback')
         require(item['prompt'] == capsule['case']['request'] and json.loads(item['context']) == capsule['case']['public_files']
                 and item['feedback'] == record['feedback'], 'altered_public_learning_context')
-        session_check(record, child(source, session_path).parent, capsule)
+        session_check(record, child(source, session_path).parent, capsule, transport_manifest=original)
     require(sorted(row['split'] for row in selected) == ['train', 'train', 'val', 'val'], 'learning_split_cardinality')
     require(manifest['source_files_sha256'] == bindings, 'historical_file_inventory')
     require({p.name for p in (root / 'private/cases').glob('*')} == {i + '.json' for i in experiences}, 'unexpected_learning_capsules')
@@ -315,6 +319,8 @@ def _transfer(root, output):
     require(Path(read(calibration / 'manifest.json')['source_directory']).resolve() == source, 'transfer_calibration_source_mismatch')
     parent, original = read(source / 'checkpoint.json'), read(source / 'manifest.json')
     require(all(manifest[k] == original[k] for k in ('target_model', 'model_base_url')), 'transfer_model_mismatch')
+    require(mode(manifest) == mode(original['config']) == mode(read(calibration / 'manifest.json')),
+            'transfer_transport_mismatch')
     selection = select_employee(parent, read(calibration / 'bank.json'), read(calibration / 'state.json'), cutoff_day=9)
     experiences = read(root / 'private/experiences.json')
     require(selection['employee'] == manifest['employee'] and selection['ranking'] == manifest['ranking']
@@ -375,6 +381,7 @@ def _transfer(root, output):
     epoch_report = read(root / 'learning_epoch/REPORT.json')
     require(Path(epoch_manifest['source_directory']).resolve() == source and epoch_manifest['employee'] == manifest['employee']
             and epoch_state['experiences'] == experiences, 'transfer_wrong_learning_epoch')
+    require(mode(epoch_manifest) == mode(manifest), 'transfer_learning_transport_mismatch')
     deployed = epoch_state['skills'][manifest['employee']]
     require(state['learning_report_sha256'] == sha(root / 'learning_epoch/REPORT.json')
             and state['deployed_skill_sha256'] == skill_hash(deployed)
@@ -392,7 +399,7 @@ def _transfer(root, output):
         if receipt['status'] == 'completed':
             require(receipt['session_path'] == str(path.relative_to(root)) and receipt['session_sha256'] == sha(path), 'transfer_native_session_hash')
             record = read(path); capsule = probes[slot['probe_index']]
-            session_check(record, directory, capsule); bounded(record)
+            session_check(record, directory, capsule, transport_manifest=manifest); bounded(record)
             fields = ('success', 'semantic_score', 'infrastructure_valid', 'budget_exhausted', 'usage', 'diagnostic', 'elapsed_seconds', 'skill_loaded')
             require(all(reports_equal(receipt[k], record[k]) for k in fields), 'transfer_receipt_native_mismatch')
             assigned = SEED_SKILL if slot['arm'] == 'seed' else deployed

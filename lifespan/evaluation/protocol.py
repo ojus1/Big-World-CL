@@ -45,9 +45,12 @@ class ExperimentConfig:
     max_learning_seconds_per_epoch: int | None = None
     max_actor_interviews: int | None = None
     focal_employee: str | None = None
+    hermes_transport: str = 'streaming'
     schema_version: int = 1
 
     def __post_init__(self):
+        from .hermes_transport import mode
+        mode(self)
         if self.algorithm not in ('no_learning', 'skillopt'):
             raise ValueError('algorithm must be no_learning or skillopt')
         if self.split not in ('dev', 'test') or self.state_mode not in ('skill_transfer', 'full_deployment'):
@@ -78,6 +81,8 @@ class ExperimentConfig:
 
     def public(self):
         result = asdict(self)
+        if self.hermes_transport == 'streaming':
+            result.pop('hermes_transport')
         if result['update_days'] is not None:
             result['update_days'] = list(result['update_days'])
         return result

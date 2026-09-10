@@ -21,6 +21,7 @@ if str(ROOT) not in sys.path:
 from lifespan.ecosystem import Ecosystem
 from lifespan.evaluation.protocol import ExperimentConfig, SEED_SKILL, digest, experience_split
 from lifespan.evaluation.runner import _learn, credentials, dependency_provenance, source_hashes
+from lifespan.evaluation.hermes_transport import mode, manifest_fields
 from lifespan.evaluation.runtime import execute_case
 from lifespan.mirofish import save
 from scripts.audit_evaluation import audit_run, session_check
@@ -119,7 +120,7 @@ def _source(source, employee, experiences, cutoff_day):
                 or json.loads(item.get("context", "null")) != capsule["case"]["public_files"]
                 or item.get("feedback") != record["feedback"]):
             raise ValueError("Experience contains altered public task context or feedback")
-        session_check(record, session_file.parent, capsule)
+        session_check(record, session_file.parent, capsule, transport_manifest=manifest)
         bindings[case_path], bindings[session_path] = file_hash(capsule_file), file_hash(session_file)
         selected.append({"id": identifier, "source_task_id": task_id, "employee": employee,
                          "split": item["split"], "source_day": day,
@@ -162,11 +163,12 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
         feedback_delay=original["config"]["feedback_delay"], max_iterations=16,
         max_output_tokens=4096, max_learning_calls=200, max_learning_tokens=4_000_000,
         max_run_seconds=1800, train_cases=2, val_cases=2, edit_budget=4,
-        skillopt_rollouts_k=2, focal_employee=employee)
+        skillopt_rollouts_k=2, focal_employee=employee, hermes_transport=mode(original['config']))
     sources = source_hashes()
     sources["scripts/transfer_learning.py"] = file_hash(Path(__file__))
     parent_hash = digest(eco.checkpoint())
     manifest = {"schema_version": 1, "version": VERSION, "kind": "one_historical_learning_epoch",
+        **manifest_fields(config),
         "learning_evidence_version": 2,
         "execution_mode": "native" if executor is execute_case else "injected_executor_fixture",
         "source_directory": str(source), "source_files_sha256": bindings,
@@ -253,7 +255,7 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
             save(out / "evidence.json", evidence)
         if file_hash(case_file) != selected_row["capsule_sha256"]:
             raise RuntimeError("Copied historical capsule changed during target execution")
-        session_check(result, path.parent, _read(case_file))
+        session_check(result, path.parent, _read(case_file), transport_manifest=manifest)
         if not unchanged():
             raise RuntimeError("Historical parent changed during target execution")
         print(f"Learning replay {len(evidence['target_sessions'])} (cap {LIMITS['max_replays']}) "

@@ -66,7 +66,7 @@ class FakeActors:
 
 def _offline_execute(*, root, employee, world, task_id, case, request, skill, credentials,
                      objectives, max_iterations=16, max_tokens=4096, business_files=None,
-                     max_total_tokens=None, timeout_seconds=420, corrupt=False):
+                     max_total_tokens=None, timeout_seconds=420, corrupt=False, hermes_transport='streaming'):
     """Use public inputs as an oracle but real filesystem/submission semantics."""
     root = Path(root)
     if root.exists():
@@ -121,6 +121,7 @@ def _offline_execute(*, root, employee, world, task_id, case, request, skill, cr
     if grade is None:
         raise AssertionError("Fixture did not exercise the substantive grader")
     record = {"fixture": FIXTURE, "employee": employee, "day": world.day, "task_id": task_id,
+              "transport_mode_for_fixture_audit": hermes_transport,
               "case_id": case["id"], "regime": case["regime"], "skill": skill_info,
               "skill_loaded": True, "skill_text_for_fixture_audit": skill,
               "success": env.success and grade["success"], "semantic_score": grade["score"],
@@ -263,6 +264,17 @@ class OfflineRunnerIntegrationTests(unittest.TestCase):
         self.assertTrue(all(any(transition.get("action", {}).get("tool") == "work.commit" for transition in row["trace"])
                             for row in state["sessions"]))
         self.assertTrue(all(row["artifact_sha256"] for row in state["sessions"]))
+
+    def test_opt_in_transport_reaches_online_executor_and_binds_manifest(self):
+        config = ExperimentConfig(days=8, seed=100, hermes_transport='nonstreaming')
+        with offline_dependencies():
+            result = self.run_offline('transport', config, stop_after_sessions=1)
+        checkpoint = read_checkpoint(self.root/'transport')
+        self.assertEqual(checkpoint['runner']['sessions'][0]['transport_mode_for_fixture_audit'], 'nonstreaming')
+        manifest = json.loads((self.root/'transport/manifest.json').read_text())
+        self.assertEqual(manifest['hermes_transport'], 'nonstreaming')
+        self.assertEqual(manifest['hermes_transport_provenance']['mode'], 'nonstreaming')
+        self.assertEqual(result['provenance']['hermes_transport'], 'nonstreaming')
 
     def test_derived_report_failure_preserves_completed_execution_bytes(self):
         preserved = {}

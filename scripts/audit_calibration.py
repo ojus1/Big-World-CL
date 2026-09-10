@@ -31,6 +31,9 @@ def digest(value):
 
 def _audit(root, output):
     manifest, bank, state = (read(root / name) for name in ('manifest.json', 'bank.json', 'state.json'))
+    from scripts.audit_evaluation import transport_manifest_check
+    from lifespan.evaluation.hermes_transport import mode
+    transport_manifest_check(manifest)
     config = manifest['config']
     require(manifest['kind'] == 'native_historical_replay_calibration', 'wrong_campaign_kind')
     require(config['repeats'] == bank['repeats_per_selection'] == 2, 'repeat_contract')
@@ -49,6 +52,7 @@ def _audit(root, output):
     rebuilt_bank = build_bank(source, repeats=config['repeats'])
     require(bank == rebuilt_bank and digest(bank) == manifest['bank_sha256'], 'calibration_bank_mismatch')
     original = read(source / 'manifest.json')
+    require(mode(manifest) == mode(original['config']), 'calibration_transport_source_mismatch')
     require(all(manifest[k] == original[k] for k in ('target_model', 'model_base_url')), 'source_provider_mismatch')
     original_skills = read(source / 'checkpoint.json')['runner']['skills']
     require(hashlib.sha256(SEED_SKILL.encode()).hexdigest() == manifest['skill_sha256'], 'calibration_initial_skill_mismatch')
@@ -93,7 +97,7 @@ def _audit(root, output):
         if result['status'] == 'completed':
             require(result.get('session_path') == str(path.relative_to(root)) and sha(path) == result['session_sha256'], 'native_session_hash_or_path_mismatch')
             record = read(path)
-            session_check(record, directory, capsule)
+            session_check(record, directory, capsule, transport_manifest=manifest)
             require(record['skill']['content_sha256'] == manifest['skill_sha256'], 'calibration_skill_hash')
             fields = ('success', 'semantic_score', 'infrastructure_valid', 'budget_exhausted', 'usage',
                       'diagnostic', 'elapsed_seconds', 'skill_loaded')

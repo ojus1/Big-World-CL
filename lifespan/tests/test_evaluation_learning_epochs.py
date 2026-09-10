@@ -162,6 +162,12 @@ class LearningEpochTests(unittest.TestCase):
         self.assertEqual(result['configuration']['budget']['max_seconds'], 45)
         self.assertTrue(all(call['timeout_seconds'] <= 45 for call in self.calls))
 
+    def test_opt_in_transport_reaches_every_learning_replay(self):
+        self.config.hermes_transport = 'nonstreaming'
+        self.run_epoch()
+        self.assertEqual(len(self.calls), 10)
+        self.assertTrue(all(call['hermes_transport'] == 'nonstreaming' for call in self.calls))
+
     def test_replay_progress_binds_every_actual_upstream_phase_and_session(self):
         parent = digest(self.eco.checkpoint())
         result = self.run_epoch(next_update_index=2)
