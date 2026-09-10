@@ -64,3 +64,8 @@ This writes allowlisted `SUMMARY.json` and `REPORT.md` files to a new directory;
 it does not publish them. It refuses incomplete evidence, changed source or
 artifact bytes, unexpected original audit failures, and an existing output
 directory. Test fixtures are explicitly offline and are not campaign results.
+
+Review the separate [learning deadline observations](SCALE_DEADLINE_OBSERVATIONS.md)
+alongside the campaign audit before publication. That diagnostic records timing
+and cost evidence; it does not change this actor-name correction or the frozen
+auditor's acceptance rules.
