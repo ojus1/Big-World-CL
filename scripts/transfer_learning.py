@@ -167,6 +167,7 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
     sources["scripts/transfer_learning.py"] = file_hash(Path(__file__))
     parent_hash = digest(eco.checkpoint())
     manifest = {"schema_version": 1, "version": VERSION, "kind": "one_historical_learning_epoch",
+        "learning_evidence_version": 2,
         "execution_mode": "native" if executor is execute_case else "injected_executor_fixture",
         "source_directory": str(source), "source_files_sha256": bindings,
         "source_checkpoint_sha256": bindings["checkpoint.json"], "parent_ecosystem_sha256": parent_hash,
@@ -271,9 +272,11 @@ def run_learning_epoch(source_run, out, employee, experiences, *, cutoff_day=9,
                 or len(update["validation_ids"]) != 2):
             raise RuntimeError("Upstream update differs from the declared K2/T2/V2 epoch")
         targets = [r for r in update["costs"]["operations"] if r["kind"] == "target"]
-        if len(targets) != len(evidence["target_sessions"]) or len(targets) != len(update["replay_evidence"]):
+        from scripts.audit_learning_v2 import reconcile, version
+        identities = reconcile(update) if version(update) == 2 else update["replay_evidence"]
+        if len(targets) != len(evidence["target_sessions"]) or len(targets) != len(identities):
             raise RuntimeError("Target sessions and upstream replay receipts do not reconcile")
-        for row, operation, replay in zip(evidence["target_sessions"], targets, update["replay_evidence"]):
+        for row, operation, replay in zip(evidence["target_sessions"], targets, identities):
             path = out / row["session_path"]
             native = _read(path)
             if (row["experience_id"] != operation["task_id"] or row["experience_id"] != replay["id"]

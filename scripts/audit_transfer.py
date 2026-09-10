@@ -56,6 +56,7 @@ def number(value):
 
 def gate_check(update):
     """Recompute pinned K2 skill-only gates from independently graded replays."""
+    from scripts.audit_learning_v2 import reconcile, version
     cfg = update['configuration']
     require(cfg['gate_metric'] == 'mixed' and type(cfg['gate_mixed_weight']) is float
             and cfg['gate_mixed_weight'] == .5, 'upstream_gate_metric_contract')
@@ -66,10 +67,11 @@ def gate_check(update):
     base_plan += [('train', i, sample) for i in train for sample in range(2)]
     candidate_plan = base_plan + [('gate_trial:skill', i, 0) for i in val] + [('final_val', i, 0) for i in val]
     no_candidate_plan = base_plan + [('final_val', i, 0) for i in val]
-    observed = [(r['phase'], r['id'], r['sample_id']) for r in rows]
-    require(observed == candidate_plan[:len(rows)] or observed == no_candidate_plan[:len(rows)], 'upstream_replay_phase_schedule')
+    identities = reconcile(update) if version(update) == 2 else rows
+    observed = [(r['phase'], r['id'], r['sample_id']) for r in identities]
+    require(observed == candidate_plan[:len(identities)] or observed == no_candidate_plan[:len(identities)], 'upstream_replay_phase_schedule')
     seed = update['skill_before_sha256']
-    require(all(r['skill_sha256'] == seed for r in rows if r['phase'] in ('baseline_val', 'train')), 'gate_baseline_skill_mismatch')
+    require(all(r['skill_sha256'] == seed for r in identities if r['phase'] in ('baseline_val', 'train')), 'gate_baseline_skill_mismatch')
     gate = update['gate_evidence']
     if update['status'] == 'budget_exhausted':
         require(update['accepted'] is False and update['skill_after_sha256'] == seed
@@ -192,6 +194,9 @@ def _learning(root, output):
     if complete:
         require(manifest['execution_mode'] == 'native' and len(updates) == 1, 'completed_learning_requires_native_update')
         update = updates[0]
+        from scripts.audit_learning_v2 import manifest_version
+        require(update.get('learning_evidence_version', 1) == manifest_version(manifest, ROOT),
+                'learning_evidence_manifest_version')
         require(update['employee'] == employee and update['day'] == day, 'wrong_learning_employee_or_day')
         require(set(update['train_ids'] + update['validation_ids']) == set(experiences), 'learning_selected_pool_mismatch')
         update_check(root, update, experiences, parent_sessions, cfg['feedback_delay'])
@@ -201,8 +206,10 @@ def _learning(root, output):
         gate_check(update)
         targets = [op for op in update['costs']['operations'] if op['kind'] == 'target']
         rows = evidence['target_sessions']
-        require(len(rows) == len(targets) == len(update['replay_evidence']) <= 12, 'target_evidence_inventory')
-        for index, (row, op, replay) in enumerate(zip(rows, targets, update['replay_evidence'])):
+        from scripts.audit_learning_v2 import reconcile, version as evidence_version
+        identities = reconcile(update) if evidence_version(update) == 2 else update['replay_evidence']
+        require(len(rows) == len(targets) == len(identities) <= 12, 'target_evidence_inventory')
+        for index, (row, op, replay) in enumerate(zip(rows, targets, identities)):
             relative = f'learning/d{day:03d}-{employee}/trial-{index:03d}/session.json'
             path = child(root, relative); record = read(path)
             require(row['session_path'] == relative and row['session_sha256'] == sha(path), 'learning_native_session_hash')
