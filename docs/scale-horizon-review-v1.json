@@ -1,0 +1,2347 @@
+{
+  "duration_group_contract": {
+    "aggregation": "Rows within a world are dependent; online, learner, callback and replay clocks overlap and must not be added.",
+    "empty_groups": "Absent workflow/regime/day/phase combinations were not observed; they are not zero-duration groups.",
+    "p90": "nearest_rank",
+    "statistics": "exact selected fields from captured REPORT; proposal overview recomputed from captured epoch rows",
+    "unit": "seconds",
+    "unknown_infrastructure_on_epochs": "No explicit epoch infrastructure-validity field is recorded; use separate usage and status fields."
+  },
+  "duration_groups": {
+    "learning_epoch_buckets": [
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 6,
+            "max_seconds": 925.4270867000014,
+            "median_seconds": 689.4343446179992,
+            "p90_seconds_nearest_rank": 925.4270867000014,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 6,
+            "max_seconds": 10.823904116004996,
+            "median_seconds": 5.614496031499584,
+            "p90_seconds_nearest_rank": 10.823904116004996,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 6,
+            "max_seconds": 925.432775412999,
+            "median_seconds": 689.4405862250023,
+            "p90_seconds_nearest_rank": 925.432775412999,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 6,
+            "max_seconds": 921.5018720389853,
+            "median_seconds": 681.5709442359985,
+            "p90_seconds_nearest_rank": 921.5018720389853,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 6,
+        "learning_day": 11,
+        "observations": 6,
+        "proposal_class": "proposal_observed",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 1,
+            "max_seconds": 815.7709775719995,
+            "median_seconds": 815.7709775719995,
+            "p90_seconds_nearest_rank": 815.7709775719995,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 1,
+            "max_seconds": 5.400819281996519,
+            "median_seconds": 5.400819281996519,
+            "p90_seconds_nearest_rank": 5.400819281996519,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 1,
+            "max_seconds": 815.7766926930053,
+            "median_seconds": 815.7766926930053,
+            "p90_seconds_nearest_rank": 815.7766926930053,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 1,
+            "max_seconds": 810.3617013109906,
+            "median_seconds": 810.3617013109906,
+            "p90_seconds_nearest_rank": 810.3617013109906,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 1,
+        "learning_day": 11,
+        "observations": 1,
+        "proposal_class": "unknown_incomplete",
+        "usage_complete": 0,
+        "usage_incomplete_or_unknown": 1,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 5,
+            "max_seconds": 790.0790905839967,
+            "median_seconds": 742.0287674210049,
+            "p90_seconds_nearest_rank": 790.0790905839967,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 5,
+            "max_seconds": 6.288401855999837,
+            "median_seconds": 6.022865731996717,
+            "p90_seconds_nearest_rank": 6.288401855999837,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 5,
+            "max_seconds": 790.0846154530009,
+            "median_seconds": 742.0353486510066,
+            "p90_seconds_nearest_rank": 790.0846154530009,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 5,
+            "max_seconds": 784.1610767849925,
+            "median_seconds": 735.8412049519902,
+            "p90_seconds_nearest_rank": 784.1610767849925,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 5,
+        "learning_day": 7,
+        "observations": 5,
+        "proposal_class": "proposal_observed",
+        "usage_complete": 5,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 5,
+            "max_seconds": 526.174514189006,
+            "median_seconds": 414.0071298539988,
+            "p90_seconds_nearest_rank": 526.174514189006,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 5,
+            "max_seconds": 0.0,
+            "median_seconds": 0.0,
+            "p90_seconds_nearest_rank": 0.0,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 5,
+            "max_seconds": 526.1784459769988,
+            "median_seconds": 414.0102696049944,
+            "p90_seconds_nearest_rank": 526.1784459769988,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 5,
+            "max_seconds": 526.1672161219976,
+            "median_seconds": 414.0008551720093,
+            "p90_seconds_nearest_rank": 526.1672161219976,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 5,
+        "learning_day": 11,
+        "observations": 5,
+        "proposal_class": "no_proposal_observed",
+        "usage_complete": 5,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 1,
+            "max_seconds": 500.1181901339951,
+            "median_seconds": 500.1181901339951,
+            "p90_seconds_nearest_rank": 500.1181901339951,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 1,
+            "max_seconds": 6.655197246996977,
+            "median_seconds": 6.655197246996977,
+            "p90_seconds_nearest_rank": 6.655197246996977,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 1,
+            "max_seconds": 500.12330029099394,
+            "median_seconds": 500.12330029099394,
+            "p90_seconds_nearest_rank": 500.12330029099394,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 1,
+            "max_seconds": 493.4559128469991,
+            "median_seconds": 493.4559128469991,
+            "p90_seconds_nearest_rank": 493.4559128469991,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 1,
+        "learning_day": 11,
+        "observations": 1,
+        "proposal_class": "proposal_observed",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 6,
+            "max_seconds": 435.7728693149984,
+            "median_seconds": 354.33034723699893,
+            "p90_seconds_nearest_rank": 435.7728693149984,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 6,
+            "max_seconds": 0.0,
+            "median_seconds": 0.0,
+            "p90_seconds_nearest_rank": 0.0,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 6,
+            "max_seconds": 435.7756080629988,
+            "median_seconds": 354.3330857669971,
+            "p90_seconds_nearest_rank": 435.7756080629988,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 6,
+            "max_seconds": 435.76626612900145,
+            "median_seconds": 354.32358711098277,
+            "p90_seconds_nearest_rank": 435.76626612900145,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 6,
+        "learning_day": 7,
+        "observations": 6,
+        "proposal_class": "no_proposal_observed",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 3,
+            "max_seconds": 494.60206859999744,
+            "median_seconds": 494.59337228799996,
+            "p90_seconds_nearest_rank": 494.60206859999744,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 3,
+            "max_seconds": 0.0,
+            "median_seconds": 0.0,
+            "p90_seconds_nearest_rank": 0.0,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 3,
+            "max_seconds": 494.6705919860033,
+            "median_seconds": 494.61021623299894,
+            "p90_seconds_nearest_rank": 494.6705919860033,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 3,
+            "max_seconds": 494.5872477559824,
+            "median_seconds": 494.58204980099254,
+            "p90_seconds_nearest_rank": 494.5872477559824,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 3,
+        "learning_day": 11,
+        "observations": 3,
+        "proposal_class": "no_proposal_observed",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 2,
+            "max_seconds": 811.2402346849995,
+            "median_seconds": 717.285920004997,
+            "p90_seconds_nearest_rank": 811.2402346849995,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 2,
+            "max_seconds": 7.036585414003639,
+            "median_seconds": 6.689323925504141,
+            "p90_seconds_nearest_rank": 7.036585414003639,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 2,
+            "max_seconds": 811.2466611089985,
+            "median_seconds": 717.2916572629983,
+            "p90_seconds_nearest_rank": 811.2466611089985,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 2,
+            "max_seconds": 804.1959721740059,
+            "median_seconds": 710.5894363555162,
+            "p90_seconds_nearest_rank": 804.1959721740059,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 2,
+        "learning_day": 11,
+        "observations": 2,
+        "proposal_class": "proposal_observed",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "learner_wall_seconds": {
+            "known": 5,
+            "max_seconds": 641.994184956995,
+            "median_seconds": 477.7717632829954,
+            "p90_seconds_nearest_rank": 641.994184956995,
+            "unknown": 0
+          },
+          "optimizer_callback_seconds": {
+            "known": 5,
+            "max_seconds": 0.0,
+            "median_seconds": 0.0,
+            "p90_seconds_nearest_rank": 0.0,
+            "unknown": 0
+          },
+          "progress_elapsed_seconds": {
+            "known": 5,
+            "max_seconds": 641.9972745019986,
+            "median_seconds": 477.77467862900085,
+            "p90_seconds_nearest_rank": 641.9972745019986,
+            "unknown": 0
+          },
+          "target_callback_seconds": {
+            "known": 5,
+            "max_seconds": 641.9876809940179,
+            "median_seconds": 477.76570184801676,
+            "p90_seconds_nearest_rank": 641.9876809940179,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 5,
+        "learning_day": 7,
+        "observations": 5,
+        "proposal_class": "no_proposal_observed",
+        "usage_complete": 5,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      }
+    ],
+    "learning_replay_buckets": [
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 6,
+            "max_seconds": 103.20806626600097,
+            "median_seconds": 47.961162882496865,
+            "p90_seconds_nearest_rank": 103.20806626600097,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 6,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 6,
+            "max_seconds": 146.47979776699503,
+            "median_seconds": 40.823857936498825,
+            "p90_seconds_nearest_rank": 146.47979776699503,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 6,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 6,
+            "max_seconds": 72.84216890300013,
+            "median_seconds": 51.418989246998535,
+            "p90_seconds_nearest_rank": 72.84216890300013,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 6,
+        "phase": "gate_trial:skill",
+        "regime": "base",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 49.817807754996466,
+            "median_seconds": 49.47407704000216,
+            "p90_seconds_nearest_rank": 49.817807754996466,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "train",
+        "regime": "base",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 9,
+            "max_seconds": 133.67406306400517,
+            "median_seconds": 63.02286448900122,
+            "p90_seconds_nearest_rank": 133.67406306400517,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 9,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 9,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 9,
+            "max_seconds": 100.15180569099903,
+            "median_seconds": 58.12733601099899,
+            "p90_seconds_nearest_rank": 100.15180569099903,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 9,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 9,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 9,
+            "max_seconds": 101.39950287800457,
+            "median_seconds": 55.55669083399698,
+            "p90_seconds_nearest_rank": 101.39950287800457,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 9,
+        "phase": "gate_trial:skill",
+        "regime": "base",
+        "usage_complete": 9,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 18,
+            "max_seconds": 81.00311389900162,
+            "median_seconds": 49.49883268100166,
+            "p90_seconds_nearest_rank": 79.94191471399972,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 18,
+        "phase": "train",
+        "regime": "base",
+        "usage_complete": 18,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 5,
+            "max_seconds": 74.88073092899867,
+            "median_seconds": 51.440168958004506,
+            "p90_seconds_nearest_rank": 74.88073092899867,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 5,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 5,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 5,
+            "max_seconds": 81.38792616799765,
+            "median_seconds": 53.35073287400155,
+            "p90_seconds_nearest_rank": 81.38792616799765,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 1,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 5,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 4,
+        "usage_incomplete_or_unknown": 1,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 5,
+            "max_seconds": 115.13788668600318,
+            "median_seconds": 42.14477901899954,
+            "p90_seconds_nearest_rank": 115.13788668600318,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 5,
+        "phase": "gate_trial:skill",
+        "regime": "changed",
+        "usage_complete": 5,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 27,
+            "max_seconds": 193.75611064599798,
+            "median_seconds": 43.17922238799656,
+            "p90_seconds_nearest_rank": 76.33016381500056,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 27,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 27,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 38.271096693999425,
+            "median_seconds": 38.271096693999425,
+            "p90_seconds_nearest_rank": 38.271096693999425,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 1,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 35.72314390900283,
+            "median_seconds": 35.72314390900283,
+            "p90_seconds_nearest_rank": 35.72314390900283,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 1,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 150.42442727900197,
+            "median_seconds": 150.42442727900197,
+            "p90_seconds_nearest_rank": 150.42442727900197,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 1,
+        "phase": "gate_trial:skill",
+        "regime": "changed",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 12,
+            "max_seconds": 207.1781758290017,
+            "median_seconds": 57.87992367499828,
+            "p90_seconds_nearest_rank": 87.68917152100039,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 12,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 12,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 44.15557264400559,
+            "median_seconds": 37.21051410899963,
+            "p90_seconds_nearest_rank": 44.15557264400559,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "baseline_val",
+        "regime": "exception",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 60.004727079001896,
+            "median_seconds": 52.21363865800231,
+            "p90_seconds_nearest_rank": 60.004727079001896,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "final_val",
+        "regime": "exception",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 75.32607411800564,
+            "median_seconds": 41.923831397994945,
+            "p90_seconds_nearest_rank": 75.32607411800564,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "gate_trial:skill",
+        "regime": "exception",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 12,
+            "max_seconds": 228.90509993999876,
+            "median_seconds": 56.059569136999926,
+            "p90_seconds_nearest_rank": 191.18268479299877,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 12,
+        "phase": "train",
+        "regime": "exception",
+        "usage_complete": 12,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 108.43001847100095,
+            "median_seconds": 37.072477249996155,
+            "p90_seconds_nearest_rank": 108.43001847100095,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 36.576476474998344,
+            "median_seconds": 33.60666937899805,
+            "p90_seconds_nearest_rank": 36.576476474998344,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 3,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 10,
+            "max_seconds": 54.4664420209956,
+            "median_seconds": 33.09510636399864,
+            "p90_seconds_nearest_rank": 38.7159867579976,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 10,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 10,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 10,
+            "max_seconds": 50.22677488399495,
+            "median_seconds": 34.68181520550206,
+            "p90_seconds_nearest_rank": 44.947232156999235,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 10,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 10,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 24,
+            "max_seconds": 53.73313860100461,
+            "median_seconds": 33.69863981000162,
+            "p90_seconds_nearest_rank": 44.41686080499494,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 24,
+        "phase": "train",
+        "regime": "base",
+        "usage_complete": 24,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 8,
+            "max_seconds": 110.6570157669994,
+            "median_seconds": 40.292086924000614,
+            "p90_seconds_nearest_rank": 110.6570157669994,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 8,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 8,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 8,
+            "max_seconds": 60.419532398998854,
+            "median_seconds": 32.89109460649706,
+            "p90_seconds_nearest_rank": 60.419532398998854,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 8,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 8,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 38.9654847999991,
+            "median_seconds": 38.9654847999991,
+            "p90_seconds_nearest_rank": 38.9654847999991,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 1,
+        "phase": "gate_trial:skill",
+        "regime": "changed",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 21,
+            "max_seconds": 57.106412148001255,
+            "median_seconds": 34.595575416999054,
+            "p90_seconds_nearest_rank": 51.01679103400238,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 21,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 21,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 32.31335173700063,
+            "median_seconds": 29.8030327330016,
+            "p90_seconds_nearest_rank": 32.31335173700063,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 2,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 30.392223303002538,
+            "median_seconds": 28.803341034999903,
+            "p90_seconds_nearest_rank": 30.392223303002538,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 2,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 12,
+            "max_seconds": 49.23796330400364,
+            "median_seconds": 34.548277322501235,
+            "p90_seconds_nearest_rank": 44.8041882059988,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 12,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 12,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 37.35692013199878,
+            "median_seconds": 37.35692013199878,
+            "p90_seconds_nearest_rank": 37.35692013199878,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 1,
+        "phase": "baseline_val",
+        "regime": "exception",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 48.91618773400114,
+            "median_seconds": 48.91618773400114,
+            "p90_seconds_nearest_rank": 48.91618773400114,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 1,
+        "phase": "final_val",
+        "regime": "exception",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 1,
+            "max_seconds": 35.48728546399798,
+            "median_seconds": 35.48728546399798,
+            "p90_seconds_nearest_rank": 35.48728546399798,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 1,
+        "phase": "gate_trial:skill",
+        "regime": "exception",
+        "usage_complete": 1,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 15,
+            "max_seconds": 58.12011952300236,
+            "median_seconds": 37.70474475100491,
+            "p90_seconds_nearest_rank": 56.981977543997345,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 15,
+        "phase": "train",
+        "regime": "exception",
+        "usage_complete": 15,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 4,
+            "max_seconds": 102.22069683500013,
+            "median_seconds": 69.12463053950341,
+            "p90_seconds_nearest_rank": 102.22069683500013,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 4,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 4,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 4,
+            "max_seconds": 62.590187213994795,
+            "median_seconds": 32.42544685849862,
+            "p90_seconds_nearest_rank": 62.590187213994795,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 4,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 4,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 72.1226819769945,
+            "median_seconds": 61.82220639199659,
+            "p90_seconds_nearest_rank": 72.1226819769945,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 2,
+        "phase": "gate_trial:skill",
+        "regime": "base",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 7,
+            "max_seconds": 43.15405452699633,
+            "median_seconds": 35.415463477998856,
+            "p90_seconds_nearest_rank": 43.15405452699633,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 7,
+        "phase": "baseline_val",
+        "regime": "base",
+        "usage_complete": 7,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 7,
+            "max_seconds": 74.04859105400101,
+            "median_seconds": 36.960212643003615,
+            "p90_seconds_nearest_rank": 74.04859105400101,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 7,
+        "phase": "final_val",
+        "regime": "base",
+        "usage_complete": 7,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 24,
+            "max_seconds": 159.7605621670009,
+            "median_seconds": 41.7991487194995,
+            "p90_seconds_nearest_rank": 69.03609248500288,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 24,
+        "phase": "train",
+        "regime": "base",
+        "usage_complete": 24,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 4,
+            "max_seconds": 77.74784867799463,
+            "median_seconds": 41.589461759002006,
+            "p90_seconds_nearest_rank": 77.74784867799463,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 4,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 4,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 4,
+            "max_seconds": 87.06707125799585,
+            "median_seconds": 43.86665877299674,
+            "p90_seconds_nearest_rank": 87.06707125799585,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 4,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 4,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 59.696349586993165,
+            "median_seconds": 48.300264277997485,
+            "p90_seconds_nearest_rank": 59.696349586993165,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 2,
+        "phase": "gate_trial:skill",
+        "regime": "changed",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 21,
+            "max_seconds": 71.15591043899622,
+            "median_seconds": 42.82466671799921,
+            "p90_seconds_nearest_rank": 53.40968770600011,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 21,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 21,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 50.06173707599373,
+            "median_seconds": 45.13892939699872,
+            "p90_seconds_nearest_rank": 50.06173707599373,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 3,
+        "phase": "baseline_val",
+        "regime": "changed",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 3,
+            "max_seconds": 60.58260580400383,
+            "median_seconds": 56.2931080260023,
+            "p90_seconds_nearest_rank": 60.58260580400383,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 3,
+        "phase": "final_val",
+        "regime": "changed",
+        "usage_complete": 3,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 6,
+            "max_seconds": 158.7267145809965,
+            "median_seconds": 40.66104920249927,
+            "p90_seconds_nearest_rank": 158.7267145809965,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 7,
+        "observations": 6,
+        "phase": "train",
+        "regime": "changed",
+        "usage_complete": 6,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 42.058695733001514,
+            "median_seconds": 39.238680029000534,
+            "p90_seconds_nearest_rank": 42.058695733001514,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 2,
+        "phase": "baseline_val",
+        "regime": "exception",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 2,
+            "max_seconds": 55.20659826300107,
+            "median_seconds": 47.79139668000062,
+            "p90_seconds_nearest_rank": 55.20659826300107,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 2,
+        "phase": "final_val",
+        "regime": "exception",
+        "usage_complete": 2,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 9,
+            "max_seconds": 187.47501892400032,
+            "median_seconds": 50.816067674000806,
+            "p90_seconds_nearest_rank": 187.47501892400032,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "learning_day": 11,
+        "observations": 9,
+        "phase": "train",
+        "regime": "exception",
+        "usage_complete": 9,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      }
+    ],
+    "online_work_buckets": [
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 173.55198901899712,
+            "median_seconds": 53.47539181550019,
+            "p90_seconds_nearest_rank": 69.54964127700077,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 42,
+            "max_seconds": 110.34643885500554,
+            "median_seconds": 54.14370602800045,
+            "p90_seconds_nearest_rank": 71.79509882000275,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 42,
+        "regime": "changed",
+        "usage_complete": 42,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 209.07783890800056,
+            "median_seconds": 58.69523343700348,
+            "p90_seconds_nearest_rank": 78.33159873499972,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "exception",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 70.92202574999828,
+            "median_seconds": 47.39126193949778,
+            "p90_seconds_nearest_rank": 56.76732820300094,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "reversal",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 52.84826672700001,
+            "median_seconds": 33.59203634450023,
+            "p90_seconds_nearest_rank": 41.380099827001686,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 39,
+            "max_seconds": 237.62941183300427,
+            "median_seconds": 35.87317324600008,
+            "p90_seconds_nearest_rank": 85.43387538800016,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 39,
+        "regime": "changed",
+        "usage_complete": 39,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 143.16322185900208,
+            "median_seconds": 43.76342119400215,
+            "p90_seconds_nearest_rank": 68.94268841599842,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "exception",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 145.1760952570039,
+            "median_seconds": 33.3558718839995,
+            "p90_seconds_nearest_rank": 45.5689721000017,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "reversal",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 96.52658370599966,
+            "median_seconds": 39.90329612950518,
+            "p90_seconds_nearest_rank": 67.82243803299934,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 41,
+            "max_seconds": 220.45328877099382,
+            "median_seconds": 49.82506408699555,
+            "p90_seconds_nearest_rank": 117.91741365999769,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 1,
+        "infrastructure_unknown": 0,
+        "observations": 41,
+        "regime": "changed",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 1,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 120.80206418000307,
+            "median_seconds": 53.796551756000554,
+            "p90_seconds_nearest_rank": 67.45400437100034,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "exception",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "no_learning",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 244.87479003399494,
+            "median_seconds": 39.45870847149854,
+            "p90_seconds_nearest_rank": 69.05337577599857,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "reversal",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 219.30168384200078,
+            "median_seconds": 51.31310455199855,
+            "p90_seconds_nearest_rank": 71.14504656299687,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 40,
+            "max_seconds": 78.06972642400069,
+            "median_seconds": 48.81049891500152,
+            "p90_seconds_nearest_rank": 66.15142252099758,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 40,
+        "regime": "changed",
+        "usage_complete": 40,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 19,
+            "max_seconds": 65.98822707900399,
+            "median_seconds": 46.07748123499914,
+            "p90_seconds_nearest_rank": 58.03476396299811,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 19,
+        "regime": "exception",
+        "usage_complete": 19,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "incident"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 67.90913946699584,
+            "median_seconds": 33.95123754299857,
+            "p90_seconds_nearest_rank": 43.29412823000166,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 36,
+            "max_seconds": 231.90748076299496,
+            "median_seconds": 36.50446535499941,
+            "p90_seconds_nearest_rank": 59.99502982800186,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 36,
+        "regime": "changed",
+        "usage_complete": 36,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 16,
+            "max_seconds": 62.19918947899714,
+            "median_seconds": 34.624884312001086,
+            "p90_seconds_nearest_rank": 51.489239529997576,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 16,
+        "regime": "exception",
+        "usage_complete": 16,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "onboarding"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 72,
+            "max_seconds": 142.68852174599306,
+            "median_seconds": 41.558353871998406,
+            "p90_seconds_nearest_rank": 60.77437599499535,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 72,
+        "regime": "base",
+        "usage_complete": 72,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 39,
+            "max_seconds": 277.41555347199755,
+            "median_seconds": 48.747648667005706,
+            "p90_seconds_nearest_rank": 123.65340741299588,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 39,
+        "regime": "changed",
+        "usage_complete": 39,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      },
+      {
+        "algorithm": "skillopt",
+        "binding_problem_observations": 0,
+        "durations": {
+          "runtime_seconds": {
+            "known": 16,
+            "max_seconds": 61.25893499500671,
+            "median_seconds": 42.22198012900117,
+            "p90_seconds_nearest_rank": 54.62563662199682,
+            "unknown": 0
+          }
+        },
+        "infrastructure_invalid": 0,
+        "infrastructure_unknown": 0,
+        "observations": 16,
+        "regime": "exception",
+        "usage_complete": 16,
+        "usage_incomplete_or_unknown": 0,
+        "workflow": "renewal"
+      }
+    ]
+  },
+  "epoch_proposal_overview": [
+    {
+      "binding_problem_observations": 0,
+      "durations": {
+        "learner_wall_seconds": {
+          "known": 19,
+          "max_seconds": 641.994184956995,
+          "median_seconds": 415.84294044499984,
+          "p90_seconds_nearest_rank": 569.3551208759964,
+          "unknown": 0
+        }
+      },
+      "infrastructure_invalid": 0,
+      "infrastructure_unknown": 19,
+      "observations": 19,
+      "proposal_class": "no_proposal_observed",
+      "usage_complete": 19,
+      "usage_incomplete_or_unknown": 0
+    },
+    {
+      "binding_problem_observations": 0,
+      "durations": {
+        "learner_wall_seconds": {
+          "known": 14,
+          "max_seconds": 925.4270867000014,
+          "median_seconds": 736.7067261089978,
+          "p90_seconds_nearest_rank": 844.6954241499989,
+          "unknown": 0
+        }
+      },
+      "infrastructure_invalid": 0,
+      "infrastructure_unknown": 14,
+      "observations": 14,
+      "proposal_class": "proposal_observed",
+      "usage_complete": 14,
+      "usage_incomplete_or_unknown": 0
+    },
+    {
+      "binding_problem_observations": 0,
+      "durations": {
+        "learner_wall_seconds": {
+          "known": 1,
+          "max_seconds": 815.7709775719995,
+          "median_seconds": 815.7709775719995,
+          "p90_seconds_nearest_rank": 815.7709775719995,
+          "unknown": 0
+        }
+      },
+      "infrastructure_invalid": 0,
+      "infrastructure_unknown": 1,
+      "observations": 1,
+      "proposal_class": "unknown_incomplete",
+      "usage_complete": 0,
+      "usage_incomplete_or_unknown": 1
+    }
+  ],
+  "incomplete_usage_observations": [
+    {
+      "day": 8,
+      "employee": "firm-3__renewal-regulated",
+      "infrastructure_valid": false,
+      "observation_kind": "online",
+      "recorded_charged_tokens": 183819,
+      "recorded_total_tokens": null,
+      "run_id": "seed-401-no_learning",
+      "usage_complete": false
+    },
+    {
+      "employee": "firm-2__incident-regulated",
+      "infrastructure_valid": null,
+      "learning_day": 11,
+      "observation_kind": "learning_epoch",
+      "recorded_charged_or_reserved_tokens": 1861601,
+      "recorded_reported_tokens_known_prefix": 1611601,
+      "recorded_total_tokens": null,
+      "run_id": "seed-211-skillopt",
+      "status": "failed",
+      "usage_complete": false
+    },
+    {
+      "day": 9,
+      "employee": "firm-2__incident-regulated",
+      "infrastructure_valid": false,
+      "learning_day": 11,
+      "observation_kind": "learning_replay",
+      "phase": "final_val",
+      "recorded_charged_tokens": 130087,
+      "recorded_total_tokens": null,
+      "run_id": "seed-211-skillopt",
+      "usage_complete": false
+    }
+  ],
+  "kind": "scale-v1-horizon-review-v1",
+  "limitations": {
+    "actor_physical_usage_known": false,
+    "all_in_cost_known": false,
+    "complete_paired_endpoint": false,
+    "day17_learning_observed": false,
+    "epoch_and_failed_replay_costs_overlap": true,
+    "independent_sessions": false,
+    "learning_improvement_established": false,
+    "native_long_horizon_nonstreaming_reliability_established": false,
+    "recorded_adoption_scope": "One accepted update is recorded; this diagnostic does not certify its gate or improvement. Its source world later failed.",
+    "skillopt_online_reversal_observed": false,
+    "timing_scope": "Work/replay runtime excludes some persistence and cleanup; learner and callback clocks overlap. World supervisor elapsed includes other work. Partial-world measurements are censored."
+  },
+  "recommendation": {
+    "all_in_cost": null,
+    "completion_probability": null,
+    "conditions": [
+      "All six fresh slots remain fixed; no surviving-old-arm combination, outcome-conditioned replacement, extension or retry.",
+      "Reviewed native actor and employee capability prerequisites, exact source/configuration provenance, unknown-usage failure rules and bounded owned cleanup must pass separately.",
+      "Six workers is the configured concurrency cap, not measured proof of stable six-world operation for 24 hours.",
+      "The current ten-hour campaign remains unchanged; this recommendation does not repair its failures or change acceptance.",
+      "The full new endpoint still requires three complete valid pairs; cap-stopped worlds remain incomplete."
+    ],
+    "forecast_seconds": null,
+    "per_world_wall_seconds": 86400,
+    "physical_inference_seconds": null,
+    "rationale": "Two no-learning worlds completed in about 4.0\u20134.15 hours; 14 observed proposal epochs took 500\u2013925 seconds, with only days 7/11 represented. A 24-hour cap permits more headroom than 10 hours while keeping a finite equal-arm limit. Thirty-six possible 1,800-second epochs allocate 18 hours before work and actor overhead, so 24 hours deliberately does not guarantee worst-case completion.",
+    "retained_design": {
+      "action_days": 20,
+      "arms": [
+        "no_learning",
+        "skillopt"
+      ],
+      "employee_target_and_optimizer_charged_tokens_all_worlds": 792000000,
+      "employee_target_and_optimizer_physical_calls_all_worlds": 44640,
+      "max_learning_calls_per_epoch": 200,
+      "max_learning_epochs_all_worlds": 108,
+      "max_learning_seconds_per_epoch": 1800,
+      "max_learning_target_replays_all_worlds": 1296,
+      "max_learning_tokens_per_epoch": 4000000,
+      "max_online_sessions_all_worlds": 1440,
+      "population": {
+        "agencies": 1,
+        "consumers": 8,
+        "employees": 12,
+        "firms": 4
+      },
+      "potentially_eligible_update_days": [
+        7,
+        11,
+        17
+      ],
+      "rollouts_k": 2,
+      "scheduled_update_days": [
+        3,
+        7,
+        11,
+        17
+      ],
+      "seeds": [
+        211,
+        307,
+        401
+      ],
+      "settlement_days": 2,
+      "target_calls_per_session": 16,
+      "target_output_tokens_per_request": 4096,
+      "target_tokens_per_session": 250000,
+      "train_cases": 2,
+      "val_cases": 2,
+      "world_slots": 6
+    },
+    "same_wall_cap_for_both_arms": true,
+    "service_cleanup_seconds_separate": 30,
+    "status": "defensible_prospective_operational_ceiling_subject_to_other_prerequisites",
+    "workers": 6,
+    "world_cleanup_seconds_separate": 120
+  },
+  "schema_version": 1,
+  "snapshot": {
+    "finished_at": "2026-09-10T06:41:00.920412+00:00",
+    "first_captured_bytes_retained": true,
+    "id": "scale-v1-horizon-observation-001",
+    "immutable_binding_errors": 0,
+    "missing_files": [
+      "runs/seed-211-no_learning/INFLIGHT.json",
+      "runs/seed-211-skillopt/REPORT.v2.json",
+      "runs/seed-307-skillopt/REPORT.v2.json",
+      "runs/seed-307-no_learning/INFLIGHT.json",
+      "runs/seed-401-no_learning/REPORT.v2.json",
+      "runs/seed-401-skillopt/REPORT.json",
+      "runs/seed-401-skillopt/REPORT.v2.json"
+    ],
+    "mutable_changed_during_capture": [
+      "runs/seed-401-skillopt/checkpoint.json",
+      "runs/seed-401-skillopt/INFLIGHT.json"
+    ],
+    "partial_window": true,
+    "started_at": "2026-09-10T06:40:44.834927+00:00"
+  },
+  "totals": {
+    "epoch_duration_unknown": 0,
+    "epoch_statuses": {
+      "completed": 33,
+      "failed": 1
+    },
+    "learning_epochs": {
+      "binding_problem_observations": 0,
+      "infrastructure_invalid": 0,
+      "infrastructure_unknown_or_not_recorded": 34,
+      "infrastructure_valid": 0,
+      "returned_observations": 34,
+      "usage_complete": 33,
+      "usage_incomplete_or_unknown": 1
+    },
+    "learning_replays": {
+      "binding_problem_observations": 0,
+      "infrastructure_invalid": 1,
+      "infrastructure_unknown_or_not_recorded": 0,
+      "infrastructure_valid": 369,
+      "returned_observations": 370,
+      "usage_complete": 369,
+      "usage_incomplete_or_unknown": 1
+    },
+    "online": {
+      "binding_problem_observations": 0,
+      "infrastructure_invalid": 1,
+      "infrastructure_unknown_or_not_recorded": 0,
+      "infrastructure_valid": 959,
+      "returned_observations": 960,
+      "usage_complete": 959,
+      "usage_incomplete_or_unknown": 1
+    },
+    "online_duration_unknown": 0,
+    "proposal_classes": {
+      "no_proposal_observed": 19,
+      "proposal_observed": 14,
+      "unknown_incomplete": 1
+    },
+    "recorded_accepted_updates": 1,
+    "replay_duration_unknown": 0,
+    "world_statuses": {
+      "completed": 2,
+      "failed": 3,
+      "running": 1
+    }
+  },
+  "verification": {
+    "campaign_sha256": "6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa",
+    "capture_sha256": "f92b6de9053b04e55a643fdb54c86b413be8236aa4108b1a7eeb8a0bd4df090a",
+    "captured_raw_files": 2391,
+    "diagnostic_sha256": "7bd43a99860ef916129934446fc1c645fc7fa466c20de3b6a76b85cc437fea2d",
+    "errors": [],
+    "frozen_source_bytes_match": true,
+    "frozen_source_files": 34,
+    "ok": true,
+    "report_sha256": "80d9dd728299f23646478c529c1ad7ff49010253dd31a86a926bbdaaeb1d7f13",
+    "scope": "captured inventory, source hashes and raw/checkpoint/update/replay bindings; not original scientific or native lifecycle acceptance",
+    "summary_reproduced": true
+  },
+  "worlds": [
+    {
+      "algorithm": "no_learning",
+      "captured_learning_records": 0,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 14357.122237821,
+      "checkpoint_sha256": "ebc938795a818798118031e2a6bad72f17d6c2eb40f5acbba9aa368dc6c5d373",
+      "checkpointed_updates": 0,
+      "checkpointed_work_records": 233,
+      "inflight_marker_present": false,
+      "observed_day": 21,
+      "report_sha256": "32527f522b350281299795eeab77a387d2b56aa7d585e13a4753e3def4fbc029",
+      "report_v2_sha256": "04e1289f84db0711df97eea111af9bfc029a50b358c47235b83159b254938657",
+      "reported_elapsed_seconds": null,
+      "reported_status": "completed",
+      "returned_replay_records": 0,
+      "returned_work_records": 233,
+      "run_id": "seed-211-no_learning",
+      "seed": 211,
+      "status": "completed",
+      "supervisor_elapsed_seconds": 14361.14,
+      "supervisor_exit_code": 0
+    },
+    {
+      "algorithm": "skillopt",
+      "captured_learning_records": 15,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 16662.528761899994,
+      "checkpoint_sha256": "b62c27a15a1e4802d1cac70605f8b8874e6ac100d6b83358409f3434b73810fc",
+      "checkpointed_updates": 15,
+      "checkpointed_work_records": 143,
+      "inflight_marker_present": true,
+      "observed_day": 11,
+      "report_sha256": "27627897102d38e553ccd3bfc023291c887eb424d72ea3b94504cbb0e75a62d8",
+      "report_v2_sha256": null,
+      "reported_elapsed_seconds": null,
+      "reported_status": "failed",
+      "returned_replay_records": 162,
+      "returned_work_records": 143,
+      "run_id": "seed-211-skillopt",
+      "seed": 211,
+      "status": "failed",
+      "supervisor_elapsed_seconds": 16665.868,
+      "supervisor_exit_code": 1
+    },
+    {
+      "algorithm": "skillopt",
+      "captured_learning_records": 0,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 5703.902149681999,
+      "checkpoint_sha256": "7476ef566ce01c0f6eaa46fb26b4b5d9f21a081f84d09b75549effec79b6d377",
+      "checkpointed_updates": 0,
+      "checkpointed_work_records": 93,
+      "inflight_marker_present": true,
+      "observed_day": 7,
+      "report_sha256": "5569b3d5cc45b3112f823c6ad7f8edeaad6c42c70d9c7b0cc6a46a2d9a88bf92",
+      "report_v2_sha256": null,
+      "reported_elapsed_seconds": null,
+      "reported_status": "failed",
+      "returned_replay_records": 0,
+      "returned_work_records": 93,
+      "run_id": "seed-307-skillopt",
+      "seed": 307,
+      "status": "failed",
+      "supervisor_elapsed_seconds": 5711.066,
+      "supervisor_exit_code": 1
+    },
+    {
+      "algorithm": "no_learning",
+      "captured_learning_records": 0,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 14924.840278972006,
+      "checkpoint_sha256": "c9ea7eb8e6aba5f749820d572908299efaf90836909a269bf355259e235cba10",
+      "checkpointed_updates": 0,
+      "checkpointed_work_records": 239,
+      "inflight_marker_present": false,
+      "observed_day": 21,
+      "report_sha256": "968d0ad359f7cee41bb89bae0a1254cc063af4c8dfa1024f3c58212ab116d705",
+      "report_v2_sha256": "160a8201cf1ac3fb4ab58148d4c6a197a4d315308c59df5a8b575e9788fca1b7",
+      "reported_elapsed_seconds": null,
+      "reported_status": "completed",
+      "returned_replay_records": 0,
+      "returned_work_records": 239,
+      "run_id": "seed-307-no_learning",
+      "seed": 307,
+      "status": "completed",
+      "supervisor_elapsed_seconds": 14928.374,
+      "supervisor_exit_code": 0
+    },
+    {
+      "algorithm": "no_learning",
+      "captured_learning_records": 0,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 6844.960079854995,
+      "checkpoint_sha256": "f7001e5e2172407e6fdab0d83af14d376fca76bbb4141fed6b3ea230d092e018",
+      "checkpointed_updates": 0,
+      "checkpointed_work_records": 106,
+      "inflight_marker_present": true,
+      "observed_day": 8,
+      "report_sha256": "2832b32bfe164c95a61e99e8657fee362595e41286e2135c3627327595e7d139",
+      "report_v2_sha256": null,
+      "reported_elapsed_seconds": null,
+      "reported_status": "failed",
+      "returned_replay_records": 0,
+      "returned_work_records": 106,
+      "run_id": "seed-401-no_learning",
+      "seed": 401,
+      "status": "failed",
+      "supervisor_elapsed_seconds": 6846.972,
+      "supervisor_exit_code": 1
+    },
+    {
+      "algorithm": "skillopt",
+      "captured_learning_records": 19,
+      "checkpoint_present": true,
+      "checkpoint_runner_elapsed_seconds": 19265.216195652,
+      "checkpoint_sha256": "235d106af44a4c2c95aa9673523e78361710e80432f9dab31ffcd1d767b49a78",
+      "checkpointed_updates": 19,
+      "checkpointed_work_records": 146,
+      "inflight_marker_present": true,
+      "observed_day": 12,
+      "report_sha256": null,
+      "report_v2_sha256": null,
+      "reported_elapsed_seconds": null,
+      "reported_status": "unknown",
+      "returned_replay_records": 208,
+      "returned_work_records": 146,
+      "run_id": "seed-401-skillopt",
+      "seed": 401,
+      "status": "running",
+      "supervisor_elapsed_seconds": null,
+      "supervisor_exit_code": null
+    }
+  ]
+}
