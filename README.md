@@ -8,6 +8,23 @@ The repository now also provides a **controlled deployment-time skill-learning e
 
 [Run learning evaluations](docs/RUN_EVALUATION.md) · [Learning study](docs/LEARNING_STUDY_RESULTS.md) · [Audited native pilot](docs/EVALUATION_RESULTS.md) · [SkillOpt baseline](docs/SKILLOPT_BASELINE.md) · [PoC dataset on Hugging Face](https://huggingface.co/datasets/ojus1/BigWorld-PoC) · [Formal model](lifespan/docs/ECOSYSTEM_DESIGN.md) · [Runtime setup](docs/SETUP.md)
 
+The [scaled six-world study](docs/SCALE_V3_002_LAUNCH.md) plans three paired
+waves, four enterprises and twelve employee agents per world, and up to 1,440
+online sessions. Its first pair reached day 7 and recorded 175 returned sessions
+before the API reported exhausted credits. The supervisor stopped the pair and
+left four worlds unlaunched. The [reviewed termination evidence](docs/SCALE_V3_002_CREDIT_EXHAUSTION.md)
+records the failure, partial accounting and confirmed cleanup. No learning epoch
+ran in this registration; no completed comparison or learning gain is claimed.
+
+All nine slots in the [native startup qualification](docs/HERMES_STARTUP_SCOPE_V3_OUTCOME.md)
+passed, including concurrent starts and cleanup. The [execution design](docs/SCALE_V3_RESOURCE_DESIGN.md)
+bounds the full campaign inside one resource scope and requires all six worlds
+for its primary endpoint. The earlier missing-overlay launch failure is
+preserved separately. The [dated progress observations](docs/SCALE_V3_002_PROGRESS.md)
+retain evidence from before the credit failure. The [read-only status command](docs/SCALE_STATUS.md)
+also reports replay and optimizer-dispatch progress during an active learning epoch.
+Further native evaluation requires a funded API endpoint and a fresh registration.
+
 ## Evaluate deployment-time learning
 
 The new evaluator uses native MiroFish/Persona actors and Hermes/bubblewrap execution. Each work attempt starts with fresh private agent state and an installed native `work-process` skill. No learning retains the seed skill; SkillOpt proposes revisions from available employee experience and adopts them only after separate validation and fresh final replay. Substantive tasks cover account reconciliation, renewal calculation and incident repair under changing requirements.
@@ -54,8 +71,9 @@ ledgers, a concurrent world supervisor and independent campaign audits support
 this next study. Planned scale is not a completed result. The
 [execution observations](docs/SCALE_EXECUTION_NOTES.md) retain actor-output and
 work-stream accounting interruptions and explain why those worlds cannot be
-resumed as the same native state; the remaining worlds continue within the frozen
-limits.
+resumed as the same native state. A later host reboot interrupted the original
+campaign, and the six-world v2 follow-up failed during employee startup; the
+[v2 failure evidence](docs/SCALE_V2_STARTUP_FAILURES.md) retains every slot.
 
 The scale study's [first accepted employee update](docs/SCALE_ADOPTION_INTERRUPTION.md)
 passed the pinned gate on day 11. A later replay in that world lost a usage

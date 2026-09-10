@@ -1,0 +1,941 @@
+{
+  "complete_private_file_inventory": {
+    "path_to_raw_sha256_map_canonical_sha256": "571e4e15e5e426071bde778b566a021323ca71f1700b080ec3f6d0e77439bf97",
+    "regular_file_count": 336,
+    "scope": "All regular files under the qualification directory, including auxiliary profile/cache/log files. Only allowlisted evidence hashes are listed individually.",
+    "symlink_count": 0
+  },
+  "counts": {
+    "all_recorded_process_identity_count": 79,
+    "attempted_slots": 9,
+    "confirmed_cleanup_slots": 9,
+    "current_process_states": {
+      "absent": 79
+    },
+    "failed_slots": 0,
+    "live_kernel_boundary_verified_slots": 9,
+    "missing_receipts": 0,
+    "native_before_after_boundary_verified_slots": 9,
+    "native_sandbox_identity_bindings": 9,
+    "native_worker_identity_bindings": 9,
+    "planned_slots": 9,
+    "qualified_slots": 9,
+    "recorded_process_states": {
+      "absent": 79
+    },
+    "skipped_slots": 0
+  },
+  "hash_encoding": {
+    "canonical_sha256": "SHA-256 of UTF-8 json.dumps(sort_keys=True,separators=(comma,colon),allow_nan=False)",
+    "raw_sha256": "SHA-256 of exact file bytes"
+  },
+  "independent_terminal_readback": {
+    "absent_cgroup_paths": 9,
+    "collected_inactive_dead_scopes": 9,
+    "exact_control_socket_and_alias_inventories_clear": 9,
+    "observation_only_no_signals_or_cleanup_performed": true,
+    "observed_at_utc": "2026-09-10T10:07:41.179945+00:00",
+    "original_processes_absent": 79
+  },
+  "kind": "hermes-startup-scope-v3-outcome",
+  "limitations": [
+    "Nine fresh startup component trials on one boot and host at maximum concurrency two do not establish long-running enterprise reliability.",
+    "The fixed sequence is descriptive; sequential/pair timing differences and stage variation do not establish a causal contention effect.",
+    "No employee tasks, learned-skill adaptation, inference response quality, live provider transport, learning gain, or six-world primary endpoint was tested.",
+    "Native initialization includes metadata activity and a built-in sandbox terminal probe; physical calls, tokens and cost were not independently metered.",
+    "Resource readbacks establish registered memory/swap/task/CPU boundaries. I/O isolation and bounded latency under arbitrary blocking operations remain unqualified.",
+    "Current absence is a separate read-only observation; original normal release, native wait, scope and cleanup receipts establish the recorded lifecycle."
+  ],
+  "manifest_sha256": "094dbd85fe01c49ef5d3e847c8a6b8b042ce8b2b7d077e58e9a465b14511b588",
+  "observation_kind": "post_execution_startup_component_observation",
+  "preregistration_protocol_sha256": "a79e61aec15d90025d02ca9057515a09252745f5c72df670e05dfd516e352349",
+  "preregistration_sha256": "4f363fab353a0fcbe5387c2bba56e2e76d41659299314c40cc61008d858c17ab",
+  "qualification_passed": true,
+  "raw_top_level_sha256": {
+    "EXECUTION.json": "08a9f94cb250a47e3055038b05a82c98fad8392fa992f984c354fd839cdb46d4",
+    "REPORT.json": "78b0d6058ead87caf6ae0d6484a3bbdebc640f6cfe114cc5ff0ee5037fde317c",
+    "manifest.json": "094dbd85fe01c49ef5d3e847c8a6b8b042ce8b2b7d077e58e9a465b14511b588"
+  },
+  "report_sha256": "78b0d6058ead87caf6ae0d6484a3bbdebc640f6cfe114cc5ff0ee5037fde317c",
+  "repository_commit": "4b75d4f190417df085865cf1c89c6a8bed44e385",
+  "resource_and_isolation": {
+    "all_resource_checks_passed": true,
+    "inherited_security_context_preserved": true,
+    "io_isolation_qualified": false,
+    "native_before_after_interfaces": [
+      {
+        "name": "lo",
+        "up": false
+      }
+    ],
+    "no_host_policy_change_required": true,
+    "per_slot_live_kernel_limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "4294967296",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "runtime_backstop_seconds": 180,
+    "scope_invocation_independently_bound": true,
+    "stop_setting_seconds": 5,
+    "user_and_network_namespaces_distinct_from_supervisor": true
+  },
+  "schedule": {
+    "batch_sizes": [
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "later_batch_begins_after_previous_cleanup": true,
+    "maximum_observed_concurrent_slots": 2,
+    "retry_or_replacement": false
+  },
+  "schema_version": 1,
+  "slots": [
+    {
+      "batch": 0,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 11,
+        "recorded_process_states": {
+          "absent": 11
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "cfee1cc11064ae5cb983a83f408248fb9e51bffa6ab86ec23b126ecbe6a42026",
+        "CLOSE_GATE.json": "83fe72f8b08e48b78763b670cdfeb655c375e6a28beac7c0e12463dcb7f8c127",
+        "CONTROLLER_EXIT.json": "365fa8106570998ce7ad5c6a2def81904350f97c914db5bb91aded28789fb752",
+        "GATE.json": "b85b5712c275fefba04270549bec706a7aed0bd8d13b1975b0feacb83732b555",
+        "HELLO.json": "0815b224df7e033ca022cd97a5edc8121c484d1c3101a9044846d1718a6f1a51",
+        "INTENT.json": "d697ace56a94f10ab88d5f9c108c4f22dcc84f3b847836469c2440f8cbb94eb9",
+        "LAUNCH.json": "3b213aaccd4fad3397bfaaa15d407d9c35d0dd8b6cc88f20f042047b4ba8fa36",
+        "NATIVE_IDENTITIES.json": "5ea12292d3d34b7108f411be2c7ea5460ddabd0b8c0be95ae13ba9dd527c1205",
+        "RECEIPT.json": "2fb8197a84a43096a8ab93846ffa12e51bd29014c513432fce5ea86d868ac349",
+        "RELEASE.json": "6935f7de600e6e3c7fb7f7f8747ac7a40c76226eb0776d16d433a27d3da0749b",
+        "SCOPE_WITNESS.json": "6b51a9e50102672fe17adbf11ffe305cd3854ef046f02dae3ea174e07a4b086f",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "31f3bd1ea408efc14ac0531b8fc46ea580f8def3ee8ebcc4fb0a9052a6e1b626",
+        "native/BOUNDARY_BEFORE.json": "f82d32f8c770d645b933c2f9f432ee24cfd94d72e4a5932bf5770545bea9cb92",
+        "native/CHILD_RESULT.json": "dfe05f79de63303a774fc280484e973ad76c1ed33f625659558db5a08f5fb751",
+        "native/CLOSE_STARTED.json": "f52b44f7f904b7ab77c2c190811e11aef406aabfc53e97b212c3b02d07ace118",
+        "native/STARTUP_FINISHED.json": "249920532204a9591c2e6cb864792f2a9ad351a2c1bd9596271afd08696e6803",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "d2687477b975586de9038fc5607107c482a235c4f12f0e6e92c313a6af13b4ee",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "70dee7b11519007c080ce9c268f8cf67ed6ce46fdf6b49892738579cd64332e7",
+        "native/computers/startup-qualification/startup/manifest.json": "81b1cacdd99213575f7ada60f2b096ed027beb4746cb6063715736605cc75886",
+        "native/computers/startup-qualification/startup/parent.jsonl": "1044c3533676a925f748d66e267a7d2330507f43f881abf29b62b8bcc155c67c",
+        "native/computers/startup-qualification/startup/worker.jsonl": "4f88e33230b4cb85f88619775a6485cfbbbf50412eef7f3d06012c7f607409a4"
+      },
+      "receipt_sha256": "2fb8197a84a43096a8ab93846ffa12e51bd29014c513432fce5ea86d868ac349",
+      "slot_id": "start-00",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.066389944000548,
+        "cleanup_charged_seconds": 1.151345312000558,
+        "computer_popen_to_ready_seconds": 11.440249059000053,
+        "native_startup_phase_seconds": 11.529753144999631,
+        "post_child_close_through_scope_cleanup_seconds": 0.08495536800000991,
+        "setup_and_startup_charged_seconds": 11.881096772999626,
+        "setup_before_native_entry_seconds": 0.3513436279999951,
+        "worker_stages_seconds": {
+          "agent_construction": 3.108731495000029,
+          "budget_transport": 2.2313374209998074,
+          "imports": 5.723927486999855,
+          "ready_write": 0.00010629500047798501,
+          "registry": 0.00012460199923225446,
+          "sandbox": 0.09938886300005834,
+          "sandbox_terminal_probe": 0.23008873200069502
+        }
+      }
+    },
+    {
+      "batch": 1,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 9,
+        "recorded_process_states": {
+          "absent": 9
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "343af65071e45334d17dd05cee956546bcb8389a7e1a1a77c3665b5079b5dd21",
+        "CLOSE_GATE.json": "ba3cc20348b5a4e119e1f137e3367665d464eccfa80291700b22de449144e0de",
+        "CONTROLLER_EXIT.json": "df6c3ba2c8f79441443de61824ec2e9b3e92abe4daa67d8a0b1ae57ef83bd7db",
+        "GATE.json": "560877cfa1cf7e55b39c499b255a7c1c3da52ebbeb06cdbe90dc9e686fd225c1",
+        "HELLO.json": "9a23a0957323eeb32ca0cc3b01a4988322c5c066a833a73c5b8a35d815a26e38",
+        "INTENT.json": "e2ca2821bcfe5f878badf0f06b04959c2d3c5731f9d39ed62f2c865b23f4c435",
+        "LAUNCH.json": "02ca8ac9e21fcb78b9a140a3c1c1d9d0e85e14d179bf48915e5482d13d0bb940",
+        "NATIVE_IDENTITIES.json": "fd6e308d2b381f0d9e25e48c7b5924cebac919180e425981a90063fada8fbc87",
+        "RECEIPT.json": "fad9448e9f2090c873d485b69f309bb9fea7640547a68129ccbcb950153c1825",
+        "RELEASE.json": "10df094452c7da32025fa808ec8f6bca16fb1d750d929d38d160f42e893e158f",
+        "SCOPE_WITNESS.json": "45a9811662e923798c6401700bf21743ffa97664f327ee6bf592df9d3cfcbc9c",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "d041ba2578f719933eadb103bd04969e6d6ce117fa1022dea9b57de7791b541a",
+        "native/BOUNDARY_BEFORE.json": "80a1a9ccf5764146b36045fb26567650ea2918f71e33b8bb2c632caea6ffb763",
+        "native/CHILD_RESULT.json": "f5bc75a248a108aae483ab86c603651be79f41fb3caa437f9730ecdb40866085",
+        "native/CLOSE_STARTED.json": "dfed347e4591889684a4a23d90ed1c6d853ecd76b8394ce1818387c5f402338b",
+        "native/STARTUP_FINISHED.json": "e53643c1bf09274ca8f77d3f008cfb6419037a9e2a8d597265c8ba3b57f08b22",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "cc18e5e78b7d096c383fc9fd2fd8d03ab2048c7ea95ca814d77561405962ef1c",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "cf2cbc3c301b550868a871f84d27cb444149427668a25721b1d387b2cda8620a",
+        "native/computers/startup-qualification/startup/manifest.json": "5fcd6f7ac6bd72b3ffbe5f73bca26823c766634fd23a118402cd8b30851de9b4",
+        "native/computers/startup-qualification/startup/parent.jsonl": "a5babfab9c6f59c88bdbf7cb20574041916288ebf78d13b3687a5948c79b3122",
+        "native/computers/startup-qualification/startup/worker.jsonl": "a45c337d1c3b90d8d48f60466e9363c5b8e5afdace3abb3f46a5a4597c5bafcc"
+      },
+      "receipt_sha256": "fad9448e9f2090c873d485b69f309bb9fea7640547a68129ccbcb950153c1825",
+      "slot_id": "start-01",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3172105799994824,
+        "cleanup_charged_seconds": 1.4000732849999622,
+        "computer_popen_to_ready_seconds": 3.671881643999768,
+        "native_startup_phase_seconds": 3.688917897000465,
+        "post_child_close_through_scope_cleanup_seconds": 0.08286270500047976,
+        "setup_and_startup_charged_seconds": 4.088918704000207,
+        "setup_before_native_entry_seconds": 0.40000080699974205,
+        "worker_stages_seconds": {
+          "agent_construction": 2.282689594999283,
+          "budget_transport": 0.26054037799985963,
+          "imports": 1.0353559450004468,
+          "ready_write": 9.721900005388306e-05,
+          "registry": 0.00010707599994930206,
+          "sandbox": 0.044281523999416095,
+          "sandbox_terminal_probe": 0.020550456999444577
+        }
+      }
+    },
+    {
+      "batch": 2,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 9,
+        "recorded_process_states": {
+          "absent": 9
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "2a178c5ced1e2b3e367b65c42d87a993c2cba997fa5364674b7754e27d3a3cb6",
+        "CLOSE_GATE.json": "09d2819916b95d6ad6d19ccdc88899d5ef96e0ec62b2e481fe89fd961c5fc0c5",
+        "CONTROLLER_EXIT.json": "82d4e27fe3764383f7bbfcaa7ac2461c58b0902935d82f2b5bdaf7ff962ce531",
+        "GATE.json": "2fac7926d8e0c8174c5af652bbcc2fb0e8bf6dc95e3b3d5450d9efc6c451a80b",
+        "HELLO.json": "49db481a9855cb99e83a8ad6ab931973305be0094bd0089e0e659451f94d89de",
+        "INTENT.json": "2cd31492b6d2f2a308f9e0c5efcc207210c5634ff449128f1b6f30b6b424e99f",
+        "LAUNCH.json": "036cdd6d977e58cf3cf277e9ada6010186136e9aa24778ed2565b4e35a708ca7",
+        "NATIVE_IDENTITIES.json": "d85f79aaa315ead541922eb4ba6346f86c5782911ddc0023f92064681084e9e1",
+        "RECEIPT.json": "89dc7d32a30240b26b7e4215bb7a289f7d3ea6f8e66a9dd44002611ed3aff8b3",
+        "RELEASE.json": "d49d7da3857ae965dc6c93737fd8d5de26ebd2633c4fda4e9fdb997398a8542a",
+        "SCOPE_WITNESS.json": "e8a1e0e01c2845b5b47795ef1accd8698df18723ab0e36487a9a53d194b478b2",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "6e755a394c8315ce86b6af9b55d2f45e6cd2ca7473ab3d07b0224a5776377ada",
+        "native/BOUNDARY_BEFORE.json": "07ade542ce652dd2d669cd243da3d8136be67abd78419cba9dcf7acdac537169",
+        "native/CHILD_RESULT.json": "36eac32d8ff108ab2a9f72f29a4c058f55945d9c8a23bae8f9a54fc0fa693432",
+        "native/CLOSE_STARTED.json": "eaea63fc7c8f408a2100fbfbcba8143dc278196fdef501c5989b3c9cd39a48f9",
+        "native/STARTUP_FINISHED.json": "dcf424f595805b46f4710be1cb525484a179a37e67552f2b46bdacf6a60e01e4",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "77776673eeace2a13f7b4d66e24076a54adc9d6399ac94dea8cac2fe2191209b",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "a312b09fa45c026845c9f571c2a0118108ccb7dc6f79703aa509b74461a49b35",
+        "native/computers/startup-qualification/startup/manifest.json": "ccad578e8f1572baff3c5f09bdff75d1c30b2aee8033cae53b457e17c10fd210",
+        "native/computers/startup-qualification/startup/parent.jsonl": "85c2e42cea62b53cb840cf4d4bd935497e94f79afb32b98f66dd3b490edd9084",
+        "native/computers/startup-qualification/startup/worker.jsonl": "f5029a4efa47e968799ec1efa170540f00f06c43ee94e58f29a75bb31ec1a91a"
+      },
+      "receipt_sha256": "89dc7d32a30240b26b7e4215bb7a289f7d3ea6f8e66a9dd44002611ed3aff8b3",
+      "slot_id": "start-02",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3172608459999537,
+        "cleanup_charged_seconds": 1.4158542240002134,
+        "computer_popen_to_ready_seconds": 3.5390633400002116,
+        "native_startup_phase_seconds": 3.55575019600019,
+        "post_child_close_through_scope_cleanup_seconds": 0.09859337800025969,
+        "setup_and_startup_charged_seconds": 3.9211217949996353,
+        "setup_before_native_entry_seconds": 0.36537159899944527,
+        "worker_stages_seconds": {
+          "agent_construction": 2.0977732179999293,
+          "budget_transport": 0.26870220100045117,
+          "imports": 1.0722929570001725,
+          "ready_write": 0.00010363799992774148,
+          "registry": 0.00011844000073324423,
+          "sandbox": 0.04368641600012779,
+          "sandbox_terminal_probe": 0.028533472000162874
+        }
+      }
+    },
+    {
+      "batch": 3,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 10,
+        "recorded_process_states": {
+          "absent": 10
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "25dbc58412ee47170b0d0edd2b9246d1e15f61899502ced54ef78e51fe8d6908",
+        "CLOSE_GATE.json": "70805b285ab9c50d5861c9ef0d1e744562b824cd6de4bc8d96cad62544e5b898",
+        "CONTROLLER_EXIT.json": "1ce03a4ab78fe4c1fc4c8c443b875456ce365641c2d168b250ddaeebabbcd00d",
+        "GATE.json": "6f7d4f6f6f5c84360d1c246f4608f6984e7f3bd9b99e6c178862153d4d9f5664",
+        "HELLO.json": "db0d38cef3952ec37d654950c96e9581e07816a283cf60647b9f9651a6ab2b41",
+        "INTENT.json": "35fd6803ba815a4b985fac84d0689dfc777e0c4a418f545a0852c77e8939702b",
+        "LAUNCH.json": "548a2cacaf66222b3d0b586ed86c5934ffe8b94b39590522dbef341ecb05fffe",
+        "NATIVE_IDENTITIES.json": "1fd3bc585b3d9edd2c1400686919ba54bc79a7b2362193d9fb5d60df6e2a483a",
+        "RECEIPT.json": "7c8cc7f479e5d2a1a1e9a5635764c8a5e22448ed81bbb2215a7113e9e498ebbc",
+        "RELEASE.json": "a710eb3de7952aa05194ff7f4ee627be4f7aa500342259c7efeec19ae22b8eaa",
+        "SCOPE_WITNESS.json": "6eddbea875cb2ed3b2dc90a7b4dbc7c1fb0ff67e41494de644d51bcb29873dda",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "014bdbbb76ab4e844cab287f0feef12bd031d2c6037dac0fdf4720144ba3f884",
+        "native/BOUNDARY_BEFORE.json": "c224029efd266f9b742a03aa635f2d1c9cc4bc92ea34d268c28d5300f83493e9",
+        "native/CHILD_RESULT.json": "7d474bac56f84866b4b2240607de71b8ad7fbbb1ce1d7761113ed3a132fa8b9f",
+        "native/CLOSE_STARTED.json": "a852eed2d538a86cf6520b0d8ca293e0f5888b7c2f4aa774bd81be791bc515e7",
+        "native/STARTUP_FINISHED.json": "f6437de326be31510434ba8e6c04ba1d9ea0405e2d2dc69f016ec462f30163bc",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "807f7e89ed55324619b9fc0adf3ccce0e77f7db3dbd52c28b733cbe659cb2881",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "3526cbc67984b7f1ca41f956651f56107921a61161a5fbf08a662bb20940be40",
+        "native/computers/startup-qualification/startup/manifest.json": "f40f567fc69734fd1229872b02c4228e8edae4d6f839805f46313dfbd62c4d83",
+        "native/computers/startup-qualification/startup/parent.jsonl": "352c5c1cdd869957f681e3adae649d8ab4cf9cf4a3004408305a10788b0cbecc",
+        "native/computers/startup-qualification/startup/worker.jsonl": "aa944fbbf26cbe9e7982cf5f8317c780bf0a1899a5f08db1e96a0fa96214f8cc"
+      },
+      "receipt_sha256": "7c8cc7f479e5d2a1a1e9a5635764c8a5e22448ed81bbb2215a7113e9e498ebbc",
+      "slot_id": "start-03",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3170443950002664,
+        "cleanup_charged_seconds": 1.4905376680007976,
+        "computer_popen_to_ready_seconds": 5.639071474000048,
+        "native_startup_phase_seconds": 5.6566833649994805,
+        "post_child_close_through_scope_cleanup_seconds": 0.1734932730005312,
+        "setup_and_startup_charged_seconds": 6.036107637999521,
+        "setup_before_native_entry_seconds": 0.37942427300004056,
+        "worker_stages_seconds": {
+          "agent_construction": 3.842098471999634,
+          "budget_transport": 0.28487742300058017,
+          "imports": 1.40908025599947,
+          "ready_write": 0.00011503600035212003,
+          "registry": 0.00010713400024542352,
+          "sandbox": 0.044825126999967324,
+          "sandbox_terminal_probe": 0.03049182899940206
+        }
+      }
+    },
+    {
+      "batch": 3,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 8,
+        "recorded_process_states": {
+          "absent": 8
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "9cc6f4bfd4144cfb3c90f4db1f728d2a626bf36d1607cfa26903012a2cb13157",
+        "CLOSE_GATE.json": "cac34e84a2e44cb4f7be6f1e1e19791e619dd7e31e4c1ad7d5d8c3cd1d35183f",
+        "CONTROLLER_EXIT.json": "8bf56814a1de07a0fb85a10bd6ef87b1410a3620293eceeb721cc28e93c60a99",
+        "GATE.json": "16ceafde9fa873624d7e6f9f0d7302f2caa0ab5227312365e7afa446a56c0cc2",
+        "HELLO.json": "b200a549fdcb80a506946e2f6b61a4a8a66362547c242cefa09bba8fca177dc4",
+        "INTENT.json": "5e6068a6ec3815d557a6eb84e05d2789ee46ddbe6271d9ab99595f8286bcf4a1",
+        "LAUNCH.json": "bf33f6b7a4df4a4f175c2faff518940c34ad06e7bff5678cde9063ad98a13460",
+        "NATIVE_IDENTITIES.json": "c20c53262719da8ce90f7239210ba131d88d049b2517ff4d0a198289d227b1b2",
+        "RECEIPT.json": "637b763d8b7c6faf9eb3fa4c14a74d36c5c406f47d474a75c22846b85775544b",
+        "RELEASE.json": "421ddcf911a6160f0bb7aadc34e55eb1f498ee2c26384131a8dd0c7795723221",
+        "SCOPE_WITNESS.json": "0a671c9b9616473c2a7f9c8d69edb9a2e5f80ccc2c8ecc10de9975870c0d4acb",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "a57bcc5a9944eda385084f8f180188684c7d1cc8af87e0bf4acafdfadf86d63e",
+        "native/BOUNDARY_BEFORE.json": "ad65c9cef931fc4e01d3fd7446fd397c6dfc5ed6d014b66965525ec7fe940715",
+        "native/CHILD_RESULT.json": "3197f4cd35b2878c186ea94f2878530dc2ddb1c72c6235f2456f25942cdf3605",
+        "native/CLOSE_STARTED.json": "591c1723f8af8a90c21340d8306c438f85f7f5ec58caa58ac7dd844e331813cb",
+        "native/STARTUP_FINISHED.json": "c12e6a8c8797d9892551f652dfcc7c4c8ea28c9a07018fa1fd3df3ceef628959",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "317a725249789b57d3009bd9ab364355f7a7a100fb91b26cf504bb03bf08ca65",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "9d11159ab7926c918f23dd10051117cdac91a787e6ad19971f10c85e75028065",
+        "native/computers/startup-qualification/startup/manifest.json": "b35133b33f18058eaa613e62089934e59a236416f6764e82a536714fdc7ecce6",
+        "native/computers/startup-qualification/startup/parent.jsonl": "9f2573294a24a9979c52e5770b115814e930c8614e7a0f5bf5afb74e9ced4ee0",
+        "native/computers/startup-qualification/startup/worker.jsonl": "4b166608d552f105ee28eb4d08133881c27dbe6ffa46fd778fe79aeb61537452"
+      },
+      "receipt_sha256": "637b763d8b7c6faf9eb3fa4c14a74d36c5c406f47d474a75c22846b85775544b",
+      "slot_id": "start-04",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3170602250002048,
+        "cleanup_charged_seconds": 1.391065847000391,
+        "computer_popen_to_ready_seconds": 5.617390108999643,
+        "native_startup_phase_seconds": 5.634931288999724,
+        "post_child_close_through_scope_cleanup_seconds": 0.07400562200018612,
+        "setup_and_startup_charged_seconds": 6.014989495999544,
+        "setup_before_native_entry_seconds": 0.38005820699981996,
+        "worker_stages_seconds": {
+          "agent_construction": 3.849408398000378,
+          "budget_transport": 0.28399128700039,
+          "imports": 1.388250705000246,
+          "ready_write": 0.00012822000007872703,
+          "registry": 0.00010867699984373758,
+          "sandbox": 0.04413548900083697,
+          "sandbox_terminal_probe": 0.022961325999858673
+        }
+      }
+    },
+    {
+      "batch": 4,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 8,
+        "recorded_process_states": {
+          "absent": 8
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "9899d8a37ead639df3a76ea71e349f2e9e8bffbc52d2ba20bd60f4c422f9632e",
+        "CLOSE_GATE.json": "4c31f67221527a9506be51adfb02c1d67a5385025fa3ec4021cd2f8e77a78557",
+        "CONTROLLER_EXIT.json": "09303b9c04639234b4e6b2c9c2551501fa36166d9c50449dcd580ceb6a03ce48",
+        "GATE.json": "acc63d23ebff07f93ffca9b5586b03ea5b87dbf50e27a5e47632f737dc3c936a",
+        "HELLO.json": "ed1f78112c829a16ef4394d8d36e935ea2d9a25f5876530f7dc9179602c7f1f3",
+        "INTENT.json": "de78b7d5956a479447b6eac5bea90db310fc6bfc765b1d9def851437abe45863",
+        "LAUNCH.json": "becc23dcf326f58f251b010b0c7aaf0306bb76db91f8492bf72db5113f8005d6",
+        "NATIVE_IDENTITIES.json": "f3abd060f4a1ff0a0ee117b4225a8f8d291f339ba8d9e50be9fcee5f20379b00",
+        "RECEIPT.json": "c1b109ef46dca9c98b14c76b25e6199274577b0420d055ba0f77866f5e4a2404",
+        "RELEASE.json": "23a69daeffa0697364f50877f54173882f3b6327a9f546ed0c4b985d25de7d3d",
+        "SCOPE_WITNESS.json": "1c3a38ba339dda84678f77bf8771f31989c3431f5b3cc97df29a6076c8262cea",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "e57739e33fa382134f23caae5c9246a2ce14980550b3a3f0b8886847934b261b",
+        "native/BOUNDARY_BEFORE.json": "9b9271bdec748861352fe3f1ef550869ea716902c31cb3ca9a45d6d2f0b3db3d",
+        "native/CHILD_RESULT.json": "7bf25cac1c718dc3546fde746255b4560ba128a7e8eac4f56b0030c987d64285",
+        "native/CLOSE_STARTED.json": "cdb1086ed7d9bdd3bd88d020d3cbb9143e17b91335e5d95abd3f7745db278060",
+        "native/STARTUP_FINISHED.json": "4339dfcae6883d3ed940d1e0dcf1a3d0d5e52155e54b25943fc36773d53a2c70",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "c92bdd154fa744caf7af9868af310fed7d53b915c65ba0d5c74fef668c774ecc",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "1e4ae0f70978f45d957af5efb004b510b7c62a662f00b80fab2895a619549c51",
+        "native/computers/startup-qualification/startup/manifest.json": "614dc5d494253b0bf69430157f79e3a8684634bb1682228f0e34921f0c9e441c",
+        "native/computers/startup-qualification/startup/parent.jsonl": "aa980e6b73d75d4b68ed27a003699ce18446d7cc6a821b101cbc3846a5331d0f",
+        "native/computers/startup-qualification/startup/worker.jsonl": "3386105625ac1cd9590bde11e473a0bdfbdb96a2c2d223f2d40a5b29234079ea"
+      },
+      "receipt_sha256": "c1b109ef46dca9c98b14c76b25e6199274577b0420d055ba0f77866f5e4a2404",
+      "slot_id": "start-05",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.317286661000253,
+        "cleanup_charged_seconds": 1.3936500720001277,
+        "computer_popen_to_ready_seconds": 10.523513700999501,
+        "native_startup_phase_seconds": 10.5420976409996,
+        "post_child_close_through_scope_cleanup_seconds": 0.07636341099987476,
+        "setup_and_startup_charged_seconds": 10.963917324999784,
+        "setup_before_native_entry_seconds": 0.42181968400018377,
+        "worker_stages_seconds": {
+          "agent_construction": 8.733586770999864,
+          "budget_transport": 0.29929841100056365,
+          "imports": 1.3941988560000027,
+          "ready_write": 9.869499990600161e-05,
+          "registry": 0.00014523399931931635,
+          "sandbox": 0.04456884800038097,
+          "sandbox_terminal_probe": 0.023540314999991097
+        }
+      }
+    },
+    {
+      "batch": 4,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 8,
+        "recorded_process_states": {
+          "absent": 8
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "a155eaf0640d58361ec7b048bf6237b4d2f1dba962251f655894a9555cd34ce5",
+        "CLOSE_GATE.json": "b33a7a664d8cdadb7511b373cae50ff206ece12f6a985f7de7b1938427ab697f",
+        "CONTROLLER_EXIT.json": "35c171b8a8f11ac88787f2310cc277aa1642385d30b6dfdbd673debaff037c17",
+        "GATE.json": "a4c2ecf69940b1231e5dc577d29e58ffe6c453c7467691cca160affb03b69ead",
+        "HELLO.json": "36457cb0af7135ecbf13acde9f3459aa99336159a5011efe246675b5b0f53667",
+        "INTENT.json": "4ffc9b1f5f1fa568c8224aa9a301ec237e9be4f5292c6ed8597d6c4384f1054e",
+        "LAUNCH.json": "913e21b0fdf940af2c0aeb0b0a6ae02e132a81e3caa7837f81958de98310ff11",
+        "NATIVE_IDENTITIES.json": "78b50284de300c3b7e54a11b7bc6d6899aae304d98234f7bbcd388f333c6a57a",
+        "RECEIPT.json": "a8ef9107fd3ba67dfa9c370664f978bf083ca190bd78377b8066086a23955ec1",
+        "RELEASE.json": "82a677f9e5dd62c0c4a23450285a08242c09018ee7a2b2a1164812d156c6767d",
+        "SCOPE_WITNESS.json": "8d9d6c129521918d94163c324c4f8eaea2a427660f303336e79045229d7579fa",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "59a9d5f79f45d48909bb66f1ec0b93e220d987a7399e3b2d387a917cba9b9fe2",
+        "native/BOUNDARY_BEFORE.json": "c9c967b920ed205b8875a449d11357250ccc7f8456aac018846c9127a49becff",
+        "native/CHILD_RESULT.json": "4b608caf38f25af99a01c70e7e8932315ea1f91c1c5dfcb76ace1f7eb538095e",
+        "native/CLOSE_STARTED.json": "489e41955e61f6b4e901b7d065eec7857f62c7069988b688694537e07e013374",
+        "native/STARTUP_FINISHED.json": "2ded6bfda7791fc761a78d80f7f1fa5328f4d4d4ea746161aeb31a2de878336c",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "151ac5bed12a11b76d899a316fcf367a1638ff53c00756670e374a774ae32593",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "c38fd2b7f0e6b8ea4bd333db7d67f55318388972ad1c06cb4a783ff6c0ef87a6",
+        "native/computers/startup-qualification/startup/manifest.json": "69b138d4f0d1e47b6d695a2b9ff90993f556fad11b075e5adccd7eecc3379bd0",
+        "native/computers/startup-qualification/startup/parent.jsonl": "29250177746fa73c09a3d8233856b053bdbfb3246b573ba84db5c3046a39f925",
+        "native/computers/startup-qualification/startup/worker.jsonl": "52affba47c8c7fdd6fb581e6fa3a99a43e8e834012910fa16e1f6f15d96b083c"
+      },
+      "receipt_sha256": "a8ef9107fd3ba67dfa9c370664f978bf083ca190bd78377b8066086a23955ec1",
+      "slot_id": "start-06",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3674083700007031,
+        "cleanup_charged_seconds": 1.4576698810005837,
+        "computer_popen_to_ready_seconds": 10.4679415290002,
+        "native_startup_phase_seconds": 10.486646228999234,
+        "post_child_close_through_scope_cleanup_seconds": 0.09026151099988056,
+        "setup_and_startup_charged_seconds": 10.85321867499988,
+        "setup_before_native_entry_seconds": 0.36657244600064587,
+        "worker_stages_seconds": {
+          "agent_construction": 8.651342793000367,
+          "budget_transport": 0.2829827710002064,
+          "imports": 1.4192250090000016,
+          "ready_write": 0.00019661599981191102,
+          "registry": 0.00011676299982354976,
+          "sandbox": 0.04923510000025999,
+          "sandbox_terminal_probe": 0.036541491000207316
+        }
+      }
+    },
+    {
+      "batch": 5,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 8,
+        "recorded_process_states": {
+          "absent": 8
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "61976b97174c27b47327251f32d2667502661b71aa64574458f3a71f49ce8c6b",
+        "CLOSE_GATE.json": "d3abf2d81c8dec85f0ae383fca7d9dab325eadb55f8034ba4a1eb706217ec476",
+        "CONTROLLER_EXIT.json": "f2fcf6f811eda103a811e7b47095c5557b25a1849d0392d65011d4fb4d4d52ed",
+        "GATE.json": "b7ae9d2d9f77d44917467a5ff93fb395e6c09ca823a3ff4eb112849c084f1942",
+        "HELLO.json": "c59e07ad208febaa51e514c2ed8305550389b490ae9c7e62198da9ccd577eb5b",
+        "INTENT.json": "f3a3f6c91e67e09fdf18f27f2b9097b572d5793aa0c4ed49509ac0ec4f614a90",
+        "LAUNCH.json": "53c2dde57e90162a8463c6641f726319328980bd8b9025f0cfeadb9c6635636e",
+        "NATIVE_IDENTITIES.json": "b854733e8517cec178cdb336e26895ff26e5e63582f28ce6da032c76d7b8c15c",
+        "RECEIPT.json": "65bc60f108c0d592730ac5613ca8543644489adc985c3238a1f217d0524fb3c7",
+        "RELEASE.json": "917ec7827ff07df7fcc14d5b114dc3e3a4715b810c01a3b2b62cf69e2d5918f2",
+        "SCOPE_WITNESS.json": "9cfd3d33ad9dfd29614aafbaaca6dc95b8affeaa0fac9fcdcd8c3b5a6b77ed0c",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "5594ae1990bd997cc188fae4147bfbd55fcde074117c9b38fd3b1b71a8a60888",
+        "native/BOUNDARY_BEFORE.json": "75edb137301bcdf7966b0134e4a9f64e477bb4255b0df5a5e93a932b1d6cf9be",
+        "native/CHILD_RESULT.json": "c0fc0d75e4426cdf1e72949cbccba798efb3cc5c02f2a17ab89c4a9ba0fd8d62",
+        "native/CLOSE_STARTED.json": "0b72981eddf5181f80f869dc4c7055c83911f87313ae326813179a104f70c6fb",
+        "native/STARTUP_FINISHED.json": "46100a9e27d86d016f00606262f07140cb4d80be13f8320fbea44803e5d52f73",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "1797e63f433c3573d069153b491c8759e2a724237f13b636c7b70f3b74c0b309",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "17eed56df32da766f201ee665d6cc9bc26cca5490b70e682a098ab8da2e0d601",
+        "native/computers/startup-qualification/startup/manifest.json": "63d91f167dda1b33e4d03103a1e13d303b6eabed6a24c846c24f0936eddf2313",
+        "native/computers/startup-qualification/startup/parent.jsonl": "40a820371a2f8a6743fa17314dbae3bee476e6f84e492501584e0d7cda3174c1",
+        "native/computers/startup-qualification/startup/worker.jsonl": "a281c7ad23b85c95af0a84c21e12966ed9bca8d0aee70f26d4cce9d655ded44d"
+      },
+      "receipt_sha256": "65bc60f108c0d592730ac5613ca8543644489adc985c3238a1f217d0524fb3c7",
+      "slot_id": "start-07",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.317149330000575,
+        "cleanup_charged_seconds": 1.4002727690003667,
+        "computer_popen_to_ready_seconds": 6.26794834500015,
+        "native_startup_phase_seconds": 6.285046322999733,
+        "post_child_close_through_scope_cleanup_seconds": 0.08312343899979169,
+        "setup_and_startup_charged_seconds": 6.654346805999921,
+        "setup_before_native_entry_seconds": 0.36930048300018825,
+        "worker_stages_seconds": {
+          "agent_construction": 4.350127695999618,
+          "budget_transport": 0.2789320609999777,
+          "imports": 1.53141774300002,
+          "ready_write": 0.00015234500006044982,
+          "registry": 0.00011054900005547097,
+          "sandbox": 0.04988086400044267,
+          "sandbox_terminal_probe": 0.028961211000023468
+        }
+      }
+    },
+    {
+      "batch": 5,
+      "boundary": {
+        "before_after_native_boundary_verified": true,
+        "disabled_loopback_only": true,
+        "inherited_invocation_matches_parent_verified_scope": true,
+        "live_kernel_limits_match_registration": true,
+        "live_scope_binding_verified": true,
+        "native_startup_journal_verified": true,
+        "security_context_matches_supervisor": true,
+        "worker_and_sandbox_parent_commands_scope_verified": true
+      },
+      "cleanup": {
+        "actual_controller_wait_exit_code": 0,
+        "confirmed": true,
+        "current_cgroup_path_absent": true,
+        "current_exact_socket_alias_inventory_clear": true,
+        "current_original_processes_absent": true,
+        "current_scope_collected_inactive_dead": true,
+        "normal_release": true,
+        "recorded_process_count": 8,
+        "recorded_process_states": {
+          "absent": 8
+        },
+        "remaining_cgroup_members": 0,
+        "removed_alias_count": 0,
+        "removed_underlying_socket_count": 1,
+        "scope_stop_requested": false,
+        "socket_cleanup_confirmed": true
+      },
+      "no_work_boundary": {
+        "declared_native_inference_requests": 0,
+        "physical_usage_meter_available": false,
+        "real_provider_credentials_supplied": false,
+        "startup_sandbox_terminal_probe_performed": true,
+        "work_requests_sent": 0
+      },
+      "qualification_passed": true,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "6ddc691162259073f9a4dd2e675df22c484dfd76586ca3da239eb83437a6fb80",
+        "CLOSE_GATE.json": "f83a640592646d023e5ae5aa32fd34dfae238545711f8f18f6b4d11770595c0c",
+        "CONTROLLER_EXIT.json": "974facf74a71631a156c76adf9c00f9cfdcaceb5d3f9e7556b6cf8c20b9b7262",
+        "GATE.json": "7ccffdbe6c254c7dc2d3e77ad81ed15ec52b512ef4b9978194af8aebd364a864",
+        "HELLO.json": "1ff148c4fb1326966847f6c2b087e7f276a23c84df63d25e4b698658e8d1a5a2",
+        "INTENT.json": "3d6ef8adb9b1e049b4811324bd9b6f7f5c66e7f580aea2ec8ec69fadefb6fb42",
+        "LAUNCH.json": "71f0bac20f486f676497a21567b23c967807be3e7221863ab0f49ccab95bcc6b",
+        "NATIVE_IDENTITIES.json": "5148952f7c9b08db4f79b651ae2baa6bf670df1674686e2eedccfb3e70dce2ba",
+        "RECEIPT.json": "5914192edaaf5cbd7cee44adc054400d27edef34fbada4b19ae6dc26033b5dc4",
+        "RELEASE.json": "d15f88da78f5eeebbd6c388dde4e3143992a066ca2cbc409a3ec432a4bbcac15",
+        "SCOPE_WITNESS.json": "11dede533d5be70363b5932c23aeb7b88ed5f45042b2d527f527f59aabb74235",
+        "controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native/BOUNDARY_AFTER.json": "ffbdea14a8c395002fe29d3437716a6e71c11b78264beb3f8abb16bf5fd5c1f4",
+        "native/BOUNDARY_BEFORE.json": "e154125d00bda7930e57a5588dabd8e7c22885704b1a7b473217ac30e9b278f2",
+        "native/CHILD_RESULT.json": "f04b844c37c00d88812ae2581c92b79eaecc803c12a9303a62169d5d52777c72",
+        "native/CLOSE_STARTED.json": "3a29fb4671c829bc4f2067bdedc523375deaefb0d321cc16a9f7b5bf867e75ae",
+        "native/STARTUP_FINISHED.json": "0ba59ae36f86ca82504c5a92a7f075a09f6ef23d4dc80aa55abfef58fa40716d",
+        "native/STARTUP_INTENT.json": "1bc88e21107e1c483159249e6d275999f9936c5e6dd25ea13db50c404f86fa0f",
+        "native/computers/startup-qualification/computer_state.json": "4d4b74a8100256faca2b410ba0e11825edc7574deacfacdcbb8b3eb5afbc8d6a",
+        "native/computers/startup-qualification/hermes/cache/schema_columns.json": "0edd9fc2dcbe1d93c4da821a4bbd7a4cb3dab2ce51876ecc6e1a78845cba5487",
+        "native/computers/startup-qualification/hermes/cache/tool_discovery_cache.json": "5b5e551ac4a62e005050391489d14f65aca9169db4fa23a63e6ef795ef10b793",
+        "native/computers/startup-qualification/instance.json": "54afc679a44b9d0f6f9b5702a927515b751702bd371dbb744f68b9f09a6f48f2",
+        "native/computers/startup-qualification/startup/manifest.json": "1c7c1941eb26e6b4fae430dc7e63751f781ed35c56497e63dd170d3e8096e096",
+        "native/computers/startup-qualification/startup/parent.jsonl": "085a56f54a7fa05e02898efd8b94f35e9e476d2603f65a6c1d61a883bf6a8cee",
+        "native/computers/startup-qualification/startup/worker.jsonl": "e906bcfbac5c82594ba77d4cdadffaa3fab43f66d9d4aee374535d4c977a00f5"
+      },
+      "receipt_sha256": "5914192edaaf5cbd7cee44adc054400d27edef34fbada4b19ae6dc26033b5dc4",
+      "slot_id": "start-08",
+      "status": "ready",
+      "timing": {
+        "child_close_phase_seconds": 1.3166788799999267,
+        "cleanup_charged_seconds": 1.396829317999618,
+        "computer_popen_to_ready_seconds": 6.324465978000262,
+        "native_startup_phase_seconds": 6.342288453000037,
+        "post_child_close_through_scope_cleanup_seconds": 0.08015043799969135,
+        "setup_and_startup_charged_seconds": 6.709674819000611,
+        "setup_before_native_entry_seconds": 0.3673863660005736,
+        "worker_stages_seconds": {
+          "agent_construction": 4.354510078000203,
+          "budget_transport": 0.28495157299948914,
+          "imports": 1.5835504160004348,
+          "ready_write": 0.0001800640002329601,
+          "registry": 0.00010781899982248433,
+          "sandbox": 0.04391179899994313,
+          "sandbox_terminal_probe": 0.02862998900036473
+        }
+      }
+    }
+  ],
+  "source_verification": {
+    "current_boot_user_and_security_context_match_manifest": true,
+    "current_installed_dependency_binding_matches_manifest": true,
+    "execution_source_and_dependency_binding_matches_manifest": true,
+    "raw_artifacts_changed_by_review": false,
+    "registered_dependency_map_canonical_sha256": "d54042fa704a97894374d6889f87f008ff782f0d7237937883b05ff4e0e8aecc",
+    "registered_source_count": 35,
+    "registered_source_map_canonical_sha256": "ae5a774b72f99df071b5239f3f964b9ad4138a5962343dda23a179b599ac6ac5",
+    "registered_sources_changed": false,
+    "working_and_committed_source_bytes_match": true
+  },
+  "status": "completed",
+  "strict_audit": {
+    "auditor_source_sha256": "bbc16bdf899e70b4545e25177ba49b7fa20270b1fc4531d98ba6135ecb9e5c19",
+    "errors": [],
+    "full_recomputed_result_canonical_sha256": "3e2d6bc5716945e274d6e9816567db62420094a2c3bdd273466aa21fb27fee41",
+    "ok": true,
+    "qualification_passed": true,
+    "status": "completed"
+  },
+  "timing": {
+    "definitions": {
+      "child_close_phase_seconds": "STARTUP_FINISHED to child close completion, including pre-close gate; not an isolated Computer.close measurement.",
+      "cleanup_charged_seconds": "STARTUP_FINISHED through parent CLEANUP end, including pre-close gate, native close, witness, release, wait and final checks; bound30s.",
+      "computer_popen_to_ready_seconds": "Native parent journal popen_returned through ready_received.",
+      "first_slot_start_to_final_slot_cleanup_seconds": "Component span excludes registration, outer command setup and post-run audit. Concurrent slot durations must not be summed as wall time.",
+      "native_startup_phase_seconds": "Native helper entry after initial boundary observation through STARTUP_FINISHED; includes computer/profile/skill setup and Computer.start.",
+      "setup_and_startup_charged_seconds": "Slot INTENT start through STARTUP_FINISHED, including bootstrap, source/dependency checks and setup; bound150s.",
+      "worker_stages_seconds": "Paired within-worker markers nested in startup; ready_write may finish after the parent first observes readiness."
+    },
+    "descriptive_slot_statistics": {
+      "cleanup_charged_seconds": {
+        "maximum": 1.4905376680007976,
+        "median": 1.4000732849999622,
+        "minimum": 1.151345312000558
+      },
+      "native_startup_phase_seconds": {
+        "maximum": 11.529753144999631,
+        "median": 6.285046322999733,
+        "minimum": 3.55575019600019
+      },
+      "setup_and_startup_charged_seconds": {
+        "maximum": 11.881096772999626,
+        "median": 6.654346805999921,
+        "minimum": 3.9211217949996353
+      }
+    },
+    "first_slot_start_to_final_slot_cleanup_seconds": 51.892535554999995,
+    "units": "seconds"
+  },
+  "usage": {
+    "constructor_metadata_activity_included_in_startup": true,
+    "currency_cost": null,
+    "native_inference_interpretation": "No inference requested in the reviewed startup-only call path with complete journals and disabled-loopback boundaries. This is source/boundary evidence, not a physical usage meter.",
+    "physical_model_calls": null,
+    "physical_tokens": null,
+    "physical_usage_meter_available": false,
+    "verified_employee_work_requests": 0
+  }
+}

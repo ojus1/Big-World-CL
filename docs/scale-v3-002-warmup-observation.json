@@ -1,0 +1,61 @@
+{
+  "campaign_raw_sha256": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+  "finished_at": "2026-09-10T11:23:50.799708+00:00",
+  "future_or_unreached_boundaries": 264,
+  "kind": "scale_v3_day3_eligibility_public_progress_observation",
+  "native_completed_study_audit": false,
+  "observed_employee_boundaries": 24,
+  "observed_worlds": 2,
+  "operational_world_state_counts": {
+    "running": 2,
+    "unlaunched": 4
+  },
+  "planned_employee_boundaries": 288,
+  "planned_worlds": 6,
+  "provenance": {
+    "copied_raw_input_sha256": {
+      "campaign.json": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+      "runs/seed-211-no_learning/checkpoint.json": "a9ab506a5eb3fd6503334ec3b8c090699ad8688832efa43f9afe475d1f6eca36",
+      "runs/seed-211-skillopt/checkpoint.json": "37fafc0c80906bcc3a5be07f1390eb9d8c5489e4b27fdb77a495efcd1134edd5"
+    },
+    "hash_encoding": "sha256_raw_file_bytes",
+    "private_metadata_sha256": {
+      "INVENTORY.json": "19d89320e228003aa07d2c6e8f352bed3977c43c099f0edad8cbfb08a104f751",
+      "OBSERVATION.json": "74dcaa41065adbd1f8f21fdcfadbde33117734a8d2d756306f36d30931f29b63",
+      "SOURCE_INVENTORY.json": "76f2dd5f40677e7cc91a125015aeab25aa53fe1db68968633d4ab1a98452508f",
+      "STATUS.json": "398d7152f0a5824cb5bfde8e7f8e16c993e97cfc5d2301089a75c9dcec50e714",
+      "SUMMARY.json": "4e8de2ac5c8cc2c06f215f38bf0bf0d8fe83b288f8524dc7b97004c6a705d02f"
+    },
+    "private_snapshot_id": "scale-v3-002-warmup-observation-001"
+  },
+  "registered_source_files_verified": 69,
+  "schema_version": 1,
+  "scope": "Non-atomic bounded checkpoint snapshot and reconstructed day-3 eligibility, plus separate live process observation; no quality or learning-effect comparison.",
+  "started_at": "2026-09-10T11:23:50.455898+00:00",
+  "worlds": [
+    {
+      "all_day3_counts_match_released_experience": true,
+      "all_returned_sessions_report_infrastructure_valid": true,
+      "all_returned_sessions_report_skill_loaded": true,
+      "captured_day": 4,
+      "captured_phase": "work",
+      "eligible_day3_employees": 0,
+      "observed_day3_employee_checks": 12,
+      "recorded_updates": 0,
+      "returned_sessions": 48,
+      "run_id": "seed-211-no_learning"
+    },
+    {
+      "all_day3_counts_match_released_experience": true,
+      "all_returned_sessions_report_infrastructure_valid": true,
+      "all_returned_sessions_report_skill_loaded": true,
+      "captured_day": 4,
+      "captured_phase": "work",
+      "eligible_day3_employees": 0,
+      "observed_day3_employee_checks": 12,
+      "recorded_updates": 0,
+      "returned_sessions": 48,
+      "run_id": "seed-211-skillopt"
+    }
+  ]
+}

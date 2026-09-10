@@ -1,0 +1,20 @@
+# Harmless scope-context probes
+
+Two supplementary diagnostics completed in fresh, uniquely named user scopes. Both retained the caller's `chatgpt (unconfined)` security label, entered different user and network namespaces, and showed the requested cgroup limits while their payloads were running: 64 MiB memory, zero swap, 32 tasks, and CPU quota `100000/100000`. The active scope readbacks also showed a 20-second runtime limit and 5-second stop allowance. These settings provide containment; timeout enforcement, reserved capacity, startup latency and I/O isolation were not tested.
+
+| Diagnostic | Observation | Natural exit |
+| --- | --- | --- |
+| scope-context-probe-v1 | Distinct user/network namespaces; inherited sysfs reported four interfaces and could not establish current-namespace isolation | Status 0; about 0.0455 s |
+| scope-context-probe-v2 | Socket enumeration/ioctl in the current namespace found only `lo`, flags 8, with `IFF_UP` unset; nested real bubblewrap returned status 0 in different user/network/PID/mount namespaces | Status 0; about 0.0768 s |
+
+The first probe read `/sys/class/net` from inherited host mounts. Those interface names describe that sysfs view and cannot certify the new network namespace. The second queried the running namespace through a socket and `SIOCGIFFLAGS`, correcting that measurement. Its nested bubblewrap payload preserved the mapped UID and reported distinct namespace identities. No interface flags were recorded inside the nested namespace, and no route or connectivity test was performed.
+
+The recorded initial `systemd-run` process and final Python payload have the same PID, process start ticks and parent. Their respective command-line hashes match the fixed launcher and payload. This supports execution in the original process through `exec`, with the caller's security context retained, rather than execution by a separately launched service manager child. Actual UID readings match the independently recorded process owner, and the payload is the sole member in each captured scope cgroup snapshot.
+
+The reviewed scripts neither request a different AppArmor profile nor edit host policy. They use fixed harmless Python payloads, no provider/model request, and no Hermes import. The second adds a real bubblewrap invocation with dropped capabilities, a read-only `/usr` mount and fresh proc/dev mounts. It does not exercise the employee sandbox configuration or native Hermes initialization. This context-dependent result does not change the outcome of the failed [service-based startup qualification](HERMES_STARTUP_QUALIFICATION_V1_OUTCOME.md).
+
+Both probes exited after stdin was released, with empty outer stderr. Cleanup records show the original process paths absent and the scopes collected (`not-found`, `inactive`, `dead`). The scripts contain no explicit stop or signal call. Their cleanup records are useful observations, but they do not provide an independent descendant/socket inventory or guaranteed error-path cleanup. The default-looking timer fields returned after unit collection do not supersede the live readbacks. The nested invocation captured stderr internally without persisting it, so no claim is made that nested stderr was empty.
+
+The [allowlisted evidence](scope-context-probes.json) contains the exact hashes of all ten private files, payload hashes, process-binding checks and safe observations. Each script matches the source hash saved in its launch intent, and both recorded payloads match their source literals. These are retrospective evidence bindings; executable paths alone do not pin the actual tool binaries at probe time. All private raw files were preserved during review. Unit names, process/boot identifiers, namespaces, private paths and environment values are omitted.
+
+These diagnostics support planning a separately reviewed scope-based native qualification. They establish no native startup success rate, physical model cost, provider reliability, learning gain or full-world performance. Neither diagnostic was rerun during this review.

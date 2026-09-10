@@ -1,0 +1,103 @@
+{
+  "changes": {
+    "lifespan/computers.py": {
+      "after_sha256": "63ad57a3392379ed314d4130a09b156399efc371342ef0d983b323e50db4c318",
+      "before_sha256": "a62c5c56c0e780c469d090a5f8b4926304b8518683794f6cf67922599ac4d0b1",
+      "scope": "Opt-in journals and observed setup/write overhead consume existing native deadlines; no timeout increase."
+    },
+    "lifespan/evaluation/protocol.py": {
+      "after_sha256": "08898100a6d5e36da89bbdea77ad7162db3280b9eef7b51f4b0596b9111a4713",
+      "before_sha256": "265b1535e67ea9a7657c1dd84fb480250a334435a12c907ed646004f0bc99a5e",
+      "scope": "Optional startup-observation configuration flag; scoring, task split and adoption gate unchanged."
+    },
+    "lifespan/evaluation/runner.py": {
+      "after_sha256": "6ec5a9e1e881ab96eaef42e64d04bdf241dc3b2a2e0e51d50b173587e816eb9a",
+      "before_sha256": "28d3fad9516f8bd10adc7b956aad67a705ab3984c4ae942a13d3611968839200",
+      "scope": "Propagates the observation option to native execution."
+    },
+    "lifespan/evaluation/runtime.py": {
+      "after_sha256": "a242bb7ae8740e97ccc589ec73c735d6f370a4f090bb2c01f3153188754fd1bd",
+      "before_sha256": "7264f56d085d6c045a3cc7496dfcb1037a2b694417d127ce9e7d00e4687cd6de",
+      "scope": "Propagates the observation option to replay/native execution."
+    },
+    "lifespan/hermes_worker.py": {
+      "after_sha256": "74548e6429296cacbd01cf0f322880a02fc179fa9de3bb258e39243c6a8c1f03",
+      "before_sha256": "b0684cd355d091d948dabbee34f7fbe0e87a8ebc2e01845c06299b91eefbaff2",
+      "scope": "Emits opt-in native initialization stages without work-request or inference changes."
+    },
+    "lifespan/startup_observability.py": {
+      "after_sha256": "d9c798ddab653d486d16bb63f0064e18cc7d302ea3b387361e627a939bf80f59",
+      "before_sha256": null,
+      "scope": "New best-effort private stage recorder with process/source identity and explicit observation errors."
+    }
+  },
+  "current_library_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "63ad57a3392379ed314d4130a09b156399efc371342ef0d983b323e50db4c318",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "891038f812204ef586918ffa475b9e87849529c741bc7da1a3208ac4272ee7be",
+    "lifespan/evaluation/hermes_transport.py": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "08898100a6d5e36da89bbdea77ad7162db3280b9eef7b51f4b0596b9111a4713",
+    "lifespan/evaluation/runner.py": "6ec5a9e1e881ab96eaef42e64d04bdf241dc3b2a2e0e51d50b173587e816eb9a",
+    "lifespan/evaluation/runtime.py": "a242bb7ae8740e97ccc589ec73c735d6f370a4f090bb2c01f3153188754fd1bd",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "74548e6429296cacbd01cf0f322880a02fc179fa9de3bb258e39243c6a8c1f03",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "0d59f091acf62b726721a380e54ad8423ae7e99ea536d0e7f78a2650bd3ef341",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/startup_observability.py": "d9c798ddab653d486d16bb63f0064e18cc7d302ea3b387361e627a939bf80f59",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0"
+  },
+  "historical_library_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "a62c5c56c0e780c469d090a5f8b4926304b8518683794f6cf67922599ac4d0b1",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "891038f812204ef586918ffa475b9e87849529c741bc7da1a3208ac4272ee7be",
+    "lifespan/evaluation/hermes_transport.py": "ebb3b6d09b8bb15a086ee79cbe2b5e0f49a357357eb18b953a2141f5680e6b89",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "265b1535e67ea9a7657c1dd84fb480250a334435a12c907ed646004f0bc99a5e",
+    "lifespan/evaluation/runner.py": "28d3fad9516f8bd10adc7b956aad67a705ab3984c4ae942a13d3611968839200",
+    "lifespan/evaluation/runtime.py": "7264f56d085d6c045a3cc7496dfcb1037a2b694417d127ce9e7d00e4687cd6de",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "b0684cd355d091d948dabbee34f7fbe0e87a8ebc2e01845c06299b91eefbaff2",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "0d59f091acf62b726721a380e54ad8423ae7e99ea536d0e7f78a2650bd3ef341",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0"
+  },
+  "historical_manifest_sha256": "ea5e5e66be002a3f497d24c7bc2b60a85312e9174e84e323f0c5b154633da0f4",
+  "interpretation": "This records source differences for independent review. Historical provider capability remains historical; current startup and future full-world outcomes need separate native evidence.",
+  "kind": "employee-startup-source-compatibility",
+  "schema_version": 1
+}

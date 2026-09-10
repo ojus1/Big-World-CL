@@ -1,0 +1,139 @@
+{
+  "checks": {
+    "all_six_pristine_runs_and_paired_cohorts": true,
+    "campaign_scope_and_execution_absent": true,
+    "committed_and_working_source_bytes_match": true,
+    "configured_private_environment_file_mode_0600": true,
+    "current_qualifier_source_dependency_boot_user_security_context_and_environment_match": true,
+    "disjoint_profiles_between_seeds": true,
+    "exact_current_dependency_provenance": true,
+    "fixed_scientific_schedule_and_compute_caps": true,
+    "fresh_isolated_mirofish_module_and_mutable_paths": true,
+    "fresh_service_port_no_recorded_listener": true,
+    "no_native_dispatch_during_review": true,
+    "paired_arm_configs_differ_only_in_algorithm": true,
+    "reporter_and_transitive_local_imports_preregistered": true
+  },
+  "code_commit": "b829c4ca0b605e74e3eff9233b0dbf03cf0c435c",
+  "cohort_raw_sha256": {
+    "211": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+    "307": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+    "401": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287"
+  },
+  "counts": {
+    "current_source_startup_slots_passed": 9,
+    "distinct_profiles_across_seeds": 75,
+    "employees_per_world": 12,
+    "fixed_commitments_per_world": 240,
+    "planned_world_pairs": 3,
+    "planned_worlds": 6,
+    "prerequisites_verified": 5,
+    "profiles_per_cohort": 25,
+    "registration_tools": 31,
+    "seed_cohorts": 3,
+    "source_files": 38
+  },
+  "decision": "approved_for_registered_one_shot_execution",
+  "execution": {
+    "halt_new_waves_on_failed_or_uncertain_prior_pair": true,
+    "pair_waves": [
+      [
+        "seed-211-no_learning",
+        "seed-211-skillopt"
+      ],
+      [
+        "seed-307-skillopt",
+        "seed-307-no_learning"
+      ],
+      [
+        "seed-401-no_learning",
+        "seed-401-skillopt"
+      ]
+    ],
+    "per_world_wall_seconds": 86400,
+    "retry_or_replacement_authorized": false,
+    "scope_limits": {
+      "cleanup_seconds": 180,
+      "controller_startup_seconds": 120,
+      "cpu_max_usec": 400000,
+      "cpu_quota_percent": 400,
+      "cpu_quota_period_usec": 100000,
+      "execution_seconds": 260310,
+      "memory_max_bytes": 12884901888,
+      "memory_swap_max_bytes": 0,
+      "runtime_max_seconds": 260490,
+      "tasks_max": 512,
+      "timeout_stop_seconds": 5
+    },
+    "workers": 2
+  },
+  "kind": "independent_scale_v3_registration_review",
+  "limitations": [
+    "This verifies registration and current readiness, not future completion or learning benefit.",
+    "The three reused development seeds support descriptive paired differences; no held-out or population inference is claimed.",
+    "Historical employee provider evidence remains historical. Exact six-file source compatibility and fresh current-source startup evidence are distinct prerequisites.",
+    "Nine no-work startup passes do not establish zero physical provider usage or full-world reliability; missing usage is never inferred as zero.",
+    "Startup observation overhead counts against unchanged nominal deadlines and can change timeout outcomes.",
+    "The shared scope has no per-world fairness or guaranteed I/O isolation. Resource and wall values are ceilings, not forecasts.",
+    "Contracted interviews and employee/optimizer usage are bounded scopes; bootstrap/social and all-in provider cost remain unknown.",
+    "All six fresh worlds and three valid pairs are mandatory; no failed replacement, surviving subset, or success-only endpoint is authorized.",
+    "Readiness is time-specific. The production gates must recheck exact sources, dependencies, boot/context and pristine state immediately before dispatch."
+  ],
+  "manifest_sha256": "ca6a3d2b890ebdf1a5142dbccd2d019b60179b5d8e61946725b33b743eb0b229",
+  "prerequisites": [
+    {
+      "artifact_sha256": "49730030d4d52f94d2808327dfeeaca278f8d11cddabb2a95d23d04a07c8e77d",
+      "kind": "actor_native_capability",
+      "review_sha256": "2ccf80a002d4836586a5dde62fa2ecc3e2e4442b247016d6445f484eabb30266",
+      "verified": true
+    },
+    {
+      "artifact_sha256": "10baad3472af3a6ceb01b0a1bcaf2af0e814a8e9fbb926c1b4a210311339a87d",
+      "kind": "employee_native_capability",
+      "review_sha256": "4094c48281ec36f8a8fe0a69a263761cc02b647ba7a60a98548f32e6937980da",
+      "verified": true
+    },
+    {
+      "artifact_sha256": "80d9dd728299f23646478c529c1ad7ff49010253dd31a86a926bbdaaeb1d7f13",
+      "kind": "horizon_feasibility",
+      "review_sha256": "de7665b75edb196b7efd63fd81081f29969635f959553aa246c106f2954cfd8c",
+      "verified": true
+    },
+    {
+      "artifact_sha256": "78b0d6058ead87caf6ae0d6484a3bbdebc640f6cfe114cc5ff0ee5037fde317c",
+      "kind": "scope_startup_qualification",
+      "review_sha256": "638d81e81bb15d0637d7154172656a6e2efef92a5fa020b421b6a5fffecd35cd",
+      "verified": true
+    },
+    {
+      "artifact_sha256": "60bb34510e34700180d59a815c5eb4e5650a97bcd3b1b2d6e5125d4e11b5ba94",
+      "kind": "employee_source_compatibility",
+      "review_sha256": "5ba9c32cacd992fc224a072fa2a016b370918c64c9996189c781fc13cb1f2682",
+      "verified": true
+    }
+  ],
+  "primary": {
+    "aggregation": "equal_mean_of_all_three_world_pair_differences",
+    "contrast": "skillopt_minus_no_learning",
+    "denominator_per_world": 240,
+    "metric": "fixed_initial_and_benchmark_fulfillment_before_work_horizon",
+    "minimum_adoptions_or_positive_gain_required": false,
+    "requires_all_six_valid_completed_worlds": true,
+    "settlement_only_days": [
+      20,
+      21
+    ],
+    "work_days": [
+      0,
+      19
+    ]
+  },
+  "public_registration_byte_identical": true,
+  "reviewed_at": "2026-09-10T10:20:17.307781+00:00",
+  "runtime_evidence": {
+    "installation_binding_canonical_sha256": "6506f4980fb87af7c4d13a44fd79bc9a1b8ef2400c3e029b9eaa026b3c515bd2",
+    "qualified_dependencies_canonical_sha256": "d54042fa704a97894374d6889f87f008ff782f0d7237937883b05ff4e0e8aecc",
+    "qualified_manifest_sha256": "094dbd85fe01c49ef5d3e847c8a6b8b042ce8b2b7d077e58e9a465b14511b588"
+  },
+  "schema_version": 1
+}

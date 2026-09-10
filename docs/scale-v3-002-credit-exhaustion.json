@@ -1,0 +1,232 @@
+{
+  "accounting": {
+    "interpretation": "Known physical-call records include dispatched errors; token totals only include reported usage. Reservations are conservative accounting amounts, not provider invoices. The 176 work accounting records comprise 175 returned session records and one interrupted work attempt with no session receipt. Environment bootstrap/social usage and currency cost remain unknown; no all-in cost claim.",
+    "saved_audit_accounting": {
+      "all_in_accounting_complete": false,
+      "contracted_interviews": {
+        "all_world_costs_reconciled": false,
+        "logical_requests": 254,
+        "measured_physical_requests": 254,
+        "measured_tokens": 813568,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "currency_cost": null,
+      "employee_and_optimizer": {
+        "accounting_complete": false,
+        "all_world_costs_reconciled": false,
+        "charged_or_reserved_model_calls": 1793,
+        "charged_or_reserved_tokens": 19358749,
+        "known_input_tokens": 18633325,
+        "known_output_tokens": 275471,
+        "known_physical_calls": 1777,
+        "known_tokens": 18908796,
+        "records": 176,
+        "unresolved_records": 2
+      },
+      "unmetered_environment": {
+        "accounting_complete": false,
+        "physical_model_calls": null,
+        "tokens": null
+      }
+    }
+  },
+  "campaign_sha256": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+  "complete_pairs": 0,
+  "completed_worlds": 0,
+  "evidence": {
+    "all_terminal_campaign_files_copied": true,
+    "native_requests_by_observation": 0,
+    "observed_end": "2026-09-10T12:03:58.002768+00:00",
+    "observed_start": "2026-09-10T12:03:53.856018+00:00",
+    "original_bytes_stable_across_capture": true,
+    "private_inventory_sha256": "44945a69c8a008bdb3bc0311f0abad36896fc7b746acccd5be9e0b92b944fecf",
+    "raw_bytes": 257925347,
+    "raw_file_count": 8740,
+    "registered_source_bytes_matched_capture": true,
+    "registered_source_count": 69,
+    "selected_raw_sha256": {
+      "campaign": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+      "execution_results": "b17ed643c5e6584e73f22851eb5053f5fc0d1a4650779f2b047077a1a288d52a",
+      "inner_result": "09e3c48da014dd61bc87e7725a89aebdf3175775fa733bd2b58030f59d9df2c1",
+      "no_learning_checkpoint": "cb44860476b5fe07ed0bfa0b1db24e196763f247ef129e9d2a7080989babeee1",
+      "no_learning_failure": "5756e2aa26a4c74b20e7b199bd0f079ee6a723022ba81ec485e98792592c4fc8",
+      "no_learning_terminal_session": "419a77f04067fecc569d09d88685a842aea4f032b9f21847dcab4ab22d85e9b9",
+      "outer_terminal": "d4003bb96ccfb13b24e6064603b89267d8c79bbd32276eeec4b08eb4b714efbd",
+      "saved_audit": "6bf48a24fe1da5328611e01a8aefcba871984b4aa00e615a1abfae1b931566e9",
+      "service_cleanup": "b1b467f81b63faeb12d73f3f9e96205c4bff8d3f71e4efa715a84827ff00398c",
+      "skillopt_checkpoint": "a7ee17264beace633a74594510c369a15609a42d53779b397bf46c9647462691",
+      "supervisor_interrupted": "60fa147781da6195315bbd7e75e99fc62da15036894a808331d58ffafcd1f42f"
+    }
+  },
+  "failure": {
+    "classification": "provider_reported_credit_exhaustion",
+    "http_status": 429,
+    "interpretation": "The provider response reports exhausted API credits. This is not a model-quality result or proof of which workload consumed the account balance.",
+    "native_failure_reason": "rate_limit",
+    "provider_error_text_sha256": "ddc327b83257a83b599e7d7408012143170d881194831e02b31a001060f58a4b",
+    "provider_message_summary": "You have no credits remaining.",
+    "registered_attempt_budget_exhausted": false,
+    "terminal_attempt_accounting_complete": false,
+    "terminal_attempt_charged_or_reserved_tokens": 234229,
+    "terminal_attempt_completed_dispatch_records": 4,
+    "terminal_attempt_dispatch_error_records": 3,
+    "terminal_attempt_physical_dispatch_records": 7,
+    "terminal_attempt_reported_tokens": 34276
+  },
+  "finished_at": "2026-09-10T12:01:52.053898+00:00",
+  "kind": "scale-v3-002-provider-credit-exhaustion",
+  "launched_worlds": 2,
+  "learning_updates": 0,
+  "lifecycle": {
+    "actual_native_wait_exit_code": 1,
+    "inner_completed": false,
+    "inner_returned_normally": true,
+    "interpretation": "Recorded cleanup closure does not establish successful study completion; the strict scope audit rejects the unsuccessful inner result.",
+    "outer_controller_state": "absent",
+    "outer_forced_stop": false,
+    "outer_members_remaining": 0,
+    "outer_released": true,
+    "outer_terminal_errors": [],
+    "saved_lifecycle_audit_ok": true,
+    "service_cleanup_confirmed": true,
+    "service_exit_code": 0,
+    "world_cleanup_confirmed": true
+  },
+  "limitations": [
+    "No completed world or pair, primary endpoint, algorithm ranking, or learning gain is available.",
+    "All six planned slots are retained; unlaunched outcomes are unknown rather than zero-filled performance.",
+    "The returned-session count includes the no-learning infrastructure-invalid terminal session and does not count the interrupted SkillOpt attempt as returned.",
+    "Neither world reached the end-of-day-7 learning boundary. Earlier day-3 eligibility observations remain historical evidence.",
+    "The provider-credit failure requires external account funding or an authorized funded endpoint before further native evaluation. A future comparison requires a new complete registration; this campaign is not resumed."
+  ],
+  "model_quality_score": null,
+  "observation_kind": "post_execution_engineering_observation_not_primary_report",
+  "planned_worlds": 6,
+  "primary_endpoint_available": false,
+  "retry_or_replacement_within_registration": false,
+  "returned_session_records": 175,
+  "saved_campaign_audit": {
+    "complete_pairs": 0,
+    "completed_runs": 0,
+    "errors": [
+      {
+        "code": "run_raw_artifact_audit_failed",
+        "run_id": "seed-211-no_learning",
+        "scope": "world"
+      },
+      {
+        "code": "outer_scope_errors_present",
+        "scope": "outer_scope"
+      }
+    ],
+    "ok": false,
+    "primary_endpoint_available": false,
+    "status": "invalid"
+  },
+  "schema_version": 1,
+  "slots": [
+    {
+      "algorithm": "no_learning",
+      "cleanup_confirmed": true,
+      "completed": false,
+      "day7_eligibility_records": 0,
+      "elapsed_through_cleanup_seconds": 5104.941830732,
+      "exit_code": 1,
+      "learning_eligibility_records": 12,
+      "learning_updates": 0,
+      "model_quality_score": null,
+      "observed_day": 7,
+      "phase": "work",
+      "recorded_infrastructure_invalid_or_unknown": 1,
+      "recorded_infrastructure_valid": 87,
+      "returned_session_records": 88,
+      "run_id": "seed-211-no_learning",
+      "seed": 211,
+      "status": "provider_credit_exhaustion",
+      "termination_reason": "exited"
+    },
+    {
+      "algorithm": "skillopt",
+      "cleanup_confirmed": true,
+      "completed": false,
+      "day7_eligibility_records": 0,
+      "elapsed_through_cleanup_seconds": 5105.4617421680005,
+      "exit_code": -15,
+      "learning_eligibility_records": 12,
+      "learning_updates": 0,
+      "model_quality_score": null,
+      "observed_day": 7,
+      "phase": "work",
+      "recorded_infrastructure_invalid_or_unknown": 0,
+      "recorded_infrastructure_valid": 87,
+      "returned_session_records": 87,
+      "run_id": "seed-211-skillopt",
+      "seed": 211,
+      "status": "stopped_after_peer_failure",
+      "termination_reason": "supervisor_interrupted"
+    },
+    {
+      "algorithm": "skillopt",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "observed_day": null,
+      "phase": null,
+      "returned_session_records": null,
+      "run_id": "seed-307-skillopt",
+      "seed": 307,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "no_learning",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "observed_day": null,
+      "phase": null,
+      "returned_session_records": null,
+      "run_id": "seed-307-no_learning",
+      "seed": 307,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "no_learning",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "observed_day": null,
+      "phase": null,
+      "returned_session_records": null,
+      "run_id": "seed-401-no_learning",
+      "seed": 401,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "skillopt",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "observed_day": null,
+      "phase": null,
+      "returned_session_records": null,
+      "run_id": "seed-401-skillopt",
+      "seed": 401,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    }
+  ],
+  "status": "stopped_incomplete",
+  "unlaunched_worlds": 4
+}

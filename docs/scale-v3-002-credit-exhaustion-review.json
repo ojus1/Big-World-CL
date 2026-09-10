@@ -1,0 +1,69 @@
+{
+  "campaign_sha256": "72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce",
+  "confirmed_counts": {
+    "charged_or_reserved_employee_calls": 1793,
+    "charged_or_reserved_employee_tokens": 19358749,
+    "complete_pairs": 0,
+    "completed_worlds": 0,
+    "contracted_interview_reported_tokens": 813568,
+    "contracted_interview_requests": 254,
+    "learning_updates": 0,
+    "recorded_employee_physical_dispatches": 1777,
+    "recorded_infrastructure_invalid": 1,
+    "recorded_infrastructure_valid": 174,
+    "reported_employee_tokens": 18908796,
+    "returned_session_records": 175,
+    "unlaunched_worlds": 4,
+    "unresolved_work_records": 2,
+    "work_accounting_records": 176
+  },
+  "decision": "approved_with_stated_scope_and_unknowns",
+  "final_publication_checks": {
+    "all_six_planned_slots_retained": true,
+    "capture_metadata_and_raw_byte_count_match": true,
+    "checkpoint_counts_and_flags_match": true,
+    "historical_progress_and_launch_context_preserved": true,
+    "interrupted_work_attempt_not_claimed_as_proven_physical_dispatch": true,
+    "no_account_balance_causation_claim": true,
+    "no_raw_prompts_personas_skills_provider_identifiers_or_credentials_in_reviewed_changes": true,
+    "partial_usage_and_peer_missing_receipt_remain_unknown": true,
+    "provider_credit_exhaustion_distinguished_from_behavioral_failure": true,
+    "reservations_not_reported_as_measured_usage": true,
+    "saved_accounting_projection_exact": true,
+    "scope_cleanup_distinguished_from_successful_execution": true,
+    "selected_raw_hashes_checked": 11,
+    "zero_completed_worlds_and_pairs_and_no_primary_endpoint": true,
+    "zero_learning_updates_and_no_learning_gain_claim": true
+  },
+  "fixed_snapshot_inventory_sha256": "44945a69c8a008bdb3bc0311f0abad36896fc7b746acccd5be9e0b92b944fecf",
+  "kind": "scale_v3_002_credit_exhaustion_publication_independent_review",
+  "limitations": [
+    "This is a post-execution engineering observation and publication review, not a completed primary report or algorithm comparison.",
+    "Physical dispatch and token use of the interrupted peer work attempt remain unknown; its reservation is not a measured usage receipt.",
+    "Provider-reported credit exhaustion does not establish which workload consumed the account balance.",
+    "Bootstrap and social usage, currency cost, and all-in accounting remain unknown.",
+    "This final projection review reuses the preceding independent terminal, accounting, cleanup and full snapshot verification; no audit or native request was rerun."
+  ],
+  "prior_independent_terminal_verification": {
+    "all_copied_and_original_bytes_matched_inventory": true,
+    "both_world_cleanup_checks_passed": true,
+    "copied_raw_and_source_bytes_verified": 259193562,
+    "exact_raw_file_inventory_matched": true,
+    "native_task_audit_sessions_checked": 175,
+    "native_task_audit_updates_checked": 0,
+    "no_learning_raw_error_code": "trial_infrastructure_or_accounting_invalid",
+    "outer_rejection_code": "scope_inner_not_successful",
+    "raw_file_count": 8740,
+    "registered_source_file_count": 69,
+    "service_cleanup_check_passed": true,
+    "skillopt_raw_status": "incomplete"
+  },
+  "reviewed_public_files_sha256": {
+    "README.md": "73ae47a64c4cbdd993234aa7c911ea1666b6cc52bfa44ad9ac0e3f8daf1a5ce2",
+    "docs/SCALE_V3_002_CREDIT_EXHAUSTION.md": "dc48195594f90a543034ba061d6756945ef488329e5dec1cb74fae99508880e0",
+    "docs/SCALE_V3_002_LAUNCH.md": "1aebe6ce6c7bdc71a60f31cd860563cc93f97f5e3f4a8112b6be22323b600bc5",
+    "docs/SCALE_V3_002_PROGRESS.md": "62225e4324fced01bfb76894c4cb974161f20da9c3ec78b4a7a58a6a439e6741",
+    "docs/scale-v3-002-credit-exhaustion.json": "b2d1c1336012d7693a9dcce330e279decaeed903dc3caa2b0409d75be4b57cdd"
+  },
+  "schema_version": 1
+}

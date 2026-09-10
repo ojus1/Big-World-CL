@@ -69,10 +69,16 @@ jobs:
       - name: Test concurrent six-world follow-up supervision
         run: python -m unittest tests.test_run_scale_v2 -v
 
+      - name: Test owned-scope six-world execution and audit
+        run: python -S -m unittest tests.test_run_scale_v3_inner tests.test_run_scale_v3 tests.test_audit_scale_v3 tests.test_report_scale_v3 -v
+
+      - name: Test complete MiroFish overlay and capability installation checks
+        run: python -S -m unittest tests.test_mirofish_installation -v
+
       - name: Test bounded resource probe and isolated startup child
         # Mocked services, kernel receipts and computers only; no systemd units,
         # native Hermes workers or model/provider requests are started.
-        run: python -S -m unittest tests.test_startup_resource_controls tests.test_hermes_startup_probe tests.test_hermes_startup_qualification -v
+        run: python -S -m unittest tests.test_startup_resource_controls tests.test_hermes_startup_probe tests.test_hermes_startup_qualification tests.test_hermes_startup_scope_qualification tests.test_hermes_startup_scope_qualification_v3 -v
 
       - name: Test fixed Hermes transport preflight and independent evidence audit
         # Standard-library synthetic receipts and owned local process/socket
