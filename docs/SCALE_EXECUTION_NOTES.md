@@ -146,11 +146,16 @@ cannot be resumed losslessly, and a successful artifact does not make its missin
 usage known. No retry or replacement was initiated after the failure.
 
 This is separate from the malformed actor JSON failure and the future learning
-deadline fix. A small future evidence fix is being developed to preserve the
-original stream error through closure; it cannot recover a lost provider receipt or change current
+deadline fix. The reviewed [stream-evidence fix](https://github.com/ojus1/Big-World-CL/pull/2)
+preserves the original stream error through closure; it cannot recover a lost provider receipt or change current
 eligibility. Resolving transport receipt reliability remains a preflight item for
 a fresh full comparison.
 
 The [follow-up implementation and launch plan](SCALE_FOLLOWUP_PLAN.md) preserves
 the complete three-pair scope and defines the required preflight evidence before
 another native campaign can be registered.
+
+The [fixed 14-epoch learning observation](SCALE_LEARNING_OBSERVATION.md) extends
+the first two epoch checks with independently reconciled replay, gate, cost and
+regime-exposure evidence. It separates edited candidates from repeated incumbent
+validation and leaves later learning boundaries unobserved.
