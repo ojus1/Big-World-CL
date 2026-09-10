@@ -276,6 +276,13 @@ def audit_run(root, strict=False):
                         'v2_audit_source_revision_mismatch')
         status = read(root / 'REPORT.json')['status'] if (root / 'REPORT.json').exists() else 'running'
         result['run_status'] = status
+        from lifespan.actor_contract import audit_interviews, enabled_for_evidence, wire
+        try:
+            if enabled_for_evidence(root, manifest):
+                result['actor_contract_audit'] = audit_interviews(root, manifest,
+                    Ecosystem.restore(cp['ecosystem']).participants(), completed=status == 'completed')
+        except wire.ContractError as exc:
+            raise ValueError(str(exc)) from None
         sessions = {record['id']: record for record in state['sessions']}
         experiences = {record['id']: record for record in state['experiences']}
         require(len(sessions) == len(state['sessions']) and len(experiences) == len(state['experiences']), 'duplicate_record_identity')
@@ -309,6 +316,9 @@ def audit_run(root, strict=False):
             provenance = dict(report['provenance'])
             for key in ('target_model', 'model_base_url', 'dependencies', 'source_sha256'):
                 require(provenance[key] == manifest[key], 'report_provenance_' + key)
+            if manifest['config'].get('actor_output_contract') is not None:
+                require(provenance.get('actor_output_contract_provenance') == manifest['actor_output_contract_provenance'],
+                        'report_actor_contract_provenance')
             cohort = root / 'persona_cohort.json'
             require(provenance['persona_cohort_sha256'] == (sha(cohort.read_bytes()) if cohort.exists() else 'offline-fixture-no-personas'), 'persona_cohort_provenance')
             rebuilt = build_report(manifest['config'], manifest['scenario'], state['sessions'], state['updates'],

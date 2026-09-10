@@ -52,3 +52,37 @@ jobs:
 
       - name: Test population scale, campaign supervision and independent audit
         run: python -m unittest discover -s tests -p 'test_scale_*.py' -v
+
+  actor-contract:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      BIGWORLD_TEST_MIROFISH_SOURCE: ${{ github.workspace }}/.cache/MiroFish-actor-source
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Check out pinned MiroFish source for read-only transport fixtures
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: 666ghj/MiroFish
+          ref: 39d849138ef254f6c737ab4c4705e5545dbe31d4
+          path: .cache/MiroFish-actor-source
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+
+      - name: Install explicit offline test dependencies
+        run: python -m pip install -r tests/requirements-actor-contract.txt
+
+      - name: Test scoped actor contracts and actual patched transport methods
+        # Fake actors + mocked HTTP only. The fixture reads pinned git source,
+        # applies the tracked patch in a temporary directory and starts no native
+        # server, OASIS environment or provider request. Missing source is fatal.
+        run: python -m pytest tests/test_actor_output_contract.py -q
