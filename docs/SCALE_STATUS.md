@@ -17,9 +17,13 @@ Session, update and adoption counts include checkpointed returned records only.
 An in-flight operation may not yet appear; replay counts are not online session
 counts. Phase and day come from the checkpoint; the separately shown in-flight
 kind can be newer. Malformed, concurrently replaced, missing or oversized
-records remain unknown. Each JSON read is capped at 32 MiB, and the registration
-at 4 MiB. Missing first checkpoints produce unknown counts, never fabricated
-zeroes or failures.
+records remain unknown. Checkpoint reads are capped at 128 MiB; other JSON reads
+remain capped at 32 MiB, and registration/source reads at 4 MiB. Historical
+scale-v1 checkpoints reached 50.4 MiB because they retain full session and
+learning evidence, so the original 32 MiB checkpoint allowance was insufficient.
+The higher limit provides bounded headroom, not a forecast or guaranteed maximum;
+an oversized checkpoint still yields unknown progress. Missing first checkpoints
+produce unknown counts, never fabricated zeroes or failures.
 
 `unlaunched` means no launch evidence was found, not a promise of future dispatch.
 The fixed protocol can leave later slots unlaunched after an earlier failure.

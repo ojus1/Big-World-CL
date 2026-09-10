@@ -15,6 +15,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_JSON_BYTES = 32 * 1024 * 1024
+MAX_CHECKPOINT_BYTES = 128 * 1024 * 1024
 HASH = re.compile(r'[0-9a-f]{64}')
 SCHEDULE = [(seed, arm) for i, seed in enumerate((211, 307, 401))
             for arm in (('no_learning', 'skillopt') if i % 2 == 0 else ('skillopt', 'no_learning'))]
@@ -196,7 +197,8 @@ def project_slot(slot, run, root, sources, results, *, now, monotonic, boot_id, 
     paths = {'checkpoint': 'checkpoint.json', 'inflight': 'INFLIGHT.json', 'report': 'REPORT.json',
              'config': 'config.json', 'start': 'lifecycle/WORLD_START.json',
              'intent': 'lifecycle/WORLD_INTENT.json', 'cleanup': 'lifecycle/WORLD_CLEANUP.json'}
-    records = {name: safe_read(run / path) for name, path in paths.items()}
+    records = {name: safe_read(run / path, limit=MAX_CHECKPOINT_BYTES if name == 'checkpoint' else MAX_JSON_BYTES)
+               for name, path in paths.items()}
     cp = records['checkpoint']; inflight = records['inflight']; report = records['report']
     row = {'slot': slot['run_id'], 'seed': slot['seed'], 'algorithm': slot['algorithm'],
            'state': 'updating_unknown', 'phase': None, 'day': None, 'inflight_kind': None,

@@ -216,6 +216,23 @@ class StatusTests(unittest.TestCase):
         path.unlink(); path.write_bytes(data)
         self.assertEqual(q.safe_read(path, limit=4)['state'], 'updating_unknown')
 
+    def test_checkpoint_only_has_128_mib_allowance_with_other_read_bounds_preserved(self):
+        original = q.safe_read
+        with patch.object(q, 'safe_read', wraps=original) as reader:
+            self.read()
+        checkpoint_calls = campaign_calls = source_calls = 0
+        for call in reader.call_args_list:
+            path = Path(call.args[0]); limit = call.kwargs.get('limit', q.MAX_JSON_BYTES)
+            if path.name == 'checkpoint.json':
+                checkpoint_calls += 1; self.assertEqual(limit, 128 * 1024 * 1024)
+            elif path == self.campaign / 'campaign.json':
+                campaign_calls += 1; self.assertEqual(limit, 4 * 1024 * 1024)
+            elif path.is_relative_to(self.root):
+                source_calls += 1; self.assertEqual(limit, 4 * 1024 * 1024)
+            else:
+                self.assertEqual(limit, 32 * 1024 * 1024)
+        self.assertEqual((checkpoint_calls, campaign_calls, source_calls), (6, 2, 69))
+
     def test_wrong_campaign_hash_subset_and_registration_mutation_refuse(self):
         with self.assertRaises(q.StatusError):
             q.read_status(self.campaign, campaign_sha256='0' * 64, source_root=self.root)
