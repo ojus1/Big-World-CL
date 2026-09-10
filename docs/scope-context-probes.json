@@ -1,0 +1,180 @@
+{
+  "hash_encoding": "SHA-256 over exact raw file bytes; payload hash over source literal UTF-8 bytes",
+  "interpretation": "Both harmless scopes completed with requested live kernel controls and the inherited caller security label. The second supports feasibility of isolated current-namespace loopback inspection and nested bubblewrap in this context. Native startup qualification and full-world evaluation remain unestablished by these observations.",
+  "kind": "scope-context-probes",
+  "limitations": [
+    "The scripts and receipts are bound retrospectively by exact hashes; these two diagnostics are not the preregistered nine-slot native qualification.",
+    "Recorded command paths do not independently pin tool executable bytes at probe time.",
+    "The security-context result is specific to the observed caller label; a different launching context requires new verification.",
+    "Resource readbacks show containment settings, not reserved capacity, latency guarantees, I/O isolation, or demonstrated timeout enforcement.",
+    "The first inherited-sysfs observation cannot certify network interfaces in the current namespace. The second measures interfaces in the outer probe namespace; it does not record interface flags inside the nested bubblewrap namespace.",
+    "Terminal process-path absence and a collected scope are recorded, but the diagnostic scripts have no independent full descendant/socket cleanup audit or guaranteed error-path cleanup.",
+    "Nested bubblewrap uses a trivial read-only payload, not the native employee harness, provider transport, or a learning workload. No physical model-usage meter was used."
+  ],
+  "observation_kind": "supplementary_harmless_diagnostics_not_native_qualification",
+  "probe_count": 2,
+  "probes": [
+    {
+      "context": {
+        "actual_uid_matches_inner_proc_owner": true,
+        "actual_uid_matches_outer_proc_owner": true,
+        "caller_security_label": "chatgpt (unconfined)",
+        "launch_kind": "systemd_user_scope",
+        "network_namespace_differs_from_caller": true,
+        "payload_security_label": "chatgpt (unconfined)",
+        "profile_or_host_policy_change_in_reviewed_source": false,
+        "security_label_inherited_unchanged": true,
+        "user_namespace_differs_from_caller": true
+      },
+      "hermes_loaded": false,
+      "io_isolation_qualified": false,
+      "limits_exercised_to_exhaustion": false,
+      "limits_observed_while_running": {
+        "cpu.max": "100000 100000",
+        "memory.max": "67108864",
+        "memory.swap.max": "0",
+        "pids.max": "32"
+      },
+      "native_qualification_passed": false,
+      "nested_bubblewrap": {
+        "attempted": false
+      },
+      "network_observation": {
+        "current_network_namespace_interface_proof": false,
+        "interface_count": 4,
+        "interpretation": "The inherited sysfs view shows host-mount interfaces; it cannot certify interfaces in the newly created network namespace.",
+        "method": "inherited_sysfs_mount_interface_operstate"
+      },
+      "payload_utf8_sha256": "38000c330441878f0503d220a2c78f4bb4ace4f5951bda441eb5e80a2b6e855f",
+      "physical_model_usage_meter_available": false,
+      "probe_id": "scope-context-probe-v1",
+      "process_binding": {
+        "initial_proc_cmdline_hash_matches_launch_command": true,
+        "initial_process_comm": "systemd-run",
+        "observed_scope_member_count": 1,
+        "payload_cgroup_matches_active_scope": true,
+        "payload_is_only_observed_scope_member": true,
+        "payload_proc_cmdline_hash_matches_interpreter_and_payload": true,
+        "payload_process_comm": "python3",
+        "same_parent_before_and_after_exec": true,
+        "same_pid_and_start_ticks_before_and_after_exec": true
+      },
+      "provider_or_model_requested_by_reviewed_payload": false,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "f1ed597738b95e7646b03659222bfdcbc48425d23b722bcf5f067c945173d09d",
+        "INTENT.json": "efdc94f6d3acbd59acf9ccd8272c4b99f6331e1e16b0da195f4aec27a27c7a0a",
+        "OBSERVATION.json": "5698566846649724f2510a1f5f56747c19ca5697faae701a64f7141b058fc9a9",
+        "probe.py": "40f6475a982174c7e308bb5141384a7bb542296b86c30f3b90400f715db6fcfa",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "recorded_command_matches_reviewed_fixed_source_and_payload": true,
+      "runtime_limit_readback_seconds": 20,
+      "same_boot_as_review": true,
+      "source_sha_matches_recorded_intent": true,
+      "stop_limit_readback_seconds": 5,
+      "terminal": {
+        "elapsed_seconds": 0.04548796400013089,
+        "explicit_signal_or_stop_in_probe_source": false,
+        "original_process_paths_absent_at_cleanup": true,
+        "outer_stderr_bytes": 0,
+        "process_wait_exit_code": 0,
+        "scope_active_state": "inactive",
+        "scope_cgroup_empty_in_terminal_show": true,
+        "scope_load_state": "not-found",
+        "scope_sub_state": "dead",
+        "separate_descendant_or_socket_cleanup_audit": false,
+        "stdin_released_for_natural_exit": true
+      }
+    },
+    {
+      "context": {
+        "actual_uid_matches_inner_proc_owner": true,
+        "actual_uid_matches_outer_proc_owner": true,
+        "caller_security_label": "chatgpt (unconfined)",
+        "launch_kind": "systemd_user_scope",
+        "network_namespace_differs_from_caller": true,
+        "payload_security_label": "chatgpt (unconfined)",
+        "profile_or_host_policy_change_in_reviewed_source": false,
+        "security_label_inherited_unchanged": true,
+        "user_namespace_differs_from_caller": true
+      },
+      "hermes_loaded": false,
+      "io_isolation_qualified": false,
+      "limits_exercised_to_exhaustion": false,
+      "limits_observed_while_running": {
+        "cpu.max": "100000 100000",
+        "memory.max": "67108864",
+        "memory.swap.max": "0",
+        "pids.max": "32"
+      },
+      "native_qualification_passed": false,
+      "nested_bubblewrap": {
+        "attempted": true,
+        "configuration": "unshare-all, new-session, die-with-parent, cap-drop ALL, read-only /usr with fresh proc/dev",
+        "exit_code": 0,
+        "hermes_loaded": false,
+        "namespaces_differ_from_outer_payload": {
+          "mnt": true,
+          "net": true,
+          "pid": true,
+          "user": true
+        },
+        "nested_interface_flags_recorded": false,
+        "nested_stderr_persisted": false,
+        "uid_matches_outer_payload": true
+      },
+      "network_observation": {
+        "current_network_namespace_interface_proof": true,
+        "interface_flags": {
+          "lo": 8
+        },
+        "loopback_IFF_UP_set": false,
+        "method": "socket.if_nameindex and SIOCGIFFLAGS ioctl in current namespace",
+        "only_loopback_observed": true,
+        "route_table_or_connectivity_test_performed": false
+      },
+      "payload_utf8_sha256": "39e73e84410b7b56959ee3b47fa26ecd4721736b244e54d15a40b554121b15b3",
+      "physical_model_usage_meter_available": false,
+      "probe_id": "scope-context-probe-v2",
+      "process_binding": {
+        "initial_proc_cmdline_hash_matches_launch_command": true,
+        "initial_process_comm": "systemd-run",
+        "observed_scope_member_count": 1,
+        "payload_cgroup_matches_active_scope": true,
+        "payload_is_only_observed_scope_member": true,
+        "payload_proc_cmdline_hash_matches_interpreter_and_payload": true,
+        "payload_process_comm": "python3",
+        "same_parent_before_and_after_exec": true,
+        "same_pid_and_start_ticks_before_and_after_exec": true
+      },
+      "provider_or_model_requested_by_reviewed_payload": false,
+      "raw_evidence_sha256": {
+        "CLEANUP.json": "2a7ae63f1f0e88b0b8fcf8744475f2946fe6792f1797628069d3387857099c9a",
+        "INTENT.json": "50ab315e652a1ded6a30f246123ee733340badcc3f833e4b40e2702dbaab5f00",
+        "OBSERVATION.json": "f895eeed960a97c7839d15ce6eca641605a430987443da700610ac3b4ef0b7a0",
+        "probe.py": "31f29ee7ede47043c3d2b3ba2b2f43e8c3eee7abae22cf35cffb6f47fc36e6ba",
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "recorded_command_matches_reviewed_fixed_source_and_payload": true,
+      "runtime_limit_readback_seconds": 20,
+      "same_boot_as_review": true,
+      "source_sha_matches_recorded_intent": true,
+      "stop_limit_readback_seconds": 5,
+      "terminal": {
+        "elapsed_seconds": 0.07678537900028459,
+        "explicit_signal_or_stop_in_probe_source": false,
+        "original_process_paths_absent_at_cleanup": true,
+        "outer_stderr_bytes": 0,
+        "process_wait_exit_code": 0,
+        "scope_active_state": "inactive",
+        "scope_cgroup_empty_in_terminal_show": true,
+        "scope_load_state": "not-found",
+        "scope_sub_state": "dead",
+        "separate_descendant_or_socket_cleanup_audit": false,
+        "stdin_released_for_natural_exit": true
+      }
+    }
+  ],
+  "raw_file_count": 10,
+  "schema_version": 1
+}
