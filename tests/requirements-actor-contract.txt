@@ -1,0 +1,9 @@
+# Offline bridge/API fixtures only; no OASIS startup, model downloads or credentials.
+# Match the reviewed native stack's provider and adapter versions.
+camel-ai==0.2.78
+openai==1.109.1
+httpx==0.28.1
+Flask==3.1.2
+pydantic==2.12.5
+tiktoken==0.7.0
+pytest==8.2.0
