@@ -33,8 +33,8 @@ def descriptor(config, role):
     return wire.normalize_contract({**options(config), 'role': role})
 
 
-def provenance(config):
-    return {'options': options(config), 'support': wire.capabilities(),
+def provenance(config, *, expected_provider=wire.USE_RUNTIME_PROVIDER):
+    return {'options': options(config), 'support': wire.capabilities(expected_provider=expected_provider),
             'tracked_patch_sha256': hashlib.sha256((ROOT / 'patches/mirofish-local.patch').read_bytes()).hexdigest(),
             'validation_scope': 'wire_shape_and_receipt_only; existing_business_validators_remain_required',
             'accounting_scope': 'contracted_interviews_only; bootstrap_and_social_calls_are_not_metered'}
@@ -44,7 +44,8 @@ def verify_support(actual):
     wire.require(actual == wire.capabilities(), 'server_actor_contract_support_mismatch')
 
 
-def verify_record(record, *, actor, agent_id, simulation_id, original_prompt, contract, request_key):
+def verify_record(record, *, actor, agent_id, simulation_id, original_prompt, contract, request_key,
+                  expected_provider=wire.USE_RUNTIME_PROVIDER):
     """Fail closed before exposing any native/cache response to a decision parser.
 
 Shape-invalid text may be returned for the existing bounded repair step, but
@@ -61,12 +62,19 @@ unknown physical usage or a cap/deadline violation is an infrastructure failure.
         if 'reddit' in result:
             result = result['reddit']
         receipt = result['actor_output_receipt']
+        provider = (wire.configured_provider_contract() if expected_provider is wire.USE_RUNTIME_PROVIDER
+                    else wire.validate_provider_contract(expected_provider) if expected_provider is not None else None)
+        if provider is not None:
+            wire.require(wire.validate_provider_contract(receipt.get('provider_contract')) == provider,
+                         'native_actor_provider_contract_mismatch')
+        else:
+            wire.require('provider_contract' not in receipt, 'native_actor_provider_configuration_downgrade')
         binding = receipt['binding']
         expected = {'version': wire.VERSION, 'actor': actor, 'agent_id': agent_id,
             'simulation_id': simulation_id, 'request_key': record['contract_request_key'], 'original_prompt_sha256': wire.text_hash(original_prompt),
             'native_prompt_sha256': wire.text_hash(payload['prompt']), 'contract': contract,
             'contract_sha256': wire.digest(contract), 'schema_sha256': wire.digest(wire.role_schema(contract['role'])),
-            'support_sha256': wire.digest(wire.capabilities())}
+            'support_sha256': wire.digest(wire.capabilities(expected_provider=provider))}
         wire.require(type(expected['request_key']) is str and re.fullmatch('[0-9a-f]{64}', expected['request_key']),
                      'invalid_logical_request_key')
         expected['request_id'] = wire.digest(expected)
@@ -110,11 +118,17 @@ and hash metadata. Noncompleted orphan requests retain unknown reservations.
     import json
     root = Path(root)
     config = options(manifest['config']['actor_output_contract'])
+    expected_provider = manifest.get('provider_contract')
+    if expected_provider is not None:
+        expected_provider = wire.validate_provider_contract(expected_provider)
+    wire.require(manifest['config'].get('provider_profile') == (
+        expected_provider['profile'] if expected_provider is not None else None), 'actor_provider_manifest_binding')
     for name in ('lifespan/actor_contract.py', 'lifespan/mirofish.py', 'lifespan/ecosystem_run.py',
                  'lifespan/evaluation/protocol.py', 'lifespan/evaluation/runner.py', 'scripts/audit_evaluation.py'):
         wire.require(manifest['source_sha256'][name] == hashlib.sha256((ROOT / name).read_bytes()).hexdigest(),
                      'actor_contract_client_source_provenance')
-    wire.require(manifest['actor_output_contract_provenance'] == provenance(config), 'actor_contract_source_provenance')
+    wire.require(manifest['actor_output_contract_provenance'] == provenance(config, expected_provider=expected_provider),
+                 'actor_contract_source_provenance')
     actors = {p['id']: (index, wire.ROLE_TYPES[p.get('entity_type', 'Employee')]) for index, p in enumerate(participants)}
     actor_root = root / 'actors'
     state = json.loads((actor_root / 'mirofish_state.json').read_text())
@@ -142,7 +156,8 @@ and hash metadata. Noncompleted orphan requests retain unknown reservations.
             continue
         record = json.loads(cache.read_text())
         receipt = verify_record(record, actor=actor, agent_id=agent, simulation_id=sim,
-            original_prompt=record['prompt'], contract=contract, request_key=wire.text_hash(key))
+            original_prompt=record['prompt'], contract=contract, request_key=wire.text_hash(key),
+            expected_provider=expected_provider)
         wire.require(row['status'] == 'completed' and row['prompt_sha256'] == wire.text_hash(record['prompt'])
                      and row['response_sha256'] == receipt['output_sha256'] and row['accounting_complete'] is True
                      and row['native_request_id'] == receipt['binding']['request_id']

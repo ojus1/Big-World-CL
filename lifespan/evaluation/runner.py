@@ -9,6 +9,7 @@ import argparse
 from copy import deepcopy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -24,6 +25,7 @@ from .runtime import execute_case
 from .tasks import make_case
 from .hermes_transport import executor_options, manifest_fields
 from lifespan.startup_observability import executor_options as startup_options, manifest_fields as startup_fields
+from .provider import manifest_fields as provider_fields
 
 
 class ReportPostprocessingError(RuntimeError):
@@ -54,7 +56,13 @@ def dependency_provenance():
 def credentials():
     imports()
     from app.config import Config
-    return {'model': Config.LLM_MODEL_NAME, 'base_url': Config.LLM_BASE_URL, 'api_key': Config.LLM_API_KEY}
+    result = {'model': Config.LLM_MODEL_NAME, 'base_url': Config.LLM_BASE_URL, 'api_key': Config.LLM_API_KEY}
+    profile = os.environ.get('BIGWORLD_PROVIDER_PROFILE')
+    if profile:
+        from .provider import contract
+        result['provider_profile'] = profile
+        contract(result)
+    return result
 
 
 def safe_trajectory(record):
@@ -161,7 +169,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     creds = creds or credentials()
     started = time.monotonic()
     manifest = {'config': config.public(), 'scenario': spec, 'source_sha256': source_hashes(),
-                **manifest_fields(config), **startup_fields(config),
+                **manifest_fields(config), **startup_fields(config), **provider_fields(config, creds),
                 'learning_evidence_version': 2,
                 'target_model': creds['model'], 'model_base_url': creds['base_url'],
                 'dependencies': dependency_provenance(),
@@ -171,7 +179,8 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                 'sampling': 'Hosted model randomness is not controlled by the scenario seed.'}
     if config.actor_output_contract is not None:
         from ..actor_contract import provenance as actor_contract_provenance
-        manifest['actor_output_contract_provenance'] = actor_contract_provenance(config.actor_output_contract)
+        manifest['actor_output_contract_provenance'] = actor_contract_provenance(
+            config.actor_output_contract, expected_provider=manifest.get('provider_contract'))
     if config.mirofish_service_url is not None:
         manifest['mirofish_service_url'] = config.mirofish_service_url
     saved = out / 'checkpoint.json'
@@ -204,6 +213,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
         provenance = {k: manifest[k] for k in ('target_model', 'model_base_url', 'dependencies', 'source_sha256')}
         provenance.update(manifest_fields(config))
         provenance.update(startup_fields(config))
+        provenance.update(provider_fields(config, creds))
         if 'actor_output_contract_provenance' in manifest:
             provenance['actor_output_contract_provenance'] = manifest['actor_output_contract_provenance']
         if config.mirofish_service_url is not None:
@@ -434,6 +444,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         'model_calls': remaining_calls, 'tokens': remaining_tokens, 'seconds': epoch_seconds,
         'configured_caps': caps, 'eligible_employee_count': recipients}
     progress = {'schema_version': 1, 'employee': employee, 'day': eco.day,
+        **provider_fields(config, creds),
         'employee_epoch_index': len(own) + 1, 'status': 'running', 'epoch_allocation': allocation,
         'parent_ecosystem_sha256': live_hash,
         'parent_skill_sha256': hashlib.sha256(state['skills'][employee].encode()).hexdigest(),
@@ -549,6 +560,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         persist_progress()
         raise
     result.update(employee=employee, day=eco.day, available_from_day=eco.day + 1,
+                  **provider_fields(config, creds),
                   parent_version=state['skill_versions'][employee],
                   employee_epoch_index=len(own) + 1, epoch_allocation=allocation,
                   replay_artifacts=deepcopy(progress['replay_artifacts']),

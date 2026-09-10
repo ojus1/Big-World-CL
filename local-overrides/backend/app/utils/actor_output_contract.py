@@ -16,11 +16,13 @@ from pathlib import Path
 import re
 import sqlite3
 import time
+from urllib.parse import urlsplit
 
 VERSION = 'actor-json-v1'
 ROLE_TYPES = {'Employee': 'employee', 'Enterprise': 'enterprise',
               'GovernmentAgency': 'government', 'Consumer': 'consumer'}
 CURRENT = ContextVar('mirofish_actor_output_contract', default=None)
+USE_RUNTIME_PROVIDER = object()
 
 
 class ContractError(RuntimeError):
@@ -149,12 +151,61 @@ def bind_request(simulation_dir, agent_id, original_prompt, native_prompt, contr
     return binding
 
 
-def capabilities():
+def capabilities(*, expected_provider=USE_RUNTIME_PROVIDER):
     transport = json.loads(Path(__file__).with_name('actor_contract_transport.json').read_text())
-    return {'version': VERSION, 'transport_sha256': transport, 'platforms': ['reddit'], 'backends': ['responses'], 'max_physical_requests': 1,
+    result = {'version': VERSION, 'transport_sha256': transport, 'platforms': ['reddit'], 'backends': ['responses'], 'max_physical_requests': 1,
         'role_schema_sha256': {role: digest(role_schema(role)) for role in ROLE_TYPES.values()},
         'contract_module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'bridge_module_sha256': hashlib.sha256(Path(__file__).with_name('camel_responses.py').read_bytes()).hexdigest()}
+    provider = (configured_provider_contract() if expected_provider is USE_RUNTIME_PROVIDER
+                else validate_provider_contract(expected_provider) if expected_provider is not None else None)
+    if provider is not None:
+        result['provider_contract'] = provider
+    return result
+
+
+def provider_contract(model, base_url, profile='responses-no-thinking-v1'):
+    """Server copy of the public provider descriptor; never contains a key."""
+    require(profile == 'responses-no-thinking-v1', 'unsupported_actor_provider_profile')
+    require(type(model) is str and 0 < len(model) <= 200 and model == model.strip()
+            and not any(c in model for c in '\r\n'), 'invalid_actor_provider_model')
+    require(type(base_url) is str and bool(base_url) and not any(c.isspace() for c in base_url), 'invalid_actor_provider_base_url')
+    try:
+        parsed = urlsplit(base_url)
+        require(parsed.scheme in ('http', 'https') and bool(parsed.hostname)
+                and not parsed.username and not parsed.password and not parsed.query and not parsed.fragment,
+                'invalid_actor_provider_base_url')
+        parsed.port
+    except ValueError:
+        raise ContractError('invalid_actor_provider_base_url') from None
+    return {'schema_version': 1, 'profile': 'responses-no-thinking-v1', 'model': model,
+            'base_url': base_url.rstrip('/'), 'api_mode': 'responses', 'stream': False, 'store': False,
+            'chat_template_kwargs': {'enable_thinking': False}}
+
+
+def validate_provider_contract(value):
+    require(type(value) is dict, 'invalid_actor_provider_contract')
+    expected = provider_contract(value.get('model'), value.get('base_url'), value.get('profile'))
+    require(set(value) == set(expected) and type(value.get('schema_version')) is int
+            and type(value.get('stream')) is bool and type(value.get('store')) is bool
+            and type(value.get('chat_template_kwargs')) is dict
+            and type(value['chat_template_kwargs'].get('enable_thinking')) is bool
+            and value == expected, 'invalid_actor_provider_contract')
+    return deepcopy(expected)
+
+
+def configured_provider_contract():
+    """Delayed lookup: MiroFish loads Config/dotenv before constructing models.
+
+    The absent selector preserves legacy capability/receipt structure. A named
+    profile must have explicit nonsecret model/base configuration in both client
+    and native worker; a missing or different profile cannot reuse its receipts.
+    """
+    selected = os.environ.get('BIGWORLD_PROVIDER_PROFILE')
+    if selected is None:
+        return None
+    require(selected == 'responses-no-thinking-v1', 'unsupported_actor_provider_profile')
+    return provider_contract(os.environ.get('LLM_MODEL_NAME'), os.environ.get('LLM_BASE_URL'))
 
 
 def require_transport_support(backend_root):
@@ -269,13 +320,25 @@ class InterviewScope:
             handle.flush(); os.fsync(handle.fileno())
         os.replace(temporary, self.path)
 
-    def before_dispatch(self, request):
+    def before_dispatch(self, request, *, provider=None):
         require(self.receipt['physical_requests_dispatched'] == 0, 'actor_physical_request_limit')
+        expected = configured_provider_contract()
+        require(provider == expected, 'actor_provider_contract_mismatch')
+        require(self.binding['support_sha256'] == digest(capabilities()), 'actor_provider_support_changed')
+        if expected is not None:
+            validate_provider_contract(provider)
+            require(request.get('model') == expected['model'] and request.get('store') is False
+                    and request.get('stream') is False
+                    and request.get('extra_body') == {'chat_template_kwargs': {'enable_thinking': False}}
+                    and request['extra_body']['chat_template_kwargs']['enable_thinking'] is False,
+                    'actor_provider_request_policy_mismatch')
         remaining = self.contract['timeout_seconds'] - (time.monotonic() - self.started)
         require(remaining > 0, 'actor_request_deadline')
         self.receipt.update(status='dispatched', physical_requests_dispatched=1,
             reserved_output_tokens=self.contract['max_output_tokens'], provider_input_sha256=digest(request['input']),
             provider_request_sha256=digest(request))
+        if expected is not None:
+            self.receipt['provider_contract'] = deepcopy(provider)
         self.persist()
         return remaining
 

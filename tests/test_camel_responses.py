@@ -7,8 +7,10 @@ import httpx
 from openai import OpenAI, AsyncOpenAI
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'MiroFish/backend'))
-from app.utils.camel_responses import OpenAIResponsesModel
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Exercise this checkout's tracked override, never an installed native server.
+from tests.test_actor_output_contract import bridge
+OpenAIResponsesModel = bridge.OpenAIResponsesModel
 
 
 TOOLS = [{'type': 'function', 'function': {'name': 'create_post', 'parameters': {

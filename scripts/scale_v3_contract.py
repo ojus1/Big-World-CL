@@ -22,6 +22,8 @@ POPULATION = {'firms': 4, 'employees': 12, 'consumers': 8, 'agencies': 1}
 ACTOR_CONTRACT = {'version': 'actor-json-v1', 'max_output_tokens': 4096, 'timeout_seconds': 120}
 EVIDENCE_KINDS = ('actor_native_capability', 'employee_native_capability', 'horizon_feasibility',
                   'scope_startup_qualification', 'employee_source_compatibility')
+PROFILE_EVIDENCE_KINDS = ('actor_native_capability', 'employee_native_capability', 'horizon_feasibility',
+                          'scope_startup_qualification', 'optimizer_native_capability')
 REGISTRATION_TOOLS = tuple(dict.fromkeys((*V2_TOOLS,
     'scripts/scale_v3_contract.py', 'scripts/prepare_scale_v3.py',
     'scripts/run_scale_v3_inner.py', 'scripts/run_scale_v3.py', 'scripts/audit_scale_v3.py',
@@ -34,7 +36,15 @@ REGISTRATION_TOOLS = tuple(dict.fromkeys((*V2_TOOLS,
     'scripts/report_scale_v3.py', 'scripts/report_scale_v2.py', 'scripts/report_scale.py',
     'scripts/scale_world_dynamics.py', 'scripts/audit_scale_cli.py',
     'scripts/audit_calibration.py', 'scripts/calibration_bank.py',
-    'scripts/transfer_analysis.py', 'scripts/transfer_probes.py')))
+    'scripts/transfer_analysis.py', 'scripts/transfer_probes.py',
+    'scripts/preflight_actor_contract.py', 'scripts/check_mirofish_installation.py',
+    'scripts/preflight_optimizer.py',
+    # Installed overlays can be untracked in the dependency checkout. Bind
+    # their authoritative repository bytes, including the non-Python descriptor.
+    'local-overrides/backend/app/utils/actor_contract_transport.json',
+    'local-overrides/backend/app/utils/actor_output_contract.py',
+    'local-overrides/backend/app/utils/camel_responses.py',
+    'local-overrides/backend/app/utils/local_graph.py', 'patches/mirofish-local.patch')))
 LAUNCH_LIMITS = {'world_cleanup_seconds': 120, 'service_cleanup_seconds': 30,
                 'service_startup_seconds': 120, 'observation_interval_seconds': 0.25}
 # One shared campaign ceiling, not separate world or service reservations.
@@ -65,9 +75,15 @@ def read(path):
 
 
 def policy(value):
-    require(type(value) is dict and set(value) == {'per_world_wall_seconds', 'workers',
+    fields = {'per_world_wall_seconds', 'workers',
             'mirofish_service_url', 'wall_budget_rationale', 'evidence', 'scope_limits',
-            'dispatch_policy'}, 'v3_policy_fields')
+            'dispatch_policy'}
+    require(type(value) is dict and set(value) in (fields, fields | {'provider_profile'}), 'v3_policy_fields')
+    profiled = 'provider_profile' in value
+    if profiled:
+        from lifespan.evaluation.provider import PROFILE
+        require(type(value['provider_profile']) is str and value['provider_profile'] == PROFILE,
+                'v3_provider_profile_unsupported')
     require(type(value['per_world_wall_seconds']) is int and value['per_world_wall_seconds'] == 86400,
             'v3_wall_budget_requires_explicit_positive_seconds')
     require(type(value['workers']) is int and value['workers'] == 2, 'v3_parallel_world_limit')
@@ -83,8 +99,9 @@ def policy(value):
     require(same(value['scope_limits'], SCOPE_LIMITS) and
             value['dispatch_policy'] == DISPATCH_POLICY, 'v3_fixed_scope_and_dispatch_policy')
     evidence = value['evidence']
-    require(type(evidence) is list and len(evidence) == len(EVIDENCE_KINDS) and
-            [row.get('kind') for row in evidence if type(row) is dict] == list(EVIDENCE_KINDS),
+    evidence_kinds = PROFILE_EVIDENCE_KINDS if profiled else EVIDENCE_KINDS
+    require(type(evidence) is list and len(evidence) == len(evidence_kinds) and
+            [row.get('kind') for row in evidence if type(row) is dict] == list(evidence_kinds),
             'v3_prerequisite_reference_inventory')
     for row in evidence:
         require(set(row) == {'kind', 'artifact_sha256', 'review_sha256'}, 'v3_prerequisite_reference_fields')
@@ -93,11 +110,14 @@ def policy(value):
     return deepcopy(value)
 
 
-def config(seed, algorithm, launch_policy):
+def config(seed, algorithm, launch_policy, *, provider_profile=None):
     p = policy(launch_policy)
+    if provider_profile is not None:
+        require(provider_profile == p.get('provider_profile'), 'v3_provider_profile_policy_mismatch')
+    options = {'provider_profile': p['provider_profile']} if 'provider_profile' in p else {}
     return replace(study_config(seed, algorithm), max_run_seconds=p['per_world_wall_seconds'],
         actor_output_contract=deepcopy(ACTOR_CONTRACT), hermes_transport='nonstreaming',
-        mirofish_service_url=p['mirofish_service_url'], hermes_startup_observability=True)
+        mirofish_service_url=p['mirofish_service_url'], hermes_startup_observability=True, **options)
 
 
 def schedule():
@@ -162,10 +182,18 @@ def validate(directory, *, source_sha256, dependencies, registration_tools_sha25
     require(type(campaign_sha256) is str and re.fullmatch('[0-9a-f]{64}', campaign_sha256) and
             sha(manifest_path) == campaign_sha256, 'v3_reviewed_campaign_hash_mismatch')
     manifest = read(manifest_path)
-    require(set(manifest) == {'schema_version', 'kind', 'created_at', 'seeds', 'algorithms', 'population',
+    fields = {'schema_version', 'kind', 'created_at', 'seeds', 'algorithms', 'population',
             'days', 'budgets', 'design', 'source_sha256', 'dependencies', 'registration_tools_sha256',
-            'target_model', 'model_base_url', 'launch_policy', 'slots'}, 'v3_registration_fields')
+            'target_model', 'model_base_url', 'launch_policy', 'slots'}
+    require(set(manifest) in (fields, fields | {'provider_contract'}), 'v3_registration_fields')
     p = policy(manifest['launch_policy'])
+    require(('provider_profile' in p) == ('provider_contract' in manifest), 'v3_provider_profile_missing_or_unexpected')
+    if 'provider_contract' in manifest:
+        from lifespan.evaluation.provider import provider_contract, validate_contract
+        actual_provider = validate_contract(manifest['provider_contract'])
+        require(same(actual_provider, provider_contract(manifest['target_model'], manifest['model_base_url'],
+                                                       p['provider_profile'])), 'v3_provider_contract_mismatch')
+        require(manifest['model_base_url'] == actual_provider['base_url'], 'v3_provider_url_not_canonical')
     fixed = {'schema_version': 3, 'kind': VERSION, 'seeds': SEEDS, 'algorithms': ALGORITHMS,
         'population': POPULATION, 'days': 20, 'budgets': budgets(p), 'design': design(),
         'source_sha256': source_sha256, 'dependencies': dependencies,

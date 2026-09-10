@@ -168,7 +168,10 @@ def verify_boundary(expected,current):
         'io_isolation_qualified':False}
 
 
-def prepare(out):
+def prepare(out, *, model=None, provider_profile=None):
+    require((model is None) == (provider_profile is None), 'startup_model_and_profile_required_together')
+    configuration = None if model is None else {'model': model, 'provider_profile': provider_profile}
+    execution, _ = child.startup_settings(configuration)
     directory=Path(out).absolute()
     require(directory.parent.is_dir() and directory.parent.resolve()==directory.parent
         and not directory.exists() and not directory.is_symlink(),'fresh_real_output_required')
@@ -184,8 +187,9 @@ def prepare(out):
         'source_sha256':source_map,'repository_commit':revision,'dependencies':dependencies(),
         'boot_id':boot(),'uid':os.getuid(),'caller_security_context':security_context(os.getpid()),'root':str(directory),'working_directory':str(ROOT),
         'python':interpreter(),'controller_environment':controller_environment(),
-        'controller_import_paths':controller_import_paths(),'child_execution':child.EXECUTION,
+        'controller_import_paths':controller_import_paths(),'child_execution':execution,
         'created_at':datetime.now(timezone.utc).isoformat()}
+    if configuration is not None: manifest['startup_configuration'] = configuration
     directory.mkdir(mode=0o700);(directory/'slots').mkdir(mode=0o700)
     save(directory/'manifest.json',manifest)
     return {'prepared':True,'manifest_sha256':load(directory/'manifest.json')[1],'slots':9}
@@ -194,9 +198,13 @@ def prepare(out):
 def validate_manifest(directory,expected_hash,*,current=True):
     manifest,actual=load(directory/'manifest.json')
     require(actual==expected_hash and re.fullmatch('[0-9a-f]{64}',expected_hash or ''),'registered_manifest_mismatch')
+    configuration = manifest.get('startup_configuration')
+    require('startup_configuration' not in manifest or type(configuration) is dict,
+            'invalid_startup_configuration')
+    execution, _ = child.startup_settings(configuration)
     require(manifest['schema_version']==3 and manifest['kind']==VERSION
         and canonical(manifest['config'])==canonical(CONFIG)
-        and canonical(manifest['child_execution'])==canonical(child.EXECUTION),'qualification_contract_mismatch')
+        and canonical(manifest['child_execution'])==canonical(execution),'qualification_contract_mismatch')
     require(manifest['root']==str(directory) and manifest['working_directory']==str(ROOT)
         and manifest['python']==interpreter(),'execution_location_mismatch')
     require(type(manifest['controller_environment']) is dict
@@ -232,8 +240,9 @@ def _wait_file(path,deadline):
     return load(path)[0]
 
 
-def _native_startup(trial,expected,deadline,manifest_hash,slot_id):
+def _native_startup(trial,expected,deadline,manifest_hash,slot_id, *, startup_configuration=None):
     """Actual native Computer.start/close, no Computer.run and fixed dummy endpoint."""
+    execution, credentials = child.startup_settings(startup_configuration)
     before=child.observe_boundary();verification=verify_boundary(expected,before)
     entered=time.monotonic();require(entered<deadline,'native_startup_deadline_exhausted')
     native=trial/'native';native.mkdir(mode=0o700)
@@ -242,19 +251,21 @@ def _native_startup(trial,expected,deadline,manifest_hash,slot_id):
     from lifespan.evaluation.runtime import install_skill
     from lifespan.evaluation.protocol import SEED_SKILL
     from lifespan.evaluation.hermes_transport import contract
-    computer=Computer(native/'computers','startup-qualification',backend='bubblewrap',execution=dict(child.EXECUTION))
+    computer=Computer(native/'computers','startup-qualification',backend='bubblewrap',execution=execution)
     skill=install_skill(computer.profile,SEED_SKILL)
-    save(native/'STARTUP_INTENT.json',{'kind':VERSION,'execution':child.EXECUTION,'skill':skill,
+    save(native/'STARTUP_INTENT.json',{'kind':VERSION,'execution':execution,'skill':skill,
         'helper_sha256':sha(Path(__file__).read_bytes()),'work_requests_sent':0})
     ready=None;error=None;close_error=None;pre_close_error=None
     try:
         require(not any((computer.profile/n).exists() or (computer.profile/n).is_symlink()
                         for n in ('.env','.op.env')),'profile_environment_file_present')
         remaining=deadline-time.monotonic();require(remaining>0,'native_startup_deadline_exhausted')
-        ready=computer.start(dict(child.CREDENTIALS),timeout=min(150,remaining))
+        ready=computer.start(credentials,timeout=min(150,remaining))
         require(ready['kind']=='ready' and ready['backend']=='bubblewrap'
             and ready['evaluation_transport']==contract('nonstreaming')
             and not {'memory','skill_manage'} & set(ready['tool_names']),'native_ready_contract_mismatch')
+        require(canonical(ready.get('provider_contract')) == canonical(execution.get('provider_contract')),
+                'native_provider_contract_mismatch')
         require(time.monotonic()<=deadline,'late_native_ready')
     except Exception as exc:error=type(exc).__name__
     finally:
@@ -319,7 +330,8 @@ def _worker(directory,slot_id):
     require(manifest['source_sha256']==sources() and manifest['dependencies']==dependencies(),
             'post_gate_source_or_dependency_changed')
     validate_worker_environment(manifest,gate,os.environ)
-    result=_native_startup(trial,gate['expected_boundary'],deadline,manifest_hash,slot_id)
+    options = {'startup_configuration': manifest['startup_configuration']} if 'startup_configuration' in manifest else {}
+    result=_native_startup(trial,gate['expected_boundary'],deadline,manifest_hash,slot_id, **options)
     release=_wait_file(trial/'RELEASE.json',result['cleanup_deadline'])
     require(release['slot_id']==slot_id and release['manifest_sha256']==manifest_hash
         and same(release['controller_identity'],identity(os.getpid())),'controller_release_mismatch')
@@ -622,6 +634,8 @@ def _completed_evidence(trial, directory, manifest, execution, slot, intent, rec
             and instance['evaluation_transport'] == contract('nonstreaming')
             and {'terminal', 'skill_view', 'enterprise_action'} <= set(instance['tool_names'])
             and not {'memory', 'skill_manage'} & set(instance['tool_names']), 'native_ready_contract_mismatch')
+    require(canonical(instance.get('provider_contract')) == canonical(manifest['child_execution'].get('provider_contract')),
+            'native_provider_contract_mismatch')
     terminal_probe = json.loads(instance['probe'])
     require(type(terminal_probe['exit_code']) is int and terminal_probe['exit_code'] == 0
             and 'startup-qualification' in terminal_probe['output'].splitlines(), 'native_sandbox_probe_invalid')
@@ -653,7 +667,7 @@ def _completed_evidence(trial, directory, manifest, execution, slot, intent, rec
     result, _ = load(trial / 'native/CHILD_RESULT.json')
     close, _ = load(trial / 'native/CLOSE_STARTED.json')
     start_intent, _ = load(trial / 'native/STARTUP_INTENT.json')
-    require(start_intent['kind'] == VERSION and start_intent['execution'] == child.EXECUTION
+    require(start_intent['kind'] == VERSION and canonical(start_intent['execution']) == canonical(manifest['child_execution'])
             and start_intent['helper_sha256'] == manifest['source_sha256']['scripts/hermes_startup_scope_qualification_v3.py']
             and start_intent['work_requests_sent'] == 0, 'native_startup_intent_mismatch')
     require(phase['ready_observed'] is True and phase['error_type'] is None and result['ready_observed'] is True
@@ -817,9 +831,10 @@ def main(argv=None):
     action.add_argument('--prepare',action='store_true');action.add_argument('--execute',action='store_true')
     action.add_argument('--audit',action='store_true')
     parser.add_argument('--out',type=Path,required=True);parser.add_argument('--manifest-sha256')
+    parser.add_argument('--model');parser.add_argument('--provider-profile')
     args=parser.parse_args(argv)
     try:
-        if args.prepare:result=prepare(args.out)
+        if args.prepare:result=prepare(args.out, model=args.model, provider_profile=args.provider_profile)
         elif args.execute:result=execute(args.out,manifest_sha256=args.manifest_sha256)
         else:result=audit_qualification(args.out,manifest_sha256=args.manifest_sha256,strict=True)
     except (OSError,ValueError,TypeError,KeyError,subprocess.SubprocessError) as exc:

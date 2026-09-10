@@ -314,7 +314,7 @@ def test_http_timeout_does_not_cancel_native_receipt_or_allow_client_retry(tmp_p
 
 @pytest.fixture(scope='session')
 def patched_backend(tmp_path_factory):
-    """Apply only the four transport hunks from the actual tracked patch."""
+    """Apply the native transport and factory compatibility hunks in isolation."""
     source = Path(os.environ.get('BIGWORLD_TEST_MIROFISH_SOURCE', ROOT / '.cache/mirofish-contract'))
     if os.environ.get('BIGWORLD_TEST_MIROFISH_SOURCE') and not (source / '.git').exists():
         pytest.fail('Explicit pinned MiroFish test source is missing')
@@ -324,6 +324,7 @@ def patched_backend(tmp_path_factory):
         pytest.skip('Pinned upstream checkout required for offline native-transport fixtures')
     base = tmp_path_factory.mktemp('patched-native-source')
     paths = ['backend/' + key for key in wire.capabilities()['transport_sha256']]
+    paths.append('backend/app/utils/openai_chat_compat.py')
     for relative in paths:
         target = base / relative; target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(subprocess.check_output(['git', '-C', str(source), 'show',
@@ -351,7 +352,8 @@ def test_logical_keys_distinguish_repeat_prompts_and_consume_duplicates(tmp_path
     assert len(calls) == 2
 
 
-def test_full_patched_api_ipc_database_client_path(patched_backend, tmp_path, monkeypatch):
+@pytest.mark.parametrize('profiled', [False, True])
+def test_full_patched_api_ipc_database_client_path(patched_backend, tmp_path, monkeypatch, profiled):
     """Actual patched transport methods, fake OASIS actors and mock provider."""
     from flask import Flask, Blueprint, jsonify, request
     import traceback
@@ -359,9 +361,10 @@ def test_full_patched_api_ipc_database_client_path(patched_backend, tmp_path, mo
     text = json.dumps({**EXAMPLE, 'working_notes': 'Delimited { } \\ " newline\n Ω'}, ensure_ascii=False)
     requests = []
     def respond(req):
+        assert req.url.path == '/v1/responses'
         requests.append(json.loads(req.content))
-        return httpx.Response(200, json=response(text))
-    instance = model(respond)
+        return httpx.Response(200, json=profile_response(text) if profiled else response(text))
+    instance = profile_model(respond, monkeypatch) if profiled else model(respond)
     agent = type('FixtureNativeAgent', (), {})()
     agent.model_backend = SimpleNamespace(models=[instance])
     env_steps = []
@@ -434,6 +437,10 @@ def test_full_patched_api_ipc_database_client_path(patched_backend, tmp_path, mo
         receipt = verify(record)
         assert receipt['output_schema_valid'] is True
         assert receipt['provider_input_sha256'] == wire.digest(requests[0]['input'])
+        if profiled:
+            assert receipt['provider_contract'] == wire.configured_provider_contract()
+            assert requests[0]['chat_template_kwargs'] == {'enable_thinking': False}
+            assert requests[0]['model'] == PROFILE_MODEL
         assert receipt['binding']['original_prompt_sha256'] != receipt['binding']['native_prompt_sha256']
         # Both native payload forms are verified; neither silently loses a receipt.
         nested = deepcopy(record); nested['native_result']['result'] = {'reddit': nested['native_result']['result']}
@@ -464,6 +471,237 @@ def test_full_patched_api_ipc_database_client_path(patched_backend, tmp_path, mo
     finally:
         stopped.set(); thread.join(timeout=3)
         assert not thread.is_alive()
+
+
+PROFILE_MODEL = 'Qwen/Qwen3.8-27B-FP8'
+PROFILE_BASE = 'https://provider.invalid/v1'
+
+
+def profile_model(responder, monkeypatch):
+    monkeypatch.setenv('BIGWORLD_PROVIDER_PROFILE', 'responses-no-thinking-v1')
+    monkeypatch.setenv('LLM_MODEL_NAME', PROFILE_MODEL)
+    monkeypatch.setenv('LLM_BASE_URL', PROFILE_BASE)
+    instance = model(responder)
+    instance.model_type = PROFILE_MODEL
+    instance._async_client.base_url = PROFILE_BASE
+    return instance
+
+
+def profile_response(text, **kwargs):
+    body = response(text, **kwargs)
+    body['model'] = PROFILE_MODEL
+    return body
+
+
+def test_provider_descriptor_matches_public_contract(monkeypatch):
+    from lifespan.evaluation.provider import provider_contract, validate_contract
+    profile_model(lambda _: None, monkeypatch)
+    expected = provider_contract(PROFILE_MODEL, PROFILE_BASE + '/')
+    assert wire.provider_contract(PROFILE_MODEL, PROFILE_BASE + '/') == expected
+    assert wire.validate_provider_contract(expected) == validate_contract(expected)
+    assert wire.capabilities()['provider_contract'] == expected
+    for key, value in [('stream', 0), ('store', 0), ('schema_version', True),
+                       ('chat_template_kwargs', {'enable_thinking': 0}), ('extra', 0)]:
+        with pytest.raises(wire.ContractError):
+            wire.validate_provider_contract({**expected, key: value})
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE')
+    assert wire.configured_provider_contract() is None
+    assert 'provider_contract' not in wire.capabilities()
+
+
+@pytest.mark.parametrize('base', ['https://user:secret@provider.invalid/v1', 'https://provider.invalid/v1?q=x',
+                                'https://provider.invalid/v1#part', 'https://provider.invalid:bad/v1',
+                                'https://provider.invalid/ white', 'ftp://provider.invalid/v1'])
+def test_provider_descriptor_rejects_unsafe_endpoints(base):
+    with pytest.raises(wire.ContractError):
+        wire.provider_contract(PROFILE_MODEL, base)
+
+
+def test_profile_forces_existing_responses_factory_and_preserves_default(monkeypatch, patched_backend):
+    profile_model(lambda _: None, monkeypatch)
+    calls = []
+    sentinel = object()
+    monkeypatch.setattr(bridge, 'OpenAIResponsesModel', lambda **kwargs: calls.append(kwargs) or sentinel)
+    assert bridge.create_simulation_model(PROFILE_MODEL, 'offline-test-key', PROFILE_BASE) is sentinel
+    assert calls[-1]['model_config_dict'] == {}
+    with pytest.raises(wire.ContractError, match='provider_contract_mismatch'):
+        bridge.create_simulation_model('other-model', 'offline-test-key', PROFILE_BASE)
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE')
+    # Load the actual patched helper, with only its native Config dependency
+    # replaced. No installed server or dotenv is imported by this fixture.
+    path = patched_backend / 'app/utils/openai_chat_compat.py'
+    spec = importlib.util.spec_from_file_location(PKG + '.openai_chat_compat', path)
+    compat = importlib.util.module_from_spec(spec); compat.__package__ = 'app.utils'
+    config = ModuleType('app.config'); config.Config = SimpleNamespace(LLM_REASONING_EFFORT='low')
+    monkeypatch.setitem(sys.modules, 'app.config', config)
+    monkeypatch.setitem(sys.modules, spec.name, compat); spec.loader.exec_module(compat)
+    from camel.models import ModelFactory
+    monkeypatch.setattr(ModelFactory, 'create', lambda **kwargs: calls.append(kwargs) or sentinel)
+    assert bridge.create_simulation_model(PROFILE_MODEL, 'offline-test-key', PROFILE_BASE) is sentinel
+    assert calls[-1]['model_config_dict'] is None and 'model_platform' in calls[-1]
+    assert bridge.create_simulation_model('gpt-5.6-luna', 'offline-test-key', PROFILE_BASE) is sentinel
+    assert calls[-1]['model_config_dict']['reasoning_effort'] == 'low'
+
+
+def test_profile_constructor_freezes_request_policy_and_rejects_later_downgrade(monkeypatch):
+    profile_model(lambda _: None, monkeypatch)
+    instance = bridge.create_simulation_model(PROFILE_MODEL, 'offline-test-key', PROFILE_BASE)
+    assert type(instance) is bridge.OpenAIResponsesModel
+    assert instance._provider(asynchronous=True) == wire.configured_provider_contract()
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE')
+    with pytest.raises(wire.ContractError, match='configuration_changed'):
+        instance._provider(asynchronous=True)
+
+
+def test_profile_concurrent_roles_and_uncontracted_tool_requests(tmp_path, monkeypatch):
+    directory = actor_dir(tmp_path)
+    requests = []
+    employee = json.dumps({**EXAMPLE, 'working_notes': 'Literal { } quote " slash \\ newline\n Ω'})
+    government = json.dumps({'notes': '', 'reason': '', 'evidence_ids': [], 'policy': 'keep', 'duration': 3})
+    async def respond(request):
+        assert request.url.path == '/v1/responses'
+        data = json.loads(request.content); requests.append(data)
+        await asyncio.sleep(0)
+        role = data.get('text', {}).get('format', {}).get('name')
+        return httpx.Response(200, json=profile_response(government if role == 'actor_government_v1' else employee))
+    instance = profile_model(respond, monkeypatch)
+    original = deepcopy(instance.model_config_dict)
+    async def run():
+        a, b, _ = await asyncio.gather(
+            native_fixture(directory, instance, prompt='employee'),
+            native_fixture(directory, instance, agent_id=1, role='government', prompt='government'),
+            instance.arun([{'role': 'user', 'content': 'ordinary'}], tools=TOOLS))
+        assert a['response'] == employee and b['response'] == government
+        for record in (a, b):
+            receipt = verify(record)
+            assert receipt['output_schema_valid'] is True
+            assert receipt['provider_contract'] == wire.configured_provider_contract()
+            assert receipt['input_tokens'] == 10 and receipt['output_tokens'] == 50
+        assert wire.CURRENT.get() is None
+    asyncio.run(run())
+    assert len(requests) == 3 and instance.model_config_dict == original
+    for request in requests:
+        assert request['model'] == PROFILE_MODEL
+        assert request['store'] is False and request['stream'] is False
+        assert request['chat_template_kwargs'] == {'enable_thinking': False}
+        assert 'reasoning' not in request and 'include' not in request
+        if 'text' in request:
+            assert request['text']['format']['strict'] is True
+            assert 'tools' not in request and request['max_output_tokens'] == 512
+        else:
+            assert request['tools'][0]['name'] == 'create_post' and request['max_output_tokens'] == 8192
+
+
+@pytest.mark.parametrize('mode', ['model', 'base', 'wire_flag', 'selector'])
+def test_profile_mismatch_refuses_before_physical_dispatch(tmp_path, monkeypatch, mode):
+    directory = actor_dir(tmp_path)
+    calls = []
+    instance = profile_model(lambda req: calls.append(req) or httpx.Response(200, json=profile_response(json.dumps(EXAMPLE))), monkeypatch)
+    if mode == 'model': instance.model_type = 'another-model'
+    if mode == 'base': instance._async_client.base_url = 'https://other.invalid/v1'
+    if mode == 'selector': monkeypatch.setenv('BIGWORLD_PROVIDER_PROFILE', 'unknown-profile')
+    if mode == 'wire_flag':
+        original = instance._request
+        def changed(*args):
+            result = original(*args)
+            result['extra_body']['chat_template_kwargs']['enable_thinking'] = 0
+            return result
+        instance._request = changed
+    with pytest.raises(wire.ContractError):
+        asyncio.run(native_fixture(directory, instance))
+    assert calls == []
+
+
+@pytest.mark.parametrize('mode', ['timeout', 'incomplete', 'wrong_returned_model', 'malformed', 'overrun_partial_usage'])
+def test_profile_failures_preserve_costs_without_retry(tmp_path, monkeypatch, mode):
+    directory = actor_dir(tmp_path)
+    calls = []
+    async def respond(request):
+        calls.append(request)
+        if mode == 'timeout': raise httpx.ReadTimeout('PRIVATE_ERROR_BODY')
+        body = profile_response(json.dumps(EXAMPLE), status='incomplete' if mode == 'incomplete' else 'completed')
+        if mode == 'wrong_returned_model': body['model'] = 'another-model'
+        if mode == 'malformed': body['output'] = None
+        if mode == 'overrun_partial_usage': body['usage'].update(input_tokens=None, output_tokens=9000, total_tokens=None)
+        return httpx.Response(200, json=body)
+    with pytest.raises(wire.ContractError):
+        asyncio.run(native_fixture(directory, profile_model(respond, monkeypatch)))
+    receipt = json.loads(next((directory / 'actor_contract_receipts').glob('*.json')).read_text())
+    assert len(calls) == receipt['physical_requests_dispatched'] == 1
+    assert receipt['provider_contract'] == wire.configured_provider_contract()
+    assert 'PRIVATE_ERROR_BODY' not in json.dumps(receipt)
+    if mode == 'timeout':
+        assert receipt['total_tokens'] is None and receipt['reserved_output_tokens'] == 512
+        assert receipt['error_class'] == 'APITimeoutError'
+    elif mode == 'overrun_partial_usage':
+        assert receipt['output_tokens'] == 9000 and receipt['input_tokens'] is None
+        assert receipt['accounting_complete'] is False and receipt['reserved_output_tokens'] == 512
+    else:
+        assert receipt['input_tokens'] == 10 and receipt['output_tokens'] == 50 and receipt['total_tokens'] == 60
+        assert receipt['accounting_complete'] is True and receipt['reserved_output_tokens'] == 0
+
+
+def test_profile_cache_metadata_cannot_be_downgraded(tmp_path, monkeypatch):
+    directory = actor_dir(tmp_path)
+    instance = profile_model(lambda _: httpx.Response(200, json=profile_response(json.dumps(EXAMPLE))), monkeypatch)
+    record = asyncio.run(native_fixture(directory, instance))
+    verify(record)
+    for altered in ({}, {'model': 'other'}, {'stream': 0}, {'chat_template_kwargs': {'enable_thinking': 0}}):
+        changed = deepcopy(record)
+        receipt = changed['native_result']['result']['actor_output_receipt']
+        if altered: receipt['provider_contract'].update(altered)
+        else: receipt.pop('provider_contract')
+        with pytest.raises(wire.ContractError): verify(changed)
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE')
+    with pytest.raises(wire.ContractError, match='configuration_downgrade'): verify(record)
+
+
+@pytest.mark.parametrize('ordinary', [False, True])
+def test_profile_minimal_usage_preserves_required_totals_and_unknown_details(tmp_path, monkeypatch, ordinary):
+    body = profile_response(json.dumps(EXAMPLE), usage={'input_tokens': 10, 'output_tokens': 50, 'total_tokens': 60})
+    instance = profile_model(lambda _: httpx.Response(200, json=body), monkeypatch)
+    if ordinary:
+        completion = asyncio.run(instance.arun([{'role': 'user', 'content': 'ordinary'}]))
+        assert completion.usage.prompt_tokens == 10 and completion.usage.completion_tokens == 50
+        assert completion.usage.total_tokens == 60
+        assert completion.usage.prompt_tokens_details is None and completion.usage.completion_tokens_details is None
+    else:
+        receipt = verify(asyncio.run(native_fixture(actor_dir(tmp_path), instance)))
+        assert receipt['input_tokens'] == 10 and receipt['output_tokens'] == 50 and receipt['total_tokens'] == 60
+        assert receipt['accounting_complete'] is True
+
+
+@pytest.mark.parametrize('audit_environment', ['absent', 'different'])
+def test_profile_offline_ledger_audit_uses_manifest_without_environment_changes(tmp_path, monkeypatch, audit_environment):
+    from lifespan.actor_contract import audit_interviews, provenance
+    directory = actor_dir(tmp_path); key = 'profile-audit-fixture'
+    instance = profile_model(lambda _: httpx.Response(200, json=profile_response(json.dumps(EXAMPLE))), monkeypatch)
+    record = asyncio.run(native_fixture(directory, instance, request_key=wire.text_hash(key)))
+    runtime = MiroFishRuntime(tmp_path / 'run/actors')
+    runtime.actor_output_contract = CONFIG; runtime.actor_roles = {'firm-0__renewal': 'employee'}
+    runtime.employee_ids = {'firm-0__renewal': 0}; runtime.state = {'simulation': {'simulation_id': directory.name}}
+    runtime.state_path.write_text(json.dumps(runtime.state))
+    monkeypatch.setattr(runtime, 'call', lambda *a, **kw: record['native_result'])
+    runtime.interview('firm-0__renewal', 'fixture', key)
+    provider = wire.configured_provider_contract()
+    manifest = {'config': {'actor_output_contract': CONFIG, 'provider_profile': provider['profile']},
+        'provider_contract': provider, 'actor_output_contract_provenance': provenance(CONFIG),
+        'source_sha256': __import__('lifespan.evaluation.runner', fromlist=['source_hashes']).source_hashes()}
+    if audit_environment == 'absent':
+        for name in ('BIGWORLD_PROVIDER_PROFILE', 'LLM_MODEL_NAME', 'LLM_BASE_URL'): monkeypatch.delenv(name)
+    else:
+        monkeypatch.setenv('LLM_MODEL_NAME', 'other-model')
+        monkeypatch.setenv('LLM_BASE_URL', 'https://another.invalid/v1')
+    before = dict(os.environ)
+    result = audit_interviews(tmp_path / 'run', manifest,
+        [{'id': 'firm-0__renewal', 'entity_type': 'Employee'}], completed=True)
+    assert result['measured_physical_requests'] == 1 and result['measured_tokens'] == 60
+    assert dict(os.environ) == before
+    with pytest.raises(wire.ContractError): verify(record)  # Live acceptance still enforces its runtime.
+    manifest.pop('provider_contract')
+    with pytest.raises(wire.ContractError, match='provider_manifest_binding'):
+        audit_interviews(tmp_path / 'run', manifest,
+            [{'id': 'firm-0__renewal', 'entity_type': 'Employee'}], completed=True)
 
 
 def test_partial_transport_install_rejected(patched_backend, tmp_path):
