@@ -6,7 +6,9 @@ any native model calls. Execution launched on 2026-09-10 at 01:18 UTC from
 commit `b72fdda`; results will be reported separately. This study follows the rejected native SkillOpt candidate
 and identical-skill A/A difference in [the earlier study](LEARNING_STUDY_RESULTS.md).
 Its objective is to test repeated employee learning under more varied exposure,
-not to require an improvement.
+not to require an improvement. See the separate
+[execution observations](SCALE_EXECUTION_NOTES.md) for the interrupted seed-307
+SkillOpt slot. The frozen configuration and planned-world inventory are preserved.
 
 ## Population and timeline
 

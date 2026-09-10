@@ -1,0 +1,82 @@
+{
+  "audit_source_sha256": "5dc647c04d5081506d0dea9cb679e0f9a572070d27a537e6297bb233c3931dce",
+  "campaign_raw_sha256": "6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa",
+  "checkpointed_prefix": {
+    "accounting_scope": "Only checkpointed employee sessions, excluding all environment inference and subsequent work.",
+    "charged_employee_tokens": 10309804,
+    "employee_receipts_complete": true,
+    "native_artifact_audit_error_count": 0,
+    "native_artifact_audit_status": "incomplete",
+    "recorded_employee_calls": 963,
+    "recorded_employee_tokens": 10309804,
+    "sessions": 93,
+    "sessions_checked": 93,
+    "updates": 0,
+    "updates_checked": 0
+  },
+  "completed_study": false,
+  "day": 7,
+  "eligible_for_paired_inference": false,
+  "failed_action": {
+    "actor_physical_calls": null,
+    "actor_tokens": null,
+    "completed_logical_actor_requests": 2,
+    "failure_root_cause": "malformed_json_at_oasis_model_output_boundary_provider_cause_unknown",
+    "hermes_dispatch_occurred": false,
+    "parser_result_accepted": false,
+    "recorded_hermes_calls": 0,
+    "response_observations": [
+      {
+        "attempt": "original",
+        "cache_raw_sha256": "12ae26f768ff12b73ca369a796899d2e2a3e205843bebf9a0c97e0945ecc3bd7",
+        "characters": 2313,
+        "completion_metadata_available": false,
+        "error_at_eof": true,
+        "error_category": "expecting_comma_delimiter",
+        "error_class": "JSONDecodeError",
+        "error_offset": 2313,
+        "response_utf8_sha256": "c20011cc893aa707853d27c219c6886dbd9c353346ec1d8a0a7d0ff9db15158b",
+        "strict_json_valid": false
+      },
+      {
+        "attempt": "repair",
+        "cache_raw_sha256": "9b7fdc691c163a0c58ca0cbe1beb4f351476697032338fffd05d422e79faff76",
+        "characters": 2140,
+        "completion_metadata_available": false,
+        "error_at_eof": true,
+        "error_category": "expecting_comma_delimiter",
+        "error_class": "JSONDecodeError",
+        "error_offset": 2140,
+        "response_utf8_sha256": "ed74b31f742fd3e864778bec2c3b8b877346bf1452f0d745d3c0fe2f6af02007",
+        "strict_json_valid": false
+      }
+    ],
+    "response_rewritten": false
+  },
+  "failure_stage": "employee_actor_decision_before_hermes_dispatch",
+  "interpretation": "Structural failure observation and audited completed prefix, not a completed world or an employee quality score. Missing final outcomes are unavailable, not zeros. Frozen responses, repair budget, sources and all planned slots are preserved. Actor physical inference and all-in currency costs remain unknown.",
+  "kind": "during_execution_interruption_observation",
+  "learning_gain": null,
+  "observed_at": "2026-09-10T03:06:35.213272+00:00",
+  "planned_world_pairs": 3,
+  "planned_worlds": 6,
+  "raw_input_sha256": {
+    "FAILURE.json": "a63b0a4c76684e8fa90417cdd3b5bda8842d59e897fe8a557fa605eccc895938",
+    "INFLIGHT.json": "ff363cffbbee6fddbc48174e141161b8a3539be3b5509a71346eb91118b9b61c",
+    "REPORT.json": "5569b3d5cc45b3112f823c6ad7f8edeaad6c42c70d9c7b0cc6a46a2d9a88bf92",
+    "SUPERVISOR_ACTOR_CLEANUP.json": "d185641742d1c22cca5cb06965328dedc95a3e6ea8b36928a7214392a3df0d76",
+    "actors/evaluation_interview_ledger.json": "b1f494e6804fc96ddbb0df68830bfcd0d87ed121419bc916fa74a31508611d2d",
+    "checkpoint.json": "7476ef566ce01c0f6eaa46fb26b4b5d9f21a081f84d09b75549effec79b6d377"
+  },
+  "recovery": {
+    "actor_environment_closed": true,
+    "lossless_native_reopen_supported": false,
+    "replacement_world_launched": false,
+    "restarted": false
+  },
+  "reported_exception_type": "JSONDecodeError",
+  "reported_run_accounting_complete": false,
+  "run_id": "seed-307-skillopt",
+  "run_status": "failed",
+  "schema_version": 1
+}
