@@ -1,0 +1,150 @@
+{
+  "accounting_scope": "Contracted interviews only; graph/bootstrap/social physical usage and currency unknown.",
+  "actor_output_contract_provenance": {
+    "accounting_scope": "contracted_interviews_only; bootstrap_and_social_calls_are_not_metered",
+    "options": {
+      "max_output_tokens": 4096,
+      "timeout_seconds": 120,
+      "version": "actor-json-v1"
+    },
+    "support": {
+      "backends": [
+        "responses"
+      ],
+      "bridge_module_sha256": "4a06a70ee686e662e13db6be2458f5ce5ce2783b6d00894de4498a832b5a68a1",
+      "contract_module_sha256": "267342533d1f252c238cde5fde2e5ef268bdfe5120d2c7ef922320b7d81452fb",
+      "max_physical_requests": 1,
+      "platforms": [
+        "reddit"
+      ],
+      "role_schema_sha256": {
+        "consumer": "437dec1212ae3a3c66881b9feb7597d0ad431ce5d194b125766c7b5e07c5983b",
+        "employee": "254ad077718f0a2ed7f94ebd2da862d94f4f6f8197c32da40b4e20bd73fdcc89",
+        "enterprise": "d169660f425b3873c3f43ac383fd97c212667e68ed2845d8f9e154f2291d3a92",
+        "government": "d932a4fb295b26810d49598cb5aa68e721a40e696ddfffffd318e853bbadb654"
+      },
+      "transport_sha256": {
+        "app/api/simulation.py": "86764a6b2d12132f86bfdf7be91ff3ab5bc7da4f8ed3d04680f9367272326b08",
+        "app/services/simulation_ipc.py": "4957d5ffd7cbfcd2901c891917beb8f06c32bd76daad0cb90b4bbba8833a8f3b",
+        "app/services/simulation_runner.py": "a1cd6f73a03285a7d4dd8974959d7606aea1ba399803d7e807151849e6f290b6",
+        "scripts/run_reddit_simulation.py": "73f21e834745e1eb6d3c77fc85be4e531a17e7d78f48606d1554589fdc30945e"
+      },
+      "version": "actor-json-v1"
+    },
+    "tracked_patch_sha256": "7c1ea45a338413f2bac7c61fe2ede706ba952111a0551607c4e105c999f10038",
+    "validation_scope": "wire_shape_and_receipt_only; existing_business_validators_remain_required"
+  },
+  "claims_excluded": [
+    "business decision validity",
+    "learning quality",
+    "long-horizon reliability"
+  ],
+  "cohort_revision": "8b1073ab23d0c0ba0928386a041bac55e5365ddc",
+  "cohort_sha256": "1b96633a3d2757b0563a43b9551fb61be291ffbabd07e2967837b145b5e495ab",
+  "config": {
+    "actor_output_contract": {
+      "max_output_tokens": 4096,
+      "timeout_seconds": 120,
+      "version": "actor-json-v1"
+    },
+    "max_actor_interviews": 8
+  },
+  "created_at": "2026-09-10T04:25:01.883293+00:00",
+  "dependencies": {
+    "hermes": {
+      "revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "mirofish": {
+      "revision": "39d849138ef254f6c737ab4c4705e5545dbe31d4",
+      "tracked_python_diff_sha256": "5daa09bbc0fcd5022e39bec793fefcb19173cbbea80677820b959aafa43ad6ba"
+    },
+    "skillopt": {
+      "revision": "79124b37e9a6371e13b753f8bcd7adb1e493ade1",
+      "tracked_python_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "fixture_sha256": "9b8b8ceeaa01940ff980fe3fd4902b70a8439e40c97e650bd6c3e8b3644bb4c5",
+  "installation_binding_sha256": "d57787f3b818d3c34dbe0c8cc99b662b0924068ee7849527e1f01a1ecd829fec",
+  "kind": "native_actor_wire_capability_preflight",
+  "limits": {
+    "cleanup_seconds": 120,
+    "logical_interviews": 8,
+    "max_repairs_per_actor": 1,
+    "output_tokens_per_interview": 4096,
+    "wall_seconds": 900
+  },
+  "private_manifest_sha256": "aa54abd31e6deded1493240e0d514979a264e1b2888e9f272b7fcb6b001f3987",
+  "provider_binding_sha256": "e41b25369c95487b3c8b4222cd7f5798767484a3622f6cad138711d9a2a766fa",
+  "registration_kind": "prospective_component_capability_preflight_not_study_outcome",
+  "role_persona_bindings": [
+    {
+      "participant_id": "preflight-employee",
+      "persona_id": "persona8b:synthetic:396856423",
+      "role": "employee"
+    },
+    {
+      "participant_id": "preflight-enterprise",
+      "persona_id": "persona8b:synthetic:2050663824",
+      "role": "enterprise"
+    },
+    {
+      "participant_id": "preflight-government",
+      "persona_id": "persona8b:synthetic:2861052734",
+      "role": "government"
+    },
+    {
+      "participant_id": "preflight-consumer",
+      "persona_id": "persona8b:synthetic:1436586395",
+      "role": "consumer"
+    }
+  ],
+  "roles": [
+    "employee",
+    "enterprise",
+    "government",
+    "consumer"
+  ],
+  "schema_version": 1,
+  "source_commit": "82d01e51442413b85503969293dc9ce693e55d4c",
+  "source_sha256": {
+    "lifespan/__init__.py": "af3ab259bf85d0ce26a01647074f3270fa501dab0980aeee9a90cc69e5df73dd",
+    "lifespan/__main__.py": "fa1cb6b27377e3322d22092cd2af9c239c4f8411b2fb186aae72daa0c61a2336",
+    "lifespan/actor_contract.py": "433321815c644026a9c0c96a6f4acd3c6e884a8a93a12e7c6d1b138143611cac",
+    "lifespan/agents.py": "90f7d2bdbbe2718a1d98b00c40f1f00d72684f36c67ebfe15b6c01fca586a8a2",
+    "lifespan/bubblewrap.py": "dc071c56845785f070a2ef23d3a11bb9403635b81048ec4e720d6e847d4afdac",
+    "lifespan/bwrap_server.py": "7dccc2ca1ecbe2d89d9eda902b199a6859c4d290a22df026a80e5f04df530ba1",
+    "lifespan/check_native_sandbox.py": "54db6f643f2879cb9e9172b940e838404f7e30375a0f0a3080391209f0a3c4ce",
+    "lifespan/computers.py": "a62c5c56c0e780c469d090a5f8b4926304b8518683794f6cf67922599ac4d0b1",
+    "lifespan/ecosystem.py": "cb0abb045137d45e107eef765a13ba33ae801d2b384416df2de79f697ea96c5e",
+    "lifespan/ecosystem_run.py": "3d7aafd9e67c9be3f03a17a8cf93deb89ac8ffcbee6ca56abc5f821e026fac4d",
+    "lifespan/environment.py": "677e0b97c882d2cabaf847c44b1be50bbc04a395060fb7e2322b251826fa86a7",
+    "lifespan/evaluation/__init__.py": "b9c39dec07c3227b96483e35cd1f23ebe0140b2f93d87775273b725a0fa804cc",
+    "lifespan/evaluation/budget.py": "24a6239be2c48410f61653f9d92a02e6b0d321d41af36ae5e98590a3fe0a18e4",
+    "lifespan/evaluation/metrics.py": "815e58008ae247c0fff94888c8c1e66e778f6beb4686d7850a30734f11c933c2",
+    "lifespan/evaluation/optimizer.py": "907dd101fb91b604ebc4731446018d85d94ef968551d3bae8030dad464bfb2ef",
+    "lifespan/evaluation/protocol.py": "0b8e7d0811faa7759cca09c6ab63c26f81efe3d7efedc364bdaf8d0715a365a1",
+    "lifespan/evaluation/runner.py": "169f6dea723517441048b1626770732af0e07ba788b5de599a8f088ec5c416c3",
+    "lifespan/evaluation/runtime.py": "5ed5a8a3d6886f5da0b70c82c5f85e4c4f33819b7bd40e8874eb25eaac4cbe27",
+    "lifespan/evaluation/skillopt.py": "7d0ae028480d680c24bbcf2e1cb90f078fb63ac1584a05b4bf70af100f4ec10d",
+    "lifespan/evaluation/tasks.py": "852ee4ed98754796ae280b29d8f340fd8b340f749b0929d6b6a78863cf555ef9",
+    "lifespan/experiment.py": "703ed2e09b89185da68a80a761aa0fd608c42f8bdd5b19d89fd982b60091cb95",
+    "lifespan/hermes_worker.py": "8686fc475252a5b1e2ca6e6034a23cf4fcfc29fb0bcfe1d27178ae48b9852e8b",
+    "lifespan/integrated.py": "5bf7b3d11205d8a20c76f975614382f1eebd42c81f123401b74d60fd1586c7ca",
+    "lifespan/llm_agent.py": "7bbe17918691159b127a812bbcadeba089caadd1caaa5f8dc6f756a76c4f24ec",
+    "lifespan/mirofish.py": "527a2fd64fe906c25db40f2eac65b9b6bd03c25a29aa4acc441a783a912bab8c",
+    "lifespan/personas.py": "88320243d51842b73f8610fef2a356d46301b94e52662293ea9973ee1e436a79",
+    "lifespan/validate_ecosystem.py": "e9010128afc4c079bd036fdae9d39db14effc999eca96a81b934ced78add694f",
+    "lifespan/validate_live.py": "8951c6fb6218c6d0e66416dddb64c689b3b202fa1abe5a1a461d75ae6f8a189d",
+    "lifespan/world.py": "266cce1f6f4e128f40014596c64ff0656c2cd9ef1d235d6064c83c60de20d1b0",
+    "scripts/audit_evaluation.py": "6a9160cd759492fcb391a2134eac6682d8e3340de37553d72cf9444e170da28e",
+    "scripts/audit_learning_v2.py": "d910434e9bc3acf9f081b0f18c267fd7164620d810132bd0f7a0ac1bbd32f1ef",
+    "scripts/audit_scale.py": "198006354cb2c8eb5ee8bc051c2607e68b75ce7787d3fbfb5b86115f11e4b012",
+    "scripts/audit_transfer.py": "a8b77c4cf6c9e44679bdce4bcd7665e4bb2afc74a7861e4b7c7cab1932cafbb5",
+    "scripts/evaluation_report_v2.py": "56e346e2342fa930b6ee98dcc069e758595e4db4115a639b6c8a6aa0e8d2664b",
+    "scripts/preflight_actor_contract.py": "0a716ac07c17732c015b099f5008ed414a523f92f8a47423bb81a05fa353a028",
+    "scripts/run_scale.py": "661ff24937aa06bfd86797d0ef219374411122f1aedde6ed8e5534f9d0f9f18f",
+    "scripts/scale_summary.py": "01ffc9d1a05e0c1ec8155647199b3487da96e8bb5f9d2bfb6b99bc161923cf8e"
+  },
+  "target_model": "gpt-5.6-luna"
+}
