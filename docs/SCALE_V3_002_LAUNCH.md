@@ -47,3 +47,8 @@ python3 -m scripts.scale_status lifespan/artifacts/scale-v3-002 \
 
 This only reads operational state. The existing registration has one dispatch;
 do not invoke the launcher again or resume its worlds.
+
+Once all six worlds pass the completed-study audit and the public report is
+reviewed, the separate [figure command](SCALE_V3_FIGURES.md) renders all three
+paired primary outcomes from that report. It requires the reviewed summary hash
+and preserves negative and zero differences; it does not plot active prefixes.
