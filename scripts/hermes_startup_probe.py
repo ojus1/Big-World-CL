@@ -140,6 +140,8 @@ def native_startup(out, expected, *, computer_factory=None, boundary_reader=obse
     close_elapsed = None
     started = entered
     try:
+        require(not any((computer.profile / name).exists() or (computer.profile / name).is_symlink()
+                        for name in ('.env', '.op.env')), 'profile_environment_file_present')
         remaining = deadline - time.monotonic()
         require(remaining > 0, 'startup_deadline_exhausted_before_launch')
         ready = computer.start(dict(CREDENTIALS), timeout=min(STARTUP_SECONDS, remaining))

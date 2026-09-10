@@ -205,6 +205,31 @@ class NativeBodyTests(unittest.TestCase):
         self.assertFalse(result['close_returned_within_allowance'])
         self.assertEqual(result['close_elapsed_seconds'], 31)
 
+    def test_profile_environment_file_prevents_native_start(self):
+        original = self.fake.__init__
+        for name in ('.env', '.op.env'):
+            self.out = Path(self.temp) / ('profile-' + name[1:])
+            self.calls.clear()
+            def setup(computer, *args, **kwargs):
+                original(computer, *args, **kwargs)
+                computer.profile.mkdir(parents=True)
+                (computer.profile / name).write_text('SECRET_CANARY_DO_NOT_READ')
+            with self.subTest(name=name), patch.object(self.fake, '__init__', setup):
+                result = self.run_fake()
+            self.assertEqual([name for name, _ in self.calls], ['init', 'close'])
+            self.assertFalse(result['ready_observed'])
+            self.assertNotIn('SECRET_CANARY', (self.out / 'CHILD_RESULT.json').read_text())
+
+    def test_dangling_profile_environment_link_prevents_native_start(self):
+        original = self.fake.__init__
+        def setup(computer, *args, **kwargs):
+            original(computer, *args, **kwargs)
+            computer.profile.mkdir(parents=True)
+            (computer.profile / '.env').symlink_to('not-present')
+        with patch.object(self.fake, '__init__', setup): result = self.run_fake()
+        self.assertFalse(result['ready_observed'])
+        self.assertEqual([name for name, _ in self.calls], ['init', 'close'])
+
 
 if __name__ == '__main__':
     unittest.main()
