@@ -8,8 +8,11 @@ PoC. The commands below create new experiments. The first completed
 it demonstrated no learning advantage.
 
 The world uses actual MiroFish/OASIS institutional, consumer and employee actors,
-12 pinned Persona 8B records, native Hermes agents, and bubblewrap employee
-computers. Competition and government decisions remain reactive. A declared
+pinned Persona 8B records, native Hermes agents, and bubblewrap employee
+computers. The default population has two enterprises, six employees, three
+consumers and one government agency, requiring 12 distinct persona records.
+Population size is configurable; the [scale-v1 study](SCALE_STUDY_PLAN.md) uses
+25 participants per world. Competition and government decisions remain reactive. A declared
 exogenous daily workload supplies recurring employee tasks alongside consumer
 orders, so each method can be evaluated across change, scoped exception and
 reversal rather than unrelated one-off episodes.
@@ -145,6 +148,146 @@ Within a deployment test world, an algorithm may still learn from its own **past
 observed** work once feedback is released; it never sees future evaluation work.
 Use this mode only after fixing development choices. It is a sequential deployment
 evaluation, not a static test set that becomes freely available to the optimizer.
+
+## Population and learning-calendar configuration
+
+Experiment JSON accepts `enterprise_count` and `consumer_count`, defaulting to
+two and three. Each enterprise has three regulated-workflow employees, one each
+for onboarding, renewal and incident response. Evaluation configs require at
+least two enterprises and at least one consumer per enterprise. Raising the
+enterprise count therefore also requires enough consumers. Each participant,
+including an enterprise or government decision profile, receives a distinct
+imported synthetic persona. Four enterprises and eight consumers produce twelve
+employees and 25 total participants.
+
+An optional `update_days` JSON list overrides the periodic `update_every`
+calendar. Its values are zero-based simulated days, strictly increasing and
+distinct, and must leave at least one subsequent action day. Omit it or use
+`null` to retain the periodic calendar used by the earlier configs. For example,
+these fields select the scale-v1 population and calendar within a full config:
+
+```json
+{
+  "enterprise_count": 4,
+  "consumer_count": 8,
+  "days": 20,
+  "max_work_sessions": 240,
+  "update_every": 4,
+  "update_days": [3, 7, 11, 17]
+}
+```
+
+An update date is an opportunity, not a guaranteed epoch or adoption. Each
+employee needs the configured number of distinct TRAIN and VAL obligations with
+released feedback. Retries cannot supply additional distinct tasks. With one
+attempt per employee per day and one-day feedback delay, day 3 cannot supply
+the four observations required by T=2/V=2. Day 17 can use reversal feedback from
+days 15–16, and any adopted skill becomes available for work on days 18–19.
+The checkpoint records eligibility even when no update runs.
+
+Scale work-session and learning budgets together with the population. The existing
+24-day configs retain their original six-employee budgets; changing population
+alone does not increase those limits. Optional `max_learning_calls_per_epoch`,
+`max_learning_tokens_per_epoch` and `max_learning_seconds_per_epoch` bound each
+epoch within the fleet and equal per-employee lifetime allocations. The
+preregistered campaign below generates the complete matching configs for both arms.
+
+## Preregistered scale-v1 campaign
+
+The [study plan](SCALE_STUDY_PLAN.md) and
+[published preregistration](scale-preregistration-v1.json) define six native runs:
+seeds 211, 307 and 401, each with no-learning Hermes and SkillOpt. The campaign was
+prepared and launched with execution code frozen at commit `b72fdda`. Its exact
+`campaign.json` **raw-file SHA256** is:
+
+```text
+6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa
+```
+
+Each run has twenty action days (0–19), then settlement days 20–21 with no new
+orders, employee attempts, actor interviews or learning. Previously accepted
+delayed tasks can still arrive. There are 240 fixed initial/exogenous commitments per
+world and at most 240 online attempts; native consumer commitments are additional.
+Failures and delayed arrivals remain in commitment accounting. The campaign
+therefore permits at most 1,440 online attempts and 108 eligible learning epochs.
+These are ceilings, not promised completed work or learning progress.
+
+| Limit | Scale-v1 value |
+|---|---:|
+| World active execution time | 36,000 seconds, with bounded cleanup afterward |
+| Native work attempt | 16 physical calls, 4,096 output tokens/request, 250,000 total-token cap, up to 420 seconds |
+| Learning epoch | 200 target-plus-optimizer calls, 4M tokens, 1,800 seconds |
+| Employee lifetime learning allocation | 600 calls and 12M tokens |
+| Logical actor interviews | 662 per world, including response-repair requests |
+| Concurrent worlds | At most six; actions within each world stay sequential |
+
+Graph generation, the initial social round and OASIS internal inference do not
+have complete physical-call/token accounting. Actor tokens and all-in currency
+cost remain unknown. See the study plan for separate campaign compute ceilings.
+
+The commands below document the frozen preparation and launch. **Do not rerun
+them against the already launched `scale-v1` directory.** Preparation requires a
+new directory; execution is one-shot and rejects existing native output. To start
+a separate campaign, use a fresh directory, review and publish its own generated
+manifest, and provide that manifest's hash instead of reusing the value above.
+Preparation imports the pinned cohorts and makes no model calls:
+
+```bash
+MiroFish/backend/.venv/bin/python scripts/run_scale.py prepare \
+  --out lifespan/artifacts/scale-v1
+
+MiroFish/backend/.venv/bin/python -u scripts/run_scale.py execute \
+  --out lifespan/artifacts/scale-v1 --workers 6 \
+  --campaign-sha256 6f6bc76c30a642cf2b364b28dc18ca0054398d64aba3a0b08c4b23479480bffa
+```
+
+The supervisor verifies the published hash, execution sources, dependencies,
+configs, dispatch order and cohort identities before starting native work. The
+paired arms share identical cohort bytes; the three seeds use 75 distinct persona
+records. `EXECUTION.json` records exclusive dispatch intent. Uncertain work is
+never automatically retried or resumed. Preserve any `INFLIGHT.json`, failure or
+supervisor-interruption records for reconciliation; do not delete them or reset
+an actor database to force a restart. A failed/incomplete arm remains in the
+planned comparison while other runs continue under their original limits.
+
+Use the read-only status command for the running campaign:
+
+```bash
+python3 scripts/run_scale.py status --out lifespan/artifacts/scale-v1
+```
+
+The supervisor also writes `STATUS.json` roughly every 30 seconds. Status includes
+all six slots, checkpoint age, simulated day/phase, work and update counts,
+learning replays, metered learning compute, logical actor requests and any
+in-flight learning progress. A quiet terminal or an unchanged checkpoint alone
+does not establish a stalled model call; inspect the in-flight progress and
+declared limits. Private per-run `execution.log`, checkpoints, actor ledgers and
+learning `progress.json` files provide detailed evidence and should not be
+published wholesale. The supervisor records process exits, closes each run's
+native actor environment and writes its final campaign audit.
+
+Audit completed evidence with:
+
+```bash
+python3 scripts/audit_scale.py lifespan/artifacts/scale-v1 --strict
+```
+
+`--strict` requires all six completed, valid runs and three valid world pairs.
+An interrupted or still-running campaign cannot pass strict completion. The
+non-strict audit retains incomplete slots explicitly, but it does not establish
+complete cost accounting or authorize resuming uncertain work. Completed worlds
+retain both `REPORT.json` and corrected `REPORT.v2.json`; the primary comparison
+uses fixed initial/exogenous commitment fulfillment, not an attempt-only rate.
+Employee exposure summaries retain all scheduled boundaries and mark missing
+eligibility evidence. Their hashes are labeled `canonical_json` and are distinct
+from the raw-file hash required for execution.
+
+This campaign is three development world pairs, not 1,440 independent samples.
+Accepted edits, gate scores and subsequent version exposure are reported
+separately from any world-level performance difference. Keep the earlier pilot
+and single-pair examples above as separate protocols. Strict auditing of frozen
+historical runs requires their recorded implementation revision; new population
+or calendar fields do not retroactively change those experiments.
 
 ## Budgets and lifecycle
 

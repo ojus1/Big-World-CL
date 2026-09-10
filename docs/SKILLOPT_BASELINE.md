@@ -33,7 +33,8 @@ learning totals. Source artifact identifiers are
 ignored `lifespan/artifacts/` directory. The pilot contains two successful no-op
 consolidation executions, not two trained skill versions.
 
-Upstream `CliBackend.reflect` returns no edits without failed **training replays**.
+In the pilot's single-shot path, upstream `CliBackend.reflect` returns no edits
+without failed **training replays**.
 Previously unsuccessful online work is not sufficient: when an isolated replay
 succeeds, that replay enters the successful set. Moreover, a validation score of
 1.0 leaves no room for the strict improvement gate. This explains the zero
@@ -88,6 +89,12 @@ the main paper's complete reflective-training pipeline, benchmark suite,
 hyperparameters or reported results. A strong native baseline requires this
 calibration and prospective evidence; the current integration should not be
 presented as having already demonstrated lifelong learning improvements.
+
+The subsequent [larger development study](SCALE_STUDY_PLAN.md) preregisters three
+world pairs, twelve employees per world and repeated employee epochs. Its frozen
+schedule, budgets and prospective comparison are distinct from the historical
+pilot evidence above. This document specifies that study's integration contract;
+it does not report its ongoing results.
 
 ## Installation and provenance
 
@@ -375,6 +382,75 @@ requires the provider, model, date, cache treatment and applicable prices in the
 experiment manifest. Deterministic test callback receipts are synthetic test
 fixtures and must never be reported as real model costs or learning results.
 
+### Repeated employee epochs
+
+The runner supports these optional configuration fields:
+
+| Field | Meaning when supplied | Default when absent or `null` |
+|---|---|---|
+| `max_learning_calls_per_epoch` | Maximum combined target and optimizer physical calls for one epoch | No additional epoch call cap |
+| `max_learning_tokens_per_epoch` | Maximum combined target and optimizer charged tokens for one epoch | No additional epoch token cap |
+| `max_learning_seconds_per_epoch` | Maximum epoch wall time in seconds | 1,800 seconds |
+| `update_days` | Sorted, distinct action days on which to check employee eligibility | Periodic `update_every` schedule |
+
+Each numeric cap must be a positive integer. Effective calls and tokens are the
+minimum of the epoch cap, the remaining world learning budget and that employee's
+remaining equal lifetime allocation. Effective time is also bounded by the
+remaining run deadline. Target and optimizer calls share the epoch total; the
+optimizer's reserved call bucket is not extra allowance. Missing caps preserve
+the earlier behavior in which a first epoch can consume the employee's remaining
+lifetime budget. Unused quota is not transferred between employees.
+
+The [frozen scale schedule](SCALE_STUDY_PLAN.md#learning-and-comparison) checks at
+the end of **days 3, 7, 11 and 17**, with one-day feedback delay and **T=2, V=2,
+K=2**. Day 3 cannot yet supply four released distinct observations, so there are
+at most three eligible epochs per employee. Later opportunities can also be
+ineligible: retries of one obligation never become additional distinct tasks.
+Pool updates preserve the obligation's insertion order while retaining its latest
+available observation. Future tasks and unreleased feedback stay outside learning.
+
+The study caps each epoch at **200 physical calls, 4M charged tokens and 1,800
+seconds**, within each employee's lifetime 600-call/12M-token allocation. A complete
+K2/T2/V2 epoch executes ten fresh targets without a candidate, or twelve with a
+candidate, plus any optimizer calls. These are ceilings and execution counts,
+not cost or adoption predictions. Individual target limits and a shrinking run
+deadline can exhaust an epoch before that full sequence finishes.
+
+`employee_epoch_index` is one-based and local to the employee; it is also passed
+to upstream as `night`. It counts recorded consolidation executions, including
+no-op or rejected updates. It is neither the simulation day nor the number of
+schedule opportunities: an eligibility or pre-dispatch budget skip does not
+increment it. Each update records `epoch_allocation`, `parent_version`,
+`deployed_version` and `available_from_day`; accepted skills first apply to later
+online work, starting the following day. No-op and rolled-back updates retain the
+incumbent.
+
+### Reading durable progress and replay evidence
+
+Within a run, `learning/dDDD-EMPLOYEE/progress.json` is saved before and after
+target and optimizer dispatches. It records the employee epoch, effective
+allocation, parent world/skill hashes, elapsed time, target progress and optimizer
+dispatches. This makes a long epoch observable without exposing task bodies in
+terminal progress lines.
+
+Each `replay_artifacts` entry identifies its `attempt_index`, upstream `sample_id`,
+phase, experience and underlying task, executed skill hash, source capsule path
+and raw-byte hash, and native `trial-NNN/session.json` path and raw-byte hash. It
+also retains dispatch limits, completion state, available usage, trusted scores
+and observed native skill loading. Use the attempt index with the epoch directory
+to identify a physical execution; sample ids repeat across initial and contrastive
+TRAIN passes. Missing optional skill loading remains a measured behavior, not a
+reason to discard that employee's work.
+
+While dispatch is unresolved, `target_progress` retains its call/token reservation;
+known returned usage replaces that reservation. These running totals are
+provisional. The completed `update.json` contains the bridge's final cost ledger,
+gate evidence, replay links and optimizer transport audit, and final progress
+records its outcome. Reconcile these against native receipts and submitted files;
+progress alone is neither proof of completion nor an independent adoption audit.
+An unfinished dispatch or `INFLIGHT` record must remain explicit rather than being
+silently replayed or reported as a zero-cost rejection.
+
 ## Drift and valid evaluation
 
 Historical replay snapshots retain their historical requirements. A review rule
@@ -395,6 +471,22 @@ content and task families, limit repeated gate queries, use fresh prospective
 evaluation, and compare independent worlds or matched seed clusters rather than
 treating dependent employee sessions as independent observations. SkillOpt has
 no guaranteed gain under drift; report rejections, adaptation failures and costs.
+
+For repeated epochs, group later online outcomes by employee, deployed version,
+skill hash and effective day. An accepted update demonstrates that the candidate
+passed the pinned gate on fresh recorded validation attempts. With K2, those
+validation phases still use one attempt per task, so adoption can reflect rollout
+noise. Retain all attempts in replay summaries; the best/worst TRAIN examples
+selected for reflection are not a best-of-K performance metric. A subsequent
+success under the new skill does not by itself establish improvement.
+
+The scale study compares no-learning and learning arms across three fixed world
+pairs. Within-world employees interact, and independently generated actor decisions
+can make paired worlds diverge. Report unchanged-skill differences, rejected/no-op
+epochs, later outcomes and learning costs alongside accepted versions. The
+inferential units are the world pairs, not individual employee sessions; three
+pairs provide limited uncertainty estimates. Prospective evidence must therefore
+remain separate from the gate decision and from historical calibration outcomes.
 
 ## What the tests establish
 

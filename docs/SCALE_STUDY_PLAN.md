@@ -2,7 +2,8 @@
 
 Status: implementation reviewed and 75 distinct pinned synthetic personas
 imported. The [frozen campaign](scale-preregistration-v1.json) was prepared before
-any native model calls; results will be reported separately. This study follows the rejected native SkillOpt candidate
+any native model calls. Execution launched on 2026-09-10 at 01:18 UTC from
+commit `b72fdda`; results will be reported separately. This study follows the rejected native SkillOpt candidate
 and identical-skill A/A difference in [the earlier study](LEARNING_STUDY_RESULTS.md).
 Its objective is to test repeated employee learning under more varied exposure,
 not to require an improvement.

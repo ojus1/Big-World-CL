@@ -306,3 +306,16 @@ The independent campaign auditor binds all six slots to their exact source/depen
 Strict campaign completion additionally requires six supervisor exit receipts and confirmed shutdown receipts bound to each world's own native environment. A cleanup error preserves already verified employee-compute totals and is explicitly distinct from model quality. Bootstrap checkpoints preceding initial skill-file creation are reported as initializing. The reviewer ran **19 new scale-auditor tests in 2.42 seconds**, including actual pinned-upstream K2 consolidation with synthetic physical receipts and tamper tests for quotas, raw session bytes, optimizer receipts, selected pools, cohorts, source revisions, eligibility logs, incomplete campaigns and cleanup. These fixtures establish implementation checks, not native learning efficacy. The new transfer-auditor revision also sets the completed accounting flag correctly; its 23 audit regressions passed, and historical execution artifacts remain unchanged.
 
 No remaining launch-blocking issue was identified in the reviewed protocol, supervisor, population integration, independent exposure summary or evidence checks. This signoff permits freezing and preparing the declared campaign; it does not establish adoption, prospective benefit or an all-in compute measurement. Native results require a fresh strict audit after execution.
+
+
+## Scale study launch verification
+
+Execution launched after publication of commit `b72fdda` and the exact prepared
+campaign hash. Independent read-only review verified all 34 execution source
+hashes, current dependency provenance, 75 distinct imported synthetic personas,
+identical profile bytes within each pair, and six distinct native MiroFish
+project/graph/simulation identities, live actor processes and SQLite databases.
+Each world compiled 25 profiles. The startup campaign audit reported incomplete
+with no integrity errors. All 417 local tests passed; GitHub CI run 34424931008
+also passed (its explicit Persona-import skip does not represent a native test).
+This is bootstrap verification; employee learning outcomes remain under study.
