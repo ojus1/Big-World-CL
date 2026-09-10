@@ -1,5 +1,11 @@
 # Fresh six-world comparison after startup qualification
 
+Outcome: this registration failed at the first pair’s MiroFish capability
+handshake, before employee sessions. All remaining slots stayed unlaunched and
+cleanup was confirmed. The [failure observation](SCALE_V3_LAUNCH_FAILURE.md)
+preserves the complete six-slot inventory. It will not be resumed or filled
+with replacement worlds.
+
 The full study is registered in
 [scale-preregistration-v3.json](scale-preregistration-v3.json), byte-identical to
 the private campaign manifest. Its raw SHA-256 is

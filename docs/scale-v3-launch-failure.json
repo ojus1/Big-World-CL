@@ -1,0 +1,361 @@
+{
+  "accounting": {
+    "interpretation": "No employee/optimizer or contracted-interview receipt records were found. These zero known-record totals are not an all-in zero-cost claim: failed receipts mark accounting incomplete, all-world reconciliation is false, and environment compute/currency cost remain unknown.",
+    "saved_audit_accounting": {
+      "all_in_accounting_complete": false,
+      "contracted_interviews": {
+        "all_world_costs_reconciled": false,
+        "logical_requests": 0,
+        "measured_physical_requests": 0,
+        "measured_tokens": 0,
+        "reserved_output_tokens": 0,
+        "unknown_requests": 0
+      },
+      "currency_cost": null,
+      "employee_and_optimizer": {
+        "accounting_complete": true,
+        "all_world_costs_reconciled": false,
+        "charged_or_reserved_model_calls": 0,
+        "charged_or_reserved_tokens": 0,
+        "known_input_tokens": 0,
+        "known_output_tokens": 0,
+        "known_physical_calls": 0,
+        "known_tokens": 0,
+        "records": 0,
+        "unresolved_records": 0
+      },
+      "unmetered_environment": {
+        "accounting_complete": false,
+        "physical_model_calls": null,
+        "tokens": null
+      }
+    }
+  },
+  "campaign_sha256": "ca6a3d2b890ebdf1a5142dbccd2d019b60179b5d8e61946725b33b743eb0b229",
+  "complete_pairs": 0,
+  "completed_worlds": 0,
+  "evidence": {
+    "all_raw_and_registered_source_files_copied": true,
+    "native_or_model_requests_by_review": false,
+    "original_artifacts_changed_by_review": false,
+    "private_capture_kind": "terminal_launch_failure_inventory_with_installed_overlay_absence",
+    "private_inventory_sha256": "3ba70edb6a2a0f6e7e27b350354bafceafb0d5899c3e29f6206b1370e6220baf",
+    "private_summary_sha256": "2ac1c650cefde4e07bc94bb005267c0b9a66da57ddc6676322d1710788170e6c",
+    "raw_file_count": 61,
+    "raw_files_sha256": {
+      "AUDIT.json": "1abea3bf021e4ccfb74fcf5815128525fd3a64351806999f83dd231095e73f4f",
+      "EXECUTION.json": "5e547c39680711227dd8e02c91e7d29d5ef2d2868016695abaebfaa2b181b83f",
+      "PREREQUISITES.json": "3d35a30ab9a4004655c168859f95dc210e82f3dbfb085caab08fd1a9356fec05",
+      "SERVICE_CLEANUP.json": "0ddf3de3c6a918077077dc516d4a96c284bdaf6df2752231f171a355366d1968",
+      "SERVICE_INTENT.json": "103bdbedf76ffcdcffad5e4a3756e521232ebc50908db86bebbc32b0a8512661",
+      "SERVICE_OBSERVATION.json": "0ef3996a937ea16103e8c332259d5a49dde25718ca757520bf77edc4b9d09133",
+      "SERVICE_READY.json": "a4bb596c45b41f1050ea28496806fd7cdb592716b2a55211f596b8d1c8ccb4ec",
+      "SERVICE_START.json": "6244a8ddd9c5e8510b4bb70cf59540c1b7631494f5e8da107902f82fc46c78fe",
+      "STATUS.json": "1015fbc7a06078d00c16692acc41978567ca5e5be7a7e52d859e6aacce8e8ae4",
+      "SUPERVISOR_INTERRUPTED.json": "24c721a13da44d997da729d6149df8cf4bb33dd9a1a6799cdb995ff5e51142fe",
+      "campaign.json": "ca6a3d2b890ebdf1a5142dbccd2d019b60179b5d8e61946725b33b743eb0b229",
+      "cohorts/211.json": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+      "cohorts/307.json": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+      "cohorts/401.json": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287",
+      "execution_results.json": "8562bfc9cae360d13d839de3e30d81428ffd5db1ffc98f98bbceb2eca0c80a53",
+      "runs/seed-211-no_learning/FAILURE.json": "172aedc46cdbcf4b141a5e369e27595e7ba46e5c08d252c57846af69dde86167",
+      "runs/seed-211-no_learning/REPORT.json": "ecdcf32e45fbd8e7d85711e48967c748bb4205ee72d96fcdf13a533560fde5e9",
+      "runs/seed-211-no_learning/actors/evaluation_service.json": "2f3aee31748bb4f893db59e85b3dead578cfdb9e96c55b38659f17fdb2094d2d",
+      "runs/seed-211-no_learning/checkpoint.json": "54c0df8e749705464f08b0be2742641608f399b9ec693d9880cab37b6b0914de",
+      "runs/seed-211-no_learning/config.json": "7ade554bc99789ba2894d6893fee091e12b349acdf2b801d45eada52e6da7745",
+      "runs/seed-211-no_learning/lifecycle/WORLD_CLEANUP.json": "0c465ffb00d842d2ce46d31e65596356bfb7e73e8c16822cd8788f9d3265f1cd",
+      "runs/seed-211-no_learning/lifecycle/WORLD_INTENT.json": "40d7f90ecd397fc72ca22bfb11a9bd5b9416111034a6c62fbef0f49c74b0b7c6",
+      "runs/seed-211-no_learning/lifecycle/WORLD_OBSERVATION.json": "3d0b2d140615731f898b79cf40310a5e9226a66c10a3e64eb8e4b09917a266b2",
+      "runs/seed-211-no_learning/lifecycle/WORLD_START.json": "dc4a67be50e4fb0777a4a08e9dc08fef91a842cdffbfecc6d5b06eb23af0850e",
+      "runs/seed-211-no_learning/lifecycle/world.log": "096ca0913aaef70952064689d28f0b97e0b58d269ba90e459a0812a8dd16c52f",
+      "runs/seed-211-no_learning/manifest.json": "13b4bf3538efb927ebd4f4c0615e65c90b9a6ac7f674d111aa4df85784eba515",
+      "runs/seed-211-no_learning/persona_cohort.json": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+      "runs/seed-211-no_learning/timeline.json": "528f3b892af3f9b1acc8833854273200b705891f96802d64551f5bf37772b399",
+      "runs/seed-211-skillopt/FAILURE.json": "172aedc46cdbcf4b141a5e369e27595e7ba46e5c08d252c57846af69dde86167",
+      "runs/seed-211-skillopt/REPORT.json": "8c8a7f88983cbaca850d7d5340bfb3f629d5fb69c8d77040bd19ed3e2177870a",
+      "runs/seed-211-skillopt/actors/evaluation_service.json": "2f3aee31748bb4f893db59e85b3dead578cfdb9e96c55b38659f17fdb2094d2d",
+      "runs/seed-211-skillopt/checkpoint.json": "4f0c990e151fa7f4ca18ccd9f20fa7f5d093650fe28dd3454aa33d9c344d9176",
+      "runs/seed-211-skillopt/config.json": "82ce2dd5eb3ab9cce82d2ab6c4ee11a59fca7243d6b808b31ad2c8fa9d6e2649",
+      "runs/seed-211-skillopt/lifecycle/WORLD_CLEANUP.json": "bee572415ce63a131e8550dd0f4dbc44fc87deb008c5e0471d1b5a30a5b85068",
+      "runs/seed-211-skillopt/lifecycle/WORLD_INTENT.json": "e0a3a1022df13904abd3ae83f5698f2d1b67c385742c4dd6f833fd770c515038",
+      "runs/seed-211-skillopt/lifecycle/WORLD_OBSERVATION.json": "ff0469b2aa743eb26e78e6da5ab3e6cc7971b8d22f0d35c1e293e5bc4dd10d45",
+      "runs/seed-211-skillopt/lifecycle/WORLD_START.json": "c252fbac1fa5cfc76aa3a8ad333211459024ea1f47145e567ed72d6e220bf25c",
+      "runs/seed-211-skillopt/lifecycle/world.log": "096ca0913aaef70952064689d28f0b97e0b58d269ba90e459a0812a8dd16c52f",
+      "runs/seed-211-skillopt/manifest.json": "73128a662e9f9993c73610b92d95350c8fcf69f92fbb8eb8d8ad898d19ae6898",
+      "runs/seed-211-skillopt/persona_cohort.json": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+      "runs/seed-211-skillopt/timeline.json": "528f3b892af3f9b1acc8833854273200b705891f96802d64551f5bf37772b399",
+      "runs/seed-307-no_learning/config.json": "c77573aa0ac8be0e1904b5313f7b7612501f247a6382383c8ea5f61d276d4554",
+      "runs/seed-307-no_learning/persona_cohort.json": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+      "runs/seed-307-skillopt/config.json": "8287195ee4b620794c2611d6e55d6f549bde9b3b964412150b140293d718d015",
+      "runs/seed-307-skillopt/persona_cohort.json": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+      "runs/seed-401-no_learning/config.json": "bbb8c99149c1375f6f474faf226508a47cf81b50fda68bbeafc27294db1bece3",
+      "runs/seed-401-no_learning/persona_cohort.json": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287",
+      "runs/seed-401-skillopt/config.json": "c0622fe441a0c89ca5004d05c19c9e2fcca60f865f9288feb00ca966f40a0c5b",
+      "runs/seed-401-skillopt/persona_cohort.json": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287",
+      "scope/CONTROLLER_EXIT.json": "b10787c96b4d843b8c57d5f488945e51d7a9c3ff1fe36a862b73b598e2394db7",
+      "scope/DRAINED.json": "df2641616f9bd627a862e33319f8e0d2eadc20a562ca9fb89f93d4192e8d8fd9",
+      "scope/GATE.json": "23f9c21914a7feda81602a041048f783bdf4b266aa0e1f3d764e7b98289c1658",
+      "scope/HELLO.json": "14ffb712cc1b94bf0f74377ee2ab035452aae5a12fac582d8f6dad578ec9470c",
+      "scope/INNER_RESULT.json": "d69ccb095a9932c109906a44c33dc7aaab31eb04aa38377a3726926ab4fc0062",
+      "scope/INTENT.json": "8344fc962103ebff2cfe72a7d64f2ef69bbd143af913ed608a0389ad1ca9318f",
+      "scope/LAUNCH.json": "377dd0e805b20d155c2105bd9b5bf4b82c24e2b5e78513e69e7c84e3d643a9bf",
+      "scope/OBSERVATION.json": "1f3f580adebdcafce0bdeb4bb594015585f074143706cc2c5ef2da2f21000804",
+      "scope/RELEASE.json": "a1560bc4495d32c4ede711a23b7532526a3ffb3d68e7f36c83bd403acb2217e7",
+      "scope/TERMINAL.json": "006fb2d3efb7e670e187285aa30a57053ff7d0e98be8679243eb69031aa44160",
+      "scope/controller.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "service.log": "4620903d4736275ed932cb677a7f1ef4b6d394bf7219fd7ceb960271e1004f46"
+    },
+    "registered_source_file_count": 69
+  },
+  "failed_worlds": 2,
+  "failure": {
+    "classification": "isolated_installation_missing_tracked_overlay",
+    "endpoint": "/api/simulation/actor-contract-support",
+    "http_status": 500,
+    "matching_service_traceback_count": 2,
+    "missing_import": "app.utils.actor_output_contract",
+    "observed_exception": "ModuleNotFoundError",
+    "scope": "Service health/readiness passed; actor-contract support failed on import.",
+    "stage": "actor_contract_support_handshake_before_world_initialization"
+  },
+  "installation_at_capture": {
+    "additional_static_missing_file": "app/utils/actor_contract_transport.json",
+    "additional_static_missing_file_reached_in_traceback": false,
+    "observed_missing_import": "app.utils.actor_output_contract",
+    "openai_chat_compat_module_present": true,
+    "source_side_untracked_bytecode_excluded": true,
+    "tracked_utility_overlay_count": 4,
+    "tracked_utility_overlays": {
+      "app/utils/actor_contract_transport.json": {
+        "expected_source_sha256": "88433537babb5c522186e054a80b2df8de7fac794233b83d8b3686d7c062b225",
+        "installed_matches_tracked_overlay": false,
+        "installed_present": false,
+        "installed_sha256": null
+      },
+      "app/utils/actor_output_contract.py": {
+        "expected_source_sha256": "267342533d1f252c238cde5fde2e5ef268bdfe5120d2c7ef922320b7d81452fb",
+        "installed_matches_tracked_overlay": false,
+        "installed_present": false,
+        "installed_sha256": null
+      },
+      "app/utils/camel_responses.py": {
+        "expected_source_sha256": "4a06a70ee686e662e13db6be2458f5ce5ce2783b6d00894de4498a832b5a68a1",
+        "installed_matches_tracked_overlay": true,
+        "installed_present": true,
+        "installed_sha256": "4a06a70ee686e662e13db6be2458f5ce5ce2783b6d00894de4498a832b5a68a1"
+      },
+      "app/utils/local_graph.py": {
+        "expected_source_sha256": "40cdf029f09c089107d6719b68d81b8a28733d1d1c8cb905d7901c80252ffafd",
+        "installed_matches_tracked_overlay": true,
+        "installed_present": true,
+        "installed_sha256": "40cdf029f09c089107d6719b68d81b8a28733d1d1c8cb905d7901c80252ffafd"
+      }
+    }
+  },
+  "kind": "scale-v3-launch-failure",
+  "launched_worlds": 2,
+  "limitations": [
+    "This failed initial launch provides no six-world endpoint, learning comparison, or long-horizon reliability evidence.",
+    "All six slots remain visible: two first-pair failures and four unlaunched slots, without surviving-pair substitution or zero-filled performance.",
+    "Missing actor_contract_transport.json is a separate static omission; the observed traceback stopped at actor_output_contract import.",
+    "The successful nine-slot Hermes startup qualification remains a separate component result; it did not test this fresh MiroFish installation route.",
+    "A corrected installation and future full study require their own evidence and a new complete registration."
+  ],
+  "model_quality_score": null,
+  "observation_kind": "post_execution_engineering_observation_not_primary_report",
+  "outer_scope": {
+    "actual_native_wait_exit_code": 1,
+    "caller_security_context_and_namespaces_preserved": true,
+    "cleanup_errors": [],
+    "cleanup_evidence_confirmed": true,
+    "cleanup_seconds": 0.7200539710001976,
+    "current_original_controller_absent": true,
+    "current_scope_cgroup_path_absent": true,
+    "forced_scope_stop": false,
+    "inner_completed": false,
+    "inner_result_exit_code": 1,
+    "inner_returned_normally": true,
+    "lifecycle_span_seconds": 28.840094033999776,
+    "normal_release": true,
+    "recorded_intent_launch_hello_gate_binding_verified": true,
+    "registered_kernel_limits": {
+      "cpu.max": "400000 100000",
+      "memory.max": "12884901888",
+      "memory.swap.max": "0",
+      "pids.max": "512"
+    },
+    "remaining_cgroup_members": 0,
+    "scope_audit_interpretation": "Cleanup is separate from success: the strict auditor rejects the inner return code1 and incomplete campaign.",
+    "scope_passed": false,
+    "strict_scope_audit_errors": [
+      {
+        "code": "scope_inner_not_successful",
+        "error_type": "ValueError"
+      }
+    ],
+    "strict_scope_audit_status": "invalid",
+    "terminal_controller_state": "absent"
+  },
+  "planned_worlds": 6,
+  "primary_endpoint_available": false,
+  "registered_source_bytes_match_capture": true,
+  "registered_source_count": 69,
+  "repository_commit_at_execution": "357ca7a2113f35508978979d6b3c799771abccd7",
+  "retry_or_replacement_within_registration": false,
+  "saved_campaign_audit": {
+    "complete_pairs": 0,
+    "completed_runs": 0,
+    "errors": [
+      {
+        "code": "run_raw_artifact_audit_failed",
+        "run_id": "seed-211-no_learning",
+        "scope": "world"
+      },
+      {
+        "code": "run_raw_artifact_audit_failed",
+        "run_id": "seed-211-skillopt",
+        "scope": "world"
+      },
+      {
+        "code": "outer_scope_errors_present",
+        "scope": "outer_scope"
+      }
+    ],
+    "ok": false,
+    "primary_endpoint_available": false,
+    "status": "invalid"
+  },
+  "schema_version": 1,
+  "service": {
+    "cleanup_confirmed": true,
+    "cleanup_seconds": 0.14502355999957217,
+    "cleanup_signal_counts": {
+      "TERM": 1
+    },
+    "direct_registered_supervisor_parent_verified": true,
+    "exit_code": 0,
+    "lifecycle_receipt_audit_ok": true,
+    "original_root_process_currently_absent": true,
+    "ready_receipt_verified": true,
+    "recorded_cleanup_process_states": {
+      "absent": 1
+    },
+    "recorded_socket_owned_by_service_root": true
+  },
+  "slots": [
+    {
+      "actor_state_created": false,
+      "algorithm": "no_learning",
+      "cleanup_confirmed": true,
+      "cleanup_seconds": 0.17232569499992678,
+      "cleanup_signal_counts": {},
+      "completed": false,
+      "direct_registered_supervisor_parent_verified": true,
+      "elapsed_through_cleanup_seconds": 1.0661719239997183,
+      "employee_sessions": 0,
+      "execution_before_cleanup_seconds": 0.8938462289997915,
+      "exit_code": 1,
+      "failure": {
+        "day": -1,
+        "endpoint": "/api/simulation/actor-contract-support",
+        "failure_receipt_accounting_complete": false,
+        "http_status": 500,
+        "message_sha256": "43d937b6ebaea39fa73ed554660e354cc2d58f201385151ee21a0f89a21be9aa",
+        "service": "isolated_loopback_5002",
+        "type": "HTTPStatusError"
+      },
+      "learning_updates": 0,
+      "model_quality_score": null,
+      "original_root_process_currently_absent": true,
+      "run_id": "seed-211-no_learning",
+      "seed": 211,
+      "status": "failed_before_world_initialization",
+      "termination_reason": "exited",
+      "world_receipt_audit_ok": true
+    },
+    {
+      "actor_state_created": false,
+      "algorithm": "skillopt",
+      "cleanup_confirmed": true,
+      "cleanup_seconds": 0.1358877359998587,
+      "cleanup_signal_counts": {},
+      "completed": false,
+      "direct_registered_supervisor_parent_verified": true,
+      "elapsed_through_cleanup_seconds": 0.9482239369999661,
+      "employee_sessions": 0,
+      "execution_before_cleanup_seconds": 0.8123362010001074,
+      "exit_code": 1,
+      "failure": {
+        "day": -1,
+        "endpoint": "/api/simulation/actor-contract-support",
+        "failure_receipt_accounting_complete": false,
+        "http_status": 500,
+        "message_sha256": "43d937b6ebaea39fa73ed554660e354cc2d58f201385151ee21a0f89a21be9aa",
+        "service": "isolated_loopback_5002",
+        "type": "HTTPStatusError"
+      },
+      "learning_updates": 0,
+      "model_quality_score": null,
+      "original_root_process_currently_absent": true,
+      "run_id": "seed-211-skillopt",
+      "seed": 211,
+      "status": "failed_before_world_initialization",
+      "termination_reason": "exited",
+      "world_receipt_audit_ok": true
+    },
+    {
+      "algorithm": "skillopt",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "employee_sessions": null,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "run_id": "seed-307-skillopt",
+      "seed": 307,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "no_learning",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "employee_sessions": null,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "run_id": "seed-307-no_learning",
+      "seed": 307,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "no_learning",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "employee_sessions": null,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "run_id": "seed-401-no_learning",
+      "seed": 401,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    },
+    {
+      "algorithm": "skillopt",
+      "cleanup_confirmed": null,
+      "completed": false,
+      "employee_sessions": null,
+      "exit_code": null,
+      "learning_updates": null,
+      "model_quality_score": null,
+      "run_id": "seed-401-skillopt",
+      "seed": 401,
+      "status": "unlaunched_after_first_pair_failure",
+      "world_start_receipt_present": false
+    }
+  ],
+  "status": "failed_launch",
+  "unlaunched_worlds": 4
+}
