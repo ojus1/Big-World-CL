@@ -33,3 +33,17 @@ settlement, with 4 enterprises, 12 employees, 8 consumers and 1 agency per world
 Three fixed paired waves allow up to 1,440 online sessions and repeated SkillOpt
 training and validation. Registration is not a completed result; no learning
 gain is claimed here.
+
+The campaign has been dispatched. The [dated startup observation](SCALE_V3_002_PROGRESS.md)
+records both first-pair worlds running with native actor simulations and returned
+employee sessions. Inspect current local progress with the independently reviewed
+[status command](SCALE_STATUS.md):
+
+```bash
+python3 -m scripts.scale_status lifespan/artifacts/scale-v3-002 \
+  --campaign-sha256 72b19a41eb00f90761302df0d55e5051ec166d7240215b2302a68ae294b1c6ce \
+  --format table
+```
+
+This only reads operational state. The existing registration has one dispatch;
+do not invoke the launcher again or resume its worlds.
