@@ -1,0 +1,124 @@
+{
+  "claims_excluded": [
+    "business decision validity",
+    "learning quality",
+    "long-horizon reliability"
+  ],
+  "cleanup": {
+    "native_process_cleanup": {
+      "forced_signals": [],
+      "status": "exited"
+    },
+    "recorded_backend_native_group_sigkill_escalations": 0,
+    "recorded_backend_native_group_termination_events": 1,
+    "server_cleanup": {
+      "exit_code": 0,
+      "status": "exited"
+    },
+    "signal_scope": "Supervisor native_process_cleanup.forced_signals excludes backend cleanup; the backend log records one native process-group SIGTERM path.",
+    "worker_cleanup": {
+      "exit_code": 0,
+      "status": "exited"
+    }
+  },
+  "elapsed_seconds": 63.17924719200528,
+  "evidence_files": {
+    "native_uploads": 29,
+    "preflight": 22
+  },
+  "exact_fixture_matches": [
+    {
+      "exact_fixture_match": true,
+      "role": "employee"
+    },
+    {
+      "exact_fixture_match": true,
+      "role": "enterprise"
+    },
+    {
+      "exact_fixture_match": true,
+      "role": "government"
+    },
+    {
+      "exact_fixture_match": true,
+      "role": "consumer"
+    }
+  ],
+  "interview_accounting": {
+    "cost_status": "unknown",
+    "currency_cost": null,
+    "logical_requests": 4,
+    "measured_physical_requests": 4,
+    "measured_tokens": 5721,
+    "reserved_output_tokens": 0,
+    "scope": "reconciled_client_cache_receipts_only; unreconciled_native_receipts_may_hold_known_costs; bootstrap_and_social_calls_excluded",
+    "unknown_requests": 0
+  },
+  "kind": "native_actor_component_capability_observation",
+  "native_status": "completed",
+  "private_evidence_inventory_sha256": "988a29d66d56576b7431f5fbfe427963775a4d0652a10653a47e485229059a89",
+  "private_manifest_sha256": "aa54abd31e6deded1493240e0d514979a264e1b2888e9f272b7fcb6b001f3987",
+  "private_summary_sha256": "49730030d4d52f94d2808327dfeeaca278f8d11cddabb2a95d23d04a07c8e77d",
+  "receipt_hash_encoding": "SHA-256 of UTF-8 json.dumps(receipt, sort_keys=True, separators=(comma, colon), allow_nan=False), with default ensure_ascii=True; raw native file hashes remain in the private evidence inventory.",
+  "registration_sha256": "408d7fa83d4be049c7c73a73ac41cc75442431687321c427a1e94995abd97580",
+  "role_results": [
+    {
+      "cache_sha256": "17cadc5267f49ab76b8946433e1f987513b024b3222d6d4fa9b74c7259918544",
+      "deadline_valid": true,
+      "elapsed_seconds": 2.507056303002173,
+      "input_tokens": 1315,
+      "native_receipt_canonical_sha256": "93fa978070a8d4b1931749d79b2811141a99f922bc17f63d6f662b3209185eba",
+      "output_budget_valid": true,
+      "output_schema_valid": true,
+      "output_tokens": 90,
+      "physical_requests": 1,
+      "provider_status": "completed",
+      "role": "consumer",
+      "total_tokens": 1405
+    },
+    {
+      "cache_sha256": "8af6c86a34e95fa15717f0e31c158a7ebf9174f2375287d57252c332f1d5314b",
+      "deadline_valid": true,
+      "elapsed_seconds": 3.190727011002309,
+      "input_tokens": 1355,
+      "native_receipt_canonical_sha256": "9ac17175e33d6102af012b43c2d4b64d57eeb88ebcd7abf18b2c62039d171c02",
+      "output_budget_valid": true,
+      "output_schema_valid": true,
+      "output_tokens": 122,
+      "physical_requests": 1,
+      "provider_status": "completed",
+      "role": "employee",
+      "total_tokens": 1477
+    },
+    {
+      "cache_sha256": "4edd34072fadd139c52ee5158a3e73145caaeeac57094b57e9b72b2a4e1b4659",
+      "deadline_valid": true,
+      "elapsed_seconds": 2.6623379490047228,
+      "input_tokens": 1352,
+      "native_receipt_canonical_sha256": "1018cf569006dd4aaaf955c6524f5719ff0adcc43a78d02dfed7bf1566684604",
+      "output_budget_valid": true,
+      "output_schema_valid": true,
+      "output_tokens": 102,
+      "physical_requests": 1,
+      "provider_status": "completed",
+      "role": "enterprise",
+      "total_tokens": 1454
+    },
+    {
+      "cache_sha256": "dcb3f61ff0855906fbe900778f1c75ae778999395636ddd4ef478b9e4ecdedaf",
+      "deadline_valid": true,
+      "elapsed_seconds": 2.2107202499973937,
+      "input_tokens": 1293,
+      "native_receipt_canonical_sha256": "0cd0b9b7a6cc029a95040ae9ccf98878a265197ab7c3e35edb8cfde58d3d2ecc",
+      "output_budget_valid": true,
+      "output_schema_valid": true,
+      "output_tokens": 92,
+      "physical_requests": 1,
+      "provider_status": "completed",
+      "role": "government",
+      "total_tokens": 1385
+    }
+  ],
+  "schema_version": 1,
+  "whole_run_actor_usage_complete": false
+}
