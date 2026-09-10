@@ -61,8 +61,28 @@ attempts. All six worlds must complete and pass audit for the primary comparison
 The earlier credit-exhausted registration is preserved and cannot be resumed or
 relabelled as a Qwen run.
 
-Current status: API capability probes passed; the fresh native qualifications
-and complete Qwen comparison have not yet run. No Qwen learning gain is claimed.
+The [initial native observation](qwen-initial-qualification.json) is bound to
+commit `7a927581df0ed3fb76334dc96aa1bc6454a8257a`. The optimizer qualification
+passed with one request, 699 tokens, 4.232 seconds and one parsed edit; all nine
+startup slots also passed. Both passed independent raw-evidence review.
+
+The actor preflight exposed a separate bootstrap client that bypassed the
+profile and requested ontology generation without an output cap. It was stopped
+after 131.826 seconds, before any contracted actor interview or OASIS environment
+started. Its worker and server exited; bootstrap usage remains unknown. The
+tunnel answered every health check. The employee preflight was prepared but
+not executed. The corrected bootstrap path must be qualified before a new study;
+the initial evidence cannot be relabelled as execution of changed source.
+
+The corrected bootstrap helper uses the same explicit Responses policy, at most
+8,192 output tokens per request, a 120-second timeout and zero SDK retries.
+Provider and usage failures propagate through configuration and persona
+generation, including batch workers, without retries or fabricated profiles.
+Existing bounded content regeneration is retained. The patch passed 49 new
+offline tests and 115 existing regressions, with independent review. Bootstrap
+costs remain outside the contracted-interview meter.
+
+No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.
 Do not switch providers or repeatedly retry an unavailable tunnel.

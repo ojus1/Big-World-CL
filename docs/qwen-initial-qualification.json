@@ -1,0 +1,76 @@
+{
+  "actor": {
+    "cleanup_elapsed_seconds": 0.1730446599995048,
+    "execution_elapsed_seconds": 131.82633895900108,
+    "native_process_cleanup": {
+      "status": "not_started"
+    },
+    "server_cleanup": {
+      "exit_code": 0,
+      "status": "exited"
+    },
+    "status": "failed",
+    "worker_cleanup": {
+      "exit_code": -15,
+      "status": "exited"
+    }
+  },
+  "bootstrap_issue": {
+    "bootstrap_physical_calls": null,
+    "bootstrap_tokens": null,
+    "caller_output_cap": null,
+    "contracted_actor_interviews": 0,
+    "separate_direct_client_bypassed_provider_profile": true,
+    "stage": "ontology_generation",
+    "stop_reason": "operator_stopped_after_identifying_unbounded_bootstrap_request_policy",
+    "tunnel_health_checks_all_passed": true
+  },
+  "comparison": {
+    "completed_pairs": 0,
+    "primary_endpoint": null,
+    "worlds_launched": 0
+  },
+  "employee": {
+    "status": "prepared_not_executed"
+  },
+  "evidence": {
+    "actor": {
+      "artifact_sha256": "8a25516a4870bc050673265c713836abefc99eabb359283d5bd045e8ca8233c7",
+      "independent_stop_review_sha256": "616fbe0c322c0534e35e38097773dfb58682aa005a61d912be13783570514cc9",
+      "manifest_sha256": "8996f47d973a939a60000eea8a6e2a2eee6a5e83d140c102aa4582938299201f",
+      "preserved_inventory_sha256": "0a3ed78658a8f4bd8e753257c330326b122d02b4d2deba5e0e48355132b9dac8",
+      "preserved_observation_sha256": "edbf93d929ee18adad06c65ea6c6668b91cba9e80a3b2a5e2c833673d4344803"
+    },
+    "optimizer": {
+      "artifact_sha256": "91a94dab12966a97259d99cbd2a4f8b5d99594428503b81c0ca3cd76ae974e2d",
+      "independent_review_sha256": "166c2f97744be401faa627afce48e4e8091e23f323b6321d3e56f646714601a5",
+      "manifest_sha256": "fc9af0e6bf5653a74b11e9e0fad473550b7445f29ec488cd3d71ff4904ff67b1"
+    },
+    "startup": {
+      "artifact_sha256": "4c470c5f1d7cd152b48e628d3c10a59f1c7d390dd4339d882b9b1160a39a4e62",
+      "independent_review_sha256": "4a7530fdf683f785037369c63d8a55569db83d6c687a231b2fe7653abe299ac6",
+      "manifest_sha256": "967f0daecadea131db2109e4ef5ff8b57c4907992a06c24263b166c3bf83e58f"
+    }
+  },
+  "execution_commit": "7a927581df0ed3fb76334dc96aa1bc6454a8257a",
+  "kind": "qwen_initial_component_observation",
+  "native_learning_gain_claim": false,
+  "optimizer": {
+    "input_tokens": 632,
+    "native_learning_or_adoption": false,
+    "ok": true,
+    "output_tokens": 67,
+    "parsed_edit_count": 1,
+    "physical_model_calls": 1,
+    "tokens": 699,
+    "wall_seconds": 4.232320303000961
+  },
+  "provider_model": "Qwen/Qwen3.8-27B-FP8",
+  "provider_profile": "responses-no-thinking-v1",
+  "schema_version": 1,
+  "startup": {
+    "provider_inference_calls": 0,
+    "qualification_passed": true,
+    "qualified_slots": 9
+  }
+}
