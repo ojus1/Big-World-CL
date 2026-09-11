@@ -83,7 +83,11 @@ jobs:
       - name: Test fixed Hermes transport preflight and independent evidence audit
         # Standard-library synthetic receipts and owned local process/socket
         # fixtures only; no Hermes install, provider key or native calls.
-        run: python -m unittest tests.test_hermes_transport_preflight tests.test_hermes_preflight_audit -v
+        run: python -m unittest tests.test_hermes_transport_preflight tests.test_hermes_preflight_audit tests.test_profiled_hermes_preflight -v
+
+      - name: Test explicit provider policy and bounded optimizer qualification
+        # Real pinned SkillOpt rendering/parsing with mocked provider I/O only.
+        run: python -m unittest tests.test_provider_contract tests.test_optimizer_preflight -v
 
   actor-contract:
     runs-on: ubuntu-22.04
@@ -117,4 +121,4 @@ jobs:
         # Fake actors + mocked HTTP only. The fixture reads pinned git source,
         # applies the tracked patch in a temporary directory and starts no native
         # server, OASIS environment or provider request. Missing source is fatal.
-        run: python -m pytest tests/test_actor_output_contract.py -q
+        run: python -m pytest tests/test_actor_output_contract.py tests/test_actor_preflight.py tests/test_camel_responses.py tests/test_bootstrap_responses.py -q

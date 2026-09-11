@@ -7,6 +7,7 @@ conservative reservation and are explicitly marked incomplete.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 import threading
 import time
@@ -26,7 +27,7 @@ def _integer(value):
 
 class ResponsesBudget:
     def __init__(self, *, max_model_calls, max_output_tokens, max_total_tokens=None,
-                 on_block=None, framing_reserve=2048):
+                 on_block=None, framing_reserve=2048, provider_contract=None):
         for name, value in (("max_model_calls", max_model_calls),
                             ("max_output_tokens", max_output_tokens),
                             ("framing_reserve", framing_reserve)):
@@ -39,6 +40,10 @@ class ResponsesBudget:
         self.max_total_tokens = max_total_tokens
         self.framing_reserve = framing_reserve
         self.on_block = on_block
+        if provider_contract is not None:
+            from .provider import validate_contract
+            provider_contract = validate_contract(provider_contract)
+        self.provider_contract = provider_contract
         self.rows = []
         self.charged_tokens = 0
         self.exhausted = False
@@ -117,7 +122,9 @@ class ResponsesBudget:
         def create(**kwargs):
             if self.exhausted:
                 self.block("Evaluation transport already stopped at its declared bound")
+            readbacks = self._provider_readbacks(client, kwargs)
             request, row = self._reserve(kwargs)
+            row.update(readbacks)
             started = time.monotonic()
             try:
                 response = original(**request)
@@ -139,9 +146,28 @@ class ResponsesBudget:
         client._big_world_budget = self
         return client
 
+    def _provider_readbacks(self, client, request):
+        """Bind the actual SDK boundary without recording credentials or inputs."""
+        if self.provider_contract is None:
+            return {}
+        from .provider import validate_contract
+        policy = validate_contract(self.provider_contract)
+        extra = request.get('extra_body')
+        template = extra.get('chat_template_kwargs') if type(extra) is dict else None
+        base_url = str(getattr(client, 'base_url', '')).rstrip('/')
+        if not (base_url == policy['base_url'] and request.get('model') == policy['model']
+                and client.max_retries == 0 and request.get('stream') is False and request.get('store') is False
+                and type(extra) is dict and set(extra) == {'chat_template_kwargs'}
+                and type(template) is dict and set(template) == {'enable_thinking'}
+                and template['enable_thinking'] is False and request.get('reasoning') in (None, {})):
+            raise ValueError('Physical Responses request differs from the registered provider contract')
+        return {'provider_contract': policy, 'request_api_mode': 'responses',
+                'request_model': request['model'], 'request_base_url': base_url,
+                'request_store': False, 'request_chat_template_kwargs': deepcopy(template)}
+
     def report(self):
         with self._lock:
-            rows = [dict(row) for row in self.rows]
+            rows = [deepcopy(row) for row in self.rows]
             totals = {key: sum(row[key] or 0 for row in rows)
                       for key in ("input_tokens", "output_tokens", "total_tokens")}
             return {"physical_model_calls": len(rows), "charged_tokens": self.charged_tokens,
@@ -149,7 +175,8 @@ class ResponsesBudget:
                     "accounting_complete": all(row["accounting"] == "reported" for row in rows),
                     "exhausted": self.exhausted, "blocked_calls": self.blocked_calls,
                     "disabled_auxiliary_calls": list(self.disabled_auxiliary_calls),
-                    "operations": rows}
+                    "operations": rows,
+                    **({'provider_contract': deepcopy(self.provider_contract)} if self.provider_contract is not None else {})}
 
 
 class _MeteredStream:
@@ -214,7 +241,7 @@ class _MeteredStream:
         return getattr(self._stream, name)
 
 
-def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_total_tokens=None):
+def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_total_tokens=None, provider_contract=None):
     """Install on one pinned native Hermes ``codex_responses`` agent.
 
     Return a meter whose report is authoritative for transport attempts. Disable
@@ -230,7 +257,7 @@ def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_tota
         agent.interrupt(reason, hard_cancel=True)
 
     budget = ResponsesBudget(max_model_calls=max_model_calls, max_output_tokens=max_output_tokens,
-                             max_total_tokens=max_total_tokens, on_block=stop)
+                             max_total_tokens=max_total_tokens, on_block=stop, provider_contract=provider_contract)
     for name in ("_ensure_primary_openai_client", "_create_request_openai_client"):
         original = getattr(agent, name)
 

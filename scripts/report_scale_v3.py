@@ -257,6 +257,8 @@ def report_scale_v3(campaign_dir, out_dir, *, preregistration_path, campaign_sha
                 'stable_completed_audits':2,'owned_scope_passed':True,
                 'audit_result_sha256':sha(json.dumps(audited,sort_keys=True,allow_nan=False).encode()),'audit_result_hash_encoding':'sorted_json_default_separators'}},
         'lifecycle':lifecycle,'outer_scope':outer_scope,'dispatch_policy':contract.DISPATCH_POLICY,'worlds':worlds,'comparison':comparison,'learning_exposure':exposure,'costs':costs,'limitations':CAVEATS}
+    if campaign.get('provider_contract') is not None:
+        summary['provenance']['provider_contract'] = campaign['provider_contract']
     # Re-audit complete native evidence to reject changes to source sessions,
     # grades, profiles, actor receipts or lifecycle evidence during aggregation.
     require(_audit(root,expected_sha,identifiers)==audited, 'native_evidence_changed_during_reporting')

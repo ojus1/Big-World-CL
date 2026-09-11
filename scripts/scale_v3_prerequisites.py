@@ -1,8 +1,10 @@
-"""V3 gates: historical capability, explicit source compatibility, fresh startup.
+"""V3 gates: exact reviewed native capability and fresh startup.
 
 Historical provider observations are never relabeled as current-source native
 runs. An exact source review and the current native startup qualification are
 separate prerequisites; no failed prefix or missing usage becomes a pass.
+Explicit provider profiles instead require fresh actor, employee and optimizer
+receipts from the current source and provider, with no compatibility shortcut.
 """
 from pathlib import Path
 import hashlib
@@ -17,6 +19,7 @@ CHANGED_LIBRARY_FILES = {
     'lifespan/computers.py', 'lifespan/evaluation/protocol.py',
     'lifespan/evaluation/runner.py', 'lifespan/evaluation/runtime.py',
     'lifespan/hermes_worker.py', 'lifespan/startup_observability.py'}
+ROOT = Path(__file__).resolve().parents[1]
 
 
 EMPLOYEE_AUDIT_CODE = r'''
@@ -154,7 +157,19 @@ def startup_check(campaign, *, directory, review_file):
     directory = Path(directory)
     reference = reviewed_reference(campaign, 'scope_startup_qualification', directory / 'REPORT.json', review_file)
     manifest = read(directory / 'manifest.json'); review = read(review_file)
-    require(review['manifest_sha256'] == sha(directory / 'manifest.json')
+    manifest_sha = sha(directory / 'manifest.json')
+    if 'provider_contract' in campaign:
+        from lifespan.evaluation.provider import validate_contract, provider_contract
+        from scripts.hermes_startup_probe import CREDENTIALS
+        policy = validate_contract(campaign['provider_contract'])
+        require(manifest.get('startup_configuration') == {'model': policy['model'], 'provider_profile': policy['profile']}
+            and same(manifest['child_execution'].get('provider_contract'),
+                     provider_contract(policy['model'], CREDENTIALS['base_url'], policy['profile'])),
+            'startup_provider_configuration_mismatch')
+    else:
+        require('startup_configuration' not in manifest and
+                'provider_contract' not in manifest.get('child_execution', {}), 'startup_provider_configuration_unexpected')
+    require(review['manifest_sha256'] == manifest_sha
         and review['report_sha256'] == reference['artifact_sha256']
         and review['qualification_passed'] is True, 'startup_qualification_review_mismatch')
     actual = audit_qualification(directory, manifest_sha256=review['manifest_sha256'], strict=True)
@@ -166,8 +181,13 @@ def startup_check(campaign, *, directory, review_file):
             'current_sources_differ_from_qualified_startup')
     require(manifest['dependencies']['hermes']['revision'] == campaign['dependencies']['hermes']['revision'],
             'qualified_hermes_revision_changed')
+    require(sha(directory / 'manifest.json') == manifest_sha and
+        sha(directory / 'REPORT.json') == reference['artifact_sha256'] and
+        sha(review_file) == reference['review_sha256'], 'startup_evidence_changed_during_audit')
+    if 'provider_contract' in campaign:
+        _fresh_sources(campaign, manifest, require_all_execution=False)
     return {'verified': True, 'reference': reference, 'planned_slots': 9, 'qualified_slots': 9,
-        'manifest_sha256': sha(directory / 'manifest.json'), 'boot_id': manifest['boot_id'],
+        'manifest_sha256': manifest_sha, 'boot_id': manifest['boot_id'],
         'caller_security_context': manifest['caller_security_context'],
         'scope': 'startup_component_only_not_provider_or_long_horizon_reliability'}
 
@@ -215,16 +235,130 @@ def employee_check(campaign, *, original_directory, observation_directory, revie
             'measured_tokens': saved['usage']['total_tokens'], 'elapsed_seconds': saved['elapsed_seconds']}
 
 
+def _fresh_sources(campaign, manifest, *, require_all_execution=True):
+    declared = manifest.get('source_sha256')
+    combined = {**campaign['source_sha256'], **campaign['registration_tools_sha256']}
+    require(type(declared) is dict and bool(declared) and (not require_all_execution or
+        all(declared.get(k) == v for k, v in campaign['source_sha256'].items())),
+        'fresh_preflight_missing_current_execution_sources')
+    for name, expected in declared.items():
+        require(type(name) is str and not Path(name).is_absolute() and '..' not in Path(name).parts
+            and type(expected) is str and re.fullmatch('[0-9a-f]{64}', expected)
+            and combined.get(name) == expected, 'fresh_preflight_source_not_registered')
+        path = ROOT / name
+        require(path.resolve().is_relative_to(ROOT.resolve()) and
+            not any(p.is_symlink() for p in (path, *path.parents) if p != ROOT.parent)
+            and sha(path) == expected, 'fresh_preflight_source_changed')
+
+
+def _fresh_context(campaign, directory, review_file, kind, artifact_name):
+    from lifespan.evaluation.provider import validate_contract, provider_contract
+    directory = Path(directory).resolve()
+    reference = reviewed_reference(campaign, kind, directory / artifact_name, review_file)
+    manifest_sha = sha(directory / 'manifest.json')
+    manifest, review = read(directory / 'manifest.json'), read(review_file)
+    policy = validate_contract(campaign.get('provider_contract'))
+    require(campaign['launch_policy'].get('provider_profile') == policy['profile'] and
+        same(policy, provider_contract(campaign['target_model'], campaign['model_base_url'], policy['profile'])),
+        'fresh_campaign_provider_binding')
+    require(same(validate_contract(manifest.get('provider_contract')), policy) and
+        (manifest.get('target_model'), manifest.get('model_base_url')) ==
+        (campaign['target_model'], campaign['model_base_url']), 'fresh_preflight_provider_changed')
+    require(review.get('manifest_sha256') == manifest_sha and
+        review.get('artifact_sha256') == reference['artifact_sha256'] and
+        review.get('decision') == 'approved_for_prospective_evaluation', 'fresh_preflight_review_mismatch')
+    _fresh_sources(campaign, manifest)
+    return directory, manifest, manifest_sha, reference
+
+
+def _fresh_finish(campaign, directory, manifest, manifest_sha, reference, artifact_name, review_file):
+    require(sha(directory / 'manifest.json') == manifest_sha and
+        sha(directory / artifact_name) == reference['artifact_sha256'] and
+        sha(review_file) == reference['review_sha256'], 'fresh_preflight_changed_during_audit')
+    _fresh_sources(campaign, manifest)
+
+
+def fresh_actor_check(campaign, *, directory, source_root, review_file):
+    from scripts import preflight_actor_contract as actor
+    require(Path(source_root).resolve() == ROOT.resolve(), 'fresh_actor_requires_current_source_root')
+    directory, manifest, manifest_sha, reference = _fresh_context(
+        campaign, directory, review_file, 'actor_native_capability', 'SUMMARY.json')
+    require(manifest.get('kind') == 'native_actor_wire_capability_preflight' and
+        same(manifest.get('dependencies', {}).get('repositories'), campaign['dependencies']),
+        'fresh_actor_dependency_or_kind_changed')
+    actual = actor.audit(directory, manifest_sha256=manifest_sha, strict=True)
+    require(actual.get('ok') is True and actual.get('verified') is True and actual.get('status') == 'completed'
+        and actual.get('manifest_sha256') == manifest_sha
+        and actual.get('summary_sha256') == reference['artifact_sha256']
+        and actual.get('roles') == list(actor.ROLES)
+        and same(actual.get('provider_contract'), campaign['provider_contract']), 'fresh_actor_raw_audit_failed')
+    _fresh_finish(campaign, directory, manifest, manifest_sha, reference, 'SUMMARY.json', review_file)
+    return {'verified': True, 'reference': reference, 'manifest_sha256': manifest_sha,
+        'summary_sha256': actual['summary_sha256'], 'evidence_inventory_sha256': actual['evidence_inventory_sha256'],
+        'actor_interviews': actual['actor_interviews'], 'qualified_roles': 4,
+        'scope': 'current_provider_contracted_interviews_only; bootstrap_social_and_all_in_usage_unknown'}
+
+
+def fresh_employee_check(campaign, *, directory, review_file):
+    from scripts import audit_hermes_preflight as employee
+    directory, manifest, manifest_sha, reference = _fresh_context(
+        campaign, directory, review_file, 'employee_native_capability', 'REPORT.json')
+    require(manifest.get('kind') == 'hermes-transport-capability-provider-v1' and
+        manifest['dependencies']['hermes']['revision'] == campaign['dependencies']['hermes']['revision'],
+        'fresh_employee_dependency_or_kind_changed')
+    actual = employee.audit_preflight(directory, strict=True, expected_manifest_sha256=manifest_sha)
+    require(actual.get('ok') is True and actual.get('capability_pass') is True
+        and actual.get('accounting_verified') is True and actual.get('status') == 'valid_completed'
+        and actual.get('manifest_sha256') == manifest_sha and actual.get('report_sha256') == reference['artifact_sha256']
+        and same(actual.get('provider_contract'), campaign['provider_contract'])
+        and len(actual.get('slots', [])) == 3
+        and {s.get('workflow') for s in actual['slots']} == {'onboarding', 'renewal', 'incident'}
+        and all(s.get('mode') == 'nonstreaming' and s.get('capability_pass') is True
+                and s.get('cleanup_confirmed') is True for s in actual['slots'])
+        and actual.get('usage', {}).get('complete') is True, 'fresh_employee_raw_audit_failed')
+    _fresh_finish(campaign, directory, manifest, manifest_sha, reference, 'REPORT.json', review_file)
+    return {'verified': True, 'reference': reference, 'manifest_sha256': manifest_sha,
+        'report_sha256': actual['report_sha256'], 'qualified_slots': 3, 'usage': actual['usage'],
+        'scope': 'current_provider_native_tool_file_submission_readback_component; no_learning_or_long_horizon_claim'}
+
+
+def fresh_optimizer_check(campaign, *, directory, review_file):
+    from scripts import preflight_optimizer as optimizer
+    directory, manifest, manifest_sha, reference = _fresh_context(
+        campaign, directory, review_file, 'optimizer_native_capability', 'REPORT.json')
+    require(manifest.get('kind') == 'native_optimizer_provider_capability_v1' and
+        same(manifest.get('dependencies'), campaign['dependencies']), 'fresh_optimizer_dependency_or_kind_changed')
+    actual = optimizer.audit_preflight(directory, manifest_sha256=manifest_sha, strict=True)
+    require(actual.get('ok') is True and actual.get('capability_pass') is True and actual.get('status') == 'completed'
+        and actual.get('manifest_sha256') == manifest_sha
+        and same(actual.get('provider_contract'), campaign['provider_contract'])
+        and type(actual.get('physical_model_calls')) is int and actual['physical_model_calls'] == 1
+        and actual.get('native_learning_or_adoption') is False, 'fresh_optimizer_raw_audit_failed')
+    _fresh_finish(campaign, directory, manifest, manifest_sha, reference, 'REPORT.json', review_file)
+    return {'verified': True, 'reference': reference, 'manifest_sha256': manifest_sha,
+        'report_sha256': reference['artifact_sha256'], 'evidence_inventory_sha256': actual['evidence_inventory_sha256'],
+        'physical_model_calls': 1, 'measured_tokens': actual['tokens'], 'parsed_edit_count': actual['parsed_edit_count'],
+        'scope': 'current_provider_synthetic_train_reflector_transport_and_parse; no_target_or_adoption'}
+
+
 def verify_prerequisites(campaign, paths):
+    if 'provider_contract' in campaign or 'provider_profile' in campaign['launch_policy']:
+        from scripts.scale_v3_contract import policy
+        policy(campaign['launch_policy'])
+        expected = {'actor': {'directory', 'source_root', 'review_file'},
+            'employee': {'directory', 'review_file'}, 'optimizer': {'directory', 'review_file'},
+            'horizon': {'directory', 'review_file'}, 'startup': {'directory', 'review_file'}}
+        _paths(paths, expected)
+        checks = [fresh_actor_check(campaign, **paths['actor']), fresh_employee_check(campaign, **paths['employee']),
+            horizon_check(campaign, **paths['horizon']), startup_check(campaign, **paths['startup']),
+            fresh_optimizer_check(campaign, **paths['optimizer'])]
+        require(all(row['verified'] is True for row in checks), 'v3_prerequisites_not_verified')
+        return {'schema_version': 3, 'verified': True, 'provider_contract': campaign['provider_contract'], 'checks': checks}
     expected = {'actor': {'directory', 'source_root', 'review_file'},
         'employee': {'original_directory', 'observation_directory', 'review_file'},
         'horizon': {'directory', 'review_file'}, 'startup': {'directory', 'review_file'},
         'compatibility': {'artifact_file', 'review_file'}}
-    require(type(paths) is dict and set(paths) == set(expected), 'v3_prerequisite_path_inventory')
-    for name, fields in expected.items():
-        require(type(paths[name]) is dict and set(paths[name]) == fields and all(
-            type(value) is str and Path(value).is_absolute() for value in paths[name].values()),
-            'v3_prerequisite_absolute_paths_required')
+    _paths(paths, expected)
     compatible = compatibility_check(campaign, **paths['compatibility'],
         original_directory=paths['employee']['original_directory'])
     startup = startup_check(campaign, **paths['startup'])
@@ -233,3 +367,11 @@ def verify_prerequisites(campaign, paths):
         horizon_check(campaign, **paths['horizon']), startup, compatible]
     require(all(row['verified'] is True for row in checks), 'v3_prerequisites_not_verified')
     return {'schema_version': 3, 'verified': True, 'checks': checks}
+
+
+def _paths(paths, expected):
+    require(type(paths) is dict and set(paths) == set(expected), 'v3_prerequisite_path_inventory')
+    for name, fields in expected.items():
+        require(type(paths[name]) is dict and set(paths[name]) == fields and all(
+            type(value) is str and Path(value).is_absolute() for value in paths[name].values()),
+            'v3_prerequisite_absolute_paths_required')

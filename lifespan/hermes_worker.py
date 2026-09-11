@@ -34,6 +34,14 @@ def _main(observer=None):
     stage('registry_before')
     execution=json.loads(os.environ.get('LIFESPAN_EXECUTION_CONFIG','{}'))
     benchmark=execution.get('mode')=='evaluation'
+    provider_policy = execution.get('provider_contract')
+    if provider_policy is not None:
+        from lifespan.evaluation.provider import validate_contract
+        provider_policy = validate_contract(provider_policy)
+        if (not benchmark or execution.get('hermes_transport') != 'nonstreaming'
+                or provider_policy['model'] != os.environ['LIFESPAN_MODEL']
+                or provider_policy['base_url'] != os.environ['LIFESPAN_BASE_URL'].rstrip('/')):
+            raise ValueError('Worker provider contract differs from its native configuration')
 
     def enterprise_action(args, **kwargs):
         send({'kind':'action','action':{'tool':args['operation'],'args':args.get('arguments',{})}})
@@ -101,7 +109,8 @@ def _main(observer=None):
         api_mode='codex_responses',enabled_toolsets=(['terminal','file','lifespan_skill_read','enterprise_lifespan']
             if benchmark else ['terminal','file','memory','skills','enterprise_lifespan']),
         max_iterations=int(execution.get('max_iterations',12)),max_tokens=int(execution.get('max_tokens',4096)),
-        reasoning_config={'enabled':True,'effort':execution.get('reasoning_effort','low')},
+        reasoning_config=({'enabled':False} if provider_policy is not None
+                          else {'enabled':True,'effort':execution.get('reasoning_effort','low')}),
         quiet_mode=True,save_trajectories=True,session_id='lifespan-'+eid,
         session_db=SessionDB(),skip_context_files=True,skip_background_review=True,
         checkpoints_enabled=False)
@@ -112,10 +121,11 @@ def _main(observer=None):
         meter=install_native_budget(agent,
             max_model_calls=int(execution.get('max_iterations',12)),
             max_output_tokens=int(execution.get('max_tokens',4096)),
-            max_total_tokens=execution.get('max_total_tokens'))
+            max_total_tokens=execution.get('max_total_tokens'), provider_contract=provider_policy)
         from lifespan.evaluation.hermes_transport import install
         from lifespan.computers import HERMES
-        transport=install(agent, execution.get('hermes_transport','streaming'), hermes_root=HERMES)
+        transport=install(agent, execution.get('hermes_transport','streaming'), hermes_root=HERMES,
+                          provider_contract=provider_policy)
     stage('budget_transport_after')
     stage('probe_before')
     # Materialize and exercise the native backend even before the first model turn.
@@ -131,6 +141,7 @@ def _main(observer=None):
           **({'startup_observation': observer.summary()} if observer else {}),
           'backend':backend,'computer_id':computer_id,
           **({'evaluation_transport':transport} if benchmark else {}),
+          **({'provider_contract':provider_policy} if provider_policy is not None else {}),
           **({'sandbox_pid':sandbox.sandbox.process.pid,'rpc_socket':str(sandbox.sandbox.rpc_socket)}
              if backend=='bubblewrap' else {'container_id':sandbox._container_id}),
           'tool_names':[t['function']['name'] if 'function' in t else t.get('name') for t in agent.tools]})
@@ -157,6 +168,8 @@ def _main(observer=None):
             if benchmark:
                 result['evaluation_budget']=meter.report()
                 result['evaluation_transport']=transport
+                if provider_policy is not None:
+                    result['provider_contract']=provider_policy
             if isinstance(result.get('messages'),list):
                 history=result['messages']
                 temp=history_path.with_suffix('.tmp')

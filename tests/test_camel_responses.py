@@ -7,8 +7,18 @@ import httpx
 from openai import OpenAI, AsyncOpenAI
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'MiroFish/backend'))
-from app.utils.camel_responses import OpenAIResponsesModel
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Exercise this checkout's tracked override, never an installed native server.
+from tests.test_actor_output_contract import bridge, patched_backend
+OpenAIResponsesModel = bridge.OpenAIResponsesModel
+
+
+@pytest.fixture(autouse=True)
+def deny_real_http(monkeypatch):
+    def forbidden(*args, **kwargs):
+        pytest.fail('Offline bridge fixture attempted real HTTP')
+    monkeypatch.setattr(httpx.HTTPTransport, 'handle_request', forbidden)
+    monkeypatch.setattr(httpx.AsyncHTTPTransport, 'handle_async_request', forbidden)
 
 
 TOOLS = [{'type': 'function', 'function': {'name': 'create_post', 'parameters': {
@@ -125,3 +135,202 @@ def test_sequential_tool_rounds_are_not_dropped_by_camel_preprocessing():
         completion = instance.run(messages, tools=TOOLS)
         messages += tool_result(completion)
     assert len(requests) == 3
+
+
+# Profile normalization tests are synthetic compatibility fixtures, not native
+# capability evidence. They never load captured personas or native transcripts.
+def _profiled(monkeypatch, responder=None):
+    from tests.test_actor_output_contract import profile_model
+    return profile_model(responder or (lambda _: pytest.fail('Unexpected HTTP dispatch')), monkeypatch)
+
+
+def test_profile_combines_leading_system_text_without_deduplication_or_mutation(monkeypatch):
+    from copy import deepcopy
+    instance = _profiled(monkeypatch)
+    repeated = 'Preserve braces { } quote " slash \\ and unicode Ω\n'
+    messages = [{'role': 'system', 'content': repeated}, {'role': 'system', 'content': repeated},
+                {'role': 'system', 'content': '\nFinal prefix instruction.  '},
+                {'role': 'user', 'content': 'Fixture task.'},
+                {'role': 'system', 'content': 'Later instruction stays here.'},
+                {'role': 'developer', 'content': 'Developer instruction stays here.'},
+                {'role': 'assistant', 'content': ''}]
+    original = deepcopy(messages)
+    result = instance._input(messages)
+    assert result == [{'role': 'system', 'content': repeated + '\n\n' + repeated + '\n\n\nFinal prefix instruction.  '}] + messages[3:]
+    assert messages == original
+
+
+@pytest.mark.parametrize('messages', [[], [{'role': 'user', 'content': 'Fixture'}],
+    [{'role': 'system', 'content': ''}, {'role': 'user', 'content': 'Fixture'}],
+    [{'role': 'system', 'content': 'One'}, {'role': 'developer', 'content': 'Boundary'},
+     {'role': 'system', 'content': 'Two'}, {'role': 'system', 'content': 'Three'}],
+    [{'role': 'user', 'content': 'Before'}, {'role': 'system', 'content': 'Late one'},
+     {'role': 'system', 'content': 'Late two'}]])
+def test_profile_zero_single_and_late_system_messages_are_unchanged(monkeypatch, messages):
+    instance = _profiled(monkeypatch)
+    assert instance._input(messages) == messages
+
+
+@pytest.mark.parametrize('unsupported', [
+    {'role': 'system', 'content': [{'type': 'input_text', 'text': 'Structured'}]},
+    {'role': 'system', 'content': {'text': 'Structured'}},
+    {'role': 'system', 'content': None}, {'role': 'system'},
+    {'role': 'system', 'content': 'Named', 'name': 'fixture'},
+    {'role': 'system', 'content': 'Extra', 'tool_calls': []},
+])
+def test_profile_unsupported_system_prefix_fails_before_dispatch(monkeypatch, unsupported):
+    from copy import deepcopy
+    instance = _profiled(monkeypatch)
+    messages = [{'role': 'system', 'content': 'Plain'}, unsupported, {'role': 'user', 'content': 'Fixture'}]
+    before = deepcopy(messages)
+    with pytest.raises(bridge.ContractError, match='leading_system_messages_require_plain_text'):
+        asyncio.run(instance.arun(messages))
+    assert messages == before
+
+
+def test_legacy_multiple_system_messages_and_structured_content_remain_unchanged(monkeypatch):
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE', raising=False)
+    instance = model()
+    messages = [{'role': 'system', 'content': 'Repeat'}, {'role': 'system', 'content': 'Repeat'},
+                {'role': 'system', 'content': [{'type': 'input_text', 'text': 'Structured'}]},
+                {'role': 'user', 'content': 'Fixture'}]
+    assert instance._input(messages) == messages
+
+
+def test_profile_leading_merge_preserves_cached_response_items_and_tool_results(monkeypatch):
+    from copy import deepcopy
+    instance = _profiled(monkeypatch)
+    # The existing cache may contain reasoning and response-item metadata. This
+    # change must leave all cached items and their order untouched.
+    cached = output_for('fixture')
+    instance._items_by_call = {'fixture': deepcopy(cached)}
+    messages = [{'role': 'system', 'content': 'First'}, {'role': 'system', 'content': 'Second'},
+        {'role': 'user', 'content': 'Before tools'},
+        {'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'fixture', 'type': 'function',
+            'function': {'name': 'create_post', 'arguments': '{"content":"Test"}'}}]},
+        {'role': 'tool', 'tool_call_id': 'fixture', 'content': '{"success":true}'},
+        {'role': 'assistant', 'content': ''}, {'role': 'user', 'content': 'Interview'}]
+    original = deepcopy(messages)
+    assert instance._input(messages) == [
+        {'role': 'system', 'content': 'First\n\nSecond'}, {'role': 'user', 'content': 'Before tools'},
+        *cached, {'type': 'function_call_output', 'call_id': 'fixture', 'output': '{"success":true}'},
+        {'role': 'assistant', 'content': ''}, {'role': 'user', 'content': 'Interview'}]
+    assert messages == original and instance._items_by_call == {'fixture': cached}
+
+
+def test_contracted_profile_request_merges_prefix_and_binds_normalized_input(monkeypatch, tmp_path):
+    from tests.test_actor_output_contract import (actor_dir, profile_response, EXAMPLE,
+        CONFIG, descriptor, wire, write_trace)
+    requests = []
+    text = json.dumps(EXAMPLE)
+    def respond(request):
+        payload = json.loads(request.content)
+        requests.append(payload)
+        if payload['input'][0]['role'] == payload['input'][1].get('role') == 'system':
+            return httpx.Response(400, json={'error': {'message': 'System message must be at the beginning.'}})
+        return httpx.Response(200, json=profile_response(text))
+    instance = _profiled(monkeypatch, respond)
+    directory = actor_dir(tmp_path)
+    prompt = 'Return the employee fixture.'
+    messages = [{'role': 'system', 'content': 'Same instruction'}, {'role': 'system', 'content': 'Same instruction'},
+        {'role': 'user', 'content': 'Prior task'},
+        {'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'call_fixture', 'type': 'function',
+            'function': {'name': 'create_post', 'arguments': '{"content":"Prior result"}'}}]},
+        {'role': 'tool', 'tool_call_id': 'call_fixture', 'content': '{"success":true}'},
+        {'role': 'assistant', 'content': ''}, {'role': 'user', 'content': prompt}]
+    contract = descriptor(CONFIG, 'employee')
+    binding = wire.bind_request(directory, 0, prompt, prompt, contract, 'b' * 64)
+    async def interview():
+        with wire.interview_scope(directory, 0, prompt, binding) as scope:
+            cursor = wire.trace_cursor(directory)
+            completion = await instance.arun(messages, tools=TOOLS)
+            write_trace(directory, 0, prompt, completion.choices[0].message.content)
+            result = wire.contracted_trace_result(directory, 0, prompt, cursor)
+            return scope.finish(result)
+    receipt = asyncio.run(interview())
+    assert len(requests) == 1
+    sent = requests[0]
+    assert sent['input'][0] == {'role': 'system', 'content': 'Same instruction\n\nSame instruction'}
+    assert sent['input'][-2:] == messages[-2:]
+    assert sent['input'][2]['type'] == 'function_call' and sent['input'][3]['type'] == 'function_call_output'
+    assert sent['text']['format'] == {'type': 'json_schema', 'name': 'actor_employee_v1', 'strict': True,
+                                     'schema': wire.generation_schema('employee', wire.configured_provider_contract())}
+    assert receipt['binding']['schema_sha256'] == wire.digest(wire.role_schema('employee'))
+    assert receipt['generation_schema_contract'] == wire.generation_contract('employee', wire.configured_provider_contract())
+    assert sent['max_output_tokens'] == CONFIG['max_output_tokens']
+    assert sent['stream'] is sent['store'] is False
+    assert sent['chat_template_kwargs'] == {'enable_thinking': False} and 'tools' not in sent
+    assert receipt['provider_input_sha256'] == wire.digest(sent['input'])
+    assert receipt['output_schema_valid'] is receipt['accounting_complete'] is True
+    assert receipt['physical_requests_dispatched'] == 1
+
+
+def _profiled_factory(monkeypatch):
+    from tests.test_actor_output_contract import PROFILE_MODEL, PROFILE_BASE
+    monkeypatch.setenv('BIGWORLD_PROVIDER_PROFILE', 'responses-no-thinking-v1')
+    monkeypatch.setenv('LLM_MODEL_NAME', PROFILE_MODEL)
+    monkeypatch.setenv('LLM_BASE_URL', PROFILE_BASE)
+    return bridge.create_simulation_model(PROFILE_MODEL, 'offline-test-key', PROFILE_BASE)
+
+
+def test_profiled_factory_bounds_both_real_sdk_clients(monkeypatch):
+    monkeypatch.setenv('MODEL_TIMEOUT', '999')
+    instance = _profiled_factory(monkeypatch)
+    assert type(instance) is OpenAIResponsesModel
+    assert instance._client.max_retries == instance._async_client.max_retries == 0
+    assert instance._client.timeout == instance._async_client.timeout == 120
+    assert instance._max_retries == 0 and instance._timeout == 120
+
+
+@pytest.mark.parametrize('asynchronous', [False, True])
+@pytest.mark.parametrize('failure', ['timeout', 'server_error'])
+def test_ordinary_profiled_sdk_failure_dispatches_once(monkeypatch, asynchronous, failure):
+    from openai import APITimeoutError, InternalServerError
+    instance = _profiled_factory(monkeypatch)
+    requests = []
+    def respond(request):
+        requests.append(request)
+        if failure == 'timeout':
+            raise httpx.ReadTimeout('Offline fixture timeout', request=request)
+        return httpx.Response(503, json={'error': {'message': 'Offline fixture unavailable'}})
+    expected = APITimeoutError if failure == 'timeout' else InternalServerError
+    if asynchronous:
+        async def run():
+            async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as http:
+                # Clone only the HTTP transport; the real factory's timeout and
+                # retry settings must be inherited rather than supplied here.
+                instance._async_client = instance._async_client.with_options(http_client=http)
+                with pytest.raises(expected):
+                    await instance.arun([{'role': 'user', 'content': 'Ordinary fixture social action'}], tools=TOOLS)
+        asyncio.run(run())
+    else:
+        with httpx.Client(transport=httpx.MockTransport(respond)) as http:
+            instance._client = instance._client.with_options(http_client=http)
+            with pytest.raises(expected):
+                instance.run([{'role': 'user', 'content': 'Ordinary fixture social action'}], tools=TOOLS)
+    assert len(requests) == 1
+    sent = json.loads(requests[0].content)
+    assert sent['tools'][0]['name'] == 'create_post'
+    assert 'text' not in sent  # Ordinary calls do not acquire interview schemas.
+    assert sent['stream'] is sent['store'] is False
+    assert sent['chat_template_kwargs'] == {'enable_thinking': False}
+    assert all(value == 120 for value in requests[0].extensions['timeout'].values())
+
+
+def test_legacy_factory_keeps_camel_defaults(monkeypatch, patched_backend):
+    import importlib.util
+    from types import ModuleType, SimpleNamespace
+    # Load the real patched legacy helper with only Config replaced, never the
+    # installed service or its dotenv/credentials.
+    name = bridge.__package__ + '.openai_chat_compat'
+    spec = importlib.util.spec_from_file_location(name, patched_backend / 'app/utils/openai_chat_compat.py')
+    compat = importlib.util.module_from_spec(spec); compat.__package__ = 'app.utils'
+    config = ModuleType('app.config'); config.Config = SimpleNamespace(LLM_REASONING_EFFORT='low')
+    monkeypatch.setitem(sys.modules, 'app.config', config)
+    monkeypatch.setitem(sys.modules, name, compat); spec.loader.exec_module(compat)
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE', raising=False)
+    monkeypatch.setenv('MODEL_TIMEOUT', '37')
+    instance = bridge.create_simulation_model('gpt-5.6-luna', 'offline-test-key', 'https://fixture.invalid/v1')
+    assert type(instance) is OpenAIResponsesModel
+    assert instance._client.max_retries == instance._async_client.max_retries == 3
+    assert instance._client.timeout == instance._async_client.timeout == 37

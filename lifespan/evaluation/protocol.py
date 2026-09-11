@@ -49,11 +49,16 @@ class ExperimentConfig:
     focal_employee: str | None = None
     hermes_transport: str = 'streaming'
     hermes_startup_observability: bool = False
+    provider_profile: str | None = None
     schema_version: int = 1
 
     def __post_init__(self):
         from .hermes_transport import mode
         mode(self)
+        if self.provider_profile is not None:
+            from .provider import PROFILE
+            if self.provider_profile != PROFILE or self.hermes_transport != 'nonstreaming':
+                raise ValueError('Explicit provider profile requires the registered nonstreaming Responses policy')
         from ..startup_observability import enabled
         enabled(self)
         if self.mirofish_service_url is not None:
@@ -92,6 +97,8 @@ class ExperimentConfig:
 
     def public(self):
         result = asdict(self)
+        if self.provider_profile is None:
+            result.pop('provider_profile')
         if not self.hermes_startup_observability:
             result.pop('hermes_startup_observability')
         if self.hermes_transport == 'streaming':

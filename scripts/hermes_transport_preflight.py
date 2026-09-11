@@ -37,6 +37,7 @@ from lifespan.world import Task
 from scripts.hermes_preflight_process import supervise, interruption_scope
 
 VERSION = 'hermes-transport-capability-v1'
+PROFILE_VERSION = 'hermes-transport-capability-provider-v1'
 CONFIG = {'fixture_seed': 930117, 'fixture_day': 0, 'max_iterations': 16,
           'max_output_tokens': 4096, 'max_rollout_tokens': 250000,
           'max_rollout_seconds': 420, 'max_cleanup_seconds': 30,
@@ -54,6 +55,38 @@ REQUEST = (
 )
 
 
+def profile_config(profile=None):
+    from lifespan.evaluation.provider import PROFILE
+    result = deepcopy(CONFIG)
+    if profile is not None:
+        if profile != PROFILE:
+            raise ValueError('Unsupported capability provider profile')
+        result.update(provider_profile=PROFILE, fixed_slots=3, max_run_seconds=1350,
+                      max_model_calls=48, max_charged_tokens=750000)
+    return result
+
+
+def profile_modes(profile=None):
+    profile_config(profile)
+    return ('streaming', 'nonstreaming') if profile is None else ('nonstreaming',)
+
+
+def manifest_profile(manifest):
+    from lifespan.evaluation.provider import provider_contract, validate_contract
+    profile = manifest.get('config', {}).get('provider_profile')
+    expected_kind = VERSION if profile is None else PROFILE_VERSION
+    if manifest.get('kind') != expected_kind or manifest.get('config') != profile_config(profile):
+        raise ValueError('Prepared capability profile or limits changed')
+    if profile is None:
+        if 'provider_contract' in manifest or 'readback_contract' in manifest:
+            raise ValueError('Legacy capability cannot carry profile markers')
+    elif (validate_contract(manifest.get('provider_contract')) != provider_contract(
+            manifest['target_model'], manifest['model_base_url'], profile)
+            or manifest.get('readback_contract') != 'hermes-native-readback-audit-v2'):
+        raise ValueError('Prepared provider or readback contract changed')
+    return profile
+
+
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
@@ -66,10 +99,13 @@ def identity(fn):
     return fn.__module__ + '.' + fn.__qualname__
 
 
-def execution_sources():
+def execution_sources(profile=None):
     result = source_hashes()
     for name in ('hermes_transport_preflight.py', 'hermes_preflight_process.py', 'audit_hermes_preflight.py'):
         result['scripts/' + name] = sha(ROOT / 'scripts' / name)
+    if profile is not None:
+        profile_config(profile)
+        result['scripts/audit_hermes_readback_v2.py'] = sha(ROOT / 'scripts/audit_hermes_readback_v2.py')
     return result
 
 
@@ -88,7 +124,7 @@ def committed_sources(commit, sources):
     return True
 
 
-def dependencies():
+def dependencies(profile=None):
     """Inspect only installed source/runtime metadata; never import a provider client."""
     native = verify_source(HERMES)
     python = native / 'venv/bin/python'
@@ -98,16 +134,24 @@ def dependencies():
     bwrap = shutil.which('bwrap')
     if not bwrap:
         raise RuntimeError('bubblewrap dependency is unavailable')
-    return {'hermes': {'revision': contract('nonstreaming')['hermes_revision'],
+    result = {'hermes': {'revision': contract('nonstreaming')['hermes_revision'],
                 'native_source_sha256': contract('nonstreaming')['native_source_sha256'],
                 'python_sha256': sha(python), 'packages': package_versions},
             'harness': {'python_version': platform.python_version(),
                 'python_sha256': sha(sys.executable), 'pyyaml_version': importlib.metadata.version('PyYAML')},
             'bubblewrap': {'binary_sha256': sha(bwrap), 'version': subprocess.check_output(
                 [bwrap, '--version'], text=True, stderr=subprocess.DEVNULL, timeout=10).strip()}}
+    if profile is not None:
+        profile_config(profile)
+        from scripts.audit_hermes_readback_v2 import NATIVE_SOURCES
+        if any(sha(native / name) != value for name, value in NATIVE_SOURCES.items()):
+            raise ValueError('Native readback warning sources changed')
+        result['hermes']['readback_native_source_sha256'] = deepcopy(NATIVE_SOURCES)
+    return result
 
 
-def expected_capsules():
+def expected_capsules(profile=None):
+    profile_config(profile)
     result = {}
     for index, workflow in enumerate(WORKFLOWS):
         eco = Ecosystem(days=8, seed=CONFIG['fixture_seed'] + index)
@@ -119,16 +163,17 @@ def expected_capsules():
         employee = 'firm-0__' + workflow + '-regulated'
         world.tasks[tid] = Task(tid, workflow, 'regulated', workflow + '-regulated', 'consumer-0', 0, 3, 10)
         case = make_case(workflow, CONFIG['fixture_seed'] + index, 0, tid, regime='base', split='online')
-        result[workflow] = {'schema_version': 1, 'kind': VERSION, 'firm': 'firm-0',
+        result[workflow] = {'schema_version': 1, 'kind': VERSION if profile is None else PROFILE_VERSION, 'firm': 'firm-0',
             'employee': employee, 'task_id': tid, 'case': case, 'ecosystem': eco.checkpoint(),
             'request': REQUEST, 'objectives': deepcopy(eco.firms['firm-0']), 'business_files': {}}
     return result
 
 
-def expected_slots(capsule_hashes):
+def expected_slots(capsule_hashes, profile=None):
+    profile_config(profile)
     result = []
     for index, workflow in enumerate(WORKFLOWS):
-        modes = ('nonstreaming', 'streaming') if index == 1 else ('streaming', 'nonstreaming')
+        modes = (('nonstreaming', 'streaming') if index == 1 else ('streaming', 'nonstreaming')) if profile is None else ('nonstreaming',)
         for mode in modes:
             result.append({'index': len(result), 'slot_id': f'{len(result):02d}-{workflow}-{mode}',
                 'workflow': workflow, 'mode': mode, 'employee': 'firm-0__' + workflow + '-regulated',
@@ -146,28 +191,36 @@ def validate_model(model, base_url):
         raise ValueError('Expected a model name and credential-free HTTP service URL')
 
 
-def prepare(out, *, target_model, model_base_url):
+def prepare(out, *, target_model, model_base_url, provider_profile=None):
     validate_model(target_model, model_base_url)
-    sources, deps = execution_sources(), dependencies()
+    config = profile_config(provider_profile)
+    policy = None
+    if provider_profile is not None:
+        from lifespan.evaluation.provider import provider_contract
+        policy = provider_contract(target_model, model_base_url, provider_profile)
+        model_base_url = policy['base_url']
+    sources, deps = execution_sources(provider_profile), dependencies(provider_profile)
     out = Path(out).resolve()
     out.mkdir(parents=True, mode=0o700, exist_ok=False)
     os.chmod(out, 0o700)
     (out/'private').mkdir(mode=0o700)
     capsule_hashes = {}
-    for workflow, capsule in expected_capsules().items():
+    for workflow, capsule in expected_capsules(provider_profile).items():
         path = out/'private/cases'/ (workflow + '.json')
         save(path, capsule); capsule_hashes[workflow] = sha(path)
     (out/'private/initial_skill.txt').write_text(SEED_SKILL)
     commit = subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip()
-    manifest = {'schema_version': 1, 'kind': VERSION, 'config': deepcopy(CONFIG),
-        'slots': expected_slots(capsule_hashes), 'source_sha256': sources, 'dependencies': deps,
+    manifest = {'schema_version': 1, 'kind': VERSION if provider_profile is None else PROFILE_VERSION, 'config': config,
+        'slots': expected_slots(capsule_hashes, provider_profile), 'source_sha256': sources, 'dependencies': deps,
         'repository_commit': commit, 'source_commit_verified': committed_sources(commit, sources),
         'target_model': target_model, 'model_base_url': model_base_url,
         'initial_skill_sha256': sha(out/'private/initial_skill.txt'),
-        'transports': {m: contract(m) for m in ('streaming', 'nonstreaming')},
+        'transports': {m: contract(m) for m in profile_modes(provider_profile)},
         'execution_driver': 'scripts.hermes_transport_preflight.execute',
         'native_executor': identity(execute_case),
         'scope': 'fixed_synthetic_component_tasks; no_native_actors_or_learning_or_study_cohort'}
+    if policy is not None:
+        manifest.update(provider_contract=policy, readback_contract='hermes-native-readback-audit-v2')
     save(out/'manifest.json', manifest)
     save(out/'state.json', {'schema_version': 1, 'status': 'prepared', 'receipts': []})
     return manifest
@@ -175,23 +228,23 @@ def prepare(out, *, target_model, model_base_url):
 
 def verify_prepared(out):
     manifest = read(out/'manifest.json')
-    if (manifest['kind'] != VERSION or manifest['config'] != CONFIG
-            or manifest['source_sha256'] != execution_sources() or manifest['dependencies'] != dependencies()
+    profile = manifest_profile(manifest)
+    if (manifest['source_sha256'] != execution_sources(profile) or manifest['dependencies'] != dependencies(profile)
             or manifest['execution_driver'] != 'scripts.hermes_transport_preflight.execute'
             or manifest['native_executor'] != identity(execute_case)
-            or manifest['transports'] != {m: contract(m) for m in ('streaming', 'nonstreaming')}):
+            or manifest['transports'] != {m: contract(m) for m in profile_modes(profile)}):
         raise ValueError('Prepared capability provenance differs from current execution')
     validate_model(manifest['target_model'], manifest['model_base_url'])
     if (sha(out/'private/initial_skill.txt') != manifest['initial_skill_sha256']
             or (out/'private/initial_skill.txt').read_text() != SEED_SKILL):
         raise ValueError('Initial skill differs from fixed capability skill')
     hashes = {}
-    for workflow, capsule in expected_capsules().items():
+    for workflow, capsule in expected_capsules(profile).items():
         path = out/'private/cases'/(workflow + '.json')
         if read(path) != capsule:
             raise ValueError('Case differs from fixed synthetic capability fixture')
         hashes[workflow] = sha(path)
-    if manifest['slots'] != expected_slots(hashes):
+    if manifest['slots'] != expected_slots(hashes, profile):
         raise ValueError('Fixed slot ordering or paired capsule binding changed')
     return manifest
 
@@ -239,6 +292,7 @@ def execute(out, *, creds=None, executor=execute_case, expected_manifest_sha256=
 
 def _execute(out, *, creds, executor, expected_manifest_sha256, interruption):
     out = Path(out).resolve(); manifest = verify_prepared(out)
+    profile = manifest_profile(manifest); config = manifest['config']
     if (out/'EXECUTION.json').exists() or (out/'INFLIGHT.json').exists() or read(out/'state.json')['status'] != 'prepared':
         raise ValueError('Capability execution is one-shot; no resume or uncertain retry')
     native = executor is execute_case
@@ -250,15 +304,20 @@ def _execute(out, *, creds, executor, expected_manifest_sha256, interruption):
     if creds is None:
         creds = {'model': manifest['target_model'], 'base_url': manifest['model_base_url'],
                  'api_key': os.environ.get('BIGWORLD_PREFLIGHT_API_KEY')}
+        if profile is not None:
+            creds['provider_profile'] = profile
     if (creds.get('model') != manifest['target_model'] or creds.get('base_url') != manifest['model_base_url']
             or not isinstance(creds.get('api_key'), str) or not creds['api_key']):
         raise ValueError('Credentials must match prepared model/service metadata')
+    from lifespan.evaluation.provider import contract as credentials_contract
+    if creds.get('provider_profile') != profile or credentials_contract(creds) != manifest.get('provider_contract'):
+        raise ValueError('Credentials must match prepared provider policy')
     # O_EXCL is the one-shot dispatch lock. No credential fields are persisted.
     execution = {'schema_version': 1, 'manifest_sha256': sha(out/'manifest.json'),
         'execution_driver': 'scripts.hermes_transport_preflight.execute',
         'executor_identity': identity(executor), 'fixture': not native,
         'registered_manifest_sha256': expected_manifest_sha256,
-        'started_unix_seconds': time.time(), 'config': deepcopy(CONFIG)}
+        'started_unix_seconds': time.time(), 'config': deepcopy(config)}
     with (out/'EXECUTION.json').open('x') as stream:
         json.dump(execution, stream, sort_keys=True, indent=2)
     started = time.monotonic(); receipts = []; status = 'running'
@@ -266,28 +325,30 @@ def _execute(out, *, creds, executor, expected_manifest_sha256, interruption):
         if interruption['requested']:
             status = 'interrupted'; break
         used = aggregate(receipts)
-        if (time.monotonic()-started + CONFIG['max_rollout_seconds'] + CONFIG['max_cleanup_seconds'] > CONFIG['max_run_seconds']
-                or used['charged_or_reserved_model_calls'] + CONFIG['max_iterations'] > CONFIG['max_model_calls']
-                or used['charged_or_reserved_tokens'] + CONFIG['max_rollout_tokens'] > CONFIG['max_charged_tokens']):
+        if (time.monotonic()-started + config['max_rollout_seconds'] + config['max_cleanup_seconds'] > config['max_run_seconds']
+                or used['charged_or_reserved_model_calls'] + config['max_iterations'] > config['max_model_calls']
+                or used['charged_or_reserved_tokens'] + config['max_rollout_tokens'] > config['max_charged_tokens']):
             status = 'halted_budget'; break
         trial = out/'private/trials'/slot['slot_id']
         capsule = read(out/slot['capsule_path']); eco = Ecosystem.restore(capsule['ecosystem'])
         save(out/'INFLIGHT.json', {'slot_id': slot['slot_id'], 'index': slot['index'],
-            'reserved_model_calls': CONFIG['max_iterations'], 'reserved_tokens': CONFIG['max_rollout_tokens']})
+            'reserved_model_calls': config['max_iterations'], 'reserved_tokens': config['max_rollout_tokens']})
         kwargs = {'root': trial/'native', 'employee': slot['employee'], 'world': eco.worlds[capsule['firm']],
             'task_id': slot['task_id'], 'case': capsule['case'], 'request': capsule['request'], 'skill': SEED_SKILL,
             'credentials': creds, 'objectives': capsule['objectives'], 'business_files': capsule['business_files'],
-            'max_iterations': CONFIG['max_iterations'], 'max_tokens': CONFIG['max_output_tokens'],
-            'max_total_tokens': CONFIG['max_rollout_tokens'], 'timeout_seconds': CONFIG['max_rollout_seconds'],
+            'max_iterations': config['max_iterations'], 'max_tokens': config['max_output_tokens'],
+            'max_total_tokens': config['max_rollout_tokens'], 'timeout_seconds': config['max_rollout_seconds'],
             'hermes_transport': slot['mode']}
+        if profile is not None:
+            kwargs['provider_profile'] = profile
         # Capsule loading/marker persistence is outside the child execution
         # clock. Recheck the full fixed allowance immediately before forking.
-        if (interruption['requested'] or time.monotonic()-started + CONFIG['max_rollout_seconds']
-                + CONFIG['max_cleanup_seconds'] > CONFIG['max_run_seconds']):
+        if (interruption['requested'] or time.monotonic()-started + config['max_rollout_seconds']
+                + config['max_cleanup_seconds'] > config['max_run_seconds']):
             (out/'INFLIGHT.json').unlink()
             status = 'interrupted' if interruption['requested'] else 'halted_budget'; break
-        supervision = supervise(executor, kwargs, trial, timeout_seconds=CONFIG['max_rollout_seconds'],
-                                 cleanup_seconds=CONFIG['max_cleanup_seconds'],
+        supervision = supervise(executor, kwargs, trial, timeout_seconds=config['max_rollout_seconds'],
+                                 cleanup_seconds=config['max_cleanup_seconds'],
                                  stop_requested=lambda: interruption['requested'])
         record = None
         try:
@@ -302,14 +363,14 @@ def _execute(out, *, creds, executor, expected_manifest_sha256, interruption):
         except (OSError, AttributeError, KeyError, TypeError, ValueError) as exc:
             evidence_error = type(exc).__name__
         try:
-            cleanup_valid = cleanup_check(trial, slot, supervision['cleanup'])
+            cleanup_valid = cleanup_check(trial, slot, supervision['cleanup'], provider_contract=manifest.get('provider_contract'))
         except (OSError, AttributeError, KeyError, TypeError, ValueError) as exc:
             cleanup_error = type(exc).__name__
         valid = bool(supervision['status'] == 'returned' and supervision['root_exitcode'] == 0
                      and costs['accounting_verified'] and costs['complete'] and not costs['violations']
                      and evidence is not None and cleanup_valid
-                     and supervision['execution_elapsed_seconds'] <= CONFIG['max_rollout_seconds']
-                     and supervision['elapsed_seconds'] <= CONFIG['max_rollout_seconds'] + CONFIG['max_cleanup_seconds'])
+                     and supervision['execution_elapsed_seconds'] <= config['max_rollout_seconds']
+                     and supervision['elapsed_seconds'] <= config['max_rollout_seconds'] + config['max_cleanup_seconds'])
         slot_status = 'interrupted' if supervision['status'] == 'interrupted' else 'completed' if valid else 'halted_infrastructure'
         receipt = {'schema_version': 1, 'slot_id': slot['slot_id'], 'index': slot['index'],
             'executor_identity': identity(executor), 'fixture': not native,
@@ -333,11 +394,11 @@ def _execute(out, *, creds, executor, expected_manifest_sha256, interruption):
             status = slot_status; break
     if interruption['requested']:
         status = 'interrupted'
-    if len(receipts) == CONFIG['fixed_slots'] and status == 'running':
-        status = 'completed' if time.monotonic()-started <= CONFIG['max_run_seconds'] else 'halted_budget'
-    report = {'schema_version': 1, 'kind': VERSION, 'status': status, 'fixture': not native,
+    if len(receipts) == config['fixed_slots'] and status == 'running':
+        status = 'completed' if time.monotonic()-started <= config['max_run_seconds'] else 'halted_budget'
+    report = {'schema_version': 1, 'kind': manifest['kind'], 'status': status, 'fixture': not native,
         'manifest_sha256': sha(out/'manifest.json'), 'execution_sha256': sha(out/'EXECUTION.json'),
-        'attempted_slots': len(receipts), 'fixed_slots': CONFIG['fixed_slots'], 'usage': aggregate(receipts),
+        'attempted_slots': len(receipts), 'fixed_slots': config['fixed_slots'], 'usage': aggregate(receipts),
         'elapsed_seconds': time.monotonic()-started,
         'capability_pass': bool(native and status == 'completed' and all(r['capability_pass'] for r in receipts)),
         'slots': [{'slot_id': s['slot_id'], 'mode': s['mode'], 'workflow': s['workflow'],
@@ -357,13 +418,14 @@ def main():
     sub = parser.add_subparsers(dest='command', required=True)
     prep = sub.add_parser('prepare'); prep.add_argument('--out', required=True)
     prep.add_argument('--model', required=True); prep.add_argument('--base-url', required=True)
+    prep.add_argument('--provider-profile', choices=['responses-no-thinking-v1'])
     run = sub.add_parser('execute'); run.add_argument('--out', required=True)
     run.add_argument('--manifest-sha256', required=True)
     args = parser.parse_args()
     try:
-        result = prepare(args.out, target_model=args.model, model_base_url=args.base_url) if args.command == 'prepare' else execute(
+        result = prepare(args.out, target_model=args.model, model_base_url=args.base_url, provider_profile=args.provider_profile) if args.command == 'prepare' else execute(
             args.out, expected_manifest_sha256=args.manifest_sha256)
-        print(json.dumps({'status': result.get('status', 'prepared'), 'kind': VERSION}))
+        print(json.dumps({'status': result.get('status', 'prepared'), 'kind': result.get('kind', VERSION)}))
     except Exception as exc:
         # Provider bodies/keys may be embedded in arbitrary native exceptions.
         print(json.dumps({'status': 'failed', 'error_type': type(exc).__name__}), file=sys.stderr)

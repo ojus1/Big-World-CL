@@ -23,7 +23,10 @@ for its primary endpoint. The earlier missing-overlay launch failure is
 preserved separately. The [dated progress observations](docs/SCALE_V3_002_PROGRESS.md)
 retain evidence from before the credit failure. The [read-only status command](docs/SCALE_STATUS.md)
 also reports replay and optimizer-dispatch progress during an active learning epoch.
-Further native evaluation requires a funded API endpoint and a fresh registration.
+The replacement Qwen/vLLM endpoint passed text, tool-call, tool-result continuation
+and strict-JSON Responses API probes. The [Qwen integration](docs/QWEN_RESPONSES_QUALIFICATION.md)
+requires fresh native qualifications and a new registration before the next
+scaled comparison; those probes alone establish no learning result.
 
 ## Evaluate deployment-time learning
 
