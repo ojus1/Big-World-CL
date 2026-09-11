@@ -509,6 +509,138 @@ def test_provider_descriptor_matches_public_contract(monkeypatch):
     assert 'provider_contract' not in wire.capabilities()
 
 
+@pytest.mark.parametrize('role', tuple(wire.ROLE_TYPES.values()))
+def test_generation_projection_only_removes_string_length_keywords(role):
+    provider = wire.provider_contract(PROFILE_MODEL, PROFILE_BASE)
+    authoritative = wire.role_schema(role)
+    projected = wire.generation_schema(role, provider)
+    removed = []
+
+    def compare(original, generated, path=()):
+        if isinstance(original, dict):
+            missing = set(original) - set(generated)
+            assert missing <= {'maxLength'} and not set(generated) - set(original)
+            if missing:
+                assert original.get('type') == 'string'
+                removed.append(path)
+            for key in set(original) & set(generated):
+                compare(original[key], generated[key], path + (key,))
+        elif isinstance(original, list):
+            assert len(original) == len(generated)
+            for index, (left, right) in enumerate(zip(original, generated)):
+                compare(left, right, path + (index,))
+        else:
+            assert type(original) is type(generated) and original == generated
+
+    compare(authoritative, projected)
+    assert removed
+    assert authoritative == wire.role_schema(role) == wire.generation_schema(role, None)
+    projected['properties'].clear()
+    assert authoritative == wire.role_schema(role)
+    contract = wire.generation_contract(role, provider)
+    assert contract == {'projection_id': wire.GENERATION_PROJECTION_ID,
+        'acceptance_schema_sha256': wire.digest(authoritative),
+        'generation_schema_sha256': wire.digest(wire.generation_schema(role, provider))}
+    support = wire.capabilities(expected_provider=provider)['generation_schema_projection']
+    assert support['projection_id'] == contract['projection_id']
+    assert support['acceptance_schema_sha256'][role] == contract['acceptance_schema_sha256']
+    assert support['generation_schema_sha256'][role] == contract['generation_schema_sha256']
+    assert 'generation_schema_projection' not in wire.capabilities(expected_provider=None)
+    assert wire.generation_contract(role, None) is None
+
+
+def test_generation_projection_preserves_property_names_and_annotation_data(monkeypatch):
+    schema = {'type': 'object', 'properties': {'maxLength': {'type': 'string', 'maxLength': 8}},
+        'required': ['maxLength'], 'additionalProperties': False, 'examples': [{'maxLength': 9}]}
+    monkeypatch.setattr(wire, 'role_schema', lambda role: deepcopy(schema))
+    projected = wire.generation_schema('employee', wire.provider_contract(PROFILE_MODEL, PROFILE_BASE))
+    assert projected == {**schema, 'properties': {'maxLength': {'type': 'string'}}}
+    assert schema['properties']['maxLength']['maxLength'] == 8
+
+
+@pytest.mark.parametrize('change', ['absent', 'strict_false', 'strict_integer', 'acceptance_schema',
+                                  'range', 'array_bound', 'extra_property', 'wrong_name'])
+def test_profile_generation_format_tamper_refuses_before_dispatch(tmp_path, monkeypatch, change):
+    instance = profile_model(lambda _: pytest.fail('Invalid format reached provider'), monkeypatch)
+    directory = actor_dir(tmp_path)
+    binding = wire.bind_request(directory, 0, 'fixture', 'fixture', descriptor(CONFIG, 'employee'), 'e' * 64)
+    with wire.interview_scope(directory, 0, 'fixture', binding) as scope:
+        request = instance._request([{'role': 'user', 'content': 'fixture'}], None, None)
+        fmt = request['text']['format']
+        if change == 'absent': request.pop('text')
+        elif change == 'strict_false': fmt['strict'] = False
+        elif change == 'strict_integer': fmt['strict'] = 1
+        elif change == 'acceptance_schema': fmt['schema'] = wire.role_schema('employee')
+        elif change == 'range': fmt['schema']['properties']['delegate'] = {'type': 'integer', 'minimum': 0, 'maximum': 1}
+        elif change == 'array_bound': fmt['schema']['properties']['colleague_messages']['maxItems'] = 99
+        elif change == 'extra_property': fmt['schema']['additionalProperties'] = True
+        elif change == 'wrong_name': fmt['name'] = 'actor_government_v1'
+        with pytest.raises(wire.ContractError, match='generation_schema_mismatch'):
+            scope.before_dispatch(request, provider=wire.configured_provider_contract())
+        assert scope.receipt['physical_requests_dispatched'] == 0
+        assert scope.receipt['reserved_output_tokens'] == 0
+
+
+@pytest.mark.parametrize('field', ['working_notes', 'request', 'document_id', 'recipient'])
+def test_profile_overlength_generation_is_rejected_with_only_one_repair(tmp_path, monkeypatch, field):
+    from lifespan.ecosystem_run import native_decision
+    value = deepcopy(EXAMPLE)
+    if field == 'working_notes': value['working_notes'] = 'x' * 1801
+    elif field == 'request': value['request'] = 'x' * 12001
+    elif field == 'document_id': value['share_document_ids'] = ['x' * 257]
+    else: value['colleague_messages'] = [{'recipient': 'x' * 257, 'text': '', 'document_ids': []}]
+    raw = json.dumps(value)
+    assert not wire.shape_valid(raw, 'employee')
+    instance = profile_model(lambda _: httpx.Response(200, json=profile_response(raw)), monkeypatch)
+    directory = actor_dir(tmp_path); receipts = []; calls = []
+
+    class Runtime:
+        actor_output_contract = CONFIG
+        actor_roles = {'employee': 'employee'}
+        validate_output_contract = MiroFishRuntime.validate_output_contract
+
+        def interview(self, actor, prompt, key):
+            calls.append(key)
+            record = asyncio.run(native_fixture(directory, instance, prompt=prompt, original=prompt,
+                request_key=wire.text_hash(key)))
+            receipts.append(verify(record))
+            return record['response']
+
+    with pytest.raises(ValueError, match='wire shape'):
+        native_decision(Runtime(), 'employee', 'fixture', 'length-case', lambda _: pytest.fail('Accepted overlength output'))
+    assert calls == ['length-case', 'length-case-repair']
+    assert all(r['output_schema_valid'] is False and r['accounting_complete'] is True for r in receipts)
+    assert sum(r['physical_requests_dispatched'] for r in receipts) == 2
+    assert sum(r['total_tokens'] for r in receipts) == 120
+
+
+@pytest.mark.parametrize('change', ['missing', 'id', 'acceptance_hash', 'generation_hash', 'extra'])
+def test_profile_generation_receipt_contract_cannot_be_downgraded(tmp_path, monkeypatch, change):
+    instance = profile_model(lambda _: httpx.Response(200, json=profile_response(json.dumps(EXAMPLE))), monkeypatch)
+    record = asyncio.run(native_fixture(actor_dir(tmp_path), instance))
+    receipt = verify(record)
+    assert receipt['binding']['schema_sha256'] == wire.digest(wire.role_schema('employee'))
+    assert receipt['generation_schema_contract'] == wire.generation_contract('employee', wire.configured_provider_contract())
+    altered = deepcopy(record); evidence = altered['native_result']['result']['actor_output_receipt']
+    if change == 'missing': evidence.pop('generation_schema_contract')
+    elif change == 'id': evidence['generation_schema_contract']['projection_id'] = True
+    elif change == 'acceptance_hash': evidence['generation_schema_contract']['acceptance_schema_sha256'] = '0' * 64
+    elif change == 'generation_hash': evidence['generation_schema_contract']['generation_schema_sha256'] = '0' * 64
+    else: evidence['generation_schema_contract']['unregistered'] = False
+    with pytest.raises(wire.ContractError, match='generation_schema_contract_mismatch'):
+        verify(altered)
+
+
+def test_legacy_receipt_rejects_profile_generation_marker(tmp_path):
+    record = asyncio.run(native_fixture(actor_dir(tmp_path),
+        model(lambda _: httpx.Response(200, json=response(json.dumps(EXAMPLE))))))
+    receipt = verify(record)
+    assert 'generation_schema_contract' not in receipt
+    record['native_result']['result']['actor_output_receipt']['generation_schema_contract'] = {}
+    with pytest.raises(wire.ContractError, match='generation_schema_configuration_downgrade'):
+        verify(record)
+
+
 @pytest.mark.parametrize('base', ['https://user:secret@provider.invalid/v1', 'https://provider.invalid/v1?q=x',
                                 'https://provider.invalid/v1#part', 'https://provider.invalid:bad/v1',
                                 'https://provider.invalid/ white', 'ftp://provider.invalid/v1'])

@@ -106,6 +106,61 @@ message and tool result. Unsupported fields or structured content in a prefix
 requiring combination fail before dispatch. A single leading system message,
 later system/developer instructions, and the legacy provider path are unchanged.
 
+The subsequent native run, bound to commit
+`f534ee56fea8afd0c1ac1dad234d18af8c620277`, confirmed that the HTTP 400 was
+resolved. Both employee interviews completed with schema-valid JSON, but both
+returned only `wire witness: ` instead of the full required string. The fixed
+witness includes quotation marks, braces, a backslash, an accented character and
+a newline. The original and repair calls together reported 2,736 input and 92
+output tokens. This run remains a failed qualification, with its native traces,
+receipts, source snapshot and cleanup evidence preserved.
+
+Controlled diagnostics then isolated an interaction with string `maxLength`
+constraints: the original prompt reproduced the exact decoded fixture without
+a generation schema, and also with the same schema minus its `maxLength`
+keywords. Each successful probe reported 131 tokens. Extra escaping instructions
+with the original schema did not preserve the witness. These observations do
+not identify the serving engine's internal cause; the endpoint reports version
+`0.1.dev20051+g487ecf187`.
+
+The compatibility rule separates the **generation schema** sent to the explicit
+provider from the **acceptance schema** enforced by the application. Generation
+omits only string `maxLength` keywords; the complete authoritative role schema,
+including every string length limit, still validates returned data before it
+can be accepted. Object fields, required keys, array limits, numeric ranges and
+enums remain in the generation schema. The projection identifier and both
+schema hashes are bound into profile-specific evidence, and the actual request
+schema is checked before dispatch. The fixed witness and repair allowance are
+unchanged. Changed sources require fresh qualification.
+
+## Employee file readback
+
+The first executed three-workflow Qwen Hermes qualification completed with
+35 physical calls, 365,150 tokens and confirmed cleanup for every workflow.
+Onboarding and incident passed the capability checks. Renewal remained
+unqualified because the checker recognized separate `cat` and `sha256sum`
+commands but not their combination. Independent review verified that its
+post-submission command returned the exact immutable artifact bytes followed by
+the correct checksum and path, then a final assistant response.
+
+The checker now accepts the single literal command
+`cat /workspace/deliverables/capability.json && sha256sum /workspace/deliverables/capability.json`.
+It checks the complete output against the submitted bytes and checksum using
+the pinned native terminal's whitespace transformation, with a typed zero exit
+status and an exact success envelope. It does not interpret arbitrary shell
+programs or strip unexplained output. Original receipts and the failed verdict
+remain unchanged; a new qualification must use the reviewed checker. Business
+scores and rejected submissions remain separate from transport capability.
+
+Ordinary profiled MiroFish calls also configure both SDK clients with zero
+retries and a 120-second timeout after CAMEL initialization. Constructor
+arguments alone were insufficient: the pinned CAMEL base initializer reset the
+retry count. Mocked connection-timeout and server-error tests exercise the
+actual clients and require one dispatch. Contracted interviews retain their
+remaining-deadline override; this does not claim to remove CAMEL's separate
+rate-limit handling. The external tunnel watchdog remains active throughout
+native work.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.

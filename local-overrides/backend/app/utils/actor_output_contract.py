@@ -19,6 +19,7 @@ import time
 from urllib.parse import urlsplit
 
 VERSION = 'actor-json-v1'
+GENERATION_PROJECTION_ID = 'actor-string-maxlength-omission-v1'
 ROLE_TYPES = {'Employee': 'employee', 'Enterprise': 'enterprise',
               'GovernmentAgency': 'government', 'Consumer': 'consumer'}
 CURRENT = ContextVar('mirofish_actor_output_contract', default=None)
@@ -88,6 +89,39 @@ def normalize_contract(raw):
     for key, minimum, maximum in (('max_output_tokens', 256, 8192), ('timeout_seconds', 1, 120)):
         require(type(raw[key]) is int and minimum <= raw[key] <= maximum, 'invalid_contract_bound')
     return dict(raw)
+
+
+def generation_schema(role, provider):
+    """Provider-only projection; the authoritative acceptance schema is intact.
+
+    Visit schema nodes, never arbitrary object keys: a property named
+    ``maxLength`` is data describing a field, not this schema keyword.
+    """
+    schema = role_schema(role)
+    if provider is None:
+        return schema
+    validate_provider_contract(provider)
+
+    def project(node):
+        if node.get('type') == 'string':
+            node.pop('maxLength', None)
+        for child in node.get('properties', {}).values():
+            project(child)
+        if isinstance(node.get('items'), dict):
+            project(node['items'])
+        for child in node.get('anyOf', []):
+            project(child)
+
+    project(schema)
+    return schema
+
+
+def generation_contract(role, provider):
+    if provider is None:
+        return None
+    return {'projection_id': GENERATION_PROJECTION_ID,
+            'acceptance_schema_sha256': digest(role_schema(role)),
+            'generation_schema_sha256': digest(generation_schema(role, provider))}
 
 
 def _valid(value, schema):
@@ -161,6 +195,11 @@ def capabilities(*, expected_provider=USE_RUNTIME_PROVIDER):
                 else validate_provider_contract(expected_provider) if expected_provider is not None else None)
     if provider is not None:
         result['provider_contract'] = provider
+        contracts = {role: generation_contract(role, provider) for role in ROLE_TYPES.values()}
+        result['generation_schema_projection'] = {
+            'projection_id': GENERATION_PROJECTION_ID,
+            'acceptance_schema_sha256': {role: value['acceptance_schema_sha256'] for role, value in contracts.items()},
+            'generation_schema_sha256': {role: value['generation_schema_sha256'] for role, value in contracts.items()}}
     return result
 
 
@@ -332,6 +371,11 @@ class InterviewScope:
                     and request.get('extra_body') == {'chat_template_kwargs': {'enable_thinking': False}}
                     and request['extra_body']['chat_template_kwargs']['enable_thinking'] is False,
                     'actor_provider_request_policy_mismatch')
+            role = self.contract['role']
+            expected_format = {'format': {'type': 'json_schema', 'name': 'actor_' + role + '_v1',
+                'strict': True, 'schema': generation_schema(role, expected)}}
+            require(digest(request.get('text')) == digest(expected_format),
+                    'actor_provider_generation_schema_mismatch')
         remaining = self.contract['timeout_seconds'] - (time.monotonic() - self.started)
         require(remaining > 0, 'actor_request_deadline')
         self.receipt.update(status='dispatched', physical_requests_dispatched=1,
@@ -339,6 +383,7 @@ class InterviewScope:
             provider_request_sha256=digest(request))
         if expected is not None:
             self.receipt['provider_contract'] = deepcopy(provider)
+            self.receipt['generation_schema_contract'] = generation_contract(self.contract['role'], provider)
         self.persist()
         return remaining
 

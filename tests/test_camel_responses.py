@@ -9,7 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 # Exercise this checkout's tracked override, never an installed native server.
-from tests.test_actor_output_contract import bridge
+from tests.test_actor_output_contract import bridge, patched_backend
 OpenAIResponsesModel = bridge.OpenAIResponsesModel
 
 
@@ -254,10 +254,83 @@ def test_contracted_profile_request_merges_prefix_and_binds_normalized_input(mon
     assert sent['input'][-2:] == messages[-2:]
     assert sent['input'][2]['type'] == 'function_call' and sent['input'][3]['type'] == 'function_call_output'
     assert sent['text']['format'] == {'type': 'json_schema', 'name': 'actor_employee_v1', 'strict': True,
-                                     'schema': wire.role_schema('employee')}
+                                     'schema': wire.generation_schema('employee', wire.configured_provider_contract())}
+    assert receipt['binding']['schema_sha256'] == wire.digest(wire.role_schema('employee'))
+    assert receipt['generation_schema_contract'] == wire.generation_contract('employee', wire.configured_provider_contract())
     assert sent['max_output_tokens'] == CONFIG['max_output_tokens']
     assert sent['stream'] is sent['store'] is False
     assert sent['chat_template_kwargs'] == {'enable_thinking': False} and 'tools' not in sent
     assert receipt['provider_input_sha256'] == wire.digest(sent['input'])
     assert receipt['output_schema_valid'] is receipt['accounting_complete'] is True
     assert receipt['physical_requests_dispatched'] == 1
+
+
+def _profiled_factory(monkeypatch):
+    from tests.test_actor_output_contract import PROFILE_MODEL, PROFILE_BASE
+    monkeypatch.setenv('BIGWORLD_PROVIDER_PROFILE', 'responses-no-thinking-v1')
+    monkeypatch.setenv('LLM_MODEL_NAME', PROFILE_MODEL)
+    monkeypatch.setenv('LLM_BASE_URL', PROFILE_BASE)
+    return bridge.create_simulation_model(PROFILE_MODEL, 'offline-test-key', PROFILE_BASE)
+
+
+def test_profiled_factory_bounds_both_real_sdk_clients(monkeypatch):
+    monkeypatch.setenv('MODEL_TIMEOUT', '999')
+    instance = _profiled_factory(monkeypatch)
+    assert type(instance) is OpenAIResponsesModel
+    assert instance._client.max_retries == instance._async_client.max_retries == 0
+    assert instance._client.timeout == instance._async_client.timeout == 120
+    assert instance._max_retries == 0 and instance._timeout == 120
+
+
+@pytest.mark.parametrize('asynchronous', [False, True])
+@pytest.mark.parametrize('failure', ['timeout', 'server_error'])
+def test_ordinary_profiled_sdk_failure_dispatches_once(monkeypatch, asynchronous, failure):
+    from openai import APITimeoutError, InternalServerError
+    instance = _profiled_factory(monkeypatch)
+    requests = []
+    def respond(request):
+        requests.append(request)
+        if failure == 'timeout':
+            raise httpx.ReadTimeout('Offline fixture timeout', request=request)
+        return httpx.Response(503, json={'error': {'message': 'Offline fixture unavailable'}})
+    expected = APITimeoutError if failure == 'timeout' else InternalServerError
+    if asynchronous:
+        async def run():
+            async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as http:
+                # Clone only the HTTP transport; the real factory's timeout and
+                # retry settings must be inherited rather than supplied here.
+                instance._async_client = instance._async_client.with_options(http_client=http)
+                with pytest.raises(expected):
+                    await instance.arun([{'role': 'user', 'content': 'Ordinary fixture social action'}], tools=TOOLS)
+        asyncio.run(run())
+    else:
+        with httpx.Client(transport=httpx.MockTransport(respond)) as http:
+            instance._client = instance._client.with_options(http_client=http)
+            with pytest.raises(expected):
+                instance.run([{'role': 'user', 'content': 'Ordinary fixture social action'}], tools=TOOLS)
+    assert len(requests) == 1
+    sent = json.loads(requests[0].content)
+    assert sent['tools'][0]['name'] == 'create_post'
+    assert 'text' not in sent  # Ordinary calls do not acquire interview schemas.
+    assert sent['stream'] is sent['store'] is False
+    assert sent['chat_template_kwargs'] == {'enable_thinking': False}
+    assert all(value == 120 for value in requests[0].extensions['timeout'].values())
+
+
+def test_legacy_factory_keeps_camel_defaults(monkeypatch, patched_backend):
+    import importlib.util
+    from types import ModuleType, SimpleNamespace
+    # Load the real patched legacy helper with only Config replaced, never the
+    # installed service or its dotenv/credentials.
+    name = bridge.__package__ + '.openai_chat_compat'
+    spec = importlib.util.spec_from_file_location(name, patched_backend / 'app/utils/openai_chat_compat.py')
+    compat = importlib.util.module_from_spec(spec); compat.__package__ = 'app.utils'
+    config = ModuleType('app.config'); config.Config = SimpleNamespace(LLM_REASONING_EFFORT='low')
+    monkeypatch.setitem(sys.modules, 'app.config', config)
+    monkeypatch.setitem(sys.modules, name, compat); spec.loader.exec_module(compat)
+    monkeypatch.delenv('BIGWORLD_PROVIDER_PROFILE', raising=False)
+    monkeypatch.setenv('MODEL_TIMEOUT', '37')
+    instance = bridge.create_simulation_model('gpt-5.6-luna', 'offline-test-key', 'https://fixture.invalid/v1')
+    assert type(instance) is OpenAIResponsesModel
+    assert instance._client.max_retries == instance._async_client.max_retries == 3
+    assert instance._client.timeout == instance._async_client.timeout == 37

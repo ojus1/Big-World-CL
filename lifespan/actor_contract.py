@@ -67,8 +67,12 @@ unknown physical usage or a cap/deadline violation is an infrastructure failure.
         if provider is not None:
             wire.require(wire.validate_provider_contract(receipt.get('provider_contract')) == provider,
                          'native_actor_provider_contract_mismatch')
+            wire.require(wire.digest(receipt.get('generation_schema_contract')) ==
+                         wire.digest(wire.generation_contract(contract['role'], provider)),
+                         'native_actor_generation_schema_contract_mismatch')
         else:
             wire.require('provider_contract' not in receipt, 'native_actor_provider_configuration_downgrade')
+            wire.require('generation_schema_contract' not in receipt, 'native_actor_generation_schema_configuration_downgrade')
         binding = receipt['binding']
         expected = {'version': wire.VERSION, 'actor': actor, 'agent_id': agent_id,
             'simulation_id': simulation_id, 'request_key': record['contract_request_key'], 'original_prompt_sha256': wire.text_hash(original_prompt),

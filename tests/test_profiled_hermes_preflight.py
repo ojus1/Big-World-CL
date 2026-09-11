@@ -129,6 +129,31 @@ class ProfileNativeAuditTests(unittest.TestCase):
         self.fixture.record['result']['native']['evaluation_budget']['operations'][0]['request_chat_template_kwargs'] = {'enable_thinking': True}
         with self.assertRaisesRegex(ValueError, 'provider_physical'): self.fixture.inspect()
 
+    def test_profile_compound_readback_keeps_rejected_business_outcome_separate(self):
+        f = self.fixture; messages = f.record['result']['native']['messages']
+        artifact = deepcopy(f.record['artifact']); artifact['content'] = '{}'
+        raw = json.dumps(artifact).encode(); submitted = audit_fixtures.sha(raw)
+        (f.directory / 'filesystem_objects' / submitted).write_bytes(raw)
+        grade = audit_fixtures.grade_case(f.capsule['case'], artifact)
+        self.assertFalse(grade['success'])
+        f.record.update(success=False, semantic_score=grade['score'], checks=grade['checks'], feedback=grade['feedback'],
+                        artifact=None, committed_artifact_sha256=None, last_submitted_artifact_sha256=submitted)
+        commit = f.record['result']['workplace_rpc'][0]['response']; commit['artifact_sha256'] = submitted
+        messages[3]['content'] = json.dumps(commit)
+        messages[4]['tool_calls'][0]['function'].update(name='terminal',
+            arguments=json.dumps({'command': readback.COMPOUND_COMMAND}))
+        messages[5].update(name='terminal', content=json.dumps({'output':
+            (raw.decode() + submitted + '  ' + readback.ARTIFACT_PATH + '\n').strip(),
+            'exit_code': 0, 'error': None}))
+        evidence = f.inspect()
+        self.assertTrue(evidence['transport_roundtrip_capable'])
+        self.assertTrue(evidence['post_submission_native_file_readback'])
+        self.assertFalse(evidence['semantic_success'])
+        self.assertFalse(evidence['business_committed'])
+        body = json.loads(messages[5]['content']); body['output'] += '\n'
+        messages[5]['content'] = json.dumps(body)
+        self.assertFalse(f.inspect()['transport_roundtrip_capable'])
+
     def test_exact_native_warning_count_is_supported_but_arbitrary_suffix_is_not(self):
         f = self.fixture; messages = f.record['result']['native']['messages']
         # One matching read before commit, then native identical-result warning.

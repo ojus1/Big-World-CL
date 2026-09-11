@@ -10,7 +10,7 @@ from threading import RLock
 
 from camel.models import OpenAIModel
 from openai.types.chat import ChatCompletion
-from .actor_output_contract import (CURRENT, ContractError, role_schema, require,
+from .actor_output_contract import (CURRENT, ContractError, generation_schema, require,
                                     configured_provider_contract, provider_contract)
 
 
@@ -18,6 +18,13 @@ class OpenAIResponsesModel(OpenAIModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._provider_contract_at_creation = configured_provider_contract()
+        if self._provider_contract_at_creation is not None:
+            # Pinned CAMEL drops max_retries when forwarding to its base class,
+            # overwriting the requested value before constructing SDK clients.
+            # Reconfigure those same clients without changing endpoint or key.
+            self._client = self._client.with_options(max_retries=0, timeout=120)
+            self._async_client = self._async_client.with_options(max_retries=0, timeout=120)
+            self._max_retries, self._timeout = 0, 120
         # A backend is shared by concurrent agents. Unique call IDs associate
         # response items with the right history; there is no global last response.
         self._items_by_call = {}
@@ -99,7 +106,7 @@ class OpenAIResponsesModel(OpenAIModel):
             # the shared model's config or affect concurrent social/tool calls.
             request['max_output_tokens'] = scope.contract['max_output_tokens']
             request['text'] = {'format': {'type': 'json_schema', 'name': 'actor_' + scope.contract['role'] + '_v1',
-                'strict': True, 'schema': role_schema(scope.contract['role'])}}
+                'strict': True, 'schema': generation_schema(scope.contract['role'], configured_provider_contract())}}
             return request
         tools = tools if tools is not None else config.get('tools')
         if tools:
@@ -206,7 +213,11 @@ def create_simulation_model(model, api_key, url):
     provider = configured_provider_contract()
     if provider is not None:
         require(provider_contract(model, url) == provider, 'actor_provider_contract_mismatch')
-        return OpenAIResponsesModel(model_type=model, api_key=api_key, url=url, model_config_dict={})
+        # Fail fast on an unavailable profiled provider for ordinary social
+        # calls too. Contracted interviews still apply their remaining deadline.
+        # CAMEL's separate RateLimitError policy is unchanged.
+        return OpenAIResponsesModel(model_type=model, api_key=api_key, url=url,
+                                    model_config_dict={}, max_retries=0, timeout=120)
     from .openai_chat_compat import is_gpt5_family, reasoning_config
     config = reasoning_config(model) if is_gpt5_family(model) else None
     if model.startswith('gpt-5.6-luna'):

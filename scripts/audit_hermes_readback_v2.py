@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Additive readback audit for the pinned Hermes idempotent-tool warning.
+"""Readback audit for pinned Hermes warning and exact compound cat/hash output.
 
 Never rewrites a native session, receipt, report or the original preflight
 verdict. The original auditor must pass first at its matching source revision.
@@ -23,8 +23,10 @@ from scripts.audit_hermes_preflight import audit_preflight
 
 NATIVE_SOURCES = {
     'agent/tool_guardrails.py': 'd4ebeded7abcb36dd0d10d235313fb7bfd05309a30850a0c3a008844f1d62d40',
-    'agent/tool_executor.py': '34da0c06add4db54342c70b686e747b01e114607668e769bd7ed6b087897e002'}
+    'agent/tool_executor.py': '34da0c06add4db54342c70b686e747b01e114607668e769bd7ed6b087897e002',
+    'tools/terminal_tool.py': '59a0f637caec97c0a87aed5c667267c537d8747dcab91b408850e34c9eeba64a'}
 ARTIFACT_PATH = '/workspace/deliverables/capability.json'
+COMPOUND_COMMAND = f'cat {ARTIFACT_PATH} && sha256sum {ARTIFACT_PATH}'
 VERSION = 'hermes-native-readback-audit-v2'
 
 
@@ -54,6 +56,14 @@ def warning(count):
             'repeating it unchanged.]')
 
 
+def compound_output(raw, submitted):
+    # Pinned terminal_tool.py strips the combined output before returning it.
+    # Normalize the expected output only; observed prefixes/suffixes must not be
+    # discarded. The checksum binds the original bytes, including whitespace.
+    # Any redaction, truncation or other output transformation cannot match.
+    return (raw.decode('utf-8') + submitted + '  ' + ARTIFACT_PATH + '\n').strip()
+
+
 def decode_observation(content, *, name):
     require(type(content) is str, 'tool_observation_not_text')
     stripped = content.lstrip()
@@ -73,14 +83,16 @@ def readback_evidence(record, directory):
     """Reconstruct matching native tool results after the trusted commit call.
 
     Callers must run the original raw/session/grade/source/cleanup audit first.
-    This adds only the previously unsupported exact native warning envelope.
+    This supports the exact native warning envelope and one literal compound
+    cat/hash command; it does not interpret arbitrary shell commands.
     """
     native = record['result']['native']; messages = native['messages']
     submitted = record['last_submitted_artifact_sha256']
     require(type(submitted) is str and re.fullmatch('[0-9a-f]{64}', submitted), 'missing_submitted_hash')
     artifact = Path(directory) / 'filesystem_objects' / submitted
-    require(sha(artifact) == submitted, 'submitted_object_hash')
-    expected = canonical(read(artifact))
+    raw = artifact.read_bytes()
+    require(hashlib.sha256(raw).hexdigest() == submitted, 'submitted_object_hash')
+    expected = canonical(json.loads(raw))
     calls = {}
     for index, message in enumerate(messages):
         if message.get('role') != 'assistant':
@@ -126,20 +138,35 @@ def readback_evidence(record, directory):
             require(count == observed_count, 'native_warning_repeat_count_unproven')
         if not any(commit < call_index for commit in commits):
             continue
-        command = shlex.split(args.get('command', '')) if name == 'terminal' else []
+        try:
+            command = (shlex.split(args['command']) if name == 'terminal' and
+                       type(args.get('command')) is str else [])
+        except ValueError:
+            continue
         is_read = name == 'read_file' and args.get('path') == ARTIFACT_PATH
         is_cat = name == 'terminal' and command in (['cat', ARTIFACT_PATH], ['cat', '--', ARTIFACT_PATH])
         is_hash = name == 'terminal' and command in (['sha256sum', ARTIFACT_PATH], ['sha256sum', '--', ARTIFACT_PATH])
-        if not (is_read or is_cat or is_hash):
+        # shlex alone would conflate a quoted '&&' argument with a shell
+        # operator. Only this literal command and its single argument field are
+        # supported; no quoting, substitutions, extra commands or options.
+        is_compound = name == 'terminal' and args == {'command': COMPOUND_COMMAND}
+        if not (is_read or is_cat or is_hash or is_compound):
             continue
         body = payload.get('content' if is_read else 'output')
-        if type(body) is not str or (not is_read and payload.get('exit_code') != 0):
+        if type(body) is not str or (not is_read and
+                (type(payload.get('exit_code')) is not int or payload['exit_code'] != 0)):
+            continue
+        if is_compound and (set(payload) != {'output', 'exit_code', 'error'} or
+                not (payload['error'] is None or type(payload['error']) is str and payload['error'] == '')):
             continue
         if is_read:
             body = '\n'.join(re.sub(r'^\s*\d+\|', '', line) for line in body.splitlines())
         try:
-            matches = (bool(body.strip()) and body.strip().split()[0] == submitted
-                       if is_hash else canonical(json.loads(body)) == expected)
+            if is_compound:
+                matches = body == compound_output(raw, submitted)
+            else:
+                matches = (bool(body.strip()) and body.strip().split()[0] == submitted
+                           if is_hash else canonical(json.loads(body)) == expected)
         except (ValueError, TypeError):
             matches = False
         if not matches:
