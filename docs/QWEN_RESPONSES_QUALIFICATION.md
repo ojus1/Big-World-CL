@@ -82,6 +82,30 @@ Existing bounded content regeneration is retained. The patch passed 49 new
 offline tests and 115 existing regressions, with independent review. Bootstrap
 costs remain outside the contracted-interview meter.
 
+## Native conversation compatibility
+
+The next actor qualification, using commit
+`032fd6f98f9c5815c604ffcc78601164317996c6`, completed bootstrap and started
+the four-persona OASIS environment. Its first contracted interview failed with
+HTTP 400. The failed run is preserved; it does not qualify the actor transport.
+
+After the tunnel recovered on September 11, a bounded reconstruction of the
+saved native conversation reproduced the server error, `System message must be
+at the beginning.` The history contained two leading system messages. Combining
+their contents, in order and separated by two newlines, into one system message
+made the same request complete successfully: 1,259 input tokens and 56 output
+tokens, with zero reasoning tokens. The schema and remaining conversation items
+were unchanged. The reconstruction could not restore the original process's
+cached Responses items, so this controlled probe is diagnostic evidence, not an
+exact replay or a substitute for fresh native qualification.
+
+The explicit no-thinking profile now combines multiple leading string-valued
+system messages at the CAMEL-to-Responses boundary. It preserves all their
+content, including repeated text, and retains the order of every subsequent
+message and tool result. Unsupported fields or structured content in a prefix
+requiring combination fail before dispatch. A single leading system message,
+later system/developer instructions, and the legacy provider path are unchanged.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.

@@ -29,6 +29,23 @@ class OpenAIResponsesModel(OpenAIModel):
         return [dict(message) for message in messages]
 
     def _input(self, messages):
+        if configured_provider_contract() is not None:
+            # OASIS interview history prepends its system prompt to memory,
+            # which can already begin with that prompt. The profiled provider
+            # accepts one leading system message. Preserve every text segment,
+            # including duplicates, and never move later system/developer turns.
+            end = 0
+            while end < len(messages) and messages[end].get('role') == 'system':
+                end += 1
+            if end > 1:
+                leading = messages[:end]
+                require(all(set(message) == {'role', 'content'}
+                            and type(message['content']) is str for message in leading),
+                        'profiled_leading_system_messages_require_plain_text')
+                # Structured content or extra fields cannot be joined without
+                # an additional representation rule; reject instead of dropping.
+                messages = [{'role': 'system', 'content': '\n\n'.join(
+                    message['content'] for message in leading)}] + list(messages[end:])
         items, emitted = [], set()
         for message in messages:
             role = message['role']
