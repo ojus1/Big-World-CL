@@ -102,6 +102,10 @@ def native_session(record, directory, capsule, slot, manifest):
     declared = {'config': {'hermes_transport': mode}, 'hermes_transport': mode,
                 'hermes_transport_provenance': manifest['transports'][mode],
                 'source_sha256': manifest['source_sha256']}
+    if manifest.get('provider_contract') is not None:
+        declared.update(provider_contract=manifest['provider_contract'], target_model=manifest['target_model'],
+                        model_base_url=manifest['model_base_url'])
+        declared['config']['provider_profile'] = manifest['config']['provider_profile']
     session_check(record, directory, capsule, transport_manifest=declared)
     require(record['skill']['content_sha256'] == manifest['initial_skill_sha256'] == sha(SEED_SKILL.encode()),
             'seed_skill_binding')
@@ -194,6 +198,17 @@ def native_session(record, directory, capsule, slot, manifest):
                         and not auxiliary and not native.get('failed', False)
                         and not record.get('budget_exhausted', False)
                         and native['evaluation_budget']['physical_model_calls'] >= 2)
+    # The explicit profile prospectively uses the exact reviewed warning parser.
+    # Raw submission bytes, trusted grade, commit RPC, costs and source bindings
+    # have already been checked above; arbitrary suffixes remain ineligible.
+    warning_evidence = None
+    if manifest.get('provider_contract') is not None and submitted:
+        require(manifest.get('readback_contract') == 'hermes-native-readback-audit-v2', 'profile_readback_contract')
+        from scripts.audit_hermes_readback_v2 import readback_evidence
+        warning_evidence = readback_evidence(record, directory)
+        readbacks = [row['result_index'] for row in warning_evidence['readbacks']]
+        final_response = bool(readbacks)
+        tool_capable = warning_evidence['transport_roundtrip_capable']
     return {'skill_loaded': record['skill_loaded'], 'artifact_submitted': submitted is not None,
             'trusted_submission_tool_roundtrip': bool(commit_results),
             'subsequent_assistant_turn': bool(continuation),
@@ -211,7 +226,7 @@ def stable_identity(value):
     return tuple(value[k] for k in ('pid', 'start_ticks', 'uid', 'boot_id'))
 
 
-def cleanup_check(trial, slot, cleanup):
+def cleanup_check(trial, slot, cleanup, provider_contract=None):
     """Reconcile persisted ownership and final observations without signaling PIDs."""
     require(cleanup.get('schema_version') == 1 and cleanup.get('limit_seconds') == 30,
             'cleanup_contract')
@@ -264,6 +279,12 @@ def cleanup_check(trial, slot, cleanup):
             and value['evaluation_transport'] == contract(slot['mode'])
             and value['computer_id'] == 'lifespan-' + sha(str(path.parent / 'hermes').encode())[:16],
             'native_instance_identity_or_transport')
+    if provider_contract is not None:
+        from lifespan.evaluation.provider import validate_contract
+        validate_contract(value.get('provider_contract'))
+    require(value.get('provider_contract') == provider_contract, 'native_instance_provider_contract')
+    if provider_contract is None:
+        require('provider_contract' not in value, 'native_instance_provider_marker_downgrade')
     probe = json.loads(value['probe'])
     require(probe.get('exit_code') == 0 and slot['employee'] in probe.get('output', '').splitlines(),
             'native_sandbox_probe')
@@ -303,24 +324,26 @@ def committed_sources(commit, sources):
 def plan_check(root):
     from scripts import hermes_transport_preflight as launcher
     manifest, manifest_sha = read(root / 'manifest.json')
-    require(manifest['schema_version'] == 1 and manifest['kind'] == 'hermes-transport-capability-v1', 'preflight_kind')
-    require(reports_equal(manifest['config'], launcher.CONFIG), 'fixed_capability_config')
+    require(manifest['schema_version'] == 1, 'preflight_kind')
+    profile = launcher.manifest_profile(manifest)
+    config = launcher.profile_config(profile)
+    require(reports_equal(manifest['config'], config), 'fixed_capability_config')
     require(manifest['execution_driver'] == 'scripts.hermes_transport_preflight.execute'
             and manifest['native_executor'] == 'lifespan.evaluation.runtime.execute_case', 'native_driver_contract')
-    require(manifest['source_sha256'] == launcher.execution_sources(), 'execution_source_mismatch')
-    require(manifest['dependencies'] == launcher.dependencies(), 'native_dependency_mismatch')
+    require(manifest['source_sha256'] == launcher.execution_sources(profile), 'execution_source_mismatch')
+    require(manifest['dependencies'] == launcher.dependencies(profile), 'native_dependency_mismatch')
     require(manifest.get('source_commit_verified') is True, 'uncommitted_execution_source')
     committed_sources(manifest['repository_commit'], manifest['source_sha256'])
     launcher.validate_model(manifest['target_model'], manifest['model_base_url'])
-    require(manifest['transports'] == {m: contract(m) for m in ('streaming', 'nonstreaming')}, 'transport_contracts')
+    require(manifest['transports'] == {m: contract(m) for m in launcher.profile_modes(profile)}, 'transport_contracts')
     require((root / 'private/initial_skill.txt').read_bytes() == SEED_SKILL.encode()
             and manifest['initial_skill_sha256'] == sha(SEED_SKILL.encode()), 'initial_skill_bytes')
     hashes, capsules = {}, {}
-    for workflow, expected in launcher.expected_capsules().items():
+    for workflow, expected in launcher.expected_capsules(profile).items():
         value, file_sha = read(root / 'private/cases' / (workflow + '.json'))
         require(reports_equal(value, expected), 'fixed_synthetic_capsule')
         hashes[workflow], capsules[workflow] = file_sha, value
-    require(reports_equal(manifest['slots'], launcher.expected_slots(hashes)) and len(manifest['slots']) == 6,
+    require(reports_equal(manifest['slots'], launcher.expected_slots(hashes, profile)) and len(manifest['slots']) == config['fixed_slots'],
             'fixed_six_slot_paired_plan')
     return manifest, manifest_sha, capsules
 
@@ -360,11 +383,15 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
         output['errors'].append({'code': code})
     try:
         manifest, manifest_sha, capsules = plan_check(root)
+        config = manifest['config']; count = config['fixed_slots']
         output['manifest_sha256'] = manifest_sha
+        if manifest.get('provider_contract') is not None:
+            output['scope'] = 'three_fixed_profile_transport_component_slots; no_learning_effect_or_world_study_claim'
+            output['provider_contract'] = deepcopy(manifest['provider_contract'])
         require(expected_manifest_sha256 is None or expected_manifest_sha256 == manifest_sha, 'published_manifest_hash')
         state, state_sha = read(root / 'state.json'); slots = manifest['slots']
         output['slots'] = [{'slot_id': s['slot_id'], 'mode': s['mode'], 'workflow': s['workflow'], 'status': 'not_attempted'} for s in slots]
-        require(state['schema_version'] == 1 and type(state['receipts']) is list and len(state['receipts']) <= 6,
+        require(state['schema_version'] == 1 and type(state['receipts']) is list and len(state['receipts']) <= count,
                 'state_receipt_shape')
         execution_path = root / 'EXECUTION.json'; marker_path = root / 'INFLIGHT.json'
         report_path = root / 'REPORT.json'
@@ -416,7 +443,7 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
             evidence = None; evidence_error = cleanup_error = None; cleaned = False
             try: evidence = native_session(record, native_root, capsules[slot['workflow']], slot, manifest)
             except (OSError, AttributeError, KeyError, TypeError, ValueError) as exc: evidence_error = type(exc).__name__
-            try: cleaned = cleanup_check(trial, slot, cleanup)
+            try: cleaned = cleanup_check(trial, slot, cleanup, provider_contract=manifest.get('provider_contract'))
             except (OSError, AttributeError, KeyError, TypeError, ValueError) as exc: cleanup_error = type(exc).__name__
             require(reports_equal(receipt['native_evidence'], evidence) and receipt['evidence_error_type'] == evidence_error
                     and receipt['cleanup_error_type'] == cleanup_error and receipt['cleanup_confirmed'] is cleaned,
@@ -449,7 +476,7 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
         inflight = 0
         if marker_path.exists():
             marker, _ = read(marker_path)
-            require(len(receipts) < 6 and marker == {'slot_id': slots[len(receipts)]['slot_id'], 'index': len(receipts),
+            require(len(receipts) < count and marker == {'slot_id': slots[len(receipts)]['slot_id'], 'index': len(receipts),
                     'reserved_model_calls': 16, 'reserved_tokens': 250000} and not report_path.exists()
                     and state['status'] in ('prepared', 'running'), 'inflight_identity')
             inflight = 1; output['slots'][len(receipts)]['status'] = 'inflight_usage_unknown'
@@ -459,8 +486,8 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
                 'untracked_trial_inventory')
         output.update(usage=usage, accounting_verified=usage['accounting_verified'] and not inflight,
                       attempted_slots=len(receipts), inflight_reserved_calls=16*inflight, inflight_reserved_tokens=250000*inflight)
-        require(usage['charged_or_reserved_model_calls'] + 16*inflight <= 96
-                and usage['charged_or_reserved_tokens'] + 250000*inflight <= 1500000, 'campaign_physical_budget')
+        require(usage['charged_or_reserved_model_calls'] + 16*inflight <= config['max_model_calls']
+                and usage['charged_or_reserved_tokens'] + 250000*inflight <= config['max_charged_tokens'], 'campaign_physical_budget')
         if report_path.exists():
             report, report_sha = read(report_path)
             require(state['status'] == report['status'] and report['status'] in ('completed', 'halted_budget', 'halted_infrastructure', 'interrupted'),
@@ -469,17 +496,17 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
                 require(bool(receipts) and receipts[-1]['status'] == 'halted_infrastructure', 'false_infrastructure_halt')
             if state['status'] == 'halted_budget':
                 require(all(r['status'] == 'completed' for r in receipts)
-                        and ((len(receipts) == 6 and report['elapsed_seconds'] > 2700)
-                             or (len(receipts) < 6 and (report['elapsed_seconds'] + 450 > 2700
-                             or usage['charged_or_reserved_model_calls'] + 16 > 96
-                             or usage['charged_or_reserved_tokens'] + 250000 > 1500000))), 'false_budget_halt')
+                        and ((len(receipts) == count and report['elapsed_seconds'] > config['max_run_seconds'])
+                             or (len(receipts) < count and (report['elapsed_seconds'] + 450 > config['max_run_seconds']
+                             or usage['charged_or_reserved_model_calls'] + 16 > config['max_model_calls']
+                             or usage['charged_or_reserved_tokens'] + 250000 > config['max_charged_tokens']))), 'false_budget_halt')
             require(number(report['elapsed_seconds']) and report['elapsed_seconds'] >= previous_elapsed
                     and state['elapsed_seconds'] == report['elapsed_seconds'], 'terminal_clock')
             rebuilt = {'schema_version': 1, 'kind': manifest['kind'], 'status': state['status'], 'fixture': False,
                 'manifest_sha256': manifest_sha, 'execution_sha256': execution_sha,
-                'attempted_slots': len(receipts), 'fixed_slots': 6, 'usage': usage,
+                'attempted_slots': len(receipts), 'fixed_slots': count, 'usage': usage,
                 'elapsed_seconds': report['elapsed_seconds'],
-                'capability_pass': bool(state['status'] == 'completed' and len(receipts) == 6 and all(r['capability_pass'] for r in receipts)),
+                'capability_pass': bool(state['status'] == 'completed' and len(receipts) == count and all(r['capability_pass'] for r in receipts)),
                 'slots': [{'slot_id': s['slot_id'], 'mode': s['mode'], 'workflow': s['workflow'],
                     'status': receipts[i]['status'] if i < len(receipts) else 'not_attempted',
                     'capability_pass': receipts[i]['capability_pass'] if i < len(receipts) else None,
@@ -488,9 +515,9 @@ def audit_preflight(directory, strict=False, expected_manifest_sha256=None):
             output['report_sha256'] = report_sha
         completed = report_path.exists() and state['status'] == 'completed'
         if completed:
-            require(len(receipts) == 6 and all(r['status'] == 'completed' for r in receipts) and not inflight,
+            require(len(receipts) == count and all(r['status'] == 'completed' for r in receipts) and not inflight,
                     'completed_six_slot_contract')
-            require(state['elapsed_seconds'] <= 2700, 'campaign_wall_budget')
+            require(state['elapsed_seconds'] <= config['max_run_seconds'], 'campaign_wall_budget')
         elif state['status'] == 'completed': raise ValueError('completed_state_missing_report')
         output.update(status='valid_completed' if completed else 'incomplete',
                       capability_pass=bool(completed and all(r['capability_pass'] for r in receipts)),

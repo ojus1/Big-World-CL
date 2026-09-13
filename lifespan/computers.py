@@ -145,6 +145,13 @@ class Computer:
 
     def start(self,credentials,timeout=150):
         import yaml
+        from .evaluation.provider import contract, validate_contract
+        provider = contract(credentials)
+        if provider is not None:
+            if validate_contract(self.execution.get('provider_contract')) != provider:
+                raise ValueError('Employee profile provider differs from execution policy')
+        elif self.execution.get('provider_contract') is not None:
+            raise ValueError('Employee credentials omit the execution provider profile')
         from .startup_observability import Observer, enabled
         startup_started = time.monotonic()
         observer = Observer(self.root, 'parent') if enabled(self.execution) else None
@@ -161,6 +168,8 @@ class Computer:
             'memory':{'memory_enabled':True,'user_profile_enabled':True},
             'checkpoints':{'enabled':False},'display':{'tool_progress':'off'}}
         config['tools']={'tool_search':{'enabled':'off'}}
+        if provider is not None:
+            config['agent'].pop('reasoning_effort')
         if self.execution.get('mode')=='evaluation':
             config['skills']={'template_vars':False,'inline_shell':False}
             config['memory']={'memory_enabled':False,'user_profile_enabled':False}

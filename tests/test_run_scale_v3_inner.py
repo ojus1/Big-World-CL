@@ -129,6 +129,67 @@ class SupervisorTests(unittest.TestCase):
         states = launch.contract.read(self.out / 'STATUS.json')['slots']
         self.assertTrue(all(s['status'] == 'unlaunched' for s in states[2:]))
 
+    def test_provider_notice_stops_pair_and_prevents_later_waves(self):
+        notice = {'path': 'work/task/computers/employee/PROVIDER_FAILURE.json',
+                  'sha256': 'b' * 64, 'availability_classification': 'connection_error'}
+        with patch.object(launch, 'find_provider_failure',
+                          side_effect=lambda run: notice if run.name == 'fixture-0' else None):
+            self.assertFalse(self.execute()['inner_completed'])
+        rows = launch.contract.read(self.out / 'execution_results.json')['runs']
+        self.assertEqual(rows[0]['termination_reason'], 'provider_failure')
+        self.assertEqual(rows[0]['provider_failure'], notice)
+        self.assertLessEqual(len(self.handles), 2)
+        self.assertEqual(len(self.cleaned), len(self.handles))
+        self.assertTrue(all(s['status'] == 'unlaunched' for s in
+                           launch.contract.read(self.out / 'STATUS.json')['slots'][2:]))
+
+    def test_notice_search_does_not_inspect_employee_workspace(self):
+        run = self.out / 'runs/fixture-0'
+        guest = run / 'work/task/computers/employee/workspace/PROVIDER_FAILURE.json'
+        guest.parent.mkdir(parents=True); guest.write_text('guest-controlled')
+        with patch.object(launch, 'read_failure', side_effect=AssertionError('Guest path inspected')):
+            self.assertIsNone(launch.find_provider_failure(run))
+
+    def test_learning_attempt_notice_is_observed(self):
+        run = self.out / 'runs/fixture-0'
+        path = run / 'learning/epoch/trial-001/computers/employee/PROVIDER_FAILURE.json'
+        path.parent.mkdir(parents=True); path.write_text('{}')
+        with patch.object(launch, 'read_failure', return_value={
+                'availability_classification': 'other_terminal_failure'}) as reader:
+            notice = launch.find_provider_failure(run)
+        computer_id = 'lifespan-' + launch.hashlib.sha256(str((path.parent / 'hermes').resolve()).encode()).hexdigest()[:16]
+        reader.assert_called_once_with(path.parent, computer_id=computer_id)
+        self.assertEqual(notice['path'], str(path.relative_to(run)))
+        self.assertEqual(notice['sha256'], launch.contract.sha(path))
+
+    def test_actual_meter_notification_is_accepted_at_host_attempt_path(self):
+        from lifespan.evaluation.budget import ResponsesBudget, NativeProviderStopped
+        from lifespan.evaluation.provider import provider_contract
+        from lifespan.evaluation.provider_failure import notifier
+        from lifespan.tests.test_evaluation_budget import Client
+        run = self.out / 'runs/fixture-0'
+        computer = run / 'work/task/computers/employee'
+        computer.mkdir(parents=True)
+        computer_id = 'lifespan-' + launch.hashlib.sha256(str(computer / 'hermes').encode()).hexdigest()[:16]
+        policy = provider_contract('fixture-model', 'https://example.invalid/v1')
+        client = Client([ConnectionError('private fixture body')]); client.base_url = policy['base_url']
+        budget = ResponsesBudget(max_model_calls=2, max_output_tokens=64,
+            provider_contract=policy, on_failure=notifier(computer, computer_id))
+        budget.wrap_client(client)
+        with self.assertRaises(NativeProviderStopped):
+            client.responses.create(model=policy['model'], input='fixture', stream=False, store=False,
+                extra_body={'chat_template_kwargs': {'enable_thinking': False}})
+        notice = launch.find_provider_failure(run)
+        self.assertEqual(notice['availability_classification'], 'connection_error')
+        self.assertEqual(notice['path'], 'work/task/computers/employee/PROVIDER_FAILURE.json')
+
+    def test_malformed_notice_halts_as_observation_failure(self):
+        with patch.object(launch, 'find_provider_failure', side_effect=ValueError('malformed')):
+            self.assertFalse(self.execute()['inner_completed'])
+        rows = launch.contract.read(self.out / 'execution_results.json')['runs']
+        self.assertEqual(rows[0]['termination_reason'], 'observation_failed')
+        self.assertLessEqual(len(self.handles), 2)
+
     def test_cleanup_does_not_block_another_worlds_observation(self):
         started = threading.Event(); observed = threading.Event()
         def cleanup(handle, run, service, **kwargs):

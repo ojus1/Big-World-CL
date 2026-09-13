@@ -37,7 +37,14 @@ def mode(config):
 def executor_options(config):
     """Preserve the historical executor signature when the default is used."""
     value = mode(config)
-    return {'hermes_transport': value} if value != 'streaming' else {}
+    result = {'hermes_transport': value} if value != 'streaming' else {}
+    profile = config.get('provider_profile') if isinstance(config, dict) else getattr(config, 'provider_profile', None)
+    if profile is not None:
+        from .provider import PROFILE
+        if profile != PROFILE or value != 'nonstreaming':
+            raise ValueError('Provider profile requires the registered nonstreaming Responses mode')
+        result['provider_profile'] = profile
+    return result
 
 
 def contract(value):
@@ -111,6 +118,15 @@ def _nonstreaming_call(agent, api_kwargs, client=None, on_first_delta=None):
             raise InterruptedError('Agent interrupted before final-body Responses dispatch')
         request = deepcopy(payload)
         request.pop('stream', None)
+        if meter.provider_contract is not None:
+            extra = request.get('extra_body', {})
+            if type(extra) is not dict or set(extra) - {'chat_template_kwargs'}:
+                raise ValueError('Profiled Responses request cannot override native body fields')
+            existing = extra.get('chat_template_kwargs')
+            if existing is not None and (type(existing) is not dict or set(existing) != {'enable_thinking'}
+                                         or existing['enable_thinking'] is not False):
+                raise ValueError('Profiled Responses request cannot override the thinking policy')
+            request['extra_body'] = {'chat_template_kwargs': {'enable_thinking': False}}
         if request.get('store', False) is not False or any(key in (request.get('extra_body') or {})
                 for key in ('stream', 'store', 'max_output_tokens')):
             raise ValueError('Final-body Responses forbids storage or transport/output-cap overrides')
@@ -142,10 +158,20 @@ def _nonstreaming_call(agent, api_kwargs, client=None, on_first_delta=None):
     return result
 
 
-def install(agent, value, *, hermes_root):
+def install(agent, value, *, hermes_root, provider_contract=None):
     """Install on this employee instance only, after install_native_budget."""
     value = mode({'hermes_transport': value})
     descriptor = contract(value)
+    if provider_contract is not None:
+        from .provider import validate_contract
+        provider_contract = validate_contract(provider_contract)
+        if (value != 'nonstreaming' or getattr(getattr(agent, '_big_world_budget', None), 'provider_contract', None) != provider_contract
+                or getattr(agent, 'model', None) != provider_contract['model']
+                or str(getattr(agent, 'base_url', '')).rstrip('/') != provider_contract['base_url']
+                or getattr(agent, 'reasoning_config', None) != {'enabled': False}):
+            raise ValueError('Provider profile differs from the native agent, meter or transport')
+    elif getattr(getattr(agent, '_big_world_budget', None), 'provider_contract', None) is not None:
+        raise ValueError('Native transport must retain its explicit provider contract')
     if value == 'streaming':
         return descriptor
     if getattr(agent, 'api_mode', None) != 'codex_responses' or not getattr(agent, '_big_world_budget', None):

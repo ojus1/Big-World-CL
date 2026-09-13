@@ -256,13 +256,17 @@ def lifecycle_audit(root, campaign, completed):
                 and row['lifecycle'] == {'start_sha256': world['hashes']['WORLD_START.json'],
                                         'cleanup_sha256': world['hashes']['WORLD_CLEANUP.json']},
                 'supervisor_world_receipt_binding')
-            require(row['termination_reason'] in ('exited', 'supervisor_interrupted', 'wall_limit', 'observation_failed'),
+            require(row['termination_reason'] in ('exited', 'supervisor_interrupted', 'wall_limit', 'observation_failed', 'provider_failure'),
                     'unknown_world_termination_reason')
             if completed:
                 require(row['termination_reason'] == 'exited', 'completed_world_abnormal_termination')
                 slot = next(slot for slot in campaign['slots'] if slot['run_id'] == identifier)
                 require(not (child(root, slot['relative_path']) / 'lifecycle/SUPERVISION_FAILURE.json').exists(),
                         'completed_world_supervision_failure')
+                run = child(root, slot['relative_path'])
+                for pattern in ('work/*/computers/*/PROVIDER_FAILURE.json',
+                                'learning/*/trial-*/computers/*/PROVIDER_FAILURE.json'):
+                    require(not any(run.glob(pattern)), 'completed_world_provider_failure')
         require(not completed or recorded == set(by_id) and len(recorded) == 6, 'completed_supervisor_inventory')
     else:
         require(not completed, 'completed_missing_supervisor_result')

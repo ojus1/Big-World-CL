@@ -37,6 +37,20 @@ def require(value, code):
         raise ValueError(code)
 
 
+def startup_settings(configuration=None):
+    """Select only a model/profile; the no-network endpoint and dummy key stay fixed."""
+    execution, credentials = dict(EXECUTION), dict(CREDENTIALS)
+    if configuration is not None:
+        require(type(configuration) is dict and set(configuration) == {'model', 'provider_profile'},
+                'invalid_startup_configuration')
+        from lifespan.evaluation.provider import provider_contract
+        descriptor = provider_contract(configuration['model'], CREDENTIALS['base_url'],
+                                       configuration['provider_profile'])
+        credentials.update(model=descriptor['model'], provider_profile=descriptor['profile'])
+        execution.update(provider_profile=descriptor['profile'], provider_contract=descriptor)
+    return execution, credentials
+
+
 def observe_boundary():
     """Read current namespace/cgroup metadata; do not connect a socket."""
     interfaces = []
@@ -97,7 +111,7 @@ def save(directory, name, value):
 
 
 def native_startup(out, expected, *, computer_factory=None, boundary_reader=observe_boundary,
-                   startup_deadline=None, before_close=None):
+                   startup_deadline=None, before_close=None, startup_configuration=None):
     """One fresh start and close, never work; no retry or provider parameters.
 
     Tests may supply a fake factory. The real path is for the future registered
@@ -107,6 +121,7 @@ def native_startup(out, expected, *, computer_factory=None, boundary_reader=obse
     identities; its wait and phase writes consume the same cleanup allowance.
     """
     entered = time.monotonic()
+    execution, credentials = startup_settings(startup_configuration)
     deadline = entered + STARTUP_SECONDS if startup_deadline is None else startup_deadline
     require(type(deadline) in (int, float) and math.isfinite(deadline)
             and entered < deadline <= entered + STARTUP_SECONDS, 'invalid_startup_deadline')
@@ -125,9 +140,9 @@ def native_startup(out, expected, *, computer_factory=None, boundary_reader=obse
         from lifespan.computers import Computer
         computer_factory = Computer
     computer = computer_factory(directory / 'computers', 'startup-qualification',
-                                backend='bubblewrap', execution=dict(EXECUTION))
+                                backend='bubblewrap', execution=execution)
     skill = install_skill(computer.profile, SEED_SKILL)
-    save(directory, 'STARTUP_INTENT.json', {'kind': VERSION, 'execution': EXECUTION,
+    save(directory, 'STARTUP_INTENT.json', {'kind': VERSION, 'execution': execution,
          'startup_seconds': STARTUP_SECONDS, 'cleanup_seconds': CLEANUP_SECONDS,
          'entered_monotonic': entered, 'startup_deadline': deadline,
          'skill': skill, 'work_requests_sent': 0,
@@ -144,11 +159,14 @@ def native_startup(out, expected, *, computer_factory=None, boundary_reader=obse
                         for name in ('.env', '.op.env')), 'profile_environment_file_present')
         remaining = deadline - time.monotonic()
         require(remaining > 0, 'startup_deadline_exhausted_before_launch')
-        ready = computer.start(dict(CREDENTIALS), timeout=min(STARTUP_SECONDS, remaining))
+        ready = computer.start(credentials, timeout=min(STARTUP_SECONDS, remaining))
         require(ready.get('kind') == 'ready' and ready.get('backend') == 'bubblewrap',
                 'invalid_native_ready')
         require(ready.get('evaluation_transport') == contract('nonstreaming'),
                 'native_transport_mismatch')
+        require(json.dumps(ready.get('provider_contract'), sort_keys=True, allow_nan=False) ==
+                json.dumps(execution.get('provider_contract'), sort_keys=True, allow_nan=False),
+                'native_provider_contract_mismatch')
         require(not set(ready.get('tool_names', [])) & {'memory', 'skill_manage'},
                 'native_learning_tools_exposed')
         require(time.monotonic() <= deadline, 'late_startup_return')

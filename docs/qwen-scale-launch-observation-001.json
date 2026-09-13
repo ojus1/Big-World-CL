@@ -1,0 +1,30 @@
+{
+  "campaign_sha256": "bfb18fb38df4fb45dbe1b4f641a3e0322f248f673393fb8d9c19928a5e2e8f4b",
+  "cause": "Private preparation helper occupied runtime-owned PREREQUISITES.json; inner supervisor exclusively creates that receipt before EXECUTION.json and service/world dispatch.",
+  "complete_pairs": 0,
+  "completed_worlds": 0,
+  "correction": "Fresh registration writes PRELAUNCH_PREREQUISITES.json; PREREQUISITES.json remains exclusively runtime-owned. Simulation source, qualification gates and scientific design are unchanged.",
+  "cost_scope": "No employee, optimizer or contracted actor work receipts. This observation does not supply an all-in provider cost receipt.",
+  "error_type": "FileExistsError",
+  "evidence_sha256": {
+    "AUDIT.json": "e573d14faec22e33338583acd4fc04ed7368ad1b33fea0e2535d8ff2b20328f9",
+    "scope/INNER_RESULT.json": "99237f131fcf9872b068034dad5025118783e2bc15ca7f01846930f7b13a7a6e",
+    "scope/TERMINAL.json": "99478c4a11ba676e81fbd8b69aa8db8ca10ce1a009be568345d5064d852bea3d"
+  },
+  "execution_receipt_present": false,
+  "kind": "qwen_scale_v3_launch_observation",
+  "observed_at": "2026-09-13T05:06:51.709294+00:00",
+  "preservation": "Original one-shot registration and terminal artifacts retained unchanged. This campaign will not be resumed or relabeled.",
+  "primary_endpoint_available": false,
+  "schema_version": 1,
+  "scope_cleanup": {
+    "controller_state": "absent",
+    "errors": [],
+    "forced_stop": false,
+    "members_remaining": [],
+    "native_wait_exit_code": 1,
+    "released": true
+  },
+  "status": "failed_before_world_dispatch",
+  "world_launches": 0
+}

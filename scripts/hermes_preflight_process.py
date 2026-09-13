@@ -17,6 +17,7 @@ import stat
 import time
 
 from lifespan.mirofish import save
+from lifespan.evaluation.provider_failure import read_failure
 
 POLL_SECONDS = .1
 TERM_GRACE_SECONDS = 5
@@ -159,6 +160,7 @@ native identity/socket evidence remains unconfirmed, even after a clean exit.
     root = identity(process.pid)
     known = {process.pid: root} if root and not root.get('unreadable') else {}
     outcome = None; instance = None; timed_out = interrupted = False
+    provider_failure = None
     try:
         while process.is_alive():
             current_root = identity(process.pid)
@@ -171,6 +173,20 @@ native identity/socket evidence remains unconfirmed, even after a clean exit.
             if parent.poll():
                 try: outcome = parent.recv()
                 except EOFError: pass
+            failure_root = Path(kwargs['root']) / 'computers' / kwargs['employee']
+            try:
+                computer_id = 'lifespan-' + hashlib.sha256(str((failure_root / 'hermes').resolve()).encode()).hexdigest()[:16]
+                notice = read_failure(failure_root, computer_id=computer_id,
+                    worker_pid=instance.get('worker_pid') if instance and not instance.get('malformed') else None)
+            except (OSError, ValueError, TypeError, KeyError) as exc:
+                provider_failure = {'path': str((failure_root / 'PROVIDER_FAILURE.json').relative_to(trial)),
+                                    'error_type': type(exc).__name__}
+                break
+            if notice is not None:
+                provider_failure = {'path': str((failure_root / 'PROVIDER_FAILURE.json').relative_to(trial)),
+                    'sha256': sha(failure_root / 'PROVIDER_FAILURE.json'),
+                    'availability_classification': notice['availability_classification']}
+                break
             if interruption['requested'] or stop_requested():
                 interrupted = True; break
             if time.monotonic() - started >= timeout_seconds:
@@ -244,11 +260,13 @@ native identity/socket evidence remains unconfirmed, even after a clean exit.
             'underlying_socket_removed_by_supervisor': underlying_removed}
         save(trial/'cleanup.json', cleanup)
     interrupted = interrupted or interruption['requested'] or stop_requested()
-    result = {'status': 'interrupted' if interrupted else 'timeout' if timed_out else
+    result = {'status': 'interrupted' if interrupted else 'provider_failure' if provider_failure else 'timeout' if timed_out else
               'returned' if outcome and outcome.get('status') == 'returned' else 'exception',
         'outcome': outcome, 'root_exitcode': process.exitcode,
         'timeout_seconds': timeout_seconds, 'cleanup_seconds': cleanup_seconds,
         'execution_elapsed_seconds': execution_elapsed,
         'elapsed_seconds': time.monotonic() - started, 'cleanup': cleanup}
+    if provider_failure is not None:
+        result['provider_failure'] = provider_failure
     save(trial/'supervision.json', result)
     return result

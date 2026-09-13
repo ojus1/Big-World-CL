@@ -273,6 +273,17 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(result['pair_barriers']['observed_following_pair_barriers'],2)
         self.assertNotIn('PRIVATE_CANARY',json.dumps(result))
 
+    def test_provider_notice_prevents_completed_claim_even_with_zero_exit_codes(self):
+        run = self.root / self.campaign['slots'][0]['relative_path']
+        for relative in ('work/task/computers/employee/PROVIDER_FAILURE.json',
+                         'learning/epoch/trial-001/computers/employee/PROVIDER_FAILURE.json'):
+            with self.subTest(relative=relative):
+                path = run / relative
+                save(path, {'fixture': 'presence alone prevents completion'})
+                with self.assertRaisesRegex(ValueError, 'completed_world_provider_failure'):
+                    self.inspect()
+                path.unlink()
+
     def test_service_cleanup_is_inside_inner_deadline_even_for_partial_campaign(self):
         self.service['ended_monotonic']=103
         with self.assertRaisesRegex(ValueError,'inner_execution_deadline'):self.inspect(False)

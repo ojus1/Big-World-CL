@@ -86,11 +86,15 @@ def skill_loaded(messages, native_file_sha256=None):
 def execute_case(*, root, employee, world, task_id, case, request, skill, credentials,
                  objectives, max_iterations=16, max_tokens=4096, business_files=None,
                  max_total_tokens=None, timeout_seconds=420, hermes_transport='streaming',
-                 hermes_startup_observability=False):
+                 hermes_startup_observability=False, provider_profile=None):
     from .tasks import grade_case
     from .hermes_transport import contract
     from ..startup_observability import executor_options as startup_options
     transport = contract(hermes_transport)
+    from .provider import matches as provider_matches, require_config
+    provider = require_config({'provider_profile': provider_profile,
+                               'hermes_transport': hermes_transport}, credentials)
+    provider_fields = {'provider_contract': provider} if provider is not None else {}
     root = Path(root).resolve()
     if root.exists():
         raise ValueError('Rollout destination exists; trials must start from a fresh state')
@@ -99,6 +103,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     computer = Computer(root / 'computers', employee,
         execution={'mode': 'evaluation', 'max_iterations': max_iterations, 'max_tokens': max_tokens,
                    'max_total_tokens': max_total_tokens, 'hermes_transport': hermes_transport,
+                   **provider_fields,
                    **startup_options({'hermes_startup_observability': hermes_startup_observability})},
         artifact_grader=lambda artifact: grade_case(case, artifact))
     task = world.tasks[task_id]
@@ -118,6 +123,8 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
         ready = computer.start(credentials, timeout=min(150, timeout_seconds))
         if ready.get('evaluation_transport') != transport:
             raise RuntimeError('Native worker transport differs from requested contract')
+        if not provider_matches(ready.get('provider_contract'), provider):
+            raise RuntimeError('Native worker provider differs from requested contract')
         forbidden = set(ready['tool_names']) & {'memory', 'skill_manage'}
         if forbidden:
             raise RuntimeError('Private learning tools exposed in controlled target: ' + str(forbidden))
@@ -136,6 +143,19 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
             and all(type(op.get('request_stream')) is bool
                 and op['request_stream'] == (hermes_transport == 'streaming')
                 for op in native.get('evaluation_budget', {}).get('operations', [])))
+        if provider is not None:
+            meter = native.get('evaluation_budget', {})
+            transport_valid = (transport_valid and provider_matches(native.get('provider_contract'), provider)
+                and provider_matches(meter.get('provider_contract'), provider)
+                and all(provider_matches(op.get('provider_contract'), provider)
+                    and op.get('request_api_mode') == provider['api_mode']
+                    and op.get('request_model') == provider['model']
+                    and op.get('request_base_url') == provider['base_url']
+                    and op.get('request_store') is False
+                    and type(op.get('request_chat_template_kwargs')) is dict
+                    and set(op['request_chat_template_kwargs']) == {'enable_thinking'}
+                    and op['request_chat_template_kwargs']['enable_thinking'] is False
+                    for op in meter.get('operations', [])))
         calls = sum(len(m.get('tool_calls') or []) for m in native.get('messages', []))
         usage = native_usage(native)
         loaded = skill_loaded(native.get('messages', []), skill_info['native_file_sha256'])
@@ -149,6 +169,7 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
                 raise RuntimeError('Successful work has no committed artifact snapshot')
         record = {'employee': employee, 'day': world.day, 'task_id': task_id,
             'hermes_transport': transport,
+            **provider_fields,
             'case_id': case['id'], 'regime': case['regime'], 'skill': skill_info,
             'skill_loaded': loaded, 'success': success, 'semantic_score': grade['score'],
             'feedback': grade['feedback'], 'checks': grade['checks'],

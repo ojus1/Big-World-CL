@@ -113,7 +113,7 @@ class ScopeTests(unittest.TestCase):
     def test_v3_has_separate_source_and_bootstrap_identity_without_study_drafts(self):
         self.assertEqual(q.VERSION,'hermes-startup-scope-qualification-v3')
         self.assertEqual(set(q.sources()),set(q.legacy.sources())|{'scripts/hermes_startup_scope_qualification_v3.py'})
-        self.assertEqual(len(q.sources()),35)
+        self.assertIn('lifespan/evaluation/provider.py',q.sources())
         self.assertNotIn('scripts/hermes_startup_scope_qualification.py',q.sources())
         self.assertFalse(any('scale_v3' in name for name in q.sources()))
         self.assertIn('scripts.hermes_startup_scope_qualification_v3 import _worker',q.BOOTSTRAP)

@@ -173,7 +173,128 @@ def mirofish_service_check(root, manifest, report=None):
     return {'service_url': url, 'binding_sha256': sha(path.read_bytes())}
 
 
+PROVIDER_REQUEST_MARKERS = ('request_api_mode', 'request_model', 'request_base_url',
+    'request_store', 'request_chat_template_kwargs', 'provider_request_sha256')
+
+
+def provider_manifest_check(manifest, report=None):
+    from lifespan.evaluation.provider import validate_contract
+    policy = manifest.get('provider_contract')
+    profile = manifest.get('config', {}).get('provider_profile')
+    require((profile is None and policy is None) or
+            (policy is not None and profile == validate_contract(policy)['profile']),
+            'provider_manifest_profile_mismatch')
+    if policy is not None:
+        require(manifest.get('target_model') == policy['model']
+                and manifest.get('model_base_url', '').rstrip('/') == policy['base_url'],
+                'provider_manifest_identity_mismatch')
+        sources = manifest.get('source_sha256', {})
+        required_sources = ('lifespan/evaluation/provider.py', 'lifespan/evaluation/budget.py',
+            'lifespan/evaluation/hermes_transport.py', 'lifespan/hermes_worker.py',
+            'lifespan/evaluation/runtime.py', 'lifespan/evaluation/runner.py',
+            'lifespan/evaluation/optimizer.py')
+        require(all(sources.get(name) == sha((ROOT / name).read_bytes()) for name in required_sources),
+                'provider_execution_source_binding')
+    else:
+        require('provider_contract' not in manifest, 'provider_manifest_null_marker')
+    if report is not None:
+        if policy is not None:
+            validate_contract(report.get('provenance', {}).get('provider_contract'))
+        require(report.get('provenance', {}).get('provider_contract') == policy
+                and report.get('config', {}).get('provider_profile') == profile,
+                'provider_report_provenance')
+        if policy is None:
+            require('provider_contract' not in report.get('provenance', {}), 'provider_report_marker_downgrade')
+    return policy
+
+
+def provider_request_check(row, policy):
+    from lifespan.evaluation.provider import validate_contract
+    require(validate_contract(row.get('provider_contract')) == policy
+            and row.get('request_api_mode') == policy['api_mode']
+            and row.get('request_model') == policy['model'] and row.get('request_base_url') == policy['base_url']
+            and row.get('request_stream') is False and row.get('request_store') is False
+            and type(row.get('request_chat_template_kwargs')) is dict
+            and set(row['request_chat_template_kwargs']) == {'enable_thinking'}
+            and row['request_chat_template_kwargs']['enable_thinking'] is False,
+            'provider_physical_request_binding')
+
+
+def provider_check(record, manifest=None):
+    """Bind opt-in provider identity and policy to the actual SDK dispatch rows."""
+    from lifespan.evaluation.provider import validate_contract
+    native = record.get('result', {}).get('native', {})
+    meter = native.get('evaluation_budget', {})
+    rows = meter.get('operations', [])
+    policy = record.get('provider_contract')
+    if manifest is not None:
+        require(policy == provider_manifest_check(manifest), 'provider_session_manifest_mismatch')
+    if policy is None:
+        require('provider_contract' not in record and 'provider_contract' not in native
+                and 'provider_contract' not in meter and all(not any(key in row for key in
+                    ('provider_contract',) + PROVIDER_REQUEST_MARKERS) for row in rows),
+                'provider_contract_marker_downgrade')
+        return
+    policy = validate_contract(policy)
+    require(record.get('hermes_transport', {}).get('mode') == 'nonstreaming'
+            and validate_contract(native.get('provider_contract')) == policy
+            and validate_contract(meter.get('provider_contract')) == policy,
+            'provider_native_contract_binding')
+    for row in rows:
+        provider_request_check(row, policy)
+
+
+def optimizer_provider_check(receipt, policy):
+    """A zero-call receipt retains policy without claiming a physical request."""
+    from lifespan.evaluation.provider import validate_contract
+    if policy is None:
+        require(not any(key in receipt for key in ('provider_contract',) + PROVIDER_REQUEST_MARKERS),
+                'optimizer_provider_marker_downgrade')
+        return
+    require(validate_contract(receipt.get('provider_contract')) == policy, 'optimizer_provider_contract')
+    calls = receipt.get('model_calls')
+    require(type(calls) is int and calls in (0, 1), 'optimizer_provider_call_count')
+    if calls == 0:
+        require(not any(key in receipt for key in PROVIDER_REQUEST_MARKERS + ('request_stream',)),
+                'optimizer_undispatched_request_markers')
+        return
+    provider_request_check(receipt, policy)
+    require(type(receipt.get('max_output_tokens')) is int and receipt['max_output_tokens'] > 0
+            and isinstance(receipt.get('optimizer_prompt'), str), 'optimizer_provider_request_fields')
+    request = {'model': policy['model'], 'input': receipt['optimizer_prompt'], 'store': False,
+        'max_output_tokens': receipt['max_output_tokens'], 'stream': False,
+        'extra_body': {'chat_template_kwargs': policy['chat_template_kwargs']}}
+    raw = json.dumps(request, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()
+    require(receipt.get('provider_request_sha256') == sha(raw), 'optimizer_provider_request_hash')
+
+
+def update_provider_check(directory, update, manifest=None):
+    from lifespan.evaluation.provider import validate_contract
+    policy = update.get('provider_contract')
+    if manifest is not None:
+        require(policy == provider_manifest_check(manifest), 'provider_update_manifest_mismatch')
+    if policy is not None:
+        policy = validate_contract(policy)
+    else:
+        require('provider_contract' not in update, 'provider_update_null_marker')
+    path = directory / 'progress.json'
+    if policy is not None or path.exists():
+        progress = read(path)
+        if policy is not None:
+            validate_contract(progress.get('provider_contract'))
+        require(progress.get('provider_contract') == policy, 'provider_progress_contract')
+        if policy is not None:
+            require(progress.get('employee') == update['employee'] and progress.get('day') == update['day'],
+                    'provider_progress_identity')
+        else:
+            require('provider_contract' not in progress, 'provider_progress_marker_downgrade')
+    for receipt in update.get('optimizer_transport_audit', []):
+        optimizer_provider_check(receipt, policy)
+    return policy
+
+
 def transport_check(record, manifest=None):
+    provider_check(record, manifest)
     expected = transport_manifest_check(manifest) if manifest is not None else None
     descriptor = record.get('hermes_transport')
     native = record.get('result', {}).get('native', {})
@@ -240,11 +361,15 @@ def session_check(record, directory, capsule, version=None, transport_manifest=N
     meter_check(record)
 
 
-def update_check(root, update, experiences, sessions, feedback_delay):
+def update_check(root, update, experiences, sessions, feedback_delay, transport_manifest=None):
     from scripts.audit_learning_v2 import reconcile, version
+    # Preserve source-only/transfer callers' historical on-disk manifest binding.
+    if transport_manifest is None and (root / 'manifest.json').is_file():
+        transport_manifest = read(root / 'manifest.json')
     evidence_version = version(update)
     directory = child(root, f"learning/d{update['day']:03d}-{update['employee']}")
     require(read(directory / 'update.json') == update, 'checkpoint_update_mismatch')
+    update_provider_check(directory, update, transport_manifest)
     day, employee = update['day'], update['employee']
     require(update['current_day'] == day and update['available_from_day'] == day + 1, 'update_visibility_day')
     train, val = update['train_ids'], update['validation_ids']
@@ -287,7 +412,7 @@ def update_check(root, update, experiences, sessions, feedback_delay):
         trial = directory / f'trial-{index:03d}'
         record = read(trial / 'session.json')
         session_check(record, trial, read(child(root, 'private/cases/' + row['task_id'] + '.json')),
-                      transport_manifest=read(root / 'manifest.json'))
+                      transport_manifest=transport_manifest)
         require(record['skill']['content_sha256'] == receipt['skill_sha256']
                 and record['usage']['total_tokens'] == row['tokens'] and record['usage']['api_calls'] == row['model_calls'], 'replay_physical_evidence_mismatch')
         if index < len(update['replay_evidence']):
@@ -348,6 +473,7 @@ def audit_run(root, strict=False):
     try:
         manifest, cp = read(root / 'manifest.json'), read(root / 'checkpoint.json')
         transport_manifest_check(manifest)
+        provider_manifest_check(manifest)
         service = mirofish_service_check(root, manifest)
         if service is not None:
             result['mirofish_service_audit'] = service
@@ -383,7 +509,7 @@ def audit_run(root, strict=False):
             result['sessions_checked'] += 1
         for update in state['updates']:
             inspect(f"learning/day-{update['day']}/{update['employee']}", lambda u=update: update_check(
-                root, u, experiences, sessions, manifest['config']['feedback_delay']))
+                root, u, experiences, sessions, manifest['config']['feedback_delay'], transport_manifest=manifest))
             result['updates_checked'] += 1
         for employee, skill in state['skills'].items():
             version = read(child(root, f'skills/{employee}/v000.json'))
@@ -404,6 +530,7 @@ def audit_run(root, strict=False):
         if report_path.exists():
             report = read(report_path)
             mirofish_service_check(root, manifest, report)
+            provider_manifest_check(manifest, report)
             provenance = dict(report['provenance'])
             for key in ('target_model', 'model_base_url', 'dependencies', 'source_sha256'):
                 require(provenance[key] == manifest[key], 'report_provenance_' + key)

@@ -28,9 +28,17 @@ def tooling():
 
 
 def prepare(out, *, launch_policy, target_model, model_base_url, cohort_importer=import_cohort,
-            sources=None, dependencies=None, registration_tools=None):
+            sources=None, dependencies=None, registration_tools=None, provider_profile=None):
     p = contract.policy(launch_policy)
+    if provider_profile is not None:
+        contract.require(provider_profile == p.get('provider_profile'), 'v3_provider_profile_policy_mismatch')
     contract.model_metadata(target_model, model_base_url)
+    provider_fields = {}
+    if 'provider_profile' in p:
+        from lifespan.evaluation.provider import provider_contract
+        descriptor = provider_contract(target_model, model_base_url, p['provider_profile'])
+        contract.require(model_base_url == descriptor['base_url'], 'v3_provider_url_not_canonical')
+        provider_fields['provider_contract'] = descriptor
     sources = source_hashes() if sources is None else sources
     dependencies = dependency_provenance() if dependencies is None else dependencies
     registration_tools = tooling() if registration_tools is None else registration_tools
@@ -59,7 +67,8 @@ def prepare(out, *, launch_policy, target_model, model_base_url, cohort_importer
         'seeds': contract.SEEDS, 'algorithms': contract.ALGORITHMS, 'population': contract.POPULATION,
         'days': 20, 'slots': slots, 'source_sha256': sources, 'dependencies': dependencies,
         'registration_tools_sha256': registration_tools, 'target_model': target_model,
-        'model_base_url': model_base_url, 'launch_policy': p, 'budgets': contract.budgets(p), 'design': contract.design()}
+        'model_base_url': model_base_url, 'launch_policy': p, 'budgets': contract.budgets(p), 'design': contract.design(),
+        **provider_fields}
     save(out / 'campaign.json', manifest)
     return contract.validate(out, source_sha256=sources, dependencies=dependencies,
                              registration_tools_sha256=registration_tools,
@@ -73,13 +82,14 @@ def main():
     parser.add_argument('--policy', type=Path)
     parser.add_argument('--target-model')
     parser.add_argument('--model-base-url')
+    parser.add_argument('--provider-profile', help='Optional explicit profile; must equal the launch policy profile')
     parser.add_argument('--campaign-sha256', help='Required for validate: separately reviewed raw manifest hash')
     args = parser.parse_args()
     if args.mode == 'prepare':
         if not all((args.policy, args.target_model, args.model_base_url)):
             parser.error('prepare requires --policy, --target-model and --model-base-url')
         prepare(args.out, launch_policy=contract.read(args.policy), target_model=args.target_model,
-                model_base_url=args.model_base_url)
+                model_base_url=args.model_base_url, provider_profile=args.provider_profile)
     else:
         if not args.campaign_sha256:
             parser.error('validate requires the separately reviewed --campaign-sha256')

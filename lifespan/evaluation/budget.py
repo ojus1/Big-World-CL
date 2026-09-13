@@ -7,13 +7,19 @@ conservative reservation and are explicitly marked incomplete.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 import json
+import re
 import threading
 import time
 
 
 class NativeBudgetExceeded(RuntimeError):
     pass
+
+
+class NativeProviderStopped(InterruptedError):
+    """A terminal profiled transport failure; native Hermes must not retry."""
 
 
 def _get(value, key, default=None):
@@ -24,9 +30,26 @@ def _integer(value):
     return type(value) is int and value >= 0
 
 
+def _error_type(exc):
+    name = type(exc).__name__
+    return name if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,79}', name) else 'Exception'
+
+
+def availability_classification(error_type, http_status=None):
+    if error_type in ('APITimeoutError', 'TimeoutError', 'TimeoutException', 'ConnectTimeout',
+                      'ReadTimeout', 'WriteTimeout', 'PoolTimeout'):
+        return 'timeout'
+    if error_type in ('APIConnectionError', 'ConnectionError', 'ConnectError', 'ReadError',
+                      'WriteError', 'RemoteProtocolError', 'NetworkError'):
+        return 'connection_error'
+    if type(http_status) is int and 500 <= http_status <= 599:
+        return 'server_unavailable'
+    return 'other_terminal_failure'
+
+
 class ResponsesBudget:
     def __init__(self, *, max_model_calls, max_output_tokens, max_total_tokens=None,
-                 on_block=None, framing_reserve=2048):
+                 on_block=None, framing_reserve=2048, provider_contract=None, on_failure=None):
         for name, value in (("max_model_calls", max_model_calls),
                             ("max_output_tokens", max_output_tokens),
                             ("framing_reserve", framing_reserve)):
@@ -39,15 +62,63 @@ class ResponsesBudget:
         self.max_total_tokens = max_total_tokens
         self.framing_reserve = framing_reserve
         self.on_block = on_block
+        self.on_failure = on_failure
+        if provider_contract is not None:
+            from .provider import validate_contract
+            provider_contract = validate_contract(provider_contract)
+        self.provider_contract = provider_contract
         self.rows = []
         self.charged_tokens = 0
         self.exhausted = False
+        self.stopped = False
+        self.terminal_failure = None
         self.blocked_calls = 0
         self.disabled_auxiliary_calls = []
         self._lock = threading.RLock()
+        # Dedicated synchronous Hermes request clients can be recreated by its
+        # retry loop. Serialize the profiled physical seam across all of them,
+        # so a waiting request cannot pass a check made before the first error.
+        self._dispatch_lock = threading.RLock()
+
+    def ensure_running(self):
+        with self._lock:
+            if self.stopped:
+                self.blocked_calls += 1
+                raise NativeProviderStopped('Profiled provider transport is terminally stopped')
+
+    def _fail(self, row, reason):
+        """Latch before notifying/cancelling; neither callback can enable retry."""
+        if self.provider_contract is None:
+            return
+        with self._lock:
+            first = not self.stopped
+            if first:
+                self.stopped = True
+                self.terminal_failure = {'reason': reason, 'dispatch': row['dispatch'],
+                    'operation_status': row['status'], 'error_type': row.get('error_type'),
+                    'accounting': row['accounting'],
+                    'provider_response_status': row.get('provider_response_status'),
+                    'http_status': row.get('http_status'),
+                    'availability_classification': availability_classification(
+                        row.get('error_type'), row.get('http_status')),
+                    'observed_monotonic': time.monotonic()}
+        if first:
+            # Publish before native cancellation (which may wait on a native
+            # lock). Preserve safe callback failures without masking costs or
+            # clearing the latch if the host filesystem/cancel hook fails.
+            for callback, key, argument in ((self.on_failure, 'notification_error_type', self.report()),
+                    (self.on_block, 'cancellation_error_type', 'Profiled provider transport stopped')):
+                if callback:
+                    try:
+                        callback(argument)
+                    except Exception as exc:
+                        with self._lock:
+                            self.terminal_failure[key] = _error_type(exc)
+        raise NativeProviderStopped('Profiled provider transport stopped: ' + reason) from None
 
     def block(self, reason):
         with self._lock:
+            self.ensure_running()
             self.exhausted = True
             self.blocked_calls += 1
         if self.on_block:
@@ -66,6 +137,7 @@ class ResponsesBudget:
         reserve = (len(json.dumps(request, ensure_ascii=False, default=str).encode())
                    + request["max_output_tokens"] + self.framing_reserve)
         with self._lock:
+            self.ensure_running()
             if len(self.rows) >= self.max_model_calls:
                 self.block("Declared physical model-call budget exhausted")
             if self.max_total_tokens is not None and self.charged_tokens + reserve > self.max_total_tokens:
@@ -90,6 +162,12 @@ class ResponsesBudget:
                 return
             if not valid:
                 row["status"] = "missing_or_invalid_usage"
+                if self.provider_contract is not None:
+                    # These are independently observed dimensions, not a valid
+                    # total. Keep the original reservation/main audit equation;
+                    # never relabel inconsistent or partial usage as measured.
+                    row['observed_usage'] = {key: value if _integer(value) else None
+                                             for key, value in values.items()}
                 return
             self.charged_tokens += values["total_tokens"] - row["charged_tokens"]
             row.update(values, charged_tokens=values["total_tokens"], accounting="reported", status=status)
@@ -114,10 +192,13 @@ class ResponsesBudget:
         client.max_retries = 0
         original = client.responses.create
 
-        def create(**kwargs):
+        def dispatch(kwargs):
+            self.ensure_running()
             if self.exhausted:
                 self.block("Evaluation transport already stopped at its declared bound")
+            readbacks = self._provider_readbacks(client, kwargs)
             request, row = self._reserve(kwargs)
+            row.update(readbacks)
             started = time.monotonic()
             try:
                 response = original(**request)
@@ -129,19 +210,52 @@ class ResponsesBudget:
                     else None)
                 self._receipt(row, response, "completed")
                 row["wall_seconds"] = time.monotonic() - started
-                return response
             except Exception as exc:
-                row.update(status="dispatch_error", error_type=type(exc).__name__,
+                row.update(status="dispatch_error", error_type=_error_type(exc),
                            wall_seconds=time.monotonic() - started)
+                if self.provider_contract is not None:
+                    code = getattr(exc, 'status_code', None)
+                    row['http_status'] = code if type(code) is int and 100 <= code <= 599 else None
+                self._fail(row, 'dispatch_error')
                 raise
+            if row['status'] in ('missing_or_invalid_usage', 'provider_budget_overrun'):
+                self._fail(row, row['status'])
+            if self.provider_contract is not None and provider_status not in ('completed', 'incomplete'):
+                self._fail(row, 'provider_response_not_completed')
+            return response
+
+        def create(**kwargs):
+            if self.provider_contract is None:
+                return dispatch(kwargs)
+            with self._dispatch_lock:
+                return dispatch(kwargs)
 
         client.responses.create = create
         client._big_world_budget = self
         return client
 
+    def _provider_readbacks(self, client, request):
+        """Bind the actual SDK boundary without recording credentials or inputs."""
+        if self.provider_contract is None:
+            return {}
+        from .provider import validate_contract
+        policy = validate_contract(self.provider_contract)
+        extra = request.get('extra_body')
+        template = extra.get('chat_template_kwargs') if type(extra) is dict else None
+        base_url = str(getattr(client, 'base_url', '')).rstrip('/')
+        if not (base_url == policy['base_url'] and request.get('model') == policy['model']
+                and client.max_retries == 0 and request.get('stream') is False and request.get('store') is False
+                and type(extra) is dict and set(extra) == {'chat_template_kwargs'}
+                and type(template) is dict and set(template) == {'enable_thinking'}
+                and template['enable_thinking'] is False and request.get('reasoning') in (None, {})):
+            raise ValueError('Physical Responses request differs from the registered provider contract')
+        return {'provider_contract': policy, 'request_api_mode': 'responses',
+                'request_model': request['model'], 'request_base_url': base_url,
+                'request_store': False, 'request_chat_template_kwargs': deepcopy(template)}
+
     def report(self):
         with self._lock:
-            rows = [dict(row) for row in self.rows]
+            rows = [deepcopy(row) for row in self.rows]
             totals = {key: sum(row[key] or 0 for row in rows)
                       for key in ("input_tokens", "output_tokens", "total_tokens")}
             return {"physical_model_calls": len(rows), "charged_tokens": self.charged_tokens,
@@ -149,7 +263,10 @@ class ResponsesBudget:
                     "accounting_complete": all(row["accounting"] == "reported" for row in rows),
                     "exhausted": self.exhausted, "blocked_calls": self.blocked_calls,
                     "disabled_auxiliary_calls": list(self.disabled_auxiliary_calls),
-                    "operations": rows}
+                    "operations": rows,
+                    **({'provider_contract': deepcopy(self.provider_contract), 'stopped': self.stopped,
+                        'terminal_failure': deepcopy(self.terminal_failure)}
+                       if self.provider_contract is not None else {})}
 
 
 class _MeteredStream:
@@ -214,7 +331,8 @@ class _MeteredStream:
         return getattr(self._stream, name)
 
 
-def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_total_tokens=None):
+def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_total_tokens=None,
+                          provider_contract=None, on_failure=None):
     """Install on one pinned native Hermes ``codex_responses`` agent.
 
     Return a meter whose report is authoritative for transport attempts. Disable
@@ -230,11 +348,13 @@ def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_tota
         agent.interrupt(reason, hard_cancel=True)
 
     budget = ResponsesBudget(max_model_calls=max_model_calls, max_output_tokens=max_output_tokens,
-                             max_total_tokens=max_total_tokens, on_block=stop)
+                             max_total_tokens=max_total_tokens, on_block=stop,
+                             provider_contract=provider_contract, on_failure=on_failure)
     for name in ("_ensure_primary_openai_client", "_create_request_openai_client"):
         original = getattr(agent, name)
 
         def factory(*args, _original=original, **kwargs):
+            budget.ensure_running()
             return budget.wrap_client(_original(*args, **kwargs))
 
         setattr(agent, name, factory)

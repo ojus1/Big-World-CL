@@ -240,6 +240,7 @@ def run_check(root, campaign, slot):
     manifest = read(run / 'manifest.json')
     require(reports_equal(manifest['config'], cfg) and manifest['scenario'] == scenario(ExperimentConfig(**cfg)), 'run_manifest_configuration')
     require(all(manifest[k] == campaign[k] for k in ('source_sha256', 'dependencies', 'target_model', 'model_base_url')), 'run_campaign_provenance')
+    require(manifest.get('provider_contract') == campaign.get('provider_contract'), 'run_campaign_provider_contract')
     if not (run / 'checkpoint.json').exists():
         result['status'] = 'initializing'
         return result, None

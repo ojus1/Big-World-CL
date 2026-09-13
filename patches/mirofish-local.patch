@@ -82,19 +82,18 @@ index 02aed9a..16f8f55 100644
          if os.environ.get("ZEP_API_URL"):
              errors.append("ZEP_API_URL 不受支持；MiroFish 仅连接 Zep Cloud")
 diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/services/oasis_profile_generator.py
-index de6ce6e..d56d4f4 100644
 --- a/backend/app/services/oasis_profile_generator.py
 +++ b/backend/app/services/oasis_profile_generator.py
-@@ -19,7 +19,7 @@ from openai import OpenAI
+@@ -19,7 +19,7 @@
  from ..config import Config
  from ..utils.logger import get_logger
  from ..utils.locale import get_language_instruction, get_locale, set_locale, t
 -from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text
-+from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text, is_local_llama_client
++from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text, is_local_llama_client, ProfiledResponseError
  from ..utils.zep import (
      call_zep_read_with_retry,
      get_zep_client,
-@@ -567,6 +567,48 @@ class OasisProfileGenerator:
+@@ -567,6 +567,48 @@
          # 尝试多次生成，直到成功或达到最大重试次数
          max_attempts = 3
          last_error = None
@@ -143,7 +142,7 @@ index de6ce6e..d56d4f4 100644
          
          for attempt in range(max_attempts):
              try:
-@@ -574,18 +616,23 @@ class OasisProfileGenerator:
+@@ -574,18 +616,23 @@
                      self.client,
                      model=self.model_name,
                      messages=[
@@ -170,7 +169,7 @@ index de6ce6e..d56d4f4 100644
                  if finish_reason == 'length':
                      logger.warning(f"LLM输出被截断 (attempt {attempt+1}), 尝试修复...")
                      content = self._fix_truncated_json(content)
-@@ -593,6 +640,11 @@ class OasisProfileGenerator:
+@@ -593,6 +640,11 @@
                  # 尝试解析JSON
                  try:
                      result = json.loads(content)
@@ -182,6 +181,36 @@ index de6ce6e..d56d4f4 100644
                      
                      # 验证必需字段
                      if "bio" not in result or not result["bio"]:
+@@ -613,6 +665,8 @@
+                     
+                     last_error = je
+                     
++            except ProfiledResponseError:
++                raise
+             except Exception as e:
+                 logger.warning(f"LLM调用失败 (attempt {attempt+1}): {str(e)[:80]}")
+                 last_error = e
+@@ -980,6 +1034,8 @@
+                 
+                 return idx, profile, None
+                 
++            except ProfiledResponseError:
++                raise
+             except Exception as e:
+                 logger.error(f"生成实体 {entity.name} 的人设失败: {str(e)}")
+                 # 创建一个基础profile
+@@ -1035,6 +1091,11 @@
+                     else:
+                         logger.info(f"[{current}/{total}] 成功生成人设: {entity.name} ({entity_type})")
+                         
++                except ProfiledResponseError:
++                    # Stop queued generations; running calls retain their own bounds.
++                    for pending in future_to_entity:
++                        pending.cancel()
++                    raise
+                 except Exception as e:
+                     logger.error(f"处理实体 {entity.name} 时发生异常: {str(e)}")
+                     with lock:
 diff --git a/backend/app/services/report_agent.py b/backend/app/services/report_agent.py
 index 1bb212b..5f7eceb 100644
 --- a/backend/app/services/report_agent.py
@@ -510,10 +539,9 @@ index 9d85259..651644e 100644
  
          if last_error is not None:  # pragma: no cover - defensive loop guard
 diff --git a/backend/app/utils/openai_chat_compat.py b/backend/app/utils/openai_chat_compat.py
-index f0ce937..7c5ae64 100644
 --- a/backend/app/utils/openai_chat_compat.py
 +++ b/backend/app/utils/openai_chat_compat.py
-@@ -8,6 +8,15 @@ gracefully adapting request parameters for GPT-5 family models.
+@@ -8,6 +8,15 @@
  from __future__ import annotations
  
  from typing import Any, Dict, List, Optional
@@ -529,10 +557,12 @@ index f0ce937..7c5ae64 100644
  
  
  def is_gpt5_family(model: Optional[str]) -> bool:
-@@ -17,6 +26,14 @@ def is_gpt5_family(model: Optional[str]) -> bool:
+@@ -15,6 +24,128 @@
+     if not model:
+         return False
      return model.strip().lower().startswith("gpt-5")
- 
- 
++
++
 +def reasoning_config(model: str) -> Dict[str, Any]:
 +    """Share the configured reasoning effort with direct SDK and CAMEL calls."""
 +    from ..config import Config
@@ -541,10 +571,122 @@ index f0ce937..7c5ae64 100644
 +    return {}
 +
 +
++class ProfiledResponseError(RuntimeError):
++    """Safe bootstrap failure with known usage; no provider text or retry hints.
++
++    Bootstrap costs remain outside the contracted-interview meter. These fields
++    retain observed quantities for a caller that records the failure, without
++    treating absent usage as zero or enabling JSON-mode transport fallback.
++    """
++    def __init__(self, code, *, usage=None, output_cap=8192, error_class=None, dispatch_attempts=1):
++        super().__init__(code)
++        self.error_class = error_class
++        self.dispatch_attempts = dispatch_attempts
++        self.known_usage = usage or {'input_tokens': None, 'output_tokens': None, 'total_tokens': None}
++        self.accounting_complete = all(value is not None for value in self.known_usage.values()) and (
++            self.known_usage['input_tokens'] + self.known_usage['output_tokens'] == self.known_usage['total_tokens'])
++        self.reserved_output_tokens = 0 if self.accounting_complete else output_cap
++
++
++def _profiled_response(client, *, model, messages, temperature, max_tokens, response_format):
++    from types import SimpleNamespace
++    try:
++        from .actor_output_contract import configured_provider_contract, provider_contract, require
++
++        provider = configured_provider_contract()
++
++        # The supplied SDK client is authoritative; never replace its credentials,
++        # model or endpoint. Delayed lookup follows native Config/dotenv loading.
++        require(provider_contract(model, str(client.base_url)) == provider, 'bootstrap_provider_contract_mismatch')
++        cap = 8192 if max_tokens is None else max_tokens
++        require(type(cap) is int and 1 <= cap <= 8192, 'bootstrap_invalid_output_limit')
++        request = {'model': model, 'input': messages, 'stream': False, 'store': False,
++                   'max_output_tokens': cap,
++                   'extra_body': {'chat_template_kwargs': {'enable_thinking': False}}}
++        if temperature is not None:
++            request['temperature'] = temperature
++        if response_format is not None:
++            require(isinstance(response_format, dict), 'bootstrap_invalid_response_format')
++            kind = response_format.get('type')
++            if kind in ('json_object', 'text'):
++                require(set(response_format) == {'type'}, 'bootstrap_invalid_response_format')
++                spec = dict(response_format)
++            else:
++                require(kind == 'json_schema' and set(response_format) == {'type', 'json_schema'},
++                        'bootstrap_invalid_response_format')
++                schema = response_format['json_schema']
++                require(isinstance(schema, dict) and {'name', 'schema'} <= set(schema)
++                        and set(schema) <= {'name', 'schema', 'strict', 'description'},
++                        'bootstrap_invalid_response_format')
++                spec = dict(schema, type='json_schema')
++            request['text'] = {'format': spec}
++        bounded = client.with_options(timeout=120.0, max_retries=0)
++        require(provider_contract(model, str(bounded.base_url)) == provider, 'bootstrap_provider_contract_mismatch')
++        require(configured_provider_contract() == provider, 'bootstrap_provider_configuration_changed')
++    except Exception as exc:
++        # This block ends before create(): no provider request was dispatched.
++        raise ProfiledResponseError('bootstrap_responses_configuration_failed',
++            usage={'input_tokens': 0, 'output_tokens': 0, 'total_tokens': 0},
++            dispatch_attempts=0, error_class=type(exc).__name__) from None
++    try:
++        response = bounded.responses.create(**request)
++    except Exception as exc:
++        # LLMClient otherwise retries explicit response_format rejections via
++        # Chat Completions. A selected Responses profile never falls back.
++        raise ProfiledResponseError('bootstrap_responses_request_failed', output_cap=cap,
++                                    error_class=type(exc).__name__) from None
++    raw_usage = getattr(response, 'usage', None)
++    usage = {name: getattr(raw_usage, name, None) for name in ('input_tokens', 'output_tokens', 'total_tokens')}
++    usage = {name: value if type(value) is int and value >= 0 else None for name, value in usage.items()}
++
++    def fail(code):
++        raise ProfiledResponseError(code, usage=usage, output_cap=cap)
++
++    # Preserve known token dimensions before status, content or usage checks.
++    if getattr(response, 'model', None) != model:
++        fail('bootstrap_responses_returned_model_mismatch')
++    if getattr(response, 'status', None) != 'completed':
++        fail('bootstrap_responses_incomplete')
++    if usage['output_tokens'] is not None and usage['output_tokens'] > cap:
++        fail('bootstrap_responses_output_limit_exceeded')
++    if any(value is None for value in usage.values()) or usage['input_tokens'] + usage['output_tokens'] != usage['total_tokens']:
++        fail('bootstrap_responses_usage_incomplete')
++    chunks = []
++    try:
++        for item in response.output:
++            if item.type != 'message':
++                # Reasoning metadata is not work output. Function tools/refusal
++                # are unsupported on this text-only bootstrap interface.
++                if item.type == 'reasoning':
++                    continue
++                fail('bootstrap_responses_nontext_output')
++            for part in item.content:
++                if part.type != 'output_text' or not isinstance(part.text, str):
++                    fail('bootstrap_responses_nontext_output')
++                chunks.append(part.text)
++    except ProfiledResponseError:
++        raise
++    except Exception as exc:
++        raise ProfiledResponseError('bootstrap_responses_invalid_output', usage=usage,
++                                    output_cap=cap, error_class=type(exc).__name__) from None
++    if not chunks or not ''.join(chunks).strip():
++        fail('bootstrap_responses_empty_output')
++    details = lambda obj, field: getattr(obj, field, None) if obj is not None else None
++    # Existing native callers use choices[0].message.content and usage fields.
++    # Optional provider detail counts remain unknown rather than invented zero.
++    return SimpleNamespace(id=getattr(response, 'id', None), object='chat.completion',
++        created=getattr(response, 'created_at', None), model=model,
++        choices=[SimpleNamespace(index=0, finish_reason='stop',
++            message=SimpleNamespace(role='assistant', content=''.join(chunks), tool_calls=None, refusal=None))],
++        usage=SimpleNamespace(prompt_tokens=usage['input_tokens'], completion_tokens=usage['output_tokens'],
++            total_tokens=usage['total_tokens'],
++            prompt_tokens_details=SimpleNamespace(cached_tokens=details(getattr(raw_usage, 'input_tokens_details', None), 'cached_tokens')),
++            completion_tokens_details=SimpleNamespace(reasoning_tokens=details(getattr(raw_usage, 'output_tokens_details', None), 'reasoning_tokens'))),
++        provider_contract=provider, accounting_complete=True)
+ 
+ 
  def create_chat_completion(
-     client: Any,
-     *,
-@@ -32,7 +49,8 @@ def create_chat_completion(
+@@ -32,18 +163,39 @@
      Compatibility strategy:
      - For GPT-5 family, avoid sending temperature by default.
      - For token limit, use `max_completion_tokens` on GPT-5, `max_tokens` otherwise.
@@ -553,8 +695,15 @@ index f0ce937..7c5ae64 100644
 +    - Preserve the legacy request shape for other non-GPT-5 models/providers.
      - Propagate provider errors unchanged instead of guessing from message text.
      """
++    # Select before any legacy local/GPT adaptations. The absent selector keeps
++    # the original Chat Completions behavior and imports unchanged.
++    import os
++    if os.environ.get('BIGWORLD_PROVIDER_PROFILE') is not None:
++        return _profiled_response(client, model=model,
++            messages=messages, temperature=temperature, max_tokens=max_tokens, response_format=response_format)
++
      kwargs: Dict[str, Any] = {
-@@ -40,10 +58,23 @@ def create_chat_completion(
+         "model": model,
          "messages": messages,
      }
  
@@ -1027,3 +1176,24 @@ index 7f606a1..2ee80d9 100644
  [[package]]
  name = "typing-extensions"
  version = "4.15.0"
+diff --git a/backend/app/services/simulation_config_generator.py b/backend/app/services/simulation_config_generator.py
+--- a/backend/app/services/simulation_config_generator.py
++++ b/backend/app/services/simulation_config_generator.py
+@@ -21,7 +21,7 @@
+ from ..config import Config
+ from ..utils.logger import get_logger
+ from ..utils.locale import get_language_instruction, t
+-from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text
++from ..utils.openai_chat_compat import create_chat_completion, extract_chat_completion_text, ProfiledResponseError
+ from .zep_entity_reader import EntityNode, ZepEntityReader
+ 
+ logger = get_logger('mirofish.simulation_config')
+@@ -474,6 +474,8 @@
+                     
+                     last_error = e
+                     
++            except ProfiledResponseError:
++                raise
+             except Exception as e:
+                 logger.warning(f"LLM调用失败 (attempt {attempt+1}): {str(e)[:80]}")
+                 last_error = e

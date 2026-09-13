@@ -21,6 +21,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 from lifespan.evaluation.runner import credentials, dependency_provenance, source_hashes
+from lifespan.evaluation.provider_failure import read_failure
 from scripts import scale_v3_contract as contract
 from scripts import scale_v2_process as process
 from scripts.prepare_scale_v3 import tooling
@@ -81,13 +82,30 @@ def interrupt_control(event):
             signal.signal(sig, handler)
 
 
+def find_provider_failure(run):
+    """Inspect only host-owned attempt roots, never a guest workspace tree."""
+    run = Path(run)
+    for pattern in ('work/*/computers/*/PROVIDER_FAILURE.json',
+                    'learning/*/trial-*/computers/*/PROVIDER_FAILURE.json'):
+        for path in sorted(run.glob(pattern)):
+            computer_id = 'lifespan-' + hashlib.sha256(str((path.parent / 'hermes').resolve()).encode()).hexdigest()[:16]
+            notice = read_failure(path.parent, computer_id=computer_id)
+            if notice is not None:
+                return {'path': str(path.relative_to(run)), 'sha256': contract.sha(path),
+                        'availability_classification': notice['availability_classification']}
+    return None
+
+
 def monitor_world(handle, run, service, *, stop, wall_seconds):
     """Own one handle through cleanup; no world-level retry or budget renewal."""
-    reason = 'exited'; failure = None
+    reason = 'exited'; failure = None; provider_failure = None
     interval = LAUNCH_LIMITS['observation_interval_seconds']
     try:
         while True:
             process.observe_world(handle, run, service)
+            provider_failure = find_provider_failure(run)
+            if provider_failure is not None:
+                reason = 'provider_failure'; break
             if handle.poll() is not None:
                 break
             if stop.is_set():
@@ -117,6 +135,8 @@ def monitor_world(handle, run, service, *, stop, wall_seconds):
     if failure is not None:
         process.save(handle.receipt_dir / 'SUPERVISION_FAILURE.json',
                      {'schema_version': 1, 'error_type': failure}, exclusive=True)
+    if provider_failure is not None:
+        result['provider_failure'] = provider_failure
     return result
 
 
