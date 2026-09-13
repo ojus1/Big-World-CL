@@ -277,6 +277,21 @@ epochs across the six worlds, with a finite 24-hour allowance per world. The
 historical horizon evidence supplies no Qwen completion forecast. All five
 prerequisite checks passed; the reference is not a completed study result.
 
+The [first launch failed before any world dispatch](qwen-scale-launch-observation-001.json).
+The private preparation helper had written `PREREQUISITES.json`, a filename
+that the inner supervisor exclusively creates before its execution receipt and
+before starting the service or worlds. The resulting `FileExistsError` stopped
+the controller; the outer scope drained and exited with no remaining processes.
+The original registration and failed launch are preserved unchanged.
+
+The corrected helper keeps its audit in `PRELAUNCH_PREREQUISITES.json`, leaving
+the runtime receipt absent before launch. The [fresh registration](qwen-scale-registration-002.json),
+manifest `4a7c0ce31ea3567e67ebea0c472f6a124ff3126ebeb6278eaa5febfb71b8033f`,
+differs from the first manifest only in its creation timestamp. All five
+prerequisite checks passed again. No simulation source, qualified component,
+persona, seed, budget or scoring rule changed; the failed registration is not
+resumed. Launch helpers must leave runtime-owned receipts for the supervisor.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.

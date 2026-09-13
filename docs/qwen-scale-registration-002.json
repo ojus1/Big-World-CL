@@ -1,0 +1,175 @@
+{
+  "action_days": 20,
+  "algorithms": [
+    "no_learning",
+    "skillopt"
+  ],
+  "api": "responses",
+  "budgets": {
+    "actor_physical_model_calls": null,
+    "actor_tokens": null,
+    "contracted_interview_output_tokens_per_request": 4096,
+    "contracted_interview_physical_requests": 3972,
+    "contracted_interview_timeout_seconds": 120,
+    "currency_cost": null,
+    "employee_target_and_optimizer_charged_tokens": 792000000,
+    "employee_target_and_optimizer_physical_calls": 44640,
+    "launch_limits": {
+      "observation_interval_seconds": 0.25,
+      "service_cleanup_seconds": 30,
+      "service_startup_seconds": 120,
+      "world_cleanup_seconds": 120
+    },
+    "logical_actor_interviews": 3972,
+    "max_learning_epochs": 108,
+    "max_learning_target_replays": 1296,
+    "max_online_sessions": 1440,
+    "max_parallel_worlds": 2,
+    "pair_waves": [
+      [
+        "seed-211-no_learning",
+        "seed-211-skillopt"
+      ],
+      [
+        "seed-307-skillopt",
+        "seed-307-no_learning"
+      ],
+      [
+        "seed-401-no_learning",
+        "seed-401-skillopt"
+      ]
+    ],
+    "per_world_wall_seconds": 86400,
+    "scope_limits": {
+      "cleanup_seconds": 180,
+      "controller_startup_seconds": 120,
+      "cpu_max_usec": 400000,
+      "cpu_quota_percent": 400,
+      "cpu_quota_period_usec": 100000,
+      "execution_seconds": 260310,
+      "memory_max_bytes": 12884901888,
+      "memory_swap_max_bytes": 0,
+      "runtime_max_seconds": 260490,
+      "tasks_max": 512,
+      "timeout_stop_seconds": 5
+    }
+  },
+  "campaign_sha256": "4a7c0ce31ea3567e67ebea0c472f6a124ff3126ebeb6278eaa5febfb71b8033f",
+  "design": {
+    "actor_compute": "Contracted interviews have per-request physical/usage receipts and caps; bootstrap and social calls remain outside this meter.",
+    "adoption": "No minimum adoption count or positive learning gain is required.",
+    "completion": "All six fresh worlds and all three valid complete pairs; no surviving-pair endpoint.",
+    "development_reuse": "All three scale-v1 seeds and paired cohorts are reused in six fresh worlds; this is development evidence, not held-out confirmation.",
+    "dispatch": "Three fixed pair waves; both prior worlds must exit normally with confirmed cleanup before the next wave. No failed replacements or rolling refill.",
+    "execution_envelope": "One shared scope: no per-world fairness or guaranteed I/O isolation.",
+    "inference_unit": "world pair; three development pairs are descriptive",
+    "prerequisites": "References bind independently reviewed evidence. Registration validation does not re-audit native capability or certify execution readiness.",
+    "primary": "Equal-world mean difference in fixed initial/benchmark commitment fulfillment.",
+    "randomness": "Scenario/persona seeds fixed; hosted actor and Hermes sampling not controlled.",
+    "recovery": "One-shot campaign. No automatic retry or resume of uncertain native work.",
+    "secondary": [
+      "all commitment fulfillment",
+      "net utility",
+      "native skill adoption",
+      "future online sessions by deployed skill version",
+      "measured learner compute"
+    ],
+    "selection": "All employees; no outcome-conditioned selection, replacement, extension or stopping.",
+    "startup_observability": "Enabled in both arms and all replays; diagnostic stages do not score work.",
+    "state": "Persistent institutional/employee actor histories and business state; fresh Hermes task profile carrying only deployed skill.",
+    "updates": "Days 7, 11 and 17 when 2 TRAIN + 2 VAL distinct tasks have released feedback; day 3 cannot be eligible."
+  },
+  "distinct_personas": 75,
+  "enable_thinking": false,
+  "evidence_scope": "Registration reference and qualified components. This file does not certify campaign completion, learning performance or all-in provider cost. Raw private evidence is required for independent execution audit.",
+  "execution_source_commit": "0604e041087f5f6e4c1a341e4dfff9e5eae03448",
+  "kind": "public_qwen_scale_v3_registration_reference",
+  "model": "Qwen/Qwen3.8-27B-FP8",
+  "paired_cohorts_identical": true,
+  "population_per_world": {
+    "agencies": 1,
+    "consumers": 8,
+    "employees": 12,
+    "firms": 4
+  },
+  "preceding_failed_registration_sha256": "bfb18fb38df4fb45dbe1b4f641a3e0322f248f673393fb8d9c19928a5e2e8f4b",
+  "prelaunch_prerequisites_sha256": "9f39ecb599f455a2d0e7306dfe4c16d7e3f7caafda3dff1ee28b08365cd3f974",
+  "provider_profile": "responses-no-thinking-v1",
+  "qualified_components": {
+    "actor": {
+      "artifact_sha256": "4e5bce2f9343aa7256c6357eb7f21c44fe74539c301bf6aefbe80daecb44e88e",
+      "independent_review_sha256": "8983ba30639c22e5d461cfd5048770b99df2675389c755e9a9c161c56a0ffe24",
+      "manifest_sha256": "2f904ac839420e416c576814a435572e05ab4a2ba4bf3ab21b14e7d6103391e8"
+    },
+    "employee": {
+      "artifact_sha256": "fb0a110d10a1a327c73b1f4f4153a63725727dfc19c88a1f801d8ea5031a3b1e",
+      "independent_review_sha256": "d91a2911616efa295f25e98c4cab0a7ae9b381e8e1540cd8ef42ad3e130c5705",
+      "manifest_sha256": "de172ff044d6e9c21d28f900ad6d4bb9483a8cb59ef3c595ca4d7f789fbb2af6"
+    },
+    "optimizer": {
+      "artifact_sha256": "509a6dbe8e33c7baf4a95de637aa5c021d4b9bd653221d6aaebf986ac6f4664b",
+      "independent_review_sha256": "400a1e1e63d9ac68d13f39441d1659e75cfa84fbfc7a252e49e5362cda664705",
+      "manifest_sha256": "0c377741643b5a304f27d78584ca7b155794440385ecd7e57abb7e7ea40f171f"
+    },
+    "startup": {
+      "artifact_sha256": "be461be3db93209e7f609a95d852a5eb3ff3c6285efeb51c86c13d442febcc96",
+      "independent_review_sha256": "627b71fd854fae46e2a0d2dafe39c69265d9fe251cf414bf36a68c530d29c417",
+      "manifest_sha256": "0ed474f37b592ca620c949fc02e2b06f7db1206af0844aac769c10fae229f870"
+    }
+  },
+  "receipt_ownership": "Prelaunch verification is kept separately; the native supervisor exclusively writes PREREQUISITES.json during execution.",
+  "registered_at": "2026-09-13T05:06:06.045371+00:00",
+  "schema_version": 1,
+  "seeds": [
+    211,
+    307,
+    401
+  ],
+  "slots": [
+    {
+      "algorithm": "no_learning",
+      "config_sha256": "15e62f323e6638ffc0360cc1982c1a34201aab0ab17c459b81ac847b207ebced",
+      "persona_cohort_sha256": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+      "run_id": "seed-211-no_learning",
+      "seed": 211
+    },
+    {
+      "algorithm": "skillopt",
+      "config_sha256": "e6f66f031f693d2feeaeee866aac342e7a0a43aae297d6e1e144e1aae78083e4",
+      "persona_cohort_sha256": "58ca854fb5836cca5e30cb63bcc213774abaa7d90325915c0ae36b81b61c0925",
+      "run_id": "seed-211-skillopt",
+      "seed": 211
+    },
+    {
+      "algorithm": "skillopt",
+      "config_sha256": "f1279ddc9a49eae72109bd0b2265e6f93e6d1104c6ff0e43ea745ca198876e40",
+      "persona_cohort_sha256": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+      "run_id": "seed-307-skillopt",
+      "seed": 307
+    },
+    {
+      "algorithm": "no_learning",
+      "config_sha256": "92c56db03dbd04879b14f584d6d9f9556e512921e04c74f634d4bbd3dd81c404",
+      "persona_cohort_sha256": "644039099283dad05b840a654d6c3bc198df6022ec993fd486e5dc547e7360b9",
+      "run_id": "seed-307-no_learning",
+      "seed": 307
+    },
+    {
+      "algorithm": "no_learning",
+      "config_sha256": "b6d8567761f3a2f6f96b9f50094f6a798a661d88a7a6d92e4ed8f24bb89e2951",
+      "persona_cohort_sha256": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287",
+      "run_id": "seed-401-no_learning",
+      "seed": 401
+    },
+    {
+      "algorithm": "skillopt",
+      "config_sha256": "69814fe2870e5df016f87faec5ceb98e96ddb7492464ddaea9d9cf949d8b500d",
+      "persona_cohort_sha256": "def656aaf09f95bdf74427a495433b4743ca3cec3f9690baa1ec4802300c8287",
+      "run_id": "seed-401-skillopt",
+      "seed": 401
+    }
+  ],
+  "store": false,
+  "stream": false,
+  "world_count": 6
+}
