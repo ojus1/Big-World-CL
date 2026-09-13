@@ -48,10 +48,15 @@ REQUEST = (
     'This is a fixed component capability task in a fictional workplace. '
     'Load the work-process skill with skill_view. Follow the supplied task files and published '
     'company procedure. Use native file tools to create ' + ARTIFACT_PATH + ' and read it back. '
-    'Complete the workplace checks and submit this artifact through enterprise_action work.commit. '
+    'Construct the artifact in one pass, then call enterprise_action draft.prepare once. '
+    'After that first draft.prepare, do not revise the artifact, repeat checks, or try to improve '
+    'its task score. Perform each required workplace check and the approval request once, then '
+    'make one enterprise_action work.commit attempt even if a check or approval was rejected. '
+    'Reserve enough turns for the post-submission readback and your final response. '
     'After the submission attempt, even if rejected, use a native terminal or read_file tool to '
     'read the same artifact again. Then give a brief final response. Do not revise and resubmit '
-    'after the first work.commit attempt; the task score is separate from this transport check.'
+    'after the first work.commit attempt; the task score is separate from this transport check. '
+    'If the artifact was rejected, report that outcome honestly instead of claiming work completion.'
 )
 
 

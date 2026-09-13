@@ -230,6 +230,23 @@ after its submission attempt, followed by a final response. The checker did
 not recognize the intervening blank-line command. Its original failed verdict
 is preserved; a corrected checker requires a fresh employee qualification.
 
+The fresh employee run at commit
+`6ebaa405ac5c807ca3b66b045e46d175fd9e0251` passed onboarding and incident.
+Renewal completed its business task but consumed all 16 physical calls before
+the required post-submission readback. Its final message was a local iteration
+summary, which correctly did not qualify as a native model continuation. The
+run remains unqualified, with 43 calls, 479,655 measured tokens and confirmed
+cleanup; this was not a provider failure or a readback parser mismatch.
+
+The component request now asks for one artifact construction and one submission
+pass. After the first preparation, it forbids revisions and repeated checks to
+improve the business score, and reserves attention for readback and a truthful
+final response. The three fixtures, grades, 16-call ceiling, time and token
+limits, and all capability checks remain unchanged. This instruction belongs
+only to the component probe; study tasks and learning rollouts retain their
+existing requests. Employee and optimizer qualifications must be regenerated
+because both source maps bind the changed preflight module.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.
