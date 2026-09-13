@@ -247,6 +247,36 @@ only to the component probe; study tasks and learning rollouts retain their
 existing requests. Employee and optimizer qualifications must be regenerated
 because both source maps bind the changed preflight module.
 
+The resulting qualification at commit
+`0604e041087f5f6e4c1a341e4dfff9e5eae03448` passed all three employee
+workflows. Independent review reconstructed the native skill load, submission
+roundtrip, subsequent file readback and final response in every slot, verified
+all 149 raw files and 44 source bindings, and confirmed cleanup. The run made
+37 physical requests, reported 400,359 tokens and took 197.209 seconds.
+Onboarding and incident business submissions were rejected; renewal succeeded.
+Those measured business outcomes do not invalidate the transport qualification
+and are not evidence of learning improvement.
+
+The new optimizer probe also passed independent review: one physical request,
+632 input and 86 output tokens, 4.028 seconds, and one parsed synthetic edit.
+Its 43 source bindings and ten raw files matched. This is a reflector transport
+and parser test, with no target rollout or adopted skill. The earlier four-role
+actor and nine-slot startup qualifications were independently reaudited against
+the current source and actual prerequisite checks; their original artifacts
+and review hashes remain unchanged.
+
+The [six-world registration reference](qwen-scale-registration-001.json) records
+the resulting fixed design, budgets, source revision and evidence hashes. Its
+campaign manifest is
+`bfb18fb38df4fb45dbe1b4f641a3e0322f248f673393fb8d9c19928a5e2e8f4b`.
+Seeds 211, 307 and 401 each have 25 distinct Persona 8B records, with identical
+cohort bytes within each algorithm pair and no overlap between seeds. Each
+world has four enterprises, twelve employees, eight consumers and one agency.
+The registration permits up to 1,440 online sessions and 108 eligible learning
+epochs across the six worlds, with a finite 24-hour allowance per world. The
+historical horizon evidence supplies no Qwen completion forecast. All five
+prerequisite checks passed; the reference is not a completed study result.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.
