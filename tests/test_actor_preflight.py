@@ -162,7 +162,8 @@ class ActorPreflightTests(unittest.TestCase):
             cleanup.assert_called_once()
             self.assertEqual(result['status'], 'cleanup_unconfirmed')
             self.assertEqual(p.read(out / 'SUMMARY.json'), result)
-            self.assertEqual(result['evidence_inventory_sha256'], p.sha(out / 'EVIDENCE.json'))
+            self.assertFalse((out / 'EVIDENCE.json').exists())
+            self.assertFalse((out / p.NATIVE_EVIDENCE['directory']).exists())
 
     def test_false_env_status_cannot_hide_surviving_native_process(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -223,11 +224,12 @@ class ActorPreflightTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, patch.object(p, 'ROOT', Path(tmp) / 'checkout'):
             out = Path(tmp) / 'out'
             receipt = out / 'actors/mirofish_interviews/wire.json'; p.save(receipt, {'known': 1})
-            native = p.ROOT / 'MiroFish/backend/uploads/simulations/sim_fixture'
+            native = out / 'native_uploads/simulations/sim_fixture'
             p.save(native / 'actor_contract_receipts/claim.json', {'claimed': True})
             (native / 'reddit_simulation.db').write_bytes(b'fixture database')
+            p.save(out / 'NATIVE_SNAPSHOT.json', {'fixture_only': True})
             first = p.evidence_inventory(out)
-            self.assertEqual(len(first['files']['preflight']), 1)
+            self.assertEqual(len(first['files']['preflight']), 2)
             self.assertEqual(len(first['files']['native_uploads']), 2)
             p.save(receipt, {'known': 2})
             self.assertNotEqual(first, p.evidence_inventory(out))
@@ -285,7 +287,7 @@ def completed_raw(tmp_path, monkeypatch):
         monkeypatch.setattr(runtime, 'call', lambda *a, _record=record, **kw: _record['native_result'])
         runtime.interview('preflight-' + role, 'fixture', key)
     provider = p.wire.configured_provider_contract()
-    sources = source_hashes()
+    sources = p.sources()
     monkeypatch.setattr(p, 'ROOT', root)
     monkeypatch.setattr(p, 'sources', lambda: deepcopy(sources))
     monkeypatch.setattr(p, 'dependencies', lambda: {'fixture_only': True})
@@ -297,6 +299,7 @@ def completed_raw(tmp_path, monkeypatch):
         'config': p.config(provider), 'provider_contract': provider, 'limits': p.LIMITS,
         'roles': list(p.ROLES), 'participants': p.participants(), 'server_url': p.URL,
         'source_sha256': sources, 'dependencies': p.dependencies(), 'installation': p.installation(),
+        'native_evidence_contract': deepcopy(p.NATIVE_EVIDENCE),
         'repository_commit': 'a' * 40, 'source_commit_verified': True,
         'target_model': provider['model'], 'model_base_url': provider['base_url'],
         'actor_output_contract_provenance': p.provenance(p.CONTRACT, expected_provider=provider),
@@ -321,7 +324,17 @@ def completed_raw(tmp_path, monkeypatch):
         'worker_cleanup': {'status': 'exited', 'exit_code': 0}, 'server_cleanup': {'status': 'exited', 'exit_code': -15},
         'actor_cleanup': {'status': 'closed', 'simulation_id': native.name}, 'native_process_cleanup': {'status': 'exited'}}
     p.save(out / 'SUMMARY.json', summary)
+    with patch.object(p.time, 'monotonic', return_value=9.5):
+        p.freeze_native_uploads(out, manifest_hash, summary)
+    native = out / 'native_uploads/simulations/sim_fixture'
+    # Deliberately permit adversarial mutations in these fake evidence tests.
+    for path in (out / 'native_uploads').rglob('*'):
+        path.chmod(0o700 if path.is_dir() else 0o600)
+    (out / 'native_uploads').chmod(0o700)
     def rebind():
+        metadata = p.read(out / 'NATIVE_SNAPSHOT.json')
+        metadata['tree'] = p._tree_inventory(out / 'native_uploads')
+        p.save(out / 'NATIVE_SNAPSHOT.json', metadata)
         inventory = p.evidence_inventory(out); p.save(out / 'EVIDENCE.json', inventory)
         value = p.read(out / 'SUMMARY.json')
         value.update(evidence_inventory_sha256=p.sha(out / 'EVIDENCE.json'),
@@ -460,3 +473,225 @@ def test_coherent_hash_boolean_counts_cannot_pass_as_integers(completed_raw, mod
     rebind()
     result = p.audit(out, manifest_sha256=manifest_hash, strict=True)
     assert result['ok'] is False and result['status'] == 'invalid'
+
+
+@pytest.fixture
+def snapshot_inputs(tmp_path, monkeypatch):
+    root = tmp_path / 'checkout'; out = root / 'qualification'; out.mkdir(parents=True)
+    uploads = root / 'MiroFish/backend/uploads'; uploads.mkdir(parents=True)
+    monkeypatch.setattr(p, 'ROOT', root)
+    monkeypatch.setattr(p.time, 'monotonic', lambda: 2.)
+    p.save(out / 'manifest.json', {'native_evidence_contract': deepcopy(p.NATIVE_EVIDENCE),
+        'source_sha256': {'scripts/preflight_actor_contract.py': p.sha(p.__file__)}})
+    cleanup = {'cleanup_started_monotonic': 1., 'worker_cleanup': {'status': 'exited'},
+        'server_cleanup': {'status': 'exited'}, 'native_process_cleanup': {'status': 'exited'},
+        'actor_cleanup': {'status': 'closed'}}
+    return out, uploads, p.sha(out / 'manifest.json'), cleanup
+
+
+def test_snapshot_is_exact_independent_copy_with_sidecars_and_empty_directories(snapshot_inputs):
+    out, uploads, manifest_hash, cleanup = snapshot_inputs
+    (uploads / 'empty').mkdir()
+    for suffix in ('', '-wal', '-shm'):
+        (uploads / ('local_graph.sqlite3' + suffix)).write_bytes(('fixture' + suffix).encode())
+    original = p._tree_inventory(uploads)
+    metadata = p.freeze_native_uploads(out, manifest_hash, cleanup)
+    snapshot = out / 'native_uploads'
+    assert metadata['tree'] == original == p._tree_inventory(snapshot)
+    assert metadata['manifest_sha256'] == manifest_hash
+    for name in original['files']:
+        assert (snapshot / name).stat().st_ino != (uploads / name).stat().st_ino
+        assert not (snapshot / name).stat().st_mode & 0o222
+    assert not snapshot.stat().st_mode & 0o222
+    with pytest.raises(ValueError, match='must_be_fresh'):
+        p.freeze_native_uploads(out, manifest_hash, cleanup)
+
+
+def test_unknown_cleanup_does_not_read_or_copy_native_tree(snapshot_inputs, monkeypatch):
+    out, _, manifest_hash, cleanup = snapshot_inputs
+    cleanup['native_process_cleanup']['status'] = 'cleanup_unconfirmed'
+    monkeypatch.setattr(p, '_tree_inventory', lambda *a, **kw: pytest.fail('Read live native evidence without cleanup'))
+    with pytest.raises(ValueError, match='requires_owned_cleanup'):
+        p.freeze_native_uploads(out, manifest_hash, cleanup)
+    assert not (out / 'native_uploads').exists()
+
+
+@pytest.mark.parametrize('mode', ['file_symlink', 'directory_symlink', 'root_symlink', 'hardlink', 'fifo'])
+def test_snapshot_rejects_nonindependent_files_and_symlinks(snapshot_inputs, mode):
+    out, uploads, manifest_hash, cleanup = snapshot_inputs
+    target = out / 'foreign'; target.write_bytes(b'private fixture')
+    if mode == 'file_symlink': (uploads / 'alias').symlink_to(target)
+    elif mode == 'directory_symlink': (uploads / 'alias').symlink_to(out, target_is_directory=True)
+    elif mode == 'root_symlink':
+        uploads.rmdir(); uploads.symlink_to(out, target_is_directory=True)
+    elif mode == 'hardlink': os.link(target, uploads / 'alias')
+    else: os.mkfifo(uploads / 'fifo')
+    with pytest.raises(ValueError, match='symlink|not_regular'):
+        p.freeze_native_uploads(out, manifest_hash, cleanup)
+    assert not (out / 'NATIVE_SNAPSHOT.json').exists()
+
+
+def test_snapshot_detects_source_change_between_copy_and_final_inventory(snapshot_inputs, monkeypatch):
+    out, uploads, manifest_hash, cleanup = snapshot_inputs
+    (uploads / 'receipt.json').write_bytes(b'original')
+    original = p._file_digest
+    def changed(path, *, target=None, deadline=None):
+        result = original(path, target=target, deadline=deadline)
+        if target is not None:
+            path.write_bytes(b'replaced after copy')
+        return result
+    monkeypatch.setattr(p, '_file_digest', changed)
+    with pytest.raises(ValueError, match='snapshot_source_changed'):
+        p.freeze_native_uploads(out, manifest_hash, cleanup)
+    assert not (out / 'NATIVE_SNAPSHOT.json').exists()
+
+
+def test_snapshot_copy_cannot_extend_existing_cleanup_deadline(snapshot_inputs, monkeypatch):
+    out, uploads, manifest_hash, cleanup = snapshot_inputs
+    (uploads / 'receipt.json').write_bytes(b'fixture')
+    original = p._file_digest
+    def overrun(path, *, target=None, deadline=None):
+        result = original(path, target=target, deadline=deadline)
+        if target is not None:
+            monkeypatch.setattr(p.time, 'monotonic', lambda: 122.)
+        return result
+    monkeypatch.setattr(p, '_file_digest', overrun)
+    with pytest.raises(TimeoutError, match='cleanup_deadline'):
+        p.freeze_native_uploads(out, manifest_hash, cleanup)
+    assert not (out / 'NATIVE_SNAPSHOT.json').exists()
+
+
+@pytest.mark.parametrize('change', ['removed', 'replaced', 'symlink'])
+def test_completed_audit_never_reads_later_live_uploads(completed_raw, change):
+    import shutil
+    out, _, manifest_hash, _ = completed_raw
+    live = p.ROOT / 'MiroFish/backend/uploads'
+    shutil.rmtree(live)
+    if change == 'replaced':
+        live.mkdir(); (live / 'unrelated-new-campaign').write_bytes(b'never actor evidence')
+    elif change == 'symlink':
+        live.symlink_to(out, target_is_directory=True)
+    result = p.audit(out, manifest_sha256=manifest_hash, strict=True)
+    assert result['ok'] and result['actor_interviews']['measured_tokens'] == 240
+
+
+@pytest.mark.parametrize('change', ['metadata_missing', 'snapshot_missing', 'snapshot_symlink',
+                                   'metadata_symlink', 'unregistered_directory', 'source_hash',
+                                   'typed_version', 'capture_before_cleanup', 'extra_empty_directory'])
+def test_completed_audit_rejects_invalid_snapshot_contract(completed_raw, change):
+    import shutil
+    out, native, manifest_hash, rebind = completed_raw
+    metadata = out / 'NATIVE_SNAPSHOT.json'; directory = out / 'native_uploads'
+    if change == 'metadata_missing': metadata.unlink()
+    elif change == 'snapshot_missing': shutil.rmtree(directory)
+    elif change == 'snapshot_symlink':
+        shutil.rmtree(directory); directory.symlink_to(p.ROOT / 'MiroFish/backend/uploads', target_is_directory=True)
+    elif change == 'metadata_symlink':
+        data = metadata.read_bytes(); metadata.unlink(); (out / 'foreign-metadata').write_bytes(data)
+        metadata.symlink_to(out / 'foreign-metadata')
+    elif change == 'extra_empty_directory':
+        (directory / 'unregistered-empty').mkdir()
+    else:
+        value = p.read(metadata)
+        if change == 'unregistered_directory': value['contract']['directory'] = '../uploads'
+        elif change == 'source_hash': value['capture_source_sha256'] = '0' * 64
+        elif change == 'typed_version': value['schema_version'] = True
+        else: value['capture_started_monotonic'] = 0.
+        p.save(metadata, value); rebind()
+    result = p.audit(out, manifest_sha256=manifest_hash, strict=True)
+    assert result['ok'] is False
+
+
+def test_snapshot_db_reads_committed_wal_without_mutating_captured_bytes(tmp_path):
+    import shutil
+    live = tmp_path / 'live'; live.mkdir(); captured = tmp_path / 'captured'; captured.mkdir()
+    writer = sqlite3.connect(live / 'reddit_simulation.db')
+    try:
+        writer.execute('PRAGMA journal_mode=WAL'); writer.execute('PRAGMA wal_autocheckpoint=0')
+        writer.execute('CREATE TABLE evidence (value INTEGER)'); writer.execute('INSERT INTO evidence VALUES (7)'); writer.commit()
+        assert (live / 'reddit_simulation.db-wal').is_file()
+        for path in live.iterdir(): shutil.copyfile(path, captured / path.name)
+    finally:
+        writer.close()
+    original = p._tree_inventory(captured)
+    for path in captured.iterdir(): path.chmod(0o400)
+    captured.chmod(0o500)
+    try:
+        with p.snapshot_database(captured) as database:
+            assert database.execute('SELECT value FROM evidence').fetchall() == [(7,)]
+        assert p._tree_inventory(captured) == original
+    finally:
+        captured.chmod(0o700)
+        for path in captured.iterdir(): path.chmod(0o600)
+
+
+def test_snapshot_db_preserves_hot_rollback_journal_and_refuses_recovery(tmp_path):
+    import shutil
+    live = tmp_path / 'live'; live.mkdir(); captured = tmp_path / 'captured'; captured.mkdir()
+    writer = sqlite3.connect(live / 'reddit_simulation.db')
+    try:
+        writer.execute('PRAGMA journal_mode=DELETE'); writer.execute('PRAGMA cache_size=1')
+        writer.execute('CREATE TABLE evidence (id INTEGER PRIMARY KEY, payload TEXT)')
+        writer.executemany('INSERT INTO evidence VALUES (?, ?)', [(i, 'a' * 4000) for i in range(64)])
+        writer.commit(); writer.execute("UPDATE evidence SET payload=?", ('b' * 4000,))
+        journal = live / 'reddit_simulation.db-journal'
+        assert journal.is_file() and journal.read_bytes()[:8] == bytes.fromhex('d9d505f920a163d7')
+        for path in live.iterdir(): shutil.copyfile(path, captured / path.name)
+    finally:
+        writer.rollback(); writer.close()
+    original = p._tree_inventory(captured)
+    with pytest.raises(sqlite3.OperationalError, match='readonly'):
+        with p.snapshot_database(captured) as database:
+            database.execute('SELECT payload FROM evidence').fetchall()
+    assert p._tree_inventory(captured) == original
+
+
+@pytest.mark.parametrize('inventory_overrun', [False, True])
+def test_execute_freezes_only_after_all_cleanup_and_charges_final_inventory(tmp_path, monkeypatch, inventory_overrun):
+    root = tmp_path / 'checkout'; backend = root / 'MiroFish/backend'; backend.mkdir(parents=True)
+    out = root / 'qualification'; out.mkdir()
+    manifest = {'native_evidence_contract': deepcopy(p.NATIVE_EVIDENCE),
+        'source_sha256': {'scripts/preflight_actor_contract.py': p.sha(p.__file__)},
+        'provider_contract': PROVIDER, 'claims_excluded': [], 'accounting_scope': 'fixture_only'}
+    p.save(out / 'manifest.json', manifest); manifest_hash = p.sha(out / 'manifest.json')
+    p.save(out / 'WIRE_RESULT.json', {'status': 'completed'})
+    process = MagicMock(); process.pid = os.getpid(); process.poll.return_value = None
+    process.wait.return_value = 0
+    monkeypatch.setattr(p, 'ROOT', root)
+    monkeypatch.setattr(p, 'verify', lambda *a, **kw: manifest)
+    monkeypatch.setattr(p.socket, 'socket', MagicMock())
+    monkeypatch.setattr(p.subprocess, 'Popen', lambda *a, **kw: process)
+    clock = {'now': 1.}; monkeypatch.setattr(p.time, 'monotonic', lambda: clock['now'])
+    def health(*a, **kw):
+        p.save(backend / 'uploads/native-fixture.json', {'complete': True})
+        return {}
+    monkeypatch.setattr(p, 'request', health)
+    events = []
+    def terminate(_):
+        events.append('worker' if not events else 'server')
+        return {'status': 'exited', 'exit_code': 0}
+    def actor(_):
+        events.append('actor'); return {'status': 'closed'}
+    def native(_):
+        events.append('native'); return {'status': 'exited'}
+    monkeypatch.setattr(p, 'terminate', terminate)
+    monkeypatch.setattr(p, 'cleanup_actor', actor)
+    monkeypatch.setattr(p, 'observe_native', lambda _: {'status': 'exited', 'pid': 103})
+    monkeypatch.setattr(p, 'finish_native', native)
+    original_freeze, original_inventory = p.freeze_native_uploads, p.evidence_inventory
+    def freeze(directory, digest, cleanup):
+        assert events == ['worker', 'actor', 'server', 'native']
+        events.append('freeze')
+        return original_freeze(directory, digest, cleanup)
+    def inventory(directory, *, deadline=None):
+        assert events[-1] == 'freeze' and deadline == 121.
+        result = original_inventory(directory, deadline=deadline)
+        if inventory_overrun: clock['now'] = 122.
+        return result
+    monkeypatch.setattr(p, 'freeze_native_uploads', freeze)
+    monkeypatch.setattr(p, 'evidence_inventory', inventory)
+    result = p.execute(out, manifest_hash)
+    assert result['status'] == ('deadline_exceeded' if inventory_overrun else 'completed')
+    assert p.read(out / 'native_uploads/native-fixture.json') == {'complete': True}
+    assert result['evidence_inventory_sha256'] == p.sha(out / 'EVIDENCE.json')
+    assert result['cleanup_elapsed_seconds'] == (121. if inventory_overrun else 0.)

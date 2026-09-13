@@ -161,6 +161,58 @@ remaining-deadline override; this does not claim to remove CAMEL's separate
 rate-limit handling. The external tunnel watchdog remains active throughout
 native work.
 
+## September 13 resumption and failure handling
+
+After the user reported restored service and support for a dummy credential,
+model discovery returned HTTP 200 and a bounded Responses request completed
+with 18 reported tokens. Runtime credentials were updated only in ignored
+private configuration. The registered transport remains nonstreaming Responses
+with thinking and storage disabled; availability of other API families does
+not change that registration.
+
+The preceding qualification at commit
+`5fa5f600b88f3ddc3fa94bb9e7d85b694b9d74d2` established all four actor
+contracts with four physical interviews and 5,505 reported tokens. The SkillOpt
+reflector passed with one request, 773 tokens and one parsed synthetic edit;
+all nine startup slots passed without provider calls. Original raw artifacts,
+installed dependencies and executed source bytes are preserved.
+
+Employee transport remained unqualified. Its three workflows recorded 39
+physical calls, 411,142 known tokens and 460,049 charged or reserved tokens.
+One incident request raised `APIConnectionError` without a usage receipt;
+48,907 tokens remain reserved, and the total measured usage is unknown. Hermes
+continued after that failure even though subsequent task work succeeded.
+Model-discovery health checks remained successful, so they did not reveal the
+failed generation request. The run cannot establish a valid comparison.
+
+The profiled Hermes meter now latches a terminal provider failure before any
+later request can dispatch, including through recreated clients. It interrupts
+the native agent and first saves an atomic host-side `PROVIDER_FAILURE.json`
+containing its complete safe meter prefix and a typed failure classification.
+The file contains no prompt, answer, exception body or credential. Valid usage
+already received stays measured; unresolved requests keep their reservations.
+An ordinary budget limit remains distinct from a provider failure.
+
+The employee preflight and six-world supervisor observe that host-side signal
+and enter their existing bounded cleanup paths. The latter stops the active
+peer and dispatch of later waves. This does not erase work already in flight
+before observation. If cleanup prevents a final session receipt, the attempt
+remains unreconciled under its existing conservative reservation; the saved
+meter is additional evidence, not a completed result. A provider failure cannot
+qualify the primary comparison. For the current user's tunnel policy, a
+connection, timeout or server-unavailable signal also stops the external run
+guards even if model discovery still responds.
+
+Actor qualification now captures the complete native uploads tree only after
+owned cleanup is confirmed, within the existing cleanup allowance. The capture
+and its exact inventory are bound to the manifest and executed helper. Audits
+reconstruct claims, receipts and SQLite evidence from that frozen copy.
+Clearing the live uploads tree for the next pristine launch, or populating it
+during a subsequent campaign, therefore does not alter the qualification.
+Missing, modified or unregistered snapshots fail validation. Historical runs
+remain bound to their original helpers and layouts; changed sources require
+fresh qualification.
+
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs
 and further work if the Qwen tunnel becomes unreachable, followed by notification.

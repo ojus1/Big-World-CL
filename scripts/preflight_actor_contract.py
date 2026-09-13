@@ -8,6 +8,7 @@ stdout and SUMMARY.json contain counts, hashes and safe error classes only.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -19,8 +20,10 @@ import signal
 import re
 import socket
 import sqlite3
+import stat
 import subprocess
 import sys
+import tempfile
 import time
 from urllib.request import Request, urlopen
 
@@ -40,6 +43,8 @@ LIMITS = {'wall_seconds': 900, 'logical_interviews': 8, 'max_repairs_per_actor':
 MARKER = 'wire witness: "quoted" {braces} \\ path; café\nsecond line'
 ROLES = ('employee', 'enterprise', 'government', 'consumer')
 TYPES = dict(zip(ROLES, ('Employee', 'Enterprise', 'GovernmentAgency', 'Consumer')))
+NATIVE_EVIDENCE = {'schema_version': 1, 'directory': 'native_uploads', 'metadata': 'NATIVE_SNAPSHOT.json',
+                   'capture': 'after_owned_cleanup', 'inventory': 'regular_files_and_directories'}
 
 
 def sha(path):
@@ -168,6 +173,7 @@ def prepare(out):
         'repository_commit': revision, 'source_commit_verified': True,
         'dependencies': dependencies(), 'cohort_sha256': sha(out / 'persona_cohort.json'),
         'installation': installation(),
+        'native_evidence_contract': NATIVE_EVIDENCE,
         'cohort_revision': cohort['revision'], 'target_model': creds['model'],
         'model_base_url': creds['base_url'],
         'fixture_sha256': wire.digest({role: expected(role) for role in ROLES}),
@@ -194,6 +200,7 @@ def verify(out, manifest_hash, *, current=True):
         same(m['actor_output_contract_provenance'], provenance(CONTRACT, expected_provider=bound_provider)),
         m['fixture_sha256'] == wire.digest({role: expected(role) for role in ROLES}),
         same(m['installation'], installation(current=current)),
+        same(m.get('native_evidence_contract'), NATIVE_EVIDENCE),
         wire.provider_contract(m['target_model'], m['model_base_url']) == bound_provider]
     if current:
         c = credentials()
@@ -290,23 +297,178 @@ def terminate(process):
     return {'status': 'exited', 'exit_code': process.returncode}
 
 
-def evidence_inventory(out):
-    """Private relative inventory, including raw native claims/receipts and DBs."""
-    inventories = {}
-    for label, root in (('preflight', out), ('native_uploads', ROOT / 'MiroFish/backend/uploads')):
-        entries = {}
-        for path in sorted(root.rglob('*')):
-            if path.is_symlink():
+def _snapshot_deadline(deadline):
+    if deadline is not None and time.monotonic() > deadline:
+        raise TimeoutError('preflight_native_snapshot_cleanup_deadline')
+
+
+def _file_digest(path, *, target=None, deadline=None):
+    """Hash/copy a regular file without following its final symlink or races."""
+    _snapshot_deadline(deadline)
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), 'rb') as source:
+        before = os.fstat(source.fileno())
+        if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+            raise ValueError('preflight_evidence_not_regular_file')
+        output = None
+        try:
+            if target is not None:
+                output = os.fdopen(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600), 'wb')
+            digest = hashlib.sha256()
+            while block := source.read(1024 * 1024):
+                _snapshot_deadline(deadline)
+                digest.update(block)
+                if output is not None:
+                    output.write(block)
+        finally:
+            if output is not None:
+                output.close()
+        after, current = os.fstat(source.fileno()), Path(path).lstat()
+        identity = lambda item: (item.st_dev, item.st_ino, item.st_nlink, item.st_size, item.st_mtime_ns, item.st_ctime_ns)
+        if identity(before) != identity(after) or identity(after) != identity(current):
+            raise ValueError('preflight_evidence_changed_during_inventory')
+    _snapshot_deadline(deadline)
+    return digest.hexdigest()
+
+
+def _tree_inventory(root, *, exclude=(), deadline=None):
+    root = Path(root)
+    if root.is_symlink() or root.resolve() != root:
+        raise ValueError('preflight_evidence_symlink')
+    result = {'files': {}, 'directories': []}
+    if not root.exists():
+        return result
+    if not root.is_dir():
+        raise ValueError('preflight_evidence_directory_required')
+    for directory, names, files in os.walk(root, followlinks=False):
+        _snapshot_deadline(deadline)
+        parent = Path(directory)
+        if parent == root:
+            names[:] = [name for name in names if name not in exclude]
+            files = [name for name in files if name not in exclude]
+        for name in sorted(names + files):
+            path = parent / name
+            if path.is_symlink() or path.resolve() != path:
                 raise ValueError('preflight_evidence_symlink')
-            if path.is_file() and not (label == 'preflight' and path.name in ('SUMMARY.json', 'EVIDENCE.json')):
-                before = path.stat()
-                value = sha(path)
-                after = path.stat()
-                if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
-                    raise ValueError('preflight_evidence_changed_during_inventory')
-                entries[str(path.relative_to(root))] = value
-        inventories[label] = entries
-    return {'schema_version': 1, 'kind': 'private_native_preflight_evidence_inventory', 'files': inventories}
+            relative = str(path.relative_to(root))
+            if path.is_dir():
+                result['directories'].append(relative)
+            else:
+                if not stat.S_ISREG(path.lstat().st_mode):
+                    raise ValueError('preflight_evidence_not_regular_file')
+                result['files'][relative] = _file_digest(path, deadline=deadline)
+    result['directories'].sort()
+    return result
+
+
+def _cleanup_binding(result):
+    keys = ('worker_cleanup', 'server_cleanup', 'native_process_cleanup', 'actor_cleanup')
+    if (any(result.get(key, {}).get('status') not in ('exited', 'not_started') for key in keys[:3])
+            or result.get('actor_cleanup', {}).get('status') not in ('closed', 'no_recorded_environment')):
+        raise ValueError('preflight_native_snapshot_requires_owned_cleanup')
+    return {key: result[key] for key in keys}
+
+
+def freeze_native_uploads(out, manifest_sha256, cleanup):
+    """One-shot frozen evidence, after owned cleanup and within its allowance."""
+    out = Path(out)
+    manifest = read(out / 'manifest.json')
+    if (sha(out / 'manifest.json') != manifest_sha256
+            or not same(manifest.get('native_evidence_contract'), NATIVE_EVIDENCE)
+            or manifest['source_sha256'].get('scripts/preflight_actor_contract.py') != sha(__file__)):
+        raise ValueError('preflight_native_snapshot_manifest_binding')
+    owned_cleanup = _cleanup_binding(cleanup)
+    cleanup_start = cleanup['cleanup_started_monotonic']
+    if type(cleanup_start) not in (int, float) or not math.isfinite(cleanup_start) or cleanup_start < 0:
+        raise ValueError('preflight_native_snapshot_cleanup_clock')
+    deadline = cleanup_start + LIMITS['cleanup_seconds']
+    started = time.monotonic()
+    _snapshot_deadline(deadline)
+    source = ROOT / 'MiroFish/backend/uploads'
+    destination, metadata = out / NATIVE_EVIDENCE['directory'], out / NATIVE_EVIDENCE['metadata']
+    if (out.resolve() != out or destination.exists() or destination.is_symlink()
+            or metadata.exists() or metadata.is_symlink()):
+        raise ValueError('preflight_native_snapshot_must_be_fresh')
+    source_existed = source.exists()
+    original = _tree_inventory(source, deadline=deadline)
+    destination.mkdir(mode=0o700)
+    for name in original['directories']:
+        (destination / name).mkdir(mode=0o700)
+    for name, expected_hash in original['files'].items():
+        if _file_digest(source / name, target=destination / name, deadline=deadline) != expected_hash:
+            raise ValueError('preflight_native_snapshot_source_changed')
+    if (not same(original, _tree_inventory(source, deadline=deadline))
+            or source.exists() != source_existed
+            or not same(original, _tree_inventory(destination, deadline=deadline))):
+        raise ValueError('preflight_native_snapshot_source_changed')
+    _snapshot_deadline(deadline)
+    for name in original['files']:
+        (destination / name).chmod(0o400)
+    for name in sorted(original['directories'], key=lambda name: len(Path(name).parts), reverse=True):
+        (destination / name).chmod(0o500)
+    destination.chmod(0o500)
+    value = {'schema_version': 1, 'kind': 'frozen_actor_native_uploads', 'manifest_sha256': manifest_sha256,
+        'contract': NATIVE_EVIDENCE, 'capture_source_sha256': sha(__file__),
+        'source_directory': str(source), 'source_existed': source_existed, 'tree': original,
+        'cleanup_sha256': wire.digest(owned_cleanup),
+        'capture_started_monotonic': started, 'verified_monotonic': time.monotonic()}
+    with os.fdopen(os.open(metadata, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o400), 'w') as handle:
+        json.dump(value, handle, sort_keys=True, indent=2, allow_nan=False)
+        handle.write('\n')
+    _snapshot_deadline(deadline)
+    return value
+
+
+def snapshot_check(out, manifest, manifest_sha256, summary):
+    destination, metadata = out / NATIVE_EVIDENCE['directory'], out / NATIVE_EVIDENCE['metadata']
+    if not destination.is_dir() or destination.is_symlink() or metadata.is_symlink():
+        raise ValueError('preflight_native_snapshot_missing_or_symlink')
+    value = read(metadata)
+    expected = {'schema_version': 1, 'kind': 'frozen_actor_native_uploads', 'manifest_sha256': manifest_sha256,
+        'contract': NATIVE_EVIDENCE, 'capture_source_sha256': manifest['source_sha256']['scripts/preflight_actor_contract.py'],
+        'source_directory': str(ROOT / 'MiroFish/backend/uploads'),
+        'cleanup_sha256': wire.digest(_cleanup_binding(summary))}
+    if (set(value) != set(expected) | {'source_existed', 'tree', 'capture_started_monotonic', 'verified_monotonic'}
+            or any(not same(value.get(key), item) for key, item in expected.items())
+            or type(value.get('source_existed')) is not bool
+            or not same(value.get('tree'), _tree_inventory(destination))):
+        raise ValueError('preflight_native_snapshot_binding_or_inventory')
+    start, end = value['capture_started_monotonic'], value['verified_monotonic']
+    if (any(type(item) not in (int, float) or not math.isfinite(item) for item in (start, end))
+            or not summary['cleanup_started_monotonic'] <= start <= end <= summary['finished_monotonic']):
+        raise ValueError('preflight_native_snapshot_timing')
+    return destination
+
+
+def evidence_inventory(out, *, deadline=None):
+    """Read only this qualification, including its frozen native claims/DBs."""
+    native = out / NATIVE_EVIDENCE['directory']
+    if not native.is_dir() or not (out / NATIVE_EVIDENCE['metadata']).is_file():
+        raise ValueError('preflight_native_snapshot_missing')
+    return {'schema_version': 1, 'kind': 'private_native_preflight_evidence_inventory', 'files': {
+        'preflight': _tree_inventory(out, exclude=('SUMMARY.json', 'EVIDENCE.json', NATIVE_EVIDENCE['directory']), deadline=deadline)['files'],
+        'native_uploads': _tree_inventory(native, deadline=deadline)['files']}}
+
+
+@contextmanager
+def snapshot_database(native):
+    """SQLite may update a WAL index even on a read-only connection.
+
+    Read an exact private scratch copy of the DB and its journal sidecars,
+    leaving the frozen inventory untouched while retaining committed WAL data.
+    A hot rollback journal still requires recovery and is refused by mode=ro.
+    """
+    with tempfile.TemporaryDirectory(prefix='actor-evidence-db-') as temporary:
+        target = Path(temporary) / 'reddit_simulation.db'
+        for suffix in ('', '-wal', '-shm', '-journal'):
+            original = native / ('reddit_simulation.db' + suffix)
+            if suffix and not original.exists():
+                continue
+            _file_digest(original, target=Path(str(target) + suffix))
+        database = sqlite3.connect(target.as_uri() + '?mode=ro', uri=True)
+        try:
+            yield database
+        finally:
+            database.close()
 
 
 def observe_native(out, *, proc_root=Path('/proc')):
@@ -418,8 +580,13 @@ def execute(out, manifest_hash):
     with socket.socket() as probe:
         probe.bind(('127.0.0.1', 5002))
     backend = ROOT / 'MiroFish/backend'
-    if (backend / 'uploads').exists() and any((backend / 'uploads').iterdir()):
+    uploads = backend / 'uploads'
+    if (uploads.is_symlink() or uploads.resolve() != uploads
+            or uploads.exists() and (not uploads.is_dir() or any(uploads.iterdir()))):
         raise ValueError('preflight_requires_fresh_backend_uploads')
+    if any((out / name).exists() or (out / name).is_symlink() for name in
+           (NATIVE_EVIDENCE['directory'], NATIVE_EVIDENCE['metadata'])):
+        raise ValueError('preflight_native_snapshot_must_be_fresh')
     started = time.monotonic()
     with (out / 'EXECUTION.json').open('x') as handle:
         json.dump({'manifest_sha256': manifest_hash, 'started_at': datetime.now(timezone.utc).isoformat(),
@@ -499,12 +666,14 @@ def execute(out, manifest_hash):
             if result['native_process_cleanup']['status'] not in ('exited', 'not_started'):
                 result['status'] = 'cleanup_unconfirmed'
             try:
-                inventory = evidence_inventory(out)
+                freeze_native_uploads(out, manifest_hash, result)
+                inventory = evidence_inventory(out, deadline=cleanup_started + LIMITS['cleanup_seconds'])
                 save(out / 'EVIDENCE.json', inventory)
                 result['evidence_inventory_sha256'] = sha(out / 'EVIDENCE.json')
                 result['evidence_files'] = {k: len(v) for k, v in inventory['files'].items()}
             except BaseException as exc:
-                result['status'] = 'evidence_inventory_failed'
+                if result['status'] not in ('cleanup_unconfirmed', 'deadline_exceeded'):
+                    result['status'] = 'evidence_inventory_failed'
                 result['evidence_error_class'] = type(exc).__name__
             end = time.monotonic()
             result.update(finished_monotonic=end, elapsed_seconds=end - started,
@@ -589,6 +758,7 @@ def audit(out, *, manifest_sha256, strict=False):
             raise ValueError('preflight_cleanup_unconfirmed')
         if not same(summary['worker_cleanup'].get('exit_code'), summary['worker_exit_code']):
             raise ValueError('preflight_worker_cleanup_exit_disagreement')
+        frozen_uploads = snapshot_check(out, m, manifest_sha256, summary)
         roles = [{'role': role, 'exact_fixture_match': True} for role in ROLES]
         wire_result = read(out / 'WIRE_RESULT.json')
         if (wire_result.get('status') != 'completed' or wire.digest(wire_result.get('roles')) != wire.digest(roles)
@@ -599,11 +769,12 @@ def audit(out, *, manifest_sha256, strict=False):
         if not same(measured, summary.get('actor_interviews')) or not same(measured, wire_result.get('actor_interviews')):
             raise ValueError('preflight_summary_usage_disagreement')
         state = read(out / 'actors/mirofish_state.json')
-        native = wire.simulation_path(ROOT / 'MiroFish/backend/uploads/simulations', state['simulation']['simulation_id'])
+        native = wire.simulation_path(frozen_uploads / 'simulations', state['simulation']['simulation_id'])
+        original_native = ROOT / 'MiroFish/backend/uploads/simulations' / native.name
         if summary['actor_cleanup'].get('simulation_id') != native.name:
             raise ValueError('preflight_cleanup_simulation_mismatch')
         if native_process['status'] == 'observed_live' and (
-                native_process.get('simulation_id') != native.name or native_process.get('cwd') != str(native)
+                native_process.get('simulation_id') != native.name or native_process.get('cwd') != str(original_native)
                 or type(native_process.get('start_ticks')) is not str or not native_process['start_ticks'].isdigit()):
             raise ValueError('preflight_native_process_binding_mismatch')
         ledger = read(out / 'actors/evaluation_interview_ledger.json')['requests']
@@ -623,7 +794,7 @@ def audit(out, *, manifest_sha256, strict=False):
                     or not same(read(native / 'actor_contract_claims' / (request_key + '.json')),
                         {'request_key': request_key, 'request_id': request_id})):
                 raise ValueError('preflight_native_receipt_or_claim_mismatch')
-            with sqlite3.connect((native / 'reddit_simulation.db').as_uri() + '?mode=ro', uri=True) as database:
+            with snapshot_database(native) as database:
                 trace = database.execute('SELECT user_id, action, info, created_at FROM trace WHERE rowid=?',
                                          (value['trace_rowid'],)).fetchall()
             if len(trace) != 1:
@@ -638,7 +809,7 @@ def audit(out, *, manifest_sha256, strict=False):
                 or {p.name for p in (native / 'actor_contract_claims').iterdir()} != expected_claims
                 or {p.name for p in (native / 'actor_contract_receipts').iterdir()} != expected_receipts):
             raise ValueError('preflight_unreconciled_native_requests')
-        with sqlite3.connect((native / 'reddit_simulation.db').as_uri() + '?mode=ro', uri=True) as database:
+        with snapshot_database(native) as database:
             native_interviews = database.execute("SELECT COUNT(*) FROM trace WHERE action='interview'").fetchone()[0]
         if native_interviews != len(ledger):
             raise ValueError('preflight_unreconciled_native_interview_trace')
@@ -650,6 +821,7 @@ def audit(out, *, manifest_sha256, strict=False):
                 raise ValueError('preflight_exact_fixture_mismatch')
         if (not same(original_inventory, evidence_inventory(out)) or result['summary_sha256'] != sha(out / 'SUMMARY.json')
                 or result['evidence_inventory_sha256'] != sha(out / 'EVIDENCE.json')
+                or snapshot_check(out, m, manifest_sha256, summary) != frozen_uploads
                 or not same(m['source_sha256'], sources()) or not same(m['dependencies'], dependencies())
                 or not same(m['installation'], installation(current=False))):
             raise ValueError('preflight_evidence_changed_during_audit')

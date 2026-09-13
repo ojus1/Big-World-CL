@@ -11,6 +11,18 @@ import sys
 import traceback
 
 
+def evaluation_result(result, meter, transport, provider_policy):
+    """Preserve a failed native attempt's meter even when Hermes unwinds."""
+    result['evaluation_budget'] = meter.report()
+    result['evaluation_transport'] = transport
+    if provider_policy is not None:
+        result['provider_contract'] = provider_policy
+        if meter.stopped:
+            result.update(failed=True, interrupted=True,
+                          error='Profiled provider transport terminally stopped')
+    return result
+
+
 def _main(observer=None):
     wire = sys.stdout
     sys.stdout = sys.stderr  # Hermes logging must not corrupt JSON RPC.
@@ -118,10 +130,14 @@ def _main(observer=None):
     stage('budget_transport_before')
     if benchmark:
         from lifespan.evaluation.budget import install_native_budget
+        if provider_policy is not None:
+            from lifespan.evaluation.provider_failure import notifier
         meter=install_native_budget(agent,
             max_model_calls=int(execution.get('max_iterations',12)),
             max_output_tokens=int(execution.get('max_tokens',4096)),
-            max_total_tokens=execution.get('max_total_tokens'), provider_contract=provider_policy)
+            max_total_tokens=execution.get('max_total_tokens'), provider_contract=provider_policy,
+            **({'on_failure': notifier(profile.parent, computer_id)}
+               if provider_policy is not None else {}))
         from lifespan.evaluation.hermes_transport import install
         from lifespan.computers import HERMES
         transport=install(agent, execution.get('hermes_transport','streaming'), hermes_root=HERMES,
@@ -166,10 +182,7 @@ def _main(observer=None):
             result=agent.run_conversation(request['prompt'],system_message=system,
                                           conversation_history=history,task_id=computer_id)
             if benchmark:
-                result['evaluation_budget']=meter.report()
-                result['evaluation_transport']=transport
-                if provider_policy is not None:
-                    result['provider_contract']=provider_policy
+                evaluation_result(result, meter, transport, provider_policy)
             if isinstance(result.get('messages'),list):
                 history=result['messages']
                 temp=history_path.with_suffix('.tmp')
@@ -178,6 +191,16 @@ def _main(observer=None):
             completed_runs+=1
             send({'kind':'result','result':result})
         except Exception as exc:
+            if benchmark and provider_policy is not None:
+                from lifespan.evaluation.budget import _error_type
+                # A native retry/normalizer may unwind instead of returning its
+                # usual terminal dict. Return the real meter, not an error RPC
+                # that would discard known costs. No model content is invented.
+                result = evaluation_result({'failed': True, 'error_type': _error_type(exc),
+                    'error': 'Profiled native execution failed'}, meter, transport, provider_policy)
+                completed_runs += 1
+                send({'kind': 'result', 'result': result})
+                continue
             traceback.print_exc()
             send({'kind':'error','error':str(exc)})
 

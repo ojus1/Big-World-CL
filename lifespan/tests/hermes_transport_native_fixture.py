@@ -25,7 +25,7 @@ try:
 except ImportError:
     raise SystemExit(77)
 
-from lifespan.evaluation.budget import ResponsesBudget
+from lifespan.evaluation.budget import ResponsesBudget, NativeProviderStopped, install_native_budget
 from lifespan.evaluation.hermes_transport import install
 from lifespan.tests.test_hermes_transport import Client
 
@@ -139,8 +139,16 @@ for status, output in cases:
     payload = native_transport.preflight_kwargs(payload, allow_stream=False,
         is_github_responses=False, sanitize_harmony_tokens=False)
     before = deepcopy(payload)
-    returned = agent._run_codex_stream(payload, client=agent.client)
-    assert returned is answer and payload == before and 'reasoning' not in payload
+    if status in ('failed', 'cancelled'):
+        try: agent._run_codex_stream(payload, client=agent.client)
+        except NativeProviderStopped: pass
+        else: raise AssertionError('Profile must stop before native provider-failure retry')
+        returned = answer
+        assert meter.stopped
+    else:
+        returned = agent._run_codex_stream(payload, client=agent.client)
+        assert returned is answer
+    assert payload == before and 'reasoning' not in payload
     assert agent.client.calls == [{**before, 'stream': False,
         'extra_body': {'chat_template_kwargs': {'enable_thinking': False}}}]
     row = meter.report()['operations'][0]
@@ -162,4 +170,79 @@ for status, output in cases:
         if output == [partial_tool]:
             assert not normalized.tool_calls and normalized.finish_reason == 'incomplete'
 
-print('NATIVE_PARITY_OK: seven legacy and seven profiled actual pinned cases; no model calls')
+# Exercise the actual pinned AIAgent.interrupt hard-cancel boundary, without
+# its constructor, a conversation, native tools, or a provider request.
+import threading
+agent = object.__new__(run_agent.AIAgent)
+agent.api_mode, agent.provider = 'codex_responses', 'custom'
+agent.client = Client([ConnectionError('private offline failure')]); agent.client.base_url = policy['base_url']
+agent._ensure_primary_openai_client = agent._create_request_openai_client = lambda **kw: agent.client
+agent._hard_interrupt_requested = threading.Event()
+agent._execution_thread_id = None
+agent._active_children_lock = threading.RLock(); agent._active_children = []
+agent.quiet_mode = True
+events = []
+meter = install_native_budget(agent, max_model_calls=5, max_output_tokens=64,
+    provider_contract=policy, on_failure=lambda report: events.append(report))
+payload = dict(model=policy['model'], input='Offline cancellation fixture', stream=False, store=False,
+    extra_body={'chat_template_kwargs': {'enable_thinking': False}})
+try: agent.client.responses.create(**payload)
+except NativeProviderStopped: pass
+else: raise AssertionError('Provider failure must stop immediately')
+assert agent._hard_interrupt_requested.is_set() and agent._interrupt_requested is True
+assert agent._pending_redirect is None and agent._interrupt_thread_signal_pending is True
+assert len(events) == 1 and events[0]['terminal_failure']['error_type'] == 'ConnectionError'
+agent._interrupt_requested = False; agent._hard_interrupt_requested.clear()
+for factory in (agent._ensure_primary_openai_client, agent._create_request_openai_client):
+    try: factory(reason='fake retry after clearing native interrupt')
+    except NativeProviderStopped: pass
+    else: raise AssertionError('Meter latch must survive clearing native interrupt')
+assert meter.report()['physical_model_calls'] == 1 and len(agent.client.calls) == 1
+
+# Execute the exact pinned conversation-loop InterruptedError handler inside
+# a minimal retry loop. Full native constructor/conversation side effects are
+# intentionally excluded; the handler's persist/break behavior is real code.
+import ast
+import time
+from agent import conversation_loop
+tree = ast.parse((native_root / 'agent/conversation_loop.py').read_text())
+handlers = [node for node in ast.walk(tree) if isinstance(node, ast.ExceptHandler)
+            and isinstance(node.type, ast.Name) and node.type.id == 'InterruptedError']
+assert len(handlers) == 1
+fixture = ast.parse('''
+def exercise():
+    retry_count = 0
+    interrupted = False
+    final_response = None
+    thinking_spinner = None
+    while retry_count < 3:
+        try:
+            agent.client.responses.create(**payload)
+        except InterruptedError:
+            pass
+        except Exception:
+            retry_count += 1
+    return interrupted, retry_count, final_response
+''')
+native_try = next(node for node in ast.walk(fixture) if isinstance(node, ast.Try))
+native_try.handlers[0] = deepcopy(handlers[0])
+persisted = []
+agent.client = Client([ConnectionError('private first-dispatch error')]); agent.client.base_url = policy['base_url']
+meter = ResponsesBudget(max_model_calls=5, max_output_tokens=64, provider_contract=policy,
+    on_block=lambda reason: agent.interrupt(reason, hard_cancel=True))
+meter.wrap_client(agent.client)
+agent.thinking_callback = None; agent.log_prefix = 'offline'
+agent._has_pending_redirect = lambda: False
+agent._vprint = lambda *args, **kwargs: None
+agent._strip_think_blocks = lambda value: value
+agent._persist_session = lambda messages, history: persisted.append((messages, history))
+scope = dict(agent=agent, payload=payload, thinking_spinner=None, api_start_time=time.time(),
+    time=time, messages=[], conversation_history=[],
+    INTERRUPT_WAITING_FOR_MODEL_PREFIX=conversation_loop.INTERRUPT_WAITING_FOR_MODEL_PREFIX)
+exec(compile(ast.fix_missing_locations(fixture), '<pinned-interruption-handler-fixture>', 'exec'), scope)
+interrupted, retries, final = scope['exercise']()
+assert interrupted is True and retries == 0 and len(persisted) == 1
+assert final.startswith(conversation_loop.INTERRUPT_WAITING_FOR_MODEL_PREFIX)
+assert meter.report()['physical_model_calls'] == 1 and agent._hard_interrupt_requested.is_set()
+
+print('NATIVE_PARITY_OK: seven legacy and seven profiled pinned cases, native hard cancel and retry handler; no model calls')

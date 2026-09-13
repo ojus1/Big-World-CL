@@ -239,6 +239,37 @@ class OwnedProcessTests(unittest.TestCase):
         self.assertFalse(processes.same_identity(old, {**old, 'start_ticks': 11}))
         self.assertFalse(processes.same_identity(old, {**old, 'boot_id': 'another'}))
 
+    def test_provider_notice_triggers_owned_cleanup_before_rollout_deadline(self):
+        notice_path = self.trial / 'native/computers/fixture/PROVIDER_FAILURE.json'
+        def notification(root, **kwargs):
+            if not (root / 'instance.json').is_file():
+                return None
+            notice_path.write_text('{}')
+            return {'availability_classification': 'connection_error'}
+        with patch.object(processes, 'read_failure', side_effect=notification):
+            result = processes.supervise(process_fixture,
+                {'root': self.trial/'native', 'employee': 'fixture', 'hang': True}, self.trial,
+                timeout_seconds=8, cleanup_seconds=2)
+        self.assertEqual(result['status'], 'provider_failure')
+        self.assertEqual(result['provider_failure']['sha256'], processes.sha(notice_path))
+        self.assertLess(result['execution_elapsed_seconds'], 2)
+        self.assertTrue(result['cleanup']['forced'])
+        self.assertTrue(notice_path.is_file())
+        self.assertNotIn(os.getpid(), {r['pid'] for r in result['cleanup']['signals']})
+
+    def test_invalid_notice_stops_without_waiting_for_native_return(self):
+        def notification(root, **kwargs):
+            if (root / 'instance.json').is_file():
+                raise ValueError('invalid notification')
+            return None
+        with patch.object(processes, 'read_failure', side_effect=notification):
+            result = processes.supervise(process_fixture,
+                {'root': self.trial/'native', 'employee': 'fixture', 'hang': True}, self.trial,
+                timeout_seconds=8, cleanup_seconds=2)
+        self.assertEqual(result['status'], 'provider_failure')
+        self.assertEqual(result['provider_failure']['error_type'], 'ValueError')
+        self.assertLess(result['execution_elapsed_seconds'], 2)
+
     def test_parent_sigterm_is_durable_interruption_with_owned_cleanup(self):
         previous = signal.getsignal(signal.SIGTERM)
         result = processes.supervise(process_fixture,

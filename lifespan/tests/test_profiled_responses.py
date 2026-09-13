@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import patch
 
 from lifespan.evaluation import hermes_transport as transport
-from lifespan.evaluation.budget import ResponsesBudget, NativeBudgetExceeded, install_native_budget
+from lifespan.evaluation.budget import ResponsesBudget, NativeBudgetExceeded, NativeProviderStopped, install_native_budget
 from lifespan.evaluation.provider import PROFILE, provider_contract
 from lifespan.evaluation.runtime import native_usage
 from lifespan.tests.test_hermes_transport import Client, response
@@ -114,14 +114,17 @@ class ProfileTests(unittest.TestCase):
     def test_failed_cancelled_incomplete_and_missing_receipts_keep_actual_or_reserved_cost(self):
         for status in ('completed', 'incomplete', 'failed', 'cancelled'):
             agent, client, meter = self.agent([response(status)])
-            result = agent._run_codex_stream(self.request(), client=client)
-            self.assertEqual(result.status, status); self.assertEqual(meter.report()['charged_tokens'], 15)
+            if status in ('failed', 'cancelled'):
+                with self.assertRaises(NativeProviderStopped): agent._run_codex_stream(self.request(), client=client)
+                self.assertTrue(meter.stopped)
+            else:
+                result = agent._run_codex_stream(self.request(), client=client)
+                self.assertEqual(result.status, status)
+            self.assertEqual(meter.report()['charged_tokens'], 15)
             self.assertEqual(meter.report()['operations'][0]['provider_response_status'], status)
         for output in (response(usage=False), ConnectionError('PRIVATE_PROVIDER_BODY')):
             agent, client, meter = self.agent([output])
-            if isinstance(output, Exception):
-                with self.assertRaises(ConnectionError): agent._run_codex_stream(self.request(), client=client)
-            else: agent._run_codex_stream(self.request(), client=client)
+            with self.assertRaises(NativeProviderStopped): agent._run_codex_stream(self.request(), client=client)
             row = meter.report()['operations'][0]
             self.assertFalse(meter.report()['accounting_complete']); self.assertIsNone(row['total_tokens'])
             self.assertEqual(row['charged_tokens'], row['reserved_tokens']); self.assertEqual(row['provider_contract'], self.policy)
