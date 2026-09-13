@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Readback audit for pinned Hermes warning and exact compound cat/hash output.
+"""Readback audit for pinned Hermes warning and finite cat/hash/echo output.
 
 Never rewrites a native session, receipt, report or the original preflight
 verdict. The original auditor must pass first at its matching source revision.
@@ -56,12 +56,36 @@ def warning(count):
             'repeating it unchanged.]')
 
 
-def compound_output(raw, submitted):
+def readback_commands(args):
+    """Parse a finite language, never a general shell program.
+
+    Two to four literal nodes: one cat and one sha256sum of ARTIFACT_PATH,
+    either order, plus at most two bare echoes. Separators are only ; or &&
+    with optional horizontal whitespace. No quoting, options, escapes,
+    substitutions, comments, newlines, trailing separators or extra fields.
+    """
+    if type(args) is not dict or set(args) != {'command'} or type(args['command']) is not str:
+        return None
+    command = args['command']
+    if len(command) > 512 or '\n' in command or '\r' in command:
+        return None
+    literals = {f'cat {ARTIFACT_PATH}': 'cat', f'sha256sum {ARTIFACT_PATH}': 'sha256sum', 'echo': 'echo'}
+    nodes = re.split(r'[ \t]*(?:;|&&)[ \t]*', command.strip(' \t'))
+    if not 2 <= len(nodes) <= 4 or any(node not in literals for node in nodes):
+        return None
+    commands = tuple(literals[node] for node in nodes)
+    if commands.count('cat') != 1 or commands.count('sha256sum') != 1 or commands.count('echo') > 2:
+        return None
+    return commands
+
+
+def compound_output(raw, submitted, commands=('cat', 'sha256sum')):
     # Pinned terminal_tool.py strips the combined output before returning it.
     # Normalize the expected output only; observed prefixes/suffixes must not be
     # discarded. The checksum binds the original bytes, including whitespace.
     # Any redaction, truncation or other output transformation cannot match.
-    return (raw.decode('utf-8') + submitted + '  ' + ARTIFACT_PATH + '\n').strip()
+    fragments = {'cat': raw.decode('utf-8'), 'sha256sum': submitted + '  ' + ARTIFACT_PATH + '\n', 'echo': '\n'}
+    return ''.join(fragments[name] for name in commands).strip()
 
 
 def decode_observation(content, *, name):
@@ -83,8 +107,8 @@ def readback_evidence(record, directory):
     """Reconstruct matching native tool results after the trusted commit call.
 
     Callers must run the original raw/session/grade/source/cleanup audit first.
-    This supports the exact native warning envelope and one literal compound
-    cat/hash command; it does not interpret arbitrary shell commands.
+    This supports the exact native warning envelope and a finite cat/hash/echo
+    language; it does not interpret arbitrary shell commands.
     """
     native = record['result']['native']; messages = native['messages']
     submitted = record['last_submitted_artifact_sha256']
@@ -146,10 +170,10 @@ def readback_evidence(record, directory):
         is_read = name == 'read_file' and args.get('path') == ARTIFACT_PATH
         is_cat = name == 'terminal' and command in (['cat', ARTIFACT_PATH], ['cat', '--', ARTIFACT_PATH])
         is_hash = name == 'terminal' and command in (['sha256sum', ARTIFACT_PATH], ['sha256sum', '--', ARTIFACT_PATH])
-        # shlex alone would conflate a quoted '&&' argument with a shell
-        # operator. Only this literal command and its single argument field are
-        # supported; no quoting, substitutions, extra commands or options.
-        is_compound = name == 'terminal' and args == {'command': COMPOUND_COMMAND}
+        # shlex alone conflates quoted operators with shell syntax. Parse the
+        # anchored literal language independently and reconstruct every byte.
+        compound = readback_commands(args) if name == 'terminal' else None
+        is_compound = compound is not None
         if not (is_read or is_cat or is_hash or is_compound):
             continue
         body = payload.get('content' if is_read else 'output')
@@ -163,7 +187,7 @@ def readback_evidence(record, directory):
             body = '\n'.join(re.sub(r'^\s*\d+\|', '', line) for line in body.splitlines())
         try:
             if is_compound:
-                matches = body == compound_output(raw, submitted)
+                matches = body == compound_output(raw, submitted, compound)
             else:
                 matches = (bool(body.strip()) and body.strip().split()[0] == submitted
                            if is_hash else canonical(json.loads(body)) == expected)

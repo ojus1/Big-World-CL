@@ -143,12 +143,13 @@ commands but not their combination. Independent review verified that its
 post-submission command returned the exact immutable artifact bytes followed by
 the correct checksum and path, then a final assistant response.
 
-The checker now accepts the single literal command
-`cat /workspace/deliverables/capability.json && sha256sum /workspace/deliverables/capability.json`.
-It checks the complete output against the submitted bytes and checksum using
+The checker accepts a bounded sequence containing exactly one `cat` and one
+`sha256sum` of `/workspace/deliverables/capability.json`, in either order, with
+at most two bare `echo` commands and only `;` or `&&` separators. It checks
+the complete output against the submitted bytes, blank lines and checksum using
 the pinned native terminal's whitespace transformation, with a typed zero exit
-status and an exact success envelope. It does not interpret arbitrary shell
-programs or strip unexplained output. Original receipts and the failed verdict
+status and an exact success envelope. Quotes, options, substitutions, redirects,
+other commands and unexplained output are rejected. Original receipts and the failed verdict
 remain unchanged; a new qualification must use the reviewed checker. Business
 scores and rejected submissions remain separate from transport capability.
 
@@ -212,6 +213,22 @@ during a subsequent campaign, therefore does not alter the qualification.
 Missing, modified or unregistered snapshots fail validation. Historical runs
 remain bound to their original helpers and layouts; changed sources require
 fresh qualification.
+
+The next native qualification, using commit
+`2623618955cfedbe14864b2be9d524d2bc4d9ca0`, passed the actor, optimizer and
+startup gates with independent review. Actors made four contracted requests
+and reported 5,264 tokens; the optimizer made one request, reported 733 tokens
+and produced one synthetic edit; all nine startup slots passed. Moving all
+29 live actor files into an archive left the frozen qualification, its original
+review hashes and the actual actor prerequisite check valid.
+
+The employee run completed all three slots with 34 physical requests, 368,602
+measured tokens and confirmed cleanup, but remains unqualified. Onboarding and
+renewal passed. Incident used the valid readback command
+`cat /workspace/deliverables/capability.json; echo; sha256sum /workspace/deliverables/capability.json`
+after its submission attempt, followed by a final response. The checker did
+not recognize the intervening blank-line command. Its original failed verdict
+is preserved; a corrected checker requires a fresh employee qualification.
 
 No complete Qwen comparison or learning gain is claimed.
 For this execution, the user's stop condition is immediate suspension of runs

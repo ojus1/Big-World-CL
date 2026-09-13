@@ -2,6 +2,7 @@
 import ast
 from copy import deepcopy
 import hashlib
+import itertools
 import json
 import os
 from pathlib import Path
@@ -144,19 +145,26 @@ class CompoundReadbackTests(unittest.TestCase):
                 self.assertIsNone(row['native_warning_count'])
                 self.assertEqual(self.fixture.record, before)
 
-    def test_only_exact_literal_command_and_arguments_are_supported(self):
+    def test_only_bounded_literal_commands_and_arguments_are_supported(self):
         path = audit.ARTIFACT_PATH
         commands = (
             f'cat {path} "&&" sha256sum {path}', f'cat {path} \'&&\' sha256sum {path}',
-            f'cat {path}; sha256sum {path}', f'cat {path} || sha256sum {path}',
+            f'cat {path} || sha256sum {path}',
             f'cat {path} | sha256sum {path}', f'cat {path} && sha256sum {path} > /tmp/out',
             f'cat {path} && sha256sum {path}; true', f'cat {path} && sha256sum {path} # comment',
-            f'cat {path} &&\nsha256sum {path}', f'cat {path}  && sha256sum {path}',
+            f'cat {path} &&\nsha256sum {path}', f'cat {path} &&\rsha256sum {path}',
             f'cat "{path}" && sha256sum {path}', f'cat -- {path} && sha256sum -- {path}',
             f'X=1 cat {path} && sha256sum {path}', f'cat $(echo {path}) && sha256sum {path}',
             f'cat `{path}` && sha256sum {path}', f'cat $FILE && sha256sum $FILE',
             f'cat {path}/../capability.json && sha256sum {path}',
             f'cat {path} && sha256sum /workspace/other.json', audit.COMPOUND_COMMAND + "'",
+            f'cat {path}; echo -n; sha256sum {path}', f'cat {path}; echo ""; sha256sum {path}',
+            f'cat {path}; printf "\\n"; sha256sum {path}', f'cat {path}; echo extra; sha256sum {path}',
+            f'cat {path}; echo; echo; echo; sha256sum {path}', f'cat {path}; cat {path}; sha256sum {path}',
+            f'cat {path}; sha256sum {path}; sha256sum {path}', f'echo; cat {path}; echo',
+            f'; cat {path}; sha256sum {path}', f'cat {path}; sha256sum {path};',
+            f'cat {path};& sha256sum {path}', f'cat {path} && && sha256sum {path}',
+            f'cat {path} \\; sha256sum {path}', f'cat {path} && echo $SECRET && sha256sum {path}',
             None, False, [],
         )
         for command in commands:
@@ -166,6 +174,47 @@ class CompoundReadbackTests(unittest.TestCase):
         self.fixture.messages[2]['tool_calls'][0]['function']['arguments'] = json.dumps(
             {'command': audit.COMPOUND_COMMAND, 'workdir': '/workspace'})
         self.assertFalse(self.fixture.evidence()['transport_roundtrip_capable'])
+
+    def test_every_bounded_order_separator_and_echo_pattern_reconstructs_exact_raw_bytes(self):
+        # Enumerate this entire finite node/separator language. Expected bytes
+        # are built independently of the parser/reconstructor under test.
+        paths = {'cat': 'cat ' + audit.ARTIFACT_PATH, 'sha256sum': 'sha256sum ' + audit.ARTIFACT_PATH, 'echo': 'echo'}
+        for raw in (self.raw, self.raw.rstrip(b'\n'), b' \n' + self.raw + b'\n\t'):
+            self.configure(raw); f = self.fixture
+            chunks = {'cat': raw.decode(), 'sha256sum': f.submitted + '  ' + audit.ARTIFACT_PATH + '\n', 'echo': '\n'}
+            for echoes in range(3):
+                for nodes in sorted(set(itertools.permutations(('cat', 'sha256sum') + ('echo',) * echoes))):
+                    for separators in itertools.product((';', '&&'), repeat=len(nodes) - 1):
+                        command = paths[nodes[0]] + ''.join(' \t' + sep + '  ' + paths[node]
+                            for sep, node in zip(separators, nodes[1:]))
+                        expected = ''.join(chunks[node] for node in nodes).strip()
+                        f.messages[2]['tool_calls'][0]['function']['arguments'] = json.dumps({'command': command})
+                        self.payload(output=expected)
+                        with self.subTest(raw_length=len(raw), nodes=nodes, separators=separators):
+                            self.assertEqual(audit.readback_commands({'command': command}), nodes)
+                            self.assertTrue(f.evidence()['transport_roundtrip_capable'])
+                            self.payload(output=expected + '\nextra')
+                            self.assertFalse(f.evidence()['transport_roundtrip_capable'])
+
+    def test_semicolon_echo_variant_keeps_raw_hash_and_all_chronological_guards(self):
+        f = self.fixture
+        command = f'cat {audit.ARTIFACT_PATH}; echo; sha256sum {audit.ARTIFACT_PATH}'
+        f.messages[2]['tool_calls'][0]['function']['arguments'] = json.dumps({'command': command})
+        body = self.raw.decode() + '\n' + f.submitted + '  ' + audit.ARTIFACT_PATH + '\n'
+        self.payload(output=body.strip()); self.assertTrue(f.evidence()['transport_roundtrip_capable'])
+        for value in (body.strip().replace(f.submitted, '0' * 64),
+                      body.strip().replace(audit.ARTIFACT_PATH, '/workspace/other.json'),
+                      body.strip().replace('"field":true', '"field":1'),
+                      body.strip().replace('"field":true', '"field": true'), body.strip()[:-1]):
+            self.payload(output=value); self.assertFalse(f.evidence()['transport_roundtrip_capable'])
+        for changes in ({'exit_code': False}, {'exit_code': 0.0}, {'exit_code': 1}, {'error': 'failure'},
+                        {'error': False}, {'truncated': False}, {'stderr': ''}):
+            self.payload(output=body.strip(), **changes); self.assertFalse(f.evidence()['transport_roundtrip_capable'])
+        self.payload(output=body.strip()); before = deepcopy(f.messages)
+        f.messages[:] = f.messages[2:4] + f.messages[:2] + f.messages[4:]
+        self.assertFalse(f.evidence()['transport_roundtrip_capable'])
+        f.messages[:] = before; f.messages.pop()
+        self.assertFalse(f.evidence()['transport_roundtrip_capable'])
 
     def test_entire_raw_body_hash_filename_and_envelope_must_match(self):
         wrong_raw = self.raw.replace(b'true', b'1')
@@ -259,14 +308,18 @@ class PinnedNativeFormatterTests(unittest.TestCase):
         for raw in (b'{"a":true}', b'{"a":true}\n', b' \n{"a":true}\n\t',
                     '{"text":"caf\u00e9"}\n'.encode()):
             submitted = hashlib.sha256(raw).hexdigest()
-            output = raw.decode() + submitted + '  ' + audit.ARTIFACT_PATH + '\n'
-            seen = []
-            def redactor(value, command):
-                seen.append((value, command)); return value
-            namespace = {'output': output, 'command': audit.COMPOUND_COMMAND, 'redact_terminal_output': redactor}
-            exec(compile(ast.Module(body=nodes, type_ignores=[]), str(path), 'exec'), namespace)
-            self.assertEqual(seen, [(output.strip(), audit.COMPOUND_COMMAND)])
-            self.assertEqual(namespace['output'], audit.compound_output(raw, submitted))
+            chunks = {'cat': raw.decode(), 'sha256sum': submitted + '  ' + audit.ARTIFACT_PATH + '\n', 'echo': '\n'}
+            for recipe in (('cat', 'sha256sum'), ('cat', 'echo', 'sha256sum'),
+                           ('echo', 'sha256sum', 'echo', 'cat')):
+                output = ''.join(chunks[item] for item in recipe)
+                command = '; '.join(item if item == 'echo' else item + ' ' + audit.ARTIFACT_PATH for item in recipe)
+                seen = []
+                def redactor(value, command):
+                    seen.append((value, command)); return value
+                namespace = {'output': output, 'command': command, 'redact_terminal_output': redactor}
+                exec(compile(ast.Module(body=nodes, type_ignores=[]), str(path), 'exec'), namespace)
+                self.assertEqual(seen, [(output.strip(), command)])
+                self.assertEqual(namespace['output'], audit.compound_output(raw, submitted, recipe))
 
     def test_actual_pinned_formatter_emits_exact_supported_suffix(self):
         root = Path(os.environ.get('BIGWORLD_TEST_HERMES_SOURCE', audit.HERMES))
