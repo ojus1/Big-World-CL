@@ -15,6 +15,7 @@ from .verdict_grammar import contract as verdict_contract
 from .judge_transport import digest as transport_digest
 from .worlds import eligible_experiences, stable_hash
 from .attempts import task_instruction
+from .mechanical_criteria import evaluate as mechanical_verdict
 
 
 def require(condition, message):
@@ -53,6 +54,7 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
     grade = record['grade']
     require(grade == read(root / 'judging/GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
     verdicts = []
+    model_criteria = []
     evidence = read(root / 'judging/EVIDENCE.json')
     expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
                       for p in workspace.rglob('*') if p.is_file() and
@@ -71,6 +73,13 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
         require(payload['criterion'] == criterion and payload['evidence'] == read(root / 'judging/EVIDENCE.json'),
                 'Frozen criterion/evidence mismatch')
         require(response['status'] == 'completed', 'Judge response incomplete')
+        mechanical = mechanical_verdict(payload)
+        require(response['evaluation_method'] == ('registered_literal_count' if mechanical is not None else 'model'),
+                'Criterion execution method changed')
+        if mechanical is None:
+            model_criteria.append(criterion)
+        else:
+            require(json.loads(response['text']) == mechanical, 'Literal count differs from source/output bytes')
         verdicts.append(validate_verdict(json.loads(response['text']), criterion))
     require(verdicts == grade['criteria'], 'Criterion verdicts changed')
     score = sum(c['weight'] * v['passed'] for c, v in zip(rubric['criteria'], verdicts)) / sum(c['weight'] for c in rubric['criteria'])
@@ -78,11 +87,12 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
     require(grade['quality_score'] == (score if valid_files else 0.) and
             grade['success'] == (all(v['passed'] for v in verdicts) and valid_files), 'Quality aggregation mismatch')
     jm = grade['usage']
-    require(jm['accounting_complete'] and jm['physical_model_calls'] == len(rubric['criteria']) and
+    require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_criteria) and
             jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
     contracts = [transport_digest(verdict_contract(c['id'])) for c in rubric['criteria']]
     require(jm['registered_structured_output_sha256'] == contracts and
-            [r['request_structured_outputs_sha256'] for r in jm['operations']] == contracts,
+            [r['request_structured_outputs_sha256'] for r in jm['operations']] ==
+            [transport_digest(verdict_contract(c['id'])) for c in model_criteria],
             'Physical judge constraints differ from the declared bounded grammar')
     require(record['tokens'] == execution['charged_tokens'] + jm['charged_tokens'] and
             record['model_calls'] == execution['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')

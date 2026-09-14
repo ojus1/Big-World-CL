@@ -52,7 +52,7 @@ role label is used, ignoring case. Languages must match. An employee's own
 unmatched examples remain visibly uncovered; they do not silently get replaced
 by someone else's examples. No examples at all is valid and leaves everyone on
 defaults. The calling simulator is responsible for retaining those defaults;
-the current MiroFish runner is not yet wired to this overlay.
+the optional native employee mode uses this calibrated workforce and role-based arrival schedule.
 
 The test suite exercises a 100-employee workforce with examples for only one
 employee. Transferring its mixture to colleagues does **not** manufacture 99
@@ -140,8 +140,7 @@ matched control. A Fluso adapter remains to be implemented and qualified.
 has a role/language task pool and optional calibration mixture. It maintains
 employee skills, delayed feedback, scheduled obligations and work receipts across
 days. The current execution mode is controlled skill transfer: each work attempt
-starts with fresh files and a fresh harness session. It does not yet simulate
-reacting colleagues, long conversations or an economy with consequences.
+starts with fresh files and a fresh harness session. Its optional native employee mode adds reacting colleagues and persistent workplace consequences, described below. Neither mode currently supplies long multiturn user conversations or a broader institutional economy.
 
 Training, validation and probe families retain the bank's original separation.
 Released learning cases are selected by chronology and lineage, never by score.
@@ -314,3 +313,49 @@ and adopted no change. Its 43 work attempts versus the control's 42 attempts
 produced different outcomes, but both deployed the same seed skill. Both audits
 passed. This result establishes execution, accounting and stochastic variation;
 it does not meet the requested learning or significance objective.
+
+
+## Optional native employee workplace
+
+Pass `--mirofish-backend BACKEND --persona-cache CACHE` and
+`--mirofish-service-url http://127.0.0.1:5001` to both `worldlab.run_worlds prepare` and `execute`.
+The explicit native provider environment must match the frozen model/base URL;
+see the H200 runbook. The backend directory is independent of the frozen controller
+checkout, so no copied or changed MiroFish source is needed in each worktree.
+
+`EmployeeFactory` freezes persona context and opens a new persistent driver for
+each arm. `EmployeeDriver` receives an exact released view, returns an auditable
+decision, reports interview costs and closes its own native environment. The
+current adapter uses actual pinned Persona 8B profiles in MiroFish/OASIS.
+Swapping the work harness or learner does not require changing this driver.
+
+`workplace` parameters in the specification control `max_attempts` (default 2),
+`retry_delay` (1 day), `grace_days` (2), `settlement_delay` (1),
+`work_cost_units` (1) and `completion_value_units` (10). Employee
+`sessions_per_day` is available daily capacity. Work arrives on the frozen
+role/calibration schedule. A failure can occupy later capacity through rework;
+a deferral leaves the obligation pending and consumes that day's opportunity.
+The observation window then drains feedback and payments without extra work.
+
+Native decisions retain private working notes and can send one message to a
+listed colleague in the same department. Messages and grade feedback arrive
+later. Actors cannot see future task briefs, hidden grading evidence or another
+employee's private files. Original task requirements remain in each solver
+request; the actor's request is recorded separately and reused unchanged during
+learning replays. The grader still uses the original task's rubric and brief.
+
+The offline audit reconstructs every causal command, regenerates visible views,
+checks native interview receipts and binds outcomes to actual task artifacts.
+All planned probes remain in the denominator. The primary workplace metric is
+on-time accepted work; soft quality and configured synthetic utility are secondary.
+Bootstrap/social model costs remain unmetered and explicitly unknown. There is
+still no operational Fluso adapter, multiturn employee channel, qualified JobBench
+document solver, human-calibrated judge or completed final significance study.
+
+
+The judge keeps original r3 criterion bytes. Its registered exact-reference-count
+predicate checks the full criterion definition and original source count before
+handling that criterion without a model call. It records match offsets and is
+recomputed by the offline auditor. Other criteria remain model judged, using a
+finite ASCII response grammar; these judgments still need independent semantic
+calibration. Deterministic control passes are never reported as model accuracy.

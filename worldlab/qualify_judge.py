@@ -55,7 +55,8 @@ def qualify(request_path, out, model, base_url):
         for slot in plan:
             save(out / 'INFLIGHT.json', {'id': slot['id']})
             response = request_verdict(client, provider, slot['payload'], 120)
-            raw = {'text': response.output_text, 'status': response.status}
+            raw = {'text': response.output_text, 'status': response.status,
+                   'evaluation_method': getattr(response, 'evaluation_method', 'model')}
             save(out / (slot['id'] + '-RESPONSE.json'), raw)
             if response.status != 'completed': raise ValueError('Incomplete criterion response')
             verdict = validate_verdict(json.loads(response.output_text), payload['criterion'])
@@ -69,7 +70,7 @@ def qualify(request_path, out, model, base_url):
     result = {'completed': len(rows), 'correct': sum(r['correct'] for r in rows),
               'all_controls_pass': len(rows) == 12 and all(r['correct'] for r in rows),
               'rows': rows, 'usage': meter.report(), 'plan_sha256': sha(out / 'PLAN.json'),
-              'scope': 'Exact-count and decision-ordering diagnostic only. Original study judgments are preserved.'}
+            'scope': 'Registered exact-count diagnostic only; inspect physical calls and evaluation_method. This does not calibrate semantic model judgments. Original judgments are preserved.'}
     save(out / 'QUALIFICATION.json', result)
     return {k: result[k] for k in ('completed', 'correct', 'all_controls_pass', 'plan_sha256')}
 
