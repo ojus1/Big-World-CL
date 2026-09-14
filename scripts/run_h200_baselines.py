@@ -57,8 +57,8 @@ def prepare(out, evidence):
     from lifespan.personas import import_cohort
     if out.exists():
         raise ValueError('Choose a fresh output directory')
-    proof = qualifications(evidence)
     provider = contract(credentials())
+    proof = qualifications(evidence)
     if provider is None or any(row['audit']['provider_contract'] != provider for row in proof.values()):
         raise ValueError('All qualification components must use this provider')
     configs = {}
