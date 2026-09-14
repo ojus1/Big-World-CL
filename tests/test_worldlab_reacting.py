@@ -33,6 +33,46 @@ class Factory:
 
 
 class Tests(unittest.TestCase):
+    def test_arrivals_and_capacity_are_independent_and_rework_is_reserved(self):
+        spec = copy.deepcopy(SPEC)
+        spec['employees'][0].update(sessions_per_day=2, arrivals_per_day=1)
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'study'
+            result = prepare_study(Bank(), spec, [211], Harness(), Judge(), Learning(), out, Factory())
+            study = json.loads((out / 'STUDY.json').read_text())
+            self.assertEqual(len(study['worlds'][0]['schedule']), 10)
+            self.assertEqual(result['planned_obligations'], 20)
+            self.assertEqual(result['planned_work_sessions'], 40)
+            self.assertEqual(study['actor_reservations']['max_logical_interviews'], 80)
+            from worldlab.contracts import Budget
+            self.assertEqual(study['token_reservation_ceiling']['work_including_judges'],
+                             40 * (Budget().total_tokens + Judge.max_tokens))
+            with self.assertRaises(ValueError):
+                prepare_study(Bank(), spec, [211], Harness(), Judge(), Learning(), Path(tmp) / 'fixed')
+
+    def test_spare_capacity_preserves_arrivals_while_rework_competes_for_work(self):
+        from worldlab.workplace import Workplace
+        from worldlab.worlds import compile_world
+        worlds = []
+        for capacity in (1, 2):
+            spec = copy.deepcopy(SPEC)
+            spec['employees'][0].update(sessions_per_day=capacity, arrivals_per_day=1)
+            world = compile_world(Bank(), spec, 211, Harness(), Judge())
+            worlds.append(world)
+            place = Workplace(world)
+            for day in range(3):
+                place.advance(day)
+                for ordinal in range(capacity):
+                    pending = place.available('writer')
+                    if not pending: continue
+                    oid = pending[0]; key = f'{day}-{ordinal}'
+                    decision = Driver().decide(place.view('writer', oid, Bank()), key, lambda d: None)
+                    place.decide('writer', oid, decision); place.start(oid, key)
+                    place.complete(oid, key, {'success': day != 0, 'quality_score': 0. if day == 0 else 1., 'feedback': 'review'})
+            self.assertEqual(place.summary()['work_attempts'], 3 if capacity == 1 else 4)
+            self.assertEqual(place.state['obligations']['d002-writer-000']['attempts'], capacity - 1)
+        self.assertEqual(worlds[0]['schedule'], worlds[1]['schedule'])
+
     def study(self, tmp, *, failure=False, defer=False):
         observed = []
         def attempt(bank, harness, judge, **kw):

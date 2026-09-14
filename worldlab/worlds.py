@@ -51,9 +51,10 @@ def compile_world(bank, specification, seed, harness, judge):
     issues = []
     for employee in employees:
         eid = employee['id']
-        count = employee.get('sessions_per_day', 1)
-        if type(count) is not int or count < 1:
-            raise ValueError('Invalid daily work volume')
+        capacity = employee.get('sessions_per_day', 1)
+        count = employee.get('arrivals_per_day', capacity)
+        if any(type(value) is not int or not 1 <= value <= 64 for value in (capacity, count)):
+            raise ValueError('Daily work capacity and arrivals must be integers from 1 to 64')
         selector = employee.get('task_selector', {})
         candidates = [r for r in bank.rows if r['language'] == employee['language'] and
                       all(r[field] in selector[key] for key, field in
@@ -141,6 +142,9 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')
     worlds = [compile_world(bank, spec, seed, harness, judge) for seed in seeds]
+    if employee_factory is None and any(e.get('arrivals_per_day', e.get('sessions_per_day', 1)) !=
+            e.get('sessions_per_day', 1) for e in spec['employees']):
+        raise ValueError('Independent arrivals and capacity require a workplace employee driver')
     if employee_factory is not None:
         from .workplace import Workplace
         for world in worlds:
@@ -148,7 +152,11 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
             world['employee_context'] = employee_factory.prepare(world)
             world['scope'] = ('Development workplace with native employee decisions, persistent queues, delayed feedback, '
                               'rework and colleague messages. Roles and task arrivals are assigned; no final-test inference.')
-    work_reservation = 2 * sum(s['work_budget']['total_tokens'] + judge.max_tokens for w in worlds for s in w['schedule'])
+    work_limits = [work_opportunity_limit(w) if employee_factory is not None else len(w['schedule']) for w in worlds]
+    # A repeated obligation consumes another capacity slot. Reserve every slot,
+    # even if deferral or an empty queue ultimately makes it unused.
+    work_reservation = (2 * sum(limit * (Budget(**spec.get('work_budget', {})).total_tokens + judge.max_tokens)
+                               for limit in work_limits))
     learning_reservation = sum(len(w['workforce']) * len(spec.get('update_days', [])) for w in worlds) * learner.identity().get('budget', {}).get('max_tokens', 0)
     manifest = {'schema_version': 1, 'worlds': worlds, 'harness': harness.identity(),
                 'judge': judge.identity(), 'learner': learner.identity(), 'source_sha256': source_identity(),
@@ -162,14 +170,20 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
     if employee_factory is not None:
         manifest['employee_driver'] = employee_factory.identity()
         manifest['analysis']['primary'] = 'probe_accepted_on_time_fraction'
-        manifest['actor_reservations'] = {'max_logical_interviews': 4 * sum(len(w['schedule']) for w in worlds),
+        manifest['actor_reservations'] = {'max_logical_interviews': 4 * sum(work_limits),
                                           'input_and_bootstrap_token_ceiling': None,
                                           'scope': 'Work and learning ceiling excludes native employee generation'}
     save(out / 'STUDY.json', manifest)
     save(out / 'PREPARED.json', {'study_sha256': sha(out / 'STUDY.json'), 'prepared_unix': time.time()})
     return {'study_sha256': sha(out / 'STUDY.json'), 'world_pairs': len(worlds),
             'token_reservation_ceiling': manifest['token_reservation_ceiling'],
-            'planned_work_sessions': 2 * sum(len(w['schedule']) for w in worlds)}
+            'planned_work_sessions': 2 * sum(work_limits),
+            'planned_obligations': 2 * sum(len(w['schedule']) for w in worlds)}
+
+
+def work_opportunity_limit(world):
+    """Maximum decisions/delegations per arm, including rework and deferrals."""
+    return world['specification']['days'] * sum(e.get('sessions_per_day', 1) for e in world['workforce'])
 
 
 def run_world(bank, world, harness, judge, learner, out):

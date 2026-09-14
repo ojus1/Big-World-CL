@@ -63,7 +63,7 @@ class MiroFishEmployees:
                                                     'timeout_seconds': 120}
 
     def identity(self):
-        return {'name': 'native_mirofish_persona_employees', 'version': 2,
+        return {'name': 'native_mirofish_persona_employees', 'version': 3,
                 'provider': self.provider, 'service_url': self.service_url,
                 'backend_root': str(self.backend), 'persona_revision': REVISION, 'persona_shard_sha256': SHARD_SHA,
                 'actor_contract': provenance(self.output_contract, expected_provider=self.provider),
@@ -95,7 +95,8 @@ class NativeEmployees:
             backend_root=factory.backend)
         if self.runtime.state:
             raise ValueError('Each world arm requires a fresh native employee environment')
-        self.runtime.evaluation_max_interviews = 2 * len(world['schedule'])
+        from .worlds import work_opportunity_limit
+        self.runtime.evaluation_max_interviews = 2 * work_opportunity_limit(world)
         self.runtime.evaluation_deadline = time.monotonic() + 900
         participants = [{'id': e['id'], 'name': e.get('name', e['id']), 'workflow': e['role'],
                          'segment': e.get('department', e['role']), 'entity_type': 'Employee',

@@ -332,10 +332,19 @@ Swapping the work harness or learner does not require changing this driver.
 `workplace` parameters in the specification control `max_attempts` (default 2),
 `retry_delay` (1 day), `grace_days` (2), `settlement_delay` (1),
 `work_cost_units` (1) and `completion_value_units` (10). Employee
-`sessions_per_day` is available daily capacity. Work arrives on the frozen
-role/calibration schedule. A failure can occupy later capacity through rework;
+`sessions_per_day` is available daily capacity. `arrivals_per_day` independently
+sets new obligations per day, defaulting to that capacity for older specs. Both
+are integers from 1 to 64. Independent arrival/capacity settings require the native
+workplace mode. Work arrives on the frozen role/calibration schedule. A failure can occupy later capacity through rework;
 a deferral leaves the obligation pending and consumes that day's opportunity.
 The observation window then drains feedback and payments without extra work.
+Work and actor reservations cover all capacity slots, including rework, even when
+there are fewer new obligations. `planned_obligations` counts incoming work;
+the preparation result's `planned_work_sessions` is the maximum delegation count.
+`configs/worldlab/development_workplace_v1.json` declares two colleagues, one new
+task per employee/day, two daily work slots, a two-day deadline, delayed feedback
+and a fixed day-six learning opportunity. This is an integration protocol, not a
+sample-size justification or a final significance study.
 
 Native decisions retain private working notes and can send one message to a
 listed colleague in the same department. Messages and grade feedback arrive
