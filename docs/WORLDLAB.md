@@ -85,6 +85,11 @@ workforce has been empirically calibrated. Employee coverage is reported
 separately. User-specified weights describe the desired task mixture and are not
 measured workplace frequencies.
 
+The world compiler separately reports `calibration_application`: the retrieved
+weight actually available in that employee's supported training pool and any
+unavailable matched task IDs. Finding an example is not enough to call it applied
+when the selected harness cannot execute it; those employees retain defaults.
+
 ## Execution boundaries and extension points
 
 ```mermaid
@@ -173,6 +178,25 @@ failed overall. These used eight calls and 26,456 tokens. An earlier unstructure
 negative control emitted prose outside JSON and was retained as an incomplete
 judgment. Schema-constrained output fixed that formatting failure. Two controls
 do not establish broad judge accuracy.
+
+The running `development-world-v2` study subsequently exposed a semantic
+contradiction: `fig54_exact_count` returned `passed: false`, while its explanation
+counted three occurrences and concluded the criterion passed. Direct file
+inspection confirmed three corresponding references. Its original outcomes
+remain unchanged, with a `JUDGE_QUALIFICATION_LIMITATION.json` sidecar restricting
+interpretation to engineering evidence. The prepared 960-attempt coverage plan
+was cancelled before any dispatch because it contained that judge version.
+
+Judge version 3 emits evidence and a short justification before its Boolean
+decision. The shared production transport passed 12 fixed count controls on H200:
+three repetitions each of the original three references, a case-variation copy,
+an extra-reference copy and a missing-reference copy. All twelve decisions matched
+independently counted expectations; 12 calls consumed 72,120 tokens. This is a
+qualification of that diagnosed count error and decision format, not broad
+semantic accuracy. Plan SHA:
+`1638ba837cb46de0a92f754f26ab39aca850314c8d929c2b2b1cacfbfbeec6fd`.
+The reusable diagnostic is `python -m worldlab.qualify_judge`; it writes new
+evidence and never changes the original study's grades or learning feedback.
 
 ### Adding and scaling harnesses
 

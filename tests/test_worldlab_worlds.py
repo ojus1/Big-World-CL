@@ -78,6 +78,18 @@ class Tests(unittest.TestCase):
         self.assertTrue(all(s['day'] >= 8 for s in world['schedule'] if s['split'] == 'probe'))
         self.assertGreaterEqual(len(groups['train']), 2)
 
+    def test_unusable_retrieved_example_is_reported_without_dropping_employee(self):
+        spec = copy.deepcopy(SPEC)
+        spec['employees'][0]['representative_tasks'] = [{'prompt': 'Revise report',
+            'selector': {'task_ids': ['train-0']}}]
+        class Restricted(Harness):
+            def unsupported(self, public):
+                return ['Unqualified capability'] if public['id'] == 'train-0' else []
+        employee = compile_world(Bank(), spec, 211, Restricted(), Judge())['workforce'][0]
+        self.assertEqual(employee['calibration']['calibration_status'], 'direct_examples')
+        self.assertEqual(employee['calibration_application'], {'supported_training_weight': 0,
+                         'unavailable_matched_tasks': ['train-0'], 'status': 'retained_default'})
+
     def test_selection_is_score_blind_delayed_and_lineage_distinct(self):
         world = compile_world(Bank(), SPEC, 211, Harness(), Judge())
         sessions = [{**s, 'status': 'completed', 'grade': {'quality_score': 0}} for s in world['schedule']]

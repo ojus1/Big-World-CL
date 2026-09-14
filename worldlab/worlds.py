@@ -71,6 +71,11 @@ def compile_world(bank, specification, seed, harness, judge):
         # Role controls which work is suitable. Calibration weights influence
         # TRAIN frequency only; future val/probe briefs never enter the fit.
         mixture = fit_by_id[eid]['task_mixture'] or {}
+        available_train = {r['id'] for r in pool[PARTITIONS['train']]}
+        application = {'supported_training_weight': sum(weight for task, weight in mixture.items()
+                                                       if task in available_train),
+                       'unavailable_matched_tasks': sorted(set(mixture) - available_train),
+                       'status': 'applied' if set(mixture) & available_train else 'retained_default'}
         rng = random.Random(stable_hash([seed, eid]))
         used = defaultdict(Counter)
         employee_slots = []
@@ -99,6 +104,7 @@ def compile_world(bank, specification, seed, harness, judge):
                 employee_slots.append(slot)
         schedule.extend(employee_slots)
         workforce.append({**deepcopy(employee), 'calibration': fit_by_id[eid],
+                          'calibration_application': application,
                           'distinct_groups_by_split': {key: len(value) for key, value in used.items()}})
     schedule.sort(key=lambda s: (s['day'], s['employee_id'], s['id']))
     # Fix execution order independently from future scores, separately each day.
