@@ -16,17 +16,18 @@ from .qualitative import FrozenRubricJudge
 from .workforce import expand_workforce
 from .workplace import Workplace
 from .worlds import compile_world
+from .validation_context import employee_world
 
 
 def qualify(bank, spec, harness, judge, factory, out):
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     world = compile_world(bank, expand_workforce(spec), 307, harness, judge)
-    context = factory.prepare(world)
+    context = factory.prepare(employee_world(world))
     save(out / 'PLAN.json', {'source_sha256': source_identity(), 'world': world, 'employee_context': context,
         'employee_driver': factory.identity(), 'scope': 'Native bootstrap and one released day-zero decision per employee only.'})
     place = Workplace(world); place.advance(0)
     save(out / 'INFLIGHT.json', {'kind': 'bootstrap'})
-    driver = factory.open(world, context, out / 'actors')
+    driver = factory.open(employee_world(world), context, out / 'actors')
     rows = []
     try:
         for employee in sorted(place.profiles):

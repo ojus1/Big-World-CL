@@ -10,7 +10,8 @@ from scripts.source_world_calibration import read, sha, child
 from .bank import Bank
 from .campaign import source_identity, SEED_SKILL
 from .contracts import Budget, validate_execution, validate_grade
-from .worlds import eligible_experiences, stable_hash
+from .worlds import stable_hash
+from .validation_context import select_experiences, validate_world
 from .attempts import task_instruction
 
 
@@ -81,8 +82,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             continue
         update_root = root / 'learning' / f'd{item["day"]:03d}-{item["employee_id"]}'
         require(read(update_root / 'UPDATE.json') == update, 'Update evidence changed')
-        selected = eligible_experiences(state['sessions'], item['employee_id'], item['day'],
-                world['specification'].get('train_cases', 2), world['specification'].get('val_cases', 2))
+        selected = select_experiences(world, state['sessions'], item['employee_id'], item['day'])
         by_id = {s['id']: s for s in selected}
         require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
                 update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
@@ -150,6 +150,7 @@ def audit(bank, out, harness=None, learner=None, judge=None):
         return audit_workplaces(bank, out, study, harness, learner, judge)
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
     for world in study['worlds']:
+        validate_world(bank, world)
         require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
         for name in ['no_learning', study['learner']['name']]:
             root = out / 'worlds' / f'seed-{world["seed"]}' / name

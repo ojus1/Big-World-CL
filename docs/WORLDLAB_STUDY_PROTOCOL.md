@@ -66,6 +66,17 @@ path into training employee memory, requests, colleague messages or reflection.
 The running studies retain their original source and budgets. Their original
 auditors do not test this semantic separation.
 
+New configurations can use `validation_context: isolated_public_tasks_v1`. This
+selects a prospective gate catalog from the validation partition and removes
+validation tasks from live arrivals. The employee adapter sees no gate catalog;
+the learner replays original public gate instructions in separate workspaces
+without employee requests or prior observed grades. Original training feedback
+still drives workplace memory and social messages. Gate replays consume the
+existing learner budget, and their results never enter workplace state. They
+remain adaptive development selection data across successive updates. Fixture
+and native-algorithm canary tests cover this routing; a fresh native study and
+complete audit are still required before claiming it works in live experiments.
+
 ## Statistical boundary
 
 The primary workplace metric is the paired difference in the fraction of

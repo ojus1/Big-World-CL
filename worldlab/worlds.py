@@ -20,6 +20,7 @@ from .campaign import SEED_SKILL, source_identity
 from .contracts import Budget
 from .dispatch import dispatch_day
 from .workforce import expand_workforce
+from .validation_context import ISOLATED, policy, compile_cases, validate_world, select_experiences, employee_world
 
 PARTITIONS = {'train': 'calibration_train', 'val': 'calibration_validation', 'probe': 'calibration_holdout'}
 
@@ -33,6 +34,7 @@ def compile_world(bank, specification, seed, harness, judge):
     if specification.get('study_scope') != 'development':
         raise ValueError('The calibration bank cannot authorize a final confirmatory study')
     employees = specification['employees']
+    isolated = policy(specification) == ISOLATED
     calibrated = fit(bank, specification)
     fit_by_id = {r['employee_id']: r for r in calibrated['workforce']}
     days = specification['days']
@@ -50,6 +52,7 @@ def compile_world(bank, specification, seed, harness, judge):
     workforce = []
     schedule = []
     issues = []
+    validation_cases = {}
     for employee in employees:
         eid = employee['id']
         capacity = employee.get('sessions_per_day', 1)
@@ -79,10 +82,13 @@ def compile_world(bank, specification, seed, harness, judge):
                        'unavailable_matched_tasks': sorted(set(mixture) - available_train),
                        'status': 'applied' if set(mixture) & available_train else 'retained_default'}
         rng = random.Random(stable_hash([seed, eid]))
+        if isolated:
+            validation_cases[eid] = compile_cases(pool[PARTITIONS['val']], eid, seed,
+                                                   asdict(work_budget), specification.get('val_cases', 2))
         used = defaultdict(Counter)
         employee_slots = []
         for day in range(days):
-            split = 'probe' if day >= probe_start else 'val' if day % 4 in (1, 3) else 'train'
+            split = 'probe' if day >= probe_start else 'val' if not isolated and day % 4 in (1, 3) else 'train'
             for ordinal in range(count):
                 available = pool[PARTITIONS[split]]
                 # Guarantee a minimally distinct early learning slice, then
@@ -115,10 +121,14 @@ def compile_world(bank, specification, seed, harness, judge):
         random.Random(seed * 1009 + day).shuffle(day_slots)
         for order, slot in enumerate(day_slots): slot['day_order'] = order
     schedule.sort(key=lambda s: (s['day'], s['day_order']))
-    return {'schema_version': 1, 'seed': seed, 'specification': specification,
+    world = {'schema_version': 1, 'seed': seed, 'specification': specification,
             'bank_manifest_sha256': bank.verification['manifest_sha256'],
             'workforce': workforce, 'schedule': schedule, 'capability_exclusions': issues,
             'scope': 'Development fixed-package skill-transfer world. Sessions and reused task families are dependent; this is not final-test or reacting-economy evidence.'}
+    if isolated:
+        world['validation_cases'] = validation_cases
+    validate_world(bank, world)
+    return world
 
 
 def eligible_experiences(sessions, employee, day, train_cases, val_cases):
@@ -161,7 +171,7 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
         from .workplace import Workplace
         for world in worlds:
             Workplace(world)  # Validate consequence parameters before any native calls.
-            world['employee_context'] = employee_factory.prepare(world)
+            world['employee_context'] = employee_factory.prepare(employee_world(world))
             world['scope'] = ('Development workplace with native employee decisions, persistent queues, delayed feedback, '
                               'rework and colleague messages. Roles and task arrivals are assigned; no final-test inference.')
     work_limits = [work_opportunity_limit(w) if employee_factory is not None else len(w['schedule']) for w in worlds]
@@ -188,6 +198,8 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
         manifest['actor_reservations'] = {'max_logical_interviews': 4 * sum(work_limits),
                                           'input_and_bootstrap_token_ceiling': None,
                                           'scope': 'Work and learning ceiling excludes native employee generation'}
+    if policy(spec) == ISOLATED:
+        manifest['analysis']['validation_context'] = ISOLATED
     save(out / 'STUDY.json', manifest)
     save(out / 'PREPARED.json', {'study_sha256': sha(out / 'STUDY.json'), 'prepared_unix': time.time()})
     return {'study_sha256': sha(out / 'STUDY.json'), 'world_pairs': len(worlds),
@@ -202,6 +214,7 @@ def work_opportunity_limit(world):
 
 
 def run_world(bank, world, harness, judge, learner, out):
+    validate_world(bank, world)
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     spec = world['specification']
     skills = {e['id']: SEED_SKILL for e in world['workforce']}
@@ -244,8 +257,7 @@ def run_world(bank, world, harness, judge, learner, out):
                      max_parallel=spec.get('max_parallel_employees', 1))
         if day not in spec.get('update_days', []): continue
         for employee in sorted(skills):
-            selected = eligible_experiences(sessions, employee, day,
-                                            spec.get('train_cases', 2), spec.get('val_cases', 2))
+            selected = select_experiences(world, sessions, employee, day)
             if not selected:
                 events.append({'day': day, 'employee_id': employee, 'kind': 'insufficient_released_learning_cases'})
                 continue

@@ -51,6 +51,11 @@ accuracy or a learning effect. Existing unmetered runs remain unchanged.
 
 ## Calibrate a subset
 
+Calibration examples and learner validation serve different purposes. Examples
+are optional observations used to fit a training-task mixture. A learner's
+validation cases come from the separately partitioned benchmark bank; the user
+does not need to supply examples for them or for every employee.
+
 The simulator-generated workforce provides employee IDs, roles and languages.
 The user supplies only an overlay such as:
 
@@ -98,6 +103,32 @@ the optional native employee mode uses this calibrated workforce and role-based 
 The test suite exercises a 100-employee workforce with examples for only one
 employee. Transferring its mixture to colleagues does **not** manufacture 99
 additional observed examples or calibration replays.
+
+For a new study, `validation_context: isolated_public_tasks_v1` keeps gate cases
+outside the live workplace. See
+[the two-employee configuration](../configs/worldlab/development_workplace_isolated_validation_v1.json).
+The compiler selects distinct validation families before any outcomes, using a
+separate random stream. All ordinary pre-probe arrivals use the training pool;
+the same number of arrivals, deadlines and work opportunities is retained.
+Gate descriptors contain public task identities and budgets, with no invented
+completed attempt or observed feedback. The learner measures them through fresh
+replays, using the original public instruction without employee context. These
+replays are charged to its existing learning budget.
+
+The employee adapter receives no gate catalog. Gate briefs, attempts and feedback
+never enter employee views, notes, colleague messages, queues or utility. Live
+training feedback and post-learning probe behavior retain their normal timing.
+The same validation cases are reused across updates, so they remain development
+selection data rather than an unbiased final performance estimate. Arbitrary
+learner adapters still own their reflection policy and audit; the native SkillOpt
+test checks that validation-only canaries stay out of reflection. This routing
+does not establish judge correctness or absence of model pretraining contamination.
+
+Omitting `validation_context` retains the historical `workplace_history` protocol,
+whose employee context can expose released validation outcomes to later training
+requests. Existing frozen studies keep that protocol. The isolated mode changes
+the work distribution and must be prepared as a fresh study, with a newly frozen
+analysis plan; it cannot repair or replace the evidence of an existing run.
 
 The simulator can also expand `workforce_templates` into a roster. A template
 specifies role, language, headcount and default task pool; no employee prompts

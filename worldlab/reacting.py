@@ -11,11 +11,13 @@ from .contracts import Budget
 from .dispatch import dispatch_day
 from .experience_update import update_employee
 from .workplace import Workplace
-from .worlds import eligible_experiences, stable_hash
+from .worlds import stable_hash
+from .validation_context import select_experiences, employee_world, validate_world
 
 
 def run_world(bank, world, harness, judge, learner, out, employee_factory):
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
+    validate_world(bank, world)
     place = Workplace(world)
     spec = world['specification']
     skills = {e['id']: SEED_SKILL for e in world['workforce']}
@@ -28,7 +30,7 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
 
     try:
         save(out / 'INFLIGHT.json', {'kind': 'employee_bootstrap'})
-        driver = employee_factory.open(world, world['employee_context'], out / 'actors')
+        driver = employee_factory.open(employee_world(world), world['employee_context'], out / 'actors')
         (out / 'INFLIGHT.json').unlink()
         for day in range(spec['days']):
             place.advance(day); checkpoint()
@@ -89,8 +91,7 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
                 dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1))
             if day not in spec.get('update_days', []): continue
             for employee in sorted(skills):
-                selected = eligible_experiences(state['sessions'], employee, day,
-                                                 spec.get('train_cases', 2), spec.get('val_cases', 2))
+                selected = select_experiences(world, state['sessions'], employee, day)
                 if not selected: continue
                 save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
                                             'budget': learner.identity().get('budget')})

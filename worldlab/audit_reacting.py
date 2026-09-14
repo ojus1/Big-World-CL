@@ -4,6 +4,7 @@ from scripts.source_world_calibration import read, sha
 from .campaign import SEED_SKILL
 from .workplace import Workplace
 from .worlds import stable_hash
+from .validation_context import validate_world
 
 
 def require(value, message):
@@ -11,6 +12,7 @@ def require(value, message):
 
 
 def replay_commands(bank, world, state):
+    validate_world(bank, world)
     place = Workplace(world)
     decisions = iter(state['decisions'])
     sessions = {s['id']: s for s in state['sessions']}

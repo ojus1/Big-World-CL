@@ -2,6 +2,7 @@
 import json
 from .attempts import execute_task, task_instruction
 from .contracts import Budget
+from .validation_context import observed_feedback
 
 
 def update_employee(bank, harness, judge, learner, selected, *, employee, day, skill, update_root, executor=None):
@@ -11,7 +12,7 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
     experiences = [{'id': s['id'], 'split': s['split'], 'available_day': s['day'],
                     'feedback_available_day': s['feedback_day'],
                     'source_session': s['lineage_group'], 'prompt': task_instruction(bank.public(s['task_id'])['instruction'], s.get('employee_message')),
-                    'context': '', 'feedback': s['grade']['feedback']} for s in selected]
+                    'context': '', 'feedback': observed_feedback(s)} for s in selected]
 
     def replay(payload, limits):
         slot = by_id[payload['task']['id']]
