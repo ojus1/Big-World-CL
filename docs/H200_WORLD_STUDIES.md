@@ -814,3 +814,64 @@ French-editor epoch had one completed replay and replay 001 in progress, with
 no finalized update or adoption. Scale seed 401's control arm had 47 completed
 attempts, 683 calls and 9,306,398 recorded tokens on day 3. Frozen experiment
 code, active backend, inference flags and per-update budgets remain unchanged.
+
+## Prospective validation isolation
+
+Commit `c833481` adds `validation_context: isolated_public_tasks_v1` for fresh
+studies. It freezes distinct public validation families outside live arrivals,
+omits the gate catalog from employee-adapter input, and supplies the original
+public gate instruction to learner replays without employee context or an
+invented observed grade. All ordinary pre-probe arrivals now use the training
+pool. Work opportunities, deadlines and learner replay budgets retain their
+declared limits. This changes the workload and is not a repair of either active
+historical study. Repeated gates remain adaptive development selection data.
+
+The local 26-test regression passed, followed by five targeted checks after the
+final dispatch guard and employee projection changes. On H200, the full suite
+passed **1,093 tests, 6 skipped, in 119.03 seconds**. The test service was
+`bigworld-isolated-validation-tests-v1`, invocation
+`af61379079684e199b1272b9aa132a4a`; its driver completed at **23:45:16 UTC
+September 14**. Frozen source is `Big-World-CL-isolated-validation-v1` at
+`c833481`. No new model calls were made by this qualification.
+
+The tests include a complete saved fixed-world audit with validation replays
+but no fabricated validation work attempts; a two-employee driver that
+deliberately echoes feedback through notes and colleague messages; injected
+validation context and wrong-bank-partition rejection; and pinned native
+SkillOpt reflection with validation-only canaries and forced fixture training
+failures. The latter verifies routing with callbacks, not live model behavior
+or successful learning. Original native employee experiments remain necessary.
+
+Deterministic compilation against the verified real bank passed twice for both
+configurations. The small world has 20 arrivals (16 train, 4 probe) and four
+gate descriptors across two employees. The larger world has 240 arrivals
+(192 train, 48 probe) and 24 gate descriptors across 12 employees. Sparse
+calibration remains one direct plus one default in the small world, and one
+direct, two role transfers and nine defaults in the larger one.
+
+The H200 qualification artifact is
+`lifespan/artifacts/isolated-validation-qualification-v1` under the frozen source;
+report SHA-256 is `b94adc78ac243566a3b4ec2a62cdceccae7e9bf8ee33cb934f6d87f5b1397329`.
+Its local `-h200` copy contains seven verified files totaling 203,696 bytes.
+Archive SHA-256 is
+`703302365a17a839f58fe553ce712d3865f8fd36c21d8f34159fa5481c1df486`.
+
+A fresh seed-317 native pilot is **prepared, not dispatched**, at
+`Big-World-CL-isolated-validation-v1/lifespan/artifacts/native-workplace-isolated-validation-v1`.
+Its study SHA-256 is `76255751d34445298b7974773a76211da8a5cbb766103bb9e10e875cccad6cf2`.
+The pair plans 40 obligations, at most 80 work attempts and two employee updates;
+its 96-million-token reservation ceiling is not measured cost. It uses the same
+Qwen endpoint, native Hermes and SkillOpt pins, with separate social metering
+enabled. Its employee backend is the previously qualified
+`Big-World-CL-social-meter-v1/MiroFish/backend` on port 5002, currently stopped.
+The existing experiments use their original backend on port 5001.
+
+The two prepared files were copied locally to
+`lifespan/artifacts/native-isolated-validation-plan-v1-h200`, totaling 160,510
+bytes, with the study hash checked against `PREPARED.json`. Archive SHA-256 is
+`58e2b5f9a97b59032e0448103aeebc0264ac8c15edf2e6105df1f9a2e1fa8a86`.
+There is no execution marker or native world directory yet. Inspect the
+original pilot's first finalized learning ledger before adding another model
+workload; its unchanged one-hour per-update budget remains an operational
+constraint. The isolated pilot still needs backend startup, native execution,
+paired audit, and actual learning/deployment evidence.
