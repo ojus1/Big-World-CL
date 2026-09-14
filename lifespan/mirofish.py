@@ -254,7 +254,8 @@ class MiroFishRuntime:
             self.put("compiled", {"profiles": count, "source": "actual Persona 8B records", "model": Config.LLM_MODEL_NAME})
         if "started" not in self.state:
             self.put("started", self.call("/api/simulation/start", {"simulation_id": sim,
-                "platform": "reddit", "max_rounds": 1, "enable_graph_memory_update": True}))
+                "platform": "reddit", "max_rounds": 1,
+                "enable_graph_memory_update": blueprint.get('enable_graph_memory_update', True)}))
         if "social_round" not in self.state:
             # The native single-platform runner remains alive for interviews.
             # Its generic run-status does not finalize until process exit.

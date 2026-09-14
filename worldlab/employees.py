@@ -63,12 +63,14 @@ class MiroFishEmployees:
                                                     'timeout_seconds': 120}
 
     def identity(self):
-        return {'name': 'native_mirofish_persona_employees', 'version': 1,
+        return {'name': 'native_mirofish_persona_employees', 'version': 2,
                 'provider': self.provider, 'service_url': self.service_url,
                 'backend_root': str(self.backend), 'persona_revision': REVISION, 'persona_shard_sha256': SHARD_SHA,
                 'actor_contract': provenance(self.output_contract, expected_provider=self.provider),
                 'prompt_sha256': hashlib.sha256(PROMPT.encode()).hexdigest(),
                 'source_sha256': sha(Path(__file__)), 'repair_limit': 1,
+                'graph_bootstrap': 'declared_local_organization', 'graph_memory_updates': False,
+                'graph_compiler_sha256': sha(Path(__file__).with_name('organization_graph.py')),
                 'accounting_scope': 'interviews metered; bootstrap and initial social generation unmetered'}
 
     def prepare(self, world):
@@ -101,7 +103,10 @@ class NativeEmployees:
                         for e in world['workforce']]
         save(self.out / 'PERSONAS.json', context)
         save(self.out / 'PARTICIPANTS.json', participants)
+        from .organization_graph import seed_native
+        seed_native(self.runtime, world['workforce'])
         self.runtime.bootstrap({'name': 'Calibrated persistent workplace', 'employees': participants, 'rules': [],
+            'enable_graph_memory_update': False,
             'project_name': 'Big World task workplace', 'ecosystem_description':
             'Employees have limited capacity, deadlines, delayed feedback and colleague messages. '
             'Concrete task files are visible only during delegated work.'}, context)

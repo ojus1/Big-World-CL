@@ -54,6 +54,7 @@ def replay_commands(bank, world, state):
 def audit_workplaces(bank, out, study, harness):
     from .audit_worlds import audit_attempt, audit_updates
     from .employees import audit_native_decision
+    from .organization_graph import declarations
     require(study['employee_driver']['name'] == 'native_mirofish_persona_employees',
             'Supply an auditor for this employee driver')
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0,
@@ -67,6 +68,10 @@ def audit_workplaces(bank, out, study, harness):
             place = replay_commands(bank, world, state)
             require(place.summary() == report['workplace'], 'Workplace report differs from causal replay')
             require(read(root / 'actors/PERSONAS.json') == world['employee_context'], 'Persona assignment changed')
+            seed = read(root / 'actors/NATIVE_GRAPH_SEED.json')
+            require(seed['declared'] == declarations(world['workforce']) and seed['model_calls'] == 0 and
+                    seed['source_sha256'] == study['employee_driver']['graph_compiler_sha256'],
+                    'Native organization graph differs from declared assignments')
             calls, tokens = 0, 0
             cache_keys = set()
             for decision in state['decisions']:
