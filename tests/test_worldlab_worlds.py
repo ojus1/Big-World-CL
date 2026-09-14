@@ -7,6 +7,8 @@ from unittest.mock import patch
 from worldlab.worlds import compile_world, eligible_experiences, prepare_study, execute_study, stable_hash
 from worldlab.qualitative import validate_verdict
 from worldlab.contracts import NoLearning
+from worldlab.workforce import expand_workforce
+from worldlab.calibration import attach_examples, fit
 from scripts.source_world_calibration import save
 
 
@@ -48,6 +50,21 @@ SPEC = {'schema_version': 1, 'study_scope': 'development', 'days': 10, 'probe_st
 
 
 class Tests(unittest.TestCase):
+    def test_generated_workforce_accepts_examples_for_just_one_employee(self):
+        spec = {k: copy.deepcopy(v) for k, v in SPEC.items() if k != 'employees'}
+        spec['workforce_templates'] = [{'id_prefix': 'writer', 'count': 100, 'role': 'Editor', 'language': 'en'}]
+        workforce = expand_workforce(spec)
+        self.assertEqual(len(workforce['employees']), 100)
+        overlay = attach_examples(workforce, {'writer-001': [{'prompt': 'Revise report', 'matches': 1}]})
+        fitted = fit(Bank(), overlay)
+        self.assertEqual(fitted['employee_coverage'], {'direct_examples': 1, 'role_transfer': 99})
+        self.assertEqual(len(fitted['anchors']), 1)
+        self.assertNotIn('employees', spec)
+        self.assertNotIn('representative_tasks', workforce['employees'][0])
+        self.assertEqual(expand_workforce(workforce), workforce)
+        spec['workforce_templates'][0]['representative_tasks'] = [{'prompt': 'Cloned evidence'}]
+        with self.assertRaises(ValueError): expand_workforce(spec)
+
     def test_world_retains_uncalibrated_employee_and_freezes_split_schedule(self):
         bank = Bank()
         world = compile_world(bank, SPEC, 211, Harness(), Judge())

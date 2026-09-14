@@ -4,6 +4,7 @@ from pathlib import Path
 from scripts.source_world_calibration import read
 from .bank import Bank
 from .calibration import fit, attach_examples
+from .workforce import expand_workforce
 
 
 def main():
@@ -20,7 +21,7 @@ def main():
     p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
     a = p.parse_args()
     bank = Bank(a.bank)
-    specification = read(a.spec) if a.spec else None
+    specification = expand_workforce(read(a.spec)) if a.spec else None
     if a.employee_examples:
         specification = attach_examples(specification, read(a.employee_examples))
     if a.command == 'fit':

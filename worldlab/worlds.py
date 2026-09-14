@@ -18,6 +18,7 @@ from .calibration import fit
 from .campaign import SEED_SKILL, source_identity
 from .contracts import Budget
 from .dispatch import dispatch_day
+from .workforce import expand_workforce
 
 PARTITIONS = {'train': 'calibration_train', 'val': 'calibration_validation', 'probe': 'calibration_holdout'}
 
@@ -129,6 +130,7 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out):
+    spec = expand_workforce(spec)
     out = Path(out).resolve()
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')

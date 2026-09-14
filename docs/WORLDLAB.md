@@ -58,6 +58,17 @@ The test suite exercises a 100-employee workforce with examples for only one
 employee. Transferring its mixture to colleagues does **not** manufacture 99
 additional observed examples or calibration replays.
 
+The simulator can also expand `workforce_templates` into a roster. A template
+specifies role, language, headcount and default task pool; no employee prompts
+are required. IDs are stable, such as `research-en-001`. The user then supplies
+the same optional examples overlay. Templates cannot contain representative
+examples, so one observation cannot accidentally become every employee's data.
+See [the 12-employee coverage configuration](../configs/worldlab/development_coverage_v1.json)
+and [its one-employee overlay](../configs/worldlab/development_coverage_examples_v1.json).
+These synthetic defaults span three departments and three languages; they are
+not measurements of a real workforce. The configuration plans 960 work attempts
+per world pair and 36 possible learning epochs, before any outcomes are observed.
+
 ## What the fit means
 
 Only calibration-training task briefs are searched. An explicit task-ID selector
@@ -188,6 +199,15 @@ one fails, retains the wave reservation and stops further dispatch. It never
 retries a failed attempt or chooses work according to completion speed. The
 frozen `development-world-v2` study at `6602bd1` uses the earlier serial runner;
 later adapter and parallel-dispatch changes do not alter its execution checkout.
+
+Native parallel qualification at `3efaa9f` completed on H200: two simultaneous
+fresh profiles, both offline audits passed, 20 physical calls and 124,311 tokens.
+The frozen plan hash is
+`2c085718906eaebc82c56ddc04be44b43bf451f7576b6c1aa866cea0468d77a2`.
+Run the reusable qualification with `python -m worldlab.qualify_harness`, passing
+`--bank`, `--out`, `--hermes-root`, a development `--task-id` and `--parallel 2`.
+This verifies the adapter and metering at that concurrency, not the learning
+effect or high-concurrency server capacity.
 
 ## Native H200 calibration
 

@@ -9,6 +9,7 @@ from .hermes import Hermes
 from .learning import SkillOpt
 from .qualitative import FrozenRubricJudge
 from .worlds import prepare_study, execute_study
+from .workforce import expand_workforce
 
 
 def main():
@@ -29,7 +30,7 @@ def main():
     judge = FrozenRubricJudge(bank, a.model, a.base_url)
     learner = SkillOpt(a.skillopt_root, a.model, a.base_url)
     if a.command == 'prepare':
-        spec = read(a.spec)
+        spec = expand_workforce(read(a.spec))
         if a.employee_examples: spec = attach_examples(spec, read(a.employee_examples))
         value = prepare_study(bank, spec, a.seeds, harness, judge, learner, a.out)
     else:
