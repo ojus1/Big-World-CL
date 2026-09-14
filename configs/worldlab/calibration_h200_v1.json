@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "seed": 20260915,
+  "repeats": 2,
+  "budget": {"model_calls": 32, "output_tokens": 8192, "total_tokens": 500000, "seconds": 1200},
+  "max_campaign_tokens": 2000000,
+  "employees": [
+    {
+      "id": "research-editor",
+      "role": "Research editor",
+      "language": "en",
+      "representative_tasks": [{
+        "prompt": "Revise a study design section in response to reviewer comments, preserve the evidence and provide a traceable appendix.",
+        "selector": {"task_ids": ["internal/euw_it_003_en_bridge"]}
+      }]
+    },
+    {
+      "id": "facilities-analyst",
+      "role": "Facilities finance analyst",
+      "language": "en",
+      "representative_tasks": [{
+        "prompt": "Reconcile meter readings and invoices against changing supplier tariffs, explain missing readings and produce a reconciliation table and report.",
+        "selector": {"task_ids": ["internal/euw_v1_fr_007_en_bridge"]}
+      }]
+    }
+  ]
+}
