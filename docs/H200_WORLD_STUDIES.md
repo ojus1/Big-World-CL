@@ -21,6 +21,10 @@ establishes statistically significant skill learning.
 | Semantic controls | `Big-World-CL-semantics-v1`, `26d5cc4` | `lifespan/artifacts/semantic-controls-v1` | Complete, 33/33 source-grounded labels matched over one family |
 | Native timeout fixture | `Big-World-CL-watchdogs-v2`, `343dc2d` | `lifespan/artifacts/nonstreaming-watchdogs-v2` | Complete, all three real-clock transport controls passed; zero model inference |
 | Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Complete; both concurrent task receipts audited |
+| Public arithmetic v7 | `Big-World-CL-judge-v7`, `6f93d99` | `lifespan/artifacts/native-public-judge-v7` | Two native executions audited; one evaluator false negative preserved and corrected separately |
+| Public arithmetic v8 | `Big-World-CL-judge-v8`, `31a59a7` | `lifespan/artifacts/native-public-regrade-v8` | Both unchanged native outputs accepted under fresh v8 grading |
+| Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Active at 21:52 UTC September 14; two completed work sessions |
+| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Prepared only; no model calls or employee bootstrap |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
@@ -404,3 +408,87 @@ At **21:30:57 UTC**, both native controls were complete and audited, using 8 and
 113,049 tokens combined, all with complete accounting. The service was inactive
 with MainPID zero and result success. The qualification plan SHA is
 `08e75c8728d34b1420a081e647c9f082e58c9110cb7b1d8fa4faacd6d4366e12`.
+
+## Public arithmetic checks and the next native workplace pair
+
+Commit `6f93d99` supplements the unchanged corrected r3 criteria with deterministic
+public requirements for two reviewed tasks. The registry binds each task's public
+contract and all source input hashes. The editorial checks cover rows, inclusive
+calendar subtraction, signed dates, fourteen-day compression and fixed French
+publication dates. The procurement checks cover source-derived scores, weighted
+totals and supplier exclusions. Each check has a fixed weight; malformed output
+fails the registered checks without reducing their denominator. Other tasks
+remain in the workload. This is partial coverage, not a complete replacement
+for qualitative judgment or certification of all 186 eligible tasks.
+
+The first native procurement qualification exposed an overstrict rule in the new
+checker: a valid output left intermediate weighted cells blank for excluded
+suppliers. The public task requires their TOTAL to be zero but does not specify
+the intermediate cells. Commit `31a59a7` accepts that alternative and explicitly
+marked intermediate cells, and advances the judge to version 8. The original v7
+receipts remain unchanged. The prepared workplace-v2 was cancelled before any
+dispatch; its replacement uses a fresh artifact directory and source checkout.
+
+The v7 native qualification completed two audited executions, with 31 work/judge
+calls and 457,102 tokens. All original r3 criteria passed in both. The v7 public
+checker accepted one and incorrectly rejected the blank-cell output. Fresh v8
+grading of the exact same output bytes accepted both, using eight new judge calls
+and 98,943 tokens; no solver reran. The fresh grading plan SHA is
+`4e7fba27b6944900a09ad6fc01bfb2a67a429a5df4bf56203f33c7086b30a0c9`.
+Its artifact is `Big-World-CL-judge-v8/lifespan/artifacts/native-public-regrade-v8`.
+All 46 files in this fresh grading artifact were also copied locally and verified
+against remote SHA-256 hashes.
+The `bigworld-public-regrade-v8` service finished with MainPID zero and result
+success. Its invocation is `98458ba890c643caada89e3efffa412e`.
+
+All 18 fixed public-component controls pass at `31a59a7`, including the two valid
+excluded-cell alternatives, with zero model calls. The editorial positive
+fixtures are component controls, not full-task gold outputs. A separate read-only
+diagnostic against the already frozen 46-attempt snapshot found nine registered
+attempts, six of whose original passes fail the new public checks. This is a
+dependent retrospective diagnostic, not an independent estimate of judge accuracy.
+The v8 diagnostic plan SHA is
+`d8c83b153fe748c39f2235fbeec1397edb02bbdb3d5e47708046af2e67a45565`.
+All 24 component/diagnostic evidence files were copied locally and checked against
+remote SHA-256 hashes. Historical outputs and grades were not changed.
+
+The full canonical suite at `6f93d99` passed **1,046 tests, 6 skipped** in 126.67
+seconds, under `bigworld-canonical-tests-v5`, invocation
+`e6c5f47beba64a44a2cd00d038320756`. The focused suite after the v8 correction passed
+**55 tests**. The full-suite result predates that correction.
+
+Source inspection also explains consolidation-v3's zero optimizer calls: all six
+training replays had hard and soft score 1. The pinned SkillOpt implementation
+returns no reflection when there are no failures and no contrastive score spread.
+Its failed validation example is not reflection training data. This was a
+legitimate no-op, separate from the later timeout, and is not evidence of skill
+learning. No cases were selected by their score to force an update.
+
+The fresh ten-day seed-317 native pair launched at **21:46:55 UTC on September 14**
+under `bigworld-native-workplace-v3`, invocation
+`86cb332683f84371bb6830fabf9d14f0`, MainPID 1853105. It runs from the frozen
+`Big-World-CL-workplace-v5` checkout at `31a59a7`; its artifact is
+`lifespan/artifacts/native-workplace-v3` and study SHA is
+`f56c80acfebaef75e37e463f154e257b932cd9d4869ca66fc0dedd48fcd9244c`.
+At **21:49:58 UTC**, the service was active and one work session had completed.
+At **21:52:13 UTC**, it had advanced to day 1 with two completed sessions and four
+employee decisions. Those two work sessions used 35 work/judge calls and 534,950
+tokens. MainPID 1853105 remained active.
+The pair plans 40 obligations, at most 80 work attempts and two possible learner
+updates. The analyst alone has calibration examples; the French editor uses
+defaults. The 96-million-token work/judge/learning reservation is a ceiling,
+not measured consumption. Bootstrap/social usage remains unknown.
+
+At `3e1719d`, the separate six-world native development study is **prepared only**:
+12 employees, three departments, three languages, 20 days and seeds
+`401 409 419 421 431 433`. Every seed has one directly calibrated employee, two
+recorded role transfers and nine defaults. The fixed schedule plans 2,880 arriving
+obligations, at most 5,760 work attempts and 216 possible learner updates. Its
+7,776,000,000-token reservation is a conservative ceiling, not an ETA or actual
+cost. No model calls or native employee bootstrap have been dispatched for it.
+The checkout is `Big-World-CL-workplace-scale-v1`, artifact
+`lifespan/artifacts/native-workplace-scale-v1`, study SHA
+`3105405bfb60e91cc84c00ea07674b701c2bc3ec22a93499b451eeae1a9ce9e1`.
+The [study protocol](WORLDLAB_STUDY_PROTOCOL.md) describes the required adoption,
+deployment, paired-outcome and statistical evidence. None of these preparation
+counts establishes a statistically supported learning effect.

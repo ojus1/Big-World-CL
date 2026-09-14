@@ -73,6 +73,50 @@ rejects a final-study claim using it. The reserved internal test tasks have not
 been used in these experiments. Confirmatory execution needs an independently
 frozen final bank, qualified scoring coverage and a complete analysis protocol.
 
+## Executable development analysis
+
+`scripts/analyze_worldlab.py prepare` freezes a separate analysis artifact before
+the first study dispatch. It binds the study bytes, complete seed list, analysis
+code and the original source checkout used for offline auditing. Keep this
+artifact outside the experiment directory. For example:
+
+```bash
+python3 scripts/analyze_worldlab.py prepare \
+  --study /path/to/native-workplace-scale-v1 \
+  --frozen-source /path/to/frozen-experiment-checkout \
+  --python /path/to/controller/python \
+  --out /path/to/native-workplace-scale-analysis-v1
+
+python3 scripts/analyze_worldlab.py analyze \
+  --bank /path/to/frozen-calibration-bank \
+  --out /path/to/native-workplace-scale-analysis-v1
+```
+
+Analysis requires every planned pair to complete and pass the original frozen
+audit. Missing or failed pairs do not become a smaller, more favorable sample.
+The script rechecks the full planned probe denominator and weights each world
+equally. It reports the mean difference, between-world standard deviation and
+standard error, positive/zero/negative pair counts, adoptions, measured optimizer
+calls and later sessions using adopted skill bytes. It preserves unknown usage.
+
+For this small development study, the predeclared statistical diagnostic is an
+exact two-sided sign-flip test of the paired mean, with all `2^n` assignments,
+including ties. Rational arithmetic avoids floating-point tail ambiguity. This
+requires independent differences with exchangeable signs under the null;
+counterbalanced execution order does not establish random assignment. The
+procedure is therefore an exploratory sensitivity diagnostic, never an automatic
+confirmatory claim. See the [SciPy paired permutation documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.permutation_test.html)
+for the exchangeability requirement and sign-flip construction.
+
+A separate conservative 95% interval for the expected mean uses the bounded
+difference range `[-1, 1]`: radius `sqrt(2 log(40) / n)`, clipped to that range.
+This follows [Hoeffding's bounded independent-sum inequality](https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10500830).
+It needs independent world differences and is conditional on this simulator,
+bank and evaluator. At six pairs it is necessarily wide; a small sign-flip
+p-value does not erase that uncertainty. The exact implementation supports at
+most 20 pairs. A larger confirmatory run requires a separately frozen analysis
+and power calculation, not silently switching methods after observing results.
+
 ## Remaining requirements
 
 Public numerical supplements currently cover reviewed omissions in two source

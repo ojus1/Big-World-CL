@@ -11,6 +11,8 @@ that an individual's writing style or workplace behavior has been reproduced.
 This module connects the locked JobBench/Internal EuroBench bank to reproducible
 development calibration. It is an extension of the H200 work, not a claim that
 the final large-world learning study has been completed.
+The [study protocol](WORLDLAB_STUDY_PROTOCOL.md) records the scale configuration,
+required learning evidence and the boundary between development and confirmation.
 
 ## Calibrate a subset
 
