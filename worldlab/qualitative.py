@@ -19,6 +19,10 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Return only JSON with criterion_id, passed (boolean), reasoning (nonempty string), '
          'and evidence (nonempty string naming concrete source/output files and details).')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
+VERDICT_SCHEMA = {'type': 'object', 'properties': {
+    'criterion_id': {'type': 'string'}, 'passed': {'type': 'boolean'},
+    'reasoning': {'type': 'string'}, 'evidence': {'type': 'string'}},
+    'required': ['criterion_id', 'passed', 'reasoning', 'evidence'], 'additionalProperties': False}
 
 
 def validate_verdict(value, criterion):
@@ -37,9 +41,10 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 1, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 2, 'provider': self.provider,
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
+                'structured_output_schema': VERDICT_SCHEMA,
                 'human_calibrated': False, 'official_benchmark_score': False,
                 'source_sha256': sha(Path(__file__))}
 
@@ -107,6 +112,8 @@ class FrozenRubricJudge:
                     input=[{'role': 'system', 'content': RULES},
                            {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}],
                     max_output_tokens=4096, stream=False, store=False, timeout=min(120, remaining),
+                    text={'format': {'type': 'json_schema', 'name': 'criterion_verdict',
+                                     'strict': True, 'schema': VERDICT_SCHEMA}},
                     extra_body={'chat_template_kwargs': {'enable_thinking': False}})
                 text = response.output_text
                 save(out / f'RESPONSE-{index:02d}.json', {'text': text, 'status': response.status})
