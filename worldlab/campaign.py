@@ -20,7 +20,9 @@ SEED_SKILL = ('# Work process\n\nRead the current request and relevant source fi
 def source_identity():
     paths = [p for folder in ('worldlab', 'lifespan') for p in (ROOT / folder).rglob('*.py')
              if 'tests' not in p.parts and 'artifacts' not in p.relative_to(ROOT).parts]
-    paths += [ROOT / 'scripts/source_world_calibration.py']
+    paths += [ROOT / 'scripts' / name for name in ('source_world_calibration.py', 'audit_transfer.py',
+                                                   'audit_learning_v2.py', 'audit_evaluation.py')
+              if (ROOT / 'scripts' / name).exists()]
     return {str(p.relative_to(ROOT)): sha(p) for p in sorted(paths)}
 
 

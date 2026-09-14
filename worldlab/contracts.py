@@ -52,10 +52,10 @@ class Harness(Protocol):
 
 
 class Learner(Protocol):
-    """A learner proposes a skill; an independent evaluator owns adoption."""
+    """Learner policy with evaluator-owned replay callbacks and explicit evidence."""
     def identity(self) -> dict: ...
-    def propose(self, skill: str, training: tuple[Feedback, ...], budget: Budget,
-                artifact_root: Path) -> dict: ...
+    def update(self, skill: str, experiences: list[dict], replay, *, current_day: int,
+               artifact_root: Path) -> dict: ...
 
 
 class NoLearning:
@@ -64,6 +64,11 @@ class NoLearning:
 
     def propose(self, skill, training, budget, artifact_root):
         return {'skill': skill, 'changed': False, 'model_calls': 0, 'charged_tokens': 0}
+
+    def update(self, skill, experiences, replay, *, current_day, artifact_root):
+        return {'status': 'completed', 'skill': skill, 'accepted': False,
+                'costs': {'tokens': 0, 'target_model_calls': 0, 'optimizer_model_calls': 0,
+                          'accounting_complete': True, 'operations': []}}
 
 
 def released_training(experiences, day):

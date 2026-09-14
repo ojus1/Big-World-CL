@@ -1,0 +1,120 @@
+"""Read-only task-world audit. Recompute scores from saved judge responses.
+
+This verifies execution and calculations, not whether model judgments are true.
+"""
+import argparse
+import hashlib
+import json
+from pathlib import Path
+from scripts.source_world_calibration import read, sha, child
+from .bank import Bank
+from .campaign import source_identity, SEED_SKILL
+from .qualitative import validate_verdict
+from .worlds import eligible_experiences, stable_hash
+
+
+def require(condition, message):
+    if not condition: raise ValueError(message)
+
+
+def audit_attempt(bank, root, task_id, expected_skill=None):
+    record = read(root / 'ATTEMPT.json')
+    actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} - {'ATTEMPT.json'}
+    require(actual == set(record['artifact_inventory']), 'Attempt artifact inventory changed')
+    for name, digest in record['artifact_inventory'].items():
+        p = child(root, name)
+        require(not p.is_symlink() and sha(p) == digest, 'Attempt file changed: ' + name)
+    request = read(root / 'REQUEST.json')
+    require(request['instruction'] == bank.public(task_id)['instruction'], 'Public task instruction mismatch')
+    if expected_skill is not None: require(request['skill'] == expected_skill, 'Wrong deployed skill')
+    native = read(root / 'NATIVE.json')
+    meter = native['evaluation_budget']
+    require(meter['accounting_complete'] and not meter.get('stopped'), 'Native accounting incomplete')
+    require(meter['physical_model_calls'] == len(meter['operations']) and
+            meter['charged_tokens'] == sum(r['charged_tokens'] for r in meter['operations']), 'Native cost mismatch')
+    require(meter['physical_model_calls'] <= request['budget']['model_calls'] and
+            meter['charged_tokens'] <= request['budget']['total_tokens'] and
+            all(r['output_cap'] <= request['budget']['output_tokens'] for r in meter['operations']), 'Native budget exceeded')
+    require(native['skill_loaded'], 'Native skill was not loaded')
+    rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
+    grade = record['grade']
+    require(grade == read(root / 'judging/GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
+    verdicts = []
+    for i, criterion in enumerate(rubric['criteria']):
+        payload = read(root / 'judging' / f'REQUEST-{i:02d}.json')
+        response = read(root / 'judging' / f'RESPONSE-{i:02d}.json')
+        require(payload['criterion'] == criterion and payload['evidence'] == read(root / 'judging/EVIDENCE.json'),
+                'Frozen criterion/evidence mismatch')
+        require(response['status'] == 'completed', 'Judge response incomplete')
+        verdicts.append(validate_verdict(json.loads(response['text']), criterion))
+    require(verdicts == grade['criteria'], 'Criterion verdicts changed')
+    score = sum(c['weight'] * v['passed'] for c, v in zip(rubric['criteria'], verdicts)) / sum(c['weight'] for c in rubric['criteria'])
+    valid_files = not grade['input_changes'] and not grade['unauthorized_files']
+    require(grade['quality_score'] == (score if valid_files else 0.) and
+            grade['success'] == (all(v['passed'] for v in verdicts) and valid_files), 'Quality aggregation mismatch')
+    jm = grade['usage']
+    require(jm['accounting_complete'] and jm['physical_model_calls'] == len(rubric['criteria']) and
+            jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
+    require(record['tokens'] == meter['charged_tokens'] + jm['charged_tokens'] and
+            record['model_calls'] == meter['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')
+    return record
+
+
+def audit(bank, out):
+    study = read(out / 'STUDY.json')
+    require(sha(out / 'STUDY.json') == read(out / 'PREPARED.json')['study_sha256'], 'Study bytes changed')
+    require(source_identity() == study['source_sha256'], 'Use the frozen source checkout for this study')
+    counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
+    for world in study['worlds']:
+        require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
+        for name in ['no_learning', study['learner']['name']]:
+            root = out / 'worlds' / f'seed-{world["seed"]}' / name
+            report, state = read(root / 'REPORT.json'), read(root / 'STATE.json')
+            require(report['status'] == 'completed' and not (root / 'INFLIGHT.json').exists(), 'World incomplete')
+            require([s['id'] for s in state['sessions']] == [s['id'] for s in world['schedule']], 'World schedule changed')
+            updates = state['updates']
+            for slot, session in zip(world['schedule'], state['sessions']):
+                require(all(session[k] == v for k, v in slot.items()), 'Session identity changed')
+                past = [u for u in updates if u['employee_id'] == slot['employee_id'] and
+                        u['day'] < slot['day'] and u['result']['accepted']]
+                skill = past[-1]['result']['skill'] if past else SEED_SKILL
+                record = audit_attempt(bank, root / 'sessions' / slot['id'], slot['task_id'], skill)
+                require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'], 'Session receipt mismatch')
+                require(sha(root / 'sessions' / slot['id'] / 'ATTEMPT.json') == session['attempt_sha256'], 'Session hash mismatch')
+                counts['online_attempts'] += 1
+            for item in updates:
+                update = item['result']
+                if name == 'no_learning':
+                    require(not update['accepted'] and update['costs']['tokens'] == 0, 'Control learned')
+                    continue
+                update_root = root / 'learning' / f'd{item["day"]:03d}-{item["employee_id"]}'
+                require(read(update_root / 'UPDATE.json') == update, 'Update evidence changed')
+                selected = eligible_experiences(state['sessions'], item['employee_id'], item['day'],
+                        world['specification'].get('train_cases', 2), world['specification'].get('val_cases', 2))
+                by_id = {s['id']: s for s in selected}
+                require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
+                        update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
+                for replay in update['replay_evidence']:
+                    r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'])
+                    require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
+                    req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'REQUEST.json')
+                    require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
+                    counts['learning_replays'] += 1
+                from scripts.audit_transfer import gate_check
+                gate_check(update)
+                counts['adoptions'] += int(update['accepted'])
+            probes = [s for s in state['sessions'] if s['split'] == 'probe']
+            require(report['probe_quality_mean'] == sum(s['grade']['quality_score'] for s in probes) / len(probes), 'Probe report mismatch')
+            require(report['world_schedule_sha256'] == stable_hash(world), 'World schedule hash mismatch')
+            require(report['work_and_judging_tokens'] == sum(s['tokens'] for s in state['sessions']) and
+                    report['learning_and_replay_judging_tokens'] == sum(u['result']['costs']['tokens'] for u in updates), 'World cost mismatch')
+        counts['world_pairs'] += 1
+    return {'ok': True, **counts, 'scope': 'Execution, split, skill-gate and accounting audit. Model-judgment correctness and confirmatory statistical validity are not certified.'}
+
+
+if __name__ == '__main__':
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--bank', required=True, type=Path)
+    p.add_argument('--out', required=True, type=Path)
+    a = p.parse_args()
+    print(json.dumps(audit(Bank(a.bank), a.out.resolve()), indent=2))
