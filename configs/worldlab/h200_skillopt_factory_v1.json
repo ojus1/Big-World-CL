@@ -1,0 +1,23 @@
+{
+  "factory": "worldlab.learning:SkillOpt",
+  "kwargs": {
+    "source": "/home/inference-testing/apps/Big-World-CL/.cache/SkillOpt",
+    "model": "Qwen/Qwen3.8-Flash-Next-FP8",
+    "base_url": "http://127.0.0.1:8000/v1",
+    "edit_budget": 2,
+    "rollouts_k": 2,
+    "budget": {
+      "max_replays": 24,
+      "max_target_model_calls": 960,
+      "max_optimizer_model_calls": 2,
+      "max_tokens": 12000000,
+      "max_seconds": 3600,
+      "replay_model_calls": 40,
+      "replay_tokens": 900000,
+      "replay_seconds": 1200,
+      "optimizer_model_calls": 1,
+      "optimizer_tokens": 32000,
+      "optimizer_seconds": 120
+    }
+  }
+}

@@ -10,6 +10,7 @@ from .learning import SkillOpt
 from .qualitative import FrozenRubricJudge
 from .worlds import prepare_study, execute_study
 from .workforce import expand_workforce
+from .adapters import load_adapter
 
 
 def main():
@@ -20,18 +21,24 @@ def main():
     p.add_argument('--spec', type=Path)
     p.add_argument('--employee-examples', type=Path)
     p.add_argument('--seeds', type=int, nargs='+', default=[211])
-    p.add_argument('--hermes-root', type=Path, required=True)
-    p.add_argument('--skillopt-root', type=Path, required=True)
+    p.add_argument('--hermes-root', type=Path)
+    p.add_argument('--skillopt-root', type=Path)
+    p.add_argument('--harness-config', type=Path)
+    p.add_argument('--learner-config', type=Path)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
     p.add_argument('--mirofish-backend', type=Path)
     p.add_argument('--persona-cache', type=Path)
     p.add_argument('--mirofish-service-url')
     a = p.parse_args()
+    if bool(a.hermes_root) == bool(a.harness_config):
+        p.error('Supply exactly one of --hermes-root and --harness-config')
+    if bool(a.skillopt_root) == bool(a.learner_config):
+        p.error('Supply exactly one of --skillopt-root and --learner-config')
     bank = Bank(a.bank)
-    harness = Hermes(a.hermes_root, a.model, a.base_url)
+    harness = load_adapter(a.harness_config, 'harness') if a.harness_config else Hermes(a.hermes_root, a.model, a.base_url)
     judge = FrozenRubricJudge(bank, a.model, a.base_url)
-    learner = SkillOpt(a.skillopt_root, a.model, a.base_url)
+    learner = load_adapter(a.learner_config, 'learner') if a.learner_config else SkillOpt(a.skillopt_root, a.model, a.base_url)
     employee_factory = None
     actor_options = [a.mirofish_backend, a.persona_cache, a.mirofish_service_url]
     if any(actor_options):

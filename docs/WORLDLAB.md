@@ -158,6 +158,24 @@ python -m worldlab.run_worlds execute --bank BANK --out OUT \
 python -m worldlab.audit_worlds --bank BANK --out OUT
 ```
 
+For operator-supplied adapters, replace `--hermes-root` with `--harness-config FILE`
+and/or `--skillopt-root` with `--learner-config FILE` in both prepare and execute.
+Each JSON file contains exactly `factory` (an importable `module:attribute`) and
+`kwargs` (constructor arguments). The factory implements the `Harness` or `Learner`
+protocol in `worldlab/contracts.py`; it supplies native receipts and an honest
+identity including its external dependency versions. The experimental learner's
+name must be a safe path component distinct from the reserved `no_learning` arm.
+The loader additionally binds configuration bytes and factory-module bytes in the
+frozen identity. Changed factories/configurations fail before execution. Keep
+credentials in the runtime environment. Only operator-selected trusted code is
+loaded; task files do not select adapters.
+
+`configs/worldlab/h200_hermes_factory_v1.json` and
+`configs/worldlab/h200_skillopt_factory_v1.json` select the installed H200 baseline
+without changing its parameters. A custom harness audit uses the same
+`--harness-config FILE` with `worldlab.audit_worlds`. A Fluso implementation can
+use this interface, but no operational Fluso adapter is bundled yet.
+
 The preparation records source and bank hashes, model/provider identities,
 complete schedules and token reservation ceilings. All model costs include
 judging: online work, target replays, replay judges and optimizer calls. The
@@ -382,3 +400,29 @@ For long nonstreaming tool responses, the Hermes adapter configures both native
 request and stale-response windows to the lesser of 600 seconds and the whole
 attempt budget. It verifies the effective values before dispatch and audits their
 saved readbacks. No transport retry or increase in total calls/tokens is implied.
+
+## Cross-checking evaluator coverage
+
+`python -m worldlab.mechanical_diagnostic run --bank BANK --eurobench-root PACKAGE
+--roots STUDY_OR_QUALIFICATION ... --out FRESH_OUT` snapshots all available attempt
+receipts, verifies their original files and then runs the original EuroBench
+mechanics without model calls. The output must be outside every source root.
+The `audit` subcommand reruns these checks against the frozen snapshot; later
+attempts from a live source do not enter it. On H200 this diagnostic needs
+`/home/inference-testing/benchmarks/eurobench-v1/.venv/bin/python`, which contains
+the original evaluator's document dependencies.
+
+Mechanical disagreement is not automatically a qualitative false positive.
+Original exact-match checks can conflict with the source-corrected r3 contract,
+including optional benefits and translated labels. Conversely, the current r3
+reward can miss quantitative errors outside its criterion coverage. Full-task
+success must eventually cover both valid structural/numerical obligations and
+source-grounded qualitative requirements. Neither score alone currently proves it.
+
+`worldlab.qualify_semantics` freezes source-grounded positive and negative controls
+before calling the production judge. Its first suite has 11 cases, three repeats
+each, over one English benefits-synthesis family. It checks optional content,
+semantic paraphrases, threshold direction, invented guarantees, exact headings
+and appendix ordering. These are constructed evaluator controls, never solver
+performance or employee training data; passing them does not establish general
+professional-quality calibration.

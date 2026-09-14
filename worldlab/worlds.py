@@ -11,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
+import re
 import time
 from scripts.source_world_calibration import read, save, sha
 from .attempts import execute_task
@@ -138,6 +139,9 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
+    name = learner.identity().get('name')
+    if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', name) or name == 'no_learning':
+        raise ValueError('The experimental learner needs a safe arm name distinct from no_learning')
     out = Path(out).resolve()
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')

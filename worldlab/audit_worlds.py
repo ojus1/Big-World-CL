@@ -175,5 +175,12 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bank', required=True, type=Path)
     p.add_argument('--out', required=True, type=Path)
+    p.add_argument('--harness-config', type=Path)
     a = p.parse_args()
-    print(json.dumps(audit(Bank(a.bank), a.out.resolve()), indent=2))
+    harness = None
+    if a.harness_config:
+        from .adapters import load_adapter
+        harness = load_adapter(a.harness_config, 'harness')
+        if harness.identity() != read(a.out / 'STUDY.json')['harness']:
+            raise ValueError('Harness factory/configuration differs from the frozen study')
+    print(json.dumps(audit(Bank(a.bank), a.out.resolve(), harness=harness), indent=2))
