@@ -11,10 +11,18 @@ def native_timeouts(budget):
     return {'request_timeout_seconds': seconds, 'stale_timeout_seconds': seconds}
 
 
+def native_watchdog_environment():
+    # A final-body response has no SSE event before completion. Use Hermes'
+    # supported override instead of fabricating stream activity. The native
+    # request/stale timers and parent whole-attempt limit remain active.
+    return {'HERMES_CODEX_TTFB_TIMEOUT_SECONDS': '0'}
+
+
 def main():
     from scripts.source_world_calibration import save
     request = json.loads(Path(sys.argv[1]).read_text())
     root = Path(sys.argv[1]).parent
+    os.environ.update(native_watchdog_environment())
     profile = Path(os.environ['HERMES_HOME'])
     profile.mkdir()
     import yaml
@@ -53,6 +61,9 @@ def main():
                         'stale_timeout_seconds': stale}
     if timeout_readback != expected_timeouts or implicit:
         raise ValueError('Native Hermes did not apply the declared nonstreaming timeout settings')
+    watchdog_readback = {key: os.environ.get(key) for key in native_watchdog_environment()}
+    if watchdog_readback != native_watchdog_environment():
+        raise ValueError('Native final-body watchdog environment differs from the declared policy')
     meter = install_native_budget(agent, max_model_calls=request['budget']['model_calls'],
                                   max_output_tokens=request['budget']['output_tokens'],
                                   max_total_tokens=request['budget']['total_tokens'],
@@ -63,6 +74,7 @@ def main():
                              'sandbox': sandbox.sandbox.initial, 'provider': request['provider'],
                              'transport': transport, 'skill': skill,
                              'native_timeouts': timeout_readback,
+                             'native_watchdog_environment': watchdog_readback,
                              'tools': [t.get('function', t).get('name') for t in agent.tools]})
     system = ('You are the assistant of fictional employee ' + request['employee_id'] + '. '
               'Complete the supplied professional task in its requested language using real files and tools. '
@@ -81,6 +93,7 @@ def main():
     finally:
         result.update(evaluation_budget=meter.report(), provider_contract=request['provider'],
                       native_timeouts=timeout_readback,
+                      native_watchdog_environment=watchdog_readback,
                       evaluation_transport=transport, skill=skill,
                       skill_loaded=skill_loaded(result.get('messages', []), skill['native_file_sha256']))
         save(root / 'NATIVE.json', result)
