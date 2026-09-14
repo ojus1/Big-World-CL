@@ -179,7 +179,7 @@ class Computer:
         (self.profile/'config.yaml').write_text(yaml.safe_dump(config))
         # Do not inherit the user's personal Hermes config, plugins or tool credentials.
         process_env={k:os.environ[k] for k in ('PATH','HOME','LANG','USER','LOGNAME','XDG_RUNTIME_DIR') if k in os.environ}
-        process_env.update(HERMES_HOME=str(self.profile),PYTHONPATH=f'{ROOT}:{HERMES}',
+        process_env.update(HERMES_AGENT_ROOT=str(HERMES),HERMES_HOME=str(self.profile),PYTHONPATH=f'{ROOT}:{HERMES}',
             LIFESPAN_EMPLOYEE=self.eid,LIFESPAN_MODEL=credentials['model'],
             LIFESPAN_BASE_URL=credentials['base_url'],LIFESPAN_API_KEY=credentials['api_key'],
             PYTHONUNBUFFERED='1',HERMES_YOLO='1',LIFESPAN_SANDBOX=self.backend)
