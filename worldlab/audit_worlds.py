@@ -11,6 +11,8 @@ from .bank import Bank
 from .campaign import source_identity, SEED_SKILL
 from .qualitative import validate_verdict
 from .contracts import Budget, validate_execution
+from .verdict_grammar import contract as verdict_contract
+from .judge_transport import digest as transport_digest
 from .worlds import eligible_experiences, stable_hash
 
 
@@ -73,6 +75,10 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
     jm = grade['usage']
     require(jm['accounting_complete'] and jm['physical_model_calls'] == len(rubric['criteria']) and
             jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
+    contracts = [transport_digest(verdict_contract(c['id'])) for c in rubric['criteria']]
+    require(jm['registered_structured_output_sha256'] == contracts and
+            [r['request_structured_outputs_sha256'] for r in jm['operations']] == contracts,
+            'Physical judge constraints differ from the declared bounded grammar')
     require(record['tokens'] == execution['charged_tokens'] + jm['charged_tokens'] and
             record['model_calls'] == execution['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')
     return record

@@ -11,10 +11,11 @@ import os
 from pathlib import Path
 import re
 from scripts.source_world_calibration import read, save, sha
-from lifespan.evaluation.budget import ResponsesBudget
 from lifespan.evaluation.provider import provider_contract
 from .campaign import source_identity
 from .qualitative import request_verdict, validate_verdict, VERDICT_SCHEMA, RULES
+from .judge_transport import StructuredJudgeBudget
+from .verdict_grammar import contract as verdict_contract
 
 PATTERN = r'(?i)fig(?:ure|\.)?\s*5\.4'
 OUTPUT = 'output/texte_restructure_v3.md'
@@ -45,7 +46,8 @@ def qualify(request_path, out, model, base_url):
                             'scope': 'Twelve fixed calls on four constructed count controls; not general judge calibration.'})
     from openai import OpenAI
     client = OpenAI(base_url=base_url, api_key=os.environ.get('WORLDLAB_API_KEY', 'EMPTY'), max_retries=0, timeout=120)
-    meter = ResponsesBudget(max_model_calls=12, max_output_tokens=4096, max_total_tokens=400000,
+    meter = StructuredJudgeBudget(structured_contracts=[verdict_contract(payload['criterion']['id'])],
+                            max_model_calls=12, max_output_tokens=4096, max_total_tokens=400000,
                             provider_contract=provider)
     meter.wrap_client(client)
     rows = []
