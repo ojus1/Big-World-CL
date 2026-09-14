@@ -106,8 +106,13 @@ To invoke the optimizer qualifier directly, use
 `python -m scripts.preflight_optimizer`, or set the repository PYTHONPATH. The
 script's direct-file import path does not add the repository root automatically.
 
-Earlier failed attempts remain under `h200-flashnext-qualification-v1`,
-`h200-q2`, and `h200-pilot-v1`. The first pilot stopped after seven completed work
+The final offline suite passed **994 tests**, with three skips, in 124.24 seconds.
+The regression set covers custom Hermes paths, reply ID normalization, task-bank
+path safety, file tampering and connected-family partitioning.
+
+Earlier failed attempts remain under `h200-flashnext-qualification-v1` and
+`h200-pilot-v1`; `h200-q2` preserves passing qualification of the preceding
+runtime revision. The first pilot stopped after seven completed work
 sessions in each arm because of mixed colleague-ID namespaces. Its interrupted
 work is excluded from completed comparisons. The replacement has a fresh world,
 new manifests and newly qualified source; no failed checkpoint was edited.
