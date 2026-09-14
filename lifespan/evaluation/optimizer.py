@@ -6,6 +6,7 @@ tasks. Transport injection supports tests without importing an SDK or using a ke
 """
 from __future__ import annotations
 
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -233,6 +234,14 @@ def _sdk_transport(credentials):
         from openai import OpenAI
         with OpenAI(api_key=credentials["api_key"], base_url=credentials["base_url"],
                     max_retries=0, timeout=timeout) as client:
+            from .provider import contract
+            policy = contract(credentials)
+            if policy is not None and (str(client.base_url).rstrip('/') != policy['base_url']
+                    or request.get('model') != policy['model'] or api_mode != policy['api_mode']
+                    or request.get('stream') is not False or request.get('store') is not False
+                    or request.get('extra_body') != {'chat_template_kwargs': policy['chat_template_kwargs']}
+                    or request['extra_body']['chat_template_kwargs']['enable_thinking'] is not False):
+                raise OptimizerInputError('Optimizer request differs from configured provider policy')
             if api_mode == "responses":
                 response = client.responses.create(**request)
             else:
@@ -291,6 +300,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
     if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password or parsed.query:
         raise OptimizerInputError("Provider URL must be an HTTP(S) endpoint without embedded credentials")
     creds = dict(credentials)
+    from .provider import contract
+    provider = contract(creds)
     api_mode = creds.get("api_mode", "responses")
     if api_mode not in {"responses", "chat_completions"}:
         raise OptimizerInputError("api_mode must be responses or chat_completions")
@@ -334,6 +345,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         record = {"context_adapter": adapter, "status": "not_dispatched", "model_calls": 0,
                   "tool_calls": 0, "tokens": 0, "input_tokens": 0, "output_tokens": 0,
                   "accounting_complete": True, "response": ""}
+        if provider is not None:
+            record['provider_contract'] = deepcopy(provider)
         if output_limit < 1:
             record.update(status="budget_exhausted", latency_ms=(time.monotonic() - started) * 1000)
             audit_records.append(dict(record))
@@ -367,11 +380,18 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
             request = {"model": creds["model"], "input": prompt, "store": False,
                        "max_output_tokens": output_limit}
             effort = creds.get("reasoning_effort", "low" if creds["model"].startswith("gpt-5") else None)
-            if effort:
+            if effort and provider is None:
                 request["reasoning"] = {"effort": effort}
         else:
             request = {"model": creds["model"], "messages": [{"role": "user", "content": prompt}]}
             request["max_completion_tokens" if creds["model"].startswith("gpt-5") else "max_tokens"] = output_limit
+        if provider is not None:
+            request.update(stream=False, extra_body={'chat_template_kwargs': deepcopy(provider['chat_template_kwargs'])})
+            record.update(request_api_mode=api_mode, request_model=request['model'],
+                          request_base_url=provider['base_url'], request_stream=request['stream'],
+                          request_store=request['store'], request_chat_template_kwargs=deepcopy(provider['chat_template_kwargs']),
+                          provider_request_sha256=hashlib.sha256(json.dumps(request, sort_keys=True,
+                              separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest())
         record["model_calls"] = 1
         try:
             response = send(request, timeout=remaining_seconds, api_mode=api_mode)

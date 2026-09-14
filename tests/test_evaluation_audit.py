@@ -164,6 +164,24 @@ class ArtifactAuditTests(unittest.TestCase):
              {key: value for key, value in record.items() if key not in ('id', 'skill_version')})
         self.flush()
 
+    def use_modern_streaming_transport(self):
+        """Explicitly upgrade fabricated source/receipts; legacy fixtures stay V1."""
+        from lifespan.evaluation.hermes_transport import manifest_fields
+        fields = manifest_fields({'hermes_transport': 'streaming'})
+        self.manifest.update(fields)
+        self.provenance.update(fields)
+        for name in ('lifespan/evaluation/hermes_transport.py', 'lifespan/hermes_worker.py',
+                     'lifespan/evaluation/runtime.py', 'lifespan/evaluation/runner.py'):
+            self.manifest['source_sha256'][name] = sha((ROOT / name).read_bytes())
+        for record in self.state['sessions']:
+            record['hermes_transport'] = fields['hermes_transport_provenance']
+            native = record['result']['native']
+            native['evaluation_transport'] = fields['hermes_transport_provenance']
+            for row in native['evaluation_budget']['operations']:
+                row['request_stream'] = True
+            self.sync_session(record)
+        self.flush()
+
     def test_regrade_tampered_score_even_if_report_agrees(self):
         record = self.state['sessions'][0]
         record['checks'] = {'fabricated': 1.}

@@ -84,7 +84,7 @@ class TransferLearningTests(unittest.TestCase):
         stack.enter_context(patch('lifespan.evaluation.optimizer.make_reflector', side_effect=self.make_reflector))
         stack.enter_context(redirect_stdout(io.StringIO()))
 
-    def check_record(self, record, directory, capsule):
+    def check_record(self, record, directory, capsule, *, transport_manifest=None):
         self.assertEqual({k: v for k, v in record.items() if k not in ('id', 'skill_version')},
                          json.loads((directory / 'session.json').read_bytes()))
         self.assertEqual(record['task_id'], capsule['task_id'])
@@ -134,6 +134,16 @@ class TransferLearningTests(unittest.TestCase):
             self.skipTest('Pinned upstream missing: python3 scripts/install_skillopt.py')
         return learner.run_learning_epoch(self.source, self.out, self.employee,
             self.experiences, creds=self.creds, executor=kwargs.pop('executor', self.execute), **kwargs)
+
+    def test_transport_is_inherited_by_all_epoch_replays(self):
+        path = self.source/'manifest.json'
+        manifest = json.loads(path.read_text()); manifest['config']['hermes_transport'] = 'nonstreaming'
+        save(path, manifest)
+        result = self.run_fixture()
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(len(self.calls), 10)
+        self.assertTrue(all(call['hermes_transport'] == 'nonstreaming' for call in self.calls))
+        self.assertEqual(json.loads((self.out/'manifest.json').read_text())['hermes_transport'], 'nonstreaming')
 
     def load(self, name):
         return json.loads((self.out / name).read_bytes())
