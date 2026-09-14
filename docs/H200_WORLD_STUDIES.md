@@ -670,3 +670,57 @@ At **22:54:20 UTC**, the pilot SkillOpt arm was on day 1 with three graded work
 attempts. Scale seed 401's control arm was on day 2 with 26 graded attempts.
 Both original main processes remained present. No SkillOpt update or paired
 learning-effect result had completed at that snapshot.
+
+## Replaceable evaluator and audit validation
+
+Commits `d173d65` and `e1cefb7` add judge factories alongside the harness and
+learner factories. The task-world CLI accepts `--judge-config`; the shared
+controller validates normalized scores/accounting before releasing feedback and
+routes both online and replay audits to the selected judge. The built-in r3
+scoring function is unchanged. Its source/evidence/aggregation checks now live
+with the grader. A configured evaluator binds its bank, provider, source and
+configuration, and prospective analysis requires that exact configuration before
+execution. Missing model identities leave same-model status unknown.
+
+An alternate binary-evidence fixture completes a 20-session world pair and one
+learner replay without Internal r3 rubric or verdict files. It checks native
+receipt routing, score tampering, invalid returned grades, source-bank mismatch,
+factory changes and analysis preparation. These are interface tests, not native
+JobBench qualification or evidence of a learning effect.
+
+On H200, the original `31a59a7` auditor and the configured `d173d65` auditor each
+accepted all 27 completed pilot control attempts. They produced identical
+attempt/hash/call/token rows and preserved the complete input inventory. AST
+comparison confirms the runtime `FrozenRubricJudge.grade` function is unchanged.
+This read-only regression made zero model calls; the 445 calls and 6,119,480
+tokens in those receipts remain historical work, not new qualification costs.
+The six qualified grader/controller/audit modules are byte-identical in
+`e1cefb7`.
+
+The final full suite at `e1cefb7` passed **1,083 tests, six skipped, in 118.29
+seconds**. It ran under `bigworld-judge-adapter-tests-v3`, invocation
+`9ac49d09193a4803a4f2fab99f7b966b`, and exited successfully with no main process
+remaining. An earlier test launch was interrupted because it incorrectly set a
+global inference profile without model/endpoint settings; a targeted existing
+fixture reproduced `invalid_actor_provider_model`. The corrected environment
+also passed the preceding `d173d65` suite, 1,080 tests and six skipped. Both logs
+and the launch-error note are retained. No experiment was interrupted.
+
+The evidence package is
+`Big-World-CL-lab/lifespan/artifacts/judge-adapter-validation-v1` on H200, with a
+verified local copy at `lifespan/artifacts/judge-adapter-validation-v1-h200`.
+All 16 files (477,817 bytes) were checked after safe extraction. `VALIDATION.json`
+SHA-256 is `2bc221d42326bce6c6a0307dba2ad57ec3785213737d0e69eb2630421065a890`;
+the archive SHA-256 is
+`4bcfaeaa793cd64f8f8895e6776cc01afa39351ba6cbab408e471ec0c8973357`.
+This package establishes adapter/audit regression, not judge accuracy or a full
+paired experiment result.
+
+At **23:14:32 UTC September 14**, the original pilot and scale main processes
+remained live with their original invocation IDs. The pilot SkillOpt arm was on
+day 3 with nine graded attempts, 131 work/judge calls and 1,714,353 recorded
+tokens. Scale seed 401's control arm was on day 2 with 38 graded attempts, 538
+work/judge calls and 6,921,381 recorded tokens. Neither had a completed SkillOpt
+update. The running studies, their budgets, backend, source checkouts and frozen
+analysis remain unchanged; the next learning evidence is the pilot's first
+scheduled update at day 6.
