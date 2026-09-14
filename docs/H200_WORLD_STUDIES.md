@@ -546,3 +546,17 @@ these initial social calls. Shared-server counters cannot uniquely attribute
 concurrent traffic to this simulation. Bootstrap/social usage therefore remains
 unknown. Future metering belongs at the simulation-scoped provider dispatch and
 response boundary; these running sources and historical costs remain unchanged.
+All eight inspection files were copied locally and checked against remote hashes.
+
+At **22:07:25 UTC**, the reusable progress command at `7ddea29` observed both
+original service processes present and active, with no JSON read errors. The
+scale study had two fully graded attempts: 18 work/judge calls and 105,817
+reported tokens, plus its 12 employee interviews. Two other work attempts were
+still missing final receipts. The pilot retained 11 fully graded attempts while
+its next two were running; no arm or learner update had completed. These
+nontransactional snapshots are saved under
+`Big-World-CL-lab/lifespan/artifacts/workplace-progress-snapshots`.
+The local WorldLab suite passed **62 tests**, and all three new progress-command
+checks also passed on H200. Those checks cover unknown usage, a service polling
+timeout, live/terminal process states, incomplete checkpoint writes and replay
+costs already included in the learner ledger. They make no learning-effect claim.
