@@ -187,3 +187,52 @@ At **20:46:48 UTC**, consolidation v3 remained active with its first native targ
 replay in flight and both timeout readbacks verified at 600 seconds. The v5 judge
 corpus had completed 92 of its 210 fixed contexts. Neither was complete at this
 snapshot. No skill adoption or significant learning result is claimed.
+
+## First complete native workplace protocol launched
+
+Source `3aa4fa1` separates new task arrivals from work capacity. The new
+`development_workplace_v1.json` specifies two employees in one department, English
+research and French editing, one incoming task and two work opportunities per
+employee/day, two-day deadlines and bounded rework. Only the research employee
+has a representative prompt. This prevents an implicit assumption that a user
+has examples for the whole workforce, and allows spare capacity to absorb rework.
+The same frozen arrivals are used in both arms; subsequent decisions can differ.
+Both local and installed H200 focused suites passed **46 tests**.
+
+The frozen checkout is `/home/inference-testing/apps/Big-World-CL-workplace-v3`.
+Its `lifespan/artifacts/native-workplace-v1/STUDY.json` SHA-256 is
+`815a012ed6298ecb8c9909f273e0a7aa4d4389fb733e1a4b149e4dd17cc53643`.
+Seed 317 has ten days, learning on day 6 and probes on days 8–9. There are 40
+incoming obligations across the pair and at most 80 work attempts, including
+rework. Work/judge reservations are 72 million tokens, learning reservations
+24 million, and native interviews are reserved separately (160 logical calls,
+including bounded repairs). These are ceilings, not expected or consumed tokens;
+actor bootstrap/social usage remains unknown.
+
+`bigworld-native-workplace-v1.service` started at **20:54:15 UTC** on September 14,
+with invocation `7228b78af9e84d8b91fabffb19f7e4b2`, MainPID 1834682 and an 18-hour
+service ceiling. It uses a fresh native employee environment per arm and the
+already-running backend on loopback 5001. At **20:55:55 UTC**, it remained active:
+one day-zero employee decision had completed (2,528 interview tokens), the second
+was in flight, and no work attempt had completed. This is a development
+integration run, not a powered or confirmatory experiment.
+
+At that same snapshot, consolidation v3 had completed two native target replays:
+18 calls / 285,933 tokens and 9 calls / 49,992 tokens, both with complete accounting.
+It remained active with no final update/adoption decision. The v5 judge-format
+corpus had completed 130/210 calls, charging 967,778 reported tokens. Its scope
+remains format/completion, not judgment correctness.
+
+The first consolidation replay (`internal/euw_v1_es_017_en_bridge`) included an
+incorrect judge explanation that supplier B was factually supported. Direct
+inspection of the original instruction and acquisition policy confirms supplier A:
+pending on-site PACS validation is explicitly allowed with a clause; supplier B's
+measured 3T noise exceeds the excluding threshold. The original rubric therefore
+stands unchanged. The failed memo criterion's decision and its explanation must
+not be treated as equally reliable evidence; semantic judging remains unqualified.
+
+The completed native-employees-v2 qualification was copied locally as 18 regular
+files, verified against source SHA-256 values and independently receipt-audited:
+two decisions, two calls, 4,914 interview tokens. The archive SHA is
+`520463516e4c7ad76b0d891da3e3da728dc45adcd6e9fc4503f964006f0d9cb7`;
+the local audit is `lifespan/artifacts/native-employees-v2-local-audit.json`.
