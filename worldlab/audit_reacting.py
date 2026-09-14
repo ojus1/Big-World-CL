@@ -51,7 +51,7 @@ def replay_commands(bank, world, state):
     return place
 
 
-def audit_workplaces(bank, out, study, harness):
+def audit_workplaces(bank, out, study, harness, learner):
     from .audit_worlds import audit_attempt, audit_updates
     from .employees import audit_native_decision
     from .organization_graph import declarations
@@ -99,7 +99,7 @@ def audit_workplaces(bank, out, study, harness):
                         sha(root / 'sessions' / session['id'] / 'ATTEMPT.json') == session['attempt_sha256'],
                         'Session receipt changed')
                 counts['online_attempts'] += 1
-            audit_updates(bank, world, root, state, name, harness, counts)
+            audit_updates(bank, world, root, state, name, harness, counts, learner, study['learner'])
             require(report['world_schedule_sha256'] == stable_hash(world), 'World identity changed')
             require(report['work_and_judging_tokens'] == sum(s['tokens'] for s in state['sessions']) and
                     report['learning_and_replay_judging_tokens'] == sum(u['result']['costs']['tokens'] for u in state['updates']),

@@ -80,6 +80,12 @@ the first study dispatch. It binds the study bytes, complete seed list, analysis
 code and the original source checkout used for offline auditing. Keep this
 artifact outside the experiment directory. For example:
 
+For configured adapters, pass the same `--harness-config` and `--learner-config`
+when preparing the analysis. Their bytes are frozen and the recorded original
+auditor receives those configurations after execution. New analysis preparations
+also retain `REPRODUCE.py`; run that copy to analyze the study if the repository
+has changed. Previously frozen plans must use their preserved analysis source.
+
 ```bash
 python3 scripts/analyze_worldlab.py prepare \
   --study /path/to/native-workplace-scale-v1 \

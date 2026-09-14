@@ -139,6 +139,8 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
+    if not callable(getattr(learner, 'audit_update', None)):
+        raise ValueError('Learner must provide an offline audit_update method before preparation')
     name = learner.identity().get('name')
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', name) or name == 'no_learning':
         raise ValueError('The experimental learner needs a safe arm name distinct from no_learning')

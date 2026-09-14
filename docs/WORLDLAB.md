@@ -240,6 +240,31 @@ evidence and never changes the original study's grades or learning feedback.
 
 ### Adding and scaling harnesses
 
+Learners also supply `audit_update(artifact_root, update, *, skill_before,
+expected_identity)`. The world auditor owns chronology, released train/validation
+selection, replay scores and costs, and later skill deployment. The learner's
+auditor owns proposal provenance and its acceptance policy. A different learner
+does not need to imitate SkillOpt's `configuration`, `optimizer_inputs` or gate
+record format. The native SkillOpt implementation still runs its original gate
+checker and additionally binds the recorded configuration, incoming/outgoing skill
+hashes and optimizer transport receipts to its frozen identity and ledger.
+
+All non-control learners return the common fields `status`, `accepted`, `skill`,
+`train_ids`, `validation_ids`, `replay_evidence` and `costs`. Scored replay records
+identify the selected experience, zero-based attempt index, hard/soft score and
+skill-content hash. Target cost operations remain in that attempt order and
+include solver and judge usage. They point to the controller-created
+`replay-NNN` directories; algorithm-specific evidence can live alongside them.
+The adapter's policy auditor remains responsible for verifying how optimizer
+inputs and proposals were derived, including keeping validation out of training.
+
+Supply `--learner-config` as well as `--harness-config` to
+`python -m worldlab.audit_worlds` when those factories were used. A configured
+implementation cannot silently use a built-in auditor just because its name
+matches. Factory preparation requires the learner audit method before dispatch.
+The non-SkillOpt routing test uses a deterministic rule fixture; it is interface
+evidence, not a demonstrated learning algorithm.
+
 `Harness.run()` returns normalized trajectory, usage and skill-loading evidence;
 `Harness.audit_execution()` independently checks that receipt against native
 logs. `PUBLIC_REQUEST.json` is controller-owned. Harness-specific filenames and

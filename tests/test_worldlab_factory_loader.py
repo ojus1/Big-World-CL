@@ -7,6 +7,11 @@ from worldlab.worlds import prepare_study, execute_study
 from test_worldlab_worlds import Bank, Harness, Judge, SPEC
 
 
+class UnauditableLearner:
+    def identity(self): return {'name': 'unauditable_fixture'}
+    def update(self, *args, **kwargs): raise AssertionError('Must fail before running')
+
+
 class Tests(unittest.TestCase):
     def test_factory_config_is_bound_and_execution_rejects_change_before_dispatch(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -35,6 +40,17 @@ class Tests(unittest.TestCase):
                 prepare_study(Bank(), SPEC, [211], Harness(), Judge(), load_adapter(config, 'learner'), Path(tmp) / 'study')
             save(config, {'factory': 'worldlab.contracts:NoLearning', 'kwargs': {}, 'ignored': True})
             with self.assertRaises(ValueError): load_adapter(config, 'learner')
+
+    def test_missing_learner_auditor_rejected_before_preparation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = root / 'adapter.json'
+            save(config, {'factory': 'test_worldlab_factory_loader:UnauditableLearner', 'kwargs': {}})
+            with self.assertRaisesRegex(ValueError, 'learner contract'):
+                load_adapter(config, 'learner')
+            with self.assertRaisesRegex(ValueError, 'audit_update'):
+                prepare_study(Bank(), SPEC, [211], Harness(), Judge(), UnauditableLearner(), root / 'study')
+            self.assertFalse((root / 'study').exists())
 
 
 if __name__ == '__main__': unittest.main()

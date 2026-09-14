@@ -104,12 +104,25 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
     return record
 
 
-def audit_updates(bank, world, root, state, name, harness, counts):
+def audit_updates(bank, world, root, state, name, harness, counts, learner=None, learner_identity=None):
     updates = state['updates']
+    from .contracts import NoLearning
+    skills = {e['id']: SEED_SKILL for e in world['workforce']}
+    seen = set()
+    previous_day = -1
     for item in updates:
+        employee, day = item['employee_id'], item['day']
+        require(employee in skills and type(day) is int and day in world['specification'].get('update_days', []) and
+                day >= previous_day and (day, employee) not in seen, 'Invalid or duplicate learning chronology')
+        previous_day = day; seen.add((day, employee))
+        before = skills[employee]
         update = item['result']
+        require(update['status'] in ('completed', 'budget_exhausted') and type(update['accepted']) is bool and
+                isinstance(update['skill'], str) and
+                (not update['accepted'] or update['status'] == 'completed') and
+                (update['accepted'] or update['skill'] == before), 'Invalid skill adoption result')
         if name == 'no_learning':
-            require(not update['accepted'] and update['costs']['tokens'] == 0, 'Control learned')
+            NoLearning.audit_update(None, update, skill_before=before, expected_identity=NoLearning().identity())
             continue
         update_root = root / 'learning' / f'd{item["day"]:03d}-{item["employee_id"]}'
         require(read(update_root / 'UPDATE.json') == update, 'Update evidence changed')
@@ -129,25 +142,44 @@ def audit_updates(bank, world, root, state, name, harness, counts):
             require(operation['tokens'] == r['tokens'] and operation['model_calls'] == r['model_calls'],
                     'Learning ledger differs from work plus judge usage')
             counts['learning_replays'] += 1
-        for payload in update['optimizer_inputs']:
-            require(all(e['task']['id'] in update['train_ids'] and e['task']['split'] == 'train'
-                        for e in payload['train_experiences']), 'Optimizer saw non-training evidence')
-        from scripts.audit_transfer import gate_check
-        gate_check(update)
+        require(learner is not None and learner_identity is not None,
+                'Supply the registered learner offline auditor')
+        learner.audit_update(update_root, update, skill_before=before, expected_identity=learner_identity)
         counts['adoptions'] += int(update['accepted'])
+        if update['accepted']: skills[employee] = update['skill']
 
 
-def audit(bank, out, harness=None):
+def resolve_auditors(study, harness=None, learner=None):
+    """Never silently audit a configured implementation as the built-in adapter."""
+    resolved = []
+    for kind, supplied in (('harness', harness), ('learner', learner)):
+        identity = study[kind]
+        if supplied is not None:
+            require(supplied.identity() == identity, kind + ' auditor differs from frozen identity')
+            require(callable(getattr(supplied, 'audit_execution' if kind == 'harness' else 'audit_update', None)),
+                    kind + ' does not implement its offline audit method')
+            resolved.append(supplied)
+            continue
+        require('operator_factory' not in identity, 'Supply the frozen ' + kind + ' factory configuration for audit')
+        if kind == 'harness' and identity['name'] == 'native_hermes_task_package':
+            from .hermes import Hermes
+            resolved.append(Hermes)
+        elif kind == 'learner' and identity['name'] == 'skillopt_sleep':
+            from .learning import SkillOpt
+            resolved.append(SkillOpt)
+        else:
+            raise ValueError('Supply an offline auditor for the registered ' + kind)
+    return tuple(resolved)
+
+
+def audit(bank, out, harness=None, learner=None):
     study = read(out / 'STUDY.json')
-    if harness is None and study['harness']['name'] == 'native_hermes_task_package':
-        from .hermes import Hermes
-        harness = Hermes  # Static offline auditor; no native environment needed.
-    require(harness is not None, 'Supply an offline auditor for the registered harness')
     require(sha(out / 'STUDY.json') == read(out / 'PREPARED.json')['study_sha256'], 'Study bytes changed')
     require(source_identity() == study['source_sha256'], 'Use the frozen source checkout for this study')
+    harness, learner = resolve_auditors(study, harness, learner)
     if study.get('employee_driver') is not None:
         from .audit_reacting import audit_workplaces
-        return audit_workplaces(bank, out, study, harness)
+        return audit_workplaces(bank, out, study, harness, learner)
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
     for world in study['worlds']:
         require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
@@ -166,7 +198,7 @@ def audit(bank, out, harness=None):
                 require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'], 'Session receipt mismatch')
                 require(sha(root / 'sessions' / slot['id'] / 'ATTEMPT.json') == session['attempt_sha256'], 'Session hash mismatch')
                 counts['online_attempts'] += 1
-            audit_updates(bank, world, root, state, name, harness, counts)
+            audit_updates(bank, world, root, state, name, harness, counts, learner, study['learner'])
             probes = [s for s in state['sessions'] if s['split'] == 'probe']
             require(report['probe_quality_mean'] == sum(s['grade']['quality_score'] for s in probes) / len(probes), 'Probe report mismatch')
             require(report['world_schedule_sha256'] == stable_hash(world), 'World schedule hash mismatch')
@@ -181,11 +213,13 @@ if __name__ == '__main__':
     p.add_argument('--bank', required=True, type=Path)
     p.add_argument('--out', required=True, type=Path)
     p.add_argument('--harness-config', type=Path)
+    p.add_argument('--learner-config', type=Path)
     a = p.parse_args()
-    harness = None
+    harness = learner = None
     if a.harness_config:
         from .adapters import load_adapter
         harness = load_adapter(a.harness_config, 'harness')
-        if harness.identity() != read(a.out / 'STUDY.json')['harness']:
-            raise ValueError('Harness factory/configuration differs from the frozen study')
-    print(json.dumps(audit(Bank(a.bank), a.out.resolve(), harness=harness), indent=2))
+    if a.learner_config:
+        from .adapters import load_adapter
+        learner = load_adapter(a.learner_config, 'learner')
+    print(json.dumps(audit(Bank(a.bank), a.out.resolve(), harness=harness, learner=learner), indent=2))

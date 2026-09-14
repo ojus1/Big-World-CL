@@ -78,10 +78,18 @@ def validate_execution(receipt, budget, skill):
 
 
 class Learner(Protocol):
-    """Learner policy with evaluator-owned replay callbacks and explicit evidence."""
+    """Learner policy with evaluator-owned replays and its own offline policy audit.
+
+    Common update fields are status, accepted, skill, train_ids, validation_ids,
+    replay_evidence and costs. The controller audits released experience selection,
+    replay scores/usage and deployed skills. The adapter audits proposal provenance
+    and its own acceptance policy; those need not use SkillOpt's gate format.
+    """
     def identity(self) -> dict: ...
     def update(self, skill: str, experiences: list[dict], replay, *, current_day: int,
                artifact_root: Path) -> dict: ...
+    def audit_update(self, artifact_root: Path, update: dict, *, skill_before: str,
+                     expected_identity: dict) -> None: ...
 
 
 class NoLearning:
@@ -95,6 +103,12 @@ class NoLearning:
         return {'status': 'completed', 'skill': skill, 'accepted': False,
                 'costs': {'tokens': 0, 'target_model_calls': 0, 'optimizer_model_calls': 0,
                           'accounting_complete': True, 'operations': []}}
+
+    @staticmethod
+    def audit_update(artifact_root, update, *, skill_before, expected_identity):
+        if (update['accepted'] is not False or update['skill'] != skill_before or
+                update['costs']['tokens'] != 0 or update['costs']['operations']):
+            raise ValueError('No-learning control changed skill or consumed learning calls')
 
 
 def released_training(experiences, day):

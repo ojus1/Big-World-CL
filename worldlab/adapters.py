@@ -9,7 +9,7 @@ from pathlib import Path
 from scripts.source_world_calibration import read, sha
 
 METHODS = {'harness': ('identity', 'unsupported', 'run', 'audit_execution'),
-           'learner': ('identity', 'update')}
+           'learner': ('identity', 'update', 'audit_update')}
 
 
 class ConfiguredAdapter:
