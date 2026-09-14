@@ -5,6 +5,7 @@ Only calibration-training briefs are searched. Validation and holdout briefs
 cannot influence the task mixture fitted here.
 """
 from collections import Counter
+from copy import deepcopy
 import hashlib
 import math
 import random
@@ -13,6 +14,23 @@ from dataclasses import asdict
 from .contracts import Budget
 
 STOP = set('a an the to of and or in for on with from this that is are be as by it its my our please'.split())
+
+
+def attach_examples(workforce, examples):
+    """Combine simulator-generated employees with examples for any subset.
+
+    The user supplies {employee_id: [representative task objects]}. They do not
+    need to enumerate unobserved employees or repeat role/language metadata.
+    """
+    specification = deepcopy(workforce)
+    indexed = {e['id']: e for e in specification['employees']}
+    if not isinstance(examples, dict) or set(examples) - set(indexed):
+        raise ValueError('Examples must refer to known employees in the simulated workforce')
+    for employee_id, tasks in examples.items():
+        if not isinstance(tasks, list):
+            raise ValueError('Employee examples must be a list')
+        indexed[employee_id]['representative_tasks'] = deepcopy(tasks)
+    return specification
 
 
 def tokens(text):

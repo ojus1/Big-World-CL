@@ -3,6 +3,8 @@
 This branch contains the direct H200 Flash Next setup. See the
 [H200 runbook](docs/H200_RUNBOOK.md) and [codebase review](docs/H200_CODEBASE_REVIEW.md),
 including the sourced JobBench/Internal EuroBench calibration bank and its execution limits.
+The [task-package calibration interface](docs/WORLDLAB.md) accepts representative
+examples for any subset of employees and reports assumptions for the rest.
 
 **Persistent synthetic workplaces for studying continual adaptation through consequential work.** Enterprises, a government agency, consumers, employees and their AI assistants share a timeline. Changes in competition, policy and geopolitics alter business objectives and procedures; work outcomes influence subsequent decisions.
 

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 from scripts.source_world_calibration import save
-from worldlab.calibration import fit, slots
+from worldlab.calibration import fit, slots, attach_examples
 from worldlab.contracts import Feedback, released_training
 from worldlab.campaign import prepare, execute, summarize, source_identity
 
@@ -108,6 +108,15 @@ class Tests(unittest.TestCase):
         self.assertEqual(result['anchors'], [])
         self.assertIsNone(result['weighted_retrieval_coverage'])
         self.assertEqual(result['workforce'][0]['default_action'], 'retain_simulator_default')
+
+    def test_user_supplies_only_one_employee_overlay_without_roster_metadata(self):
+        world = {'schema_version': 1, 'employees': [
+            {'id': str(i), 'role': 'Finance analyst', 'language': 'en'} for i in range(100)]}
+        spec = attach_examples(world, {'0': [{'prompt': 'reconcile invoice costs'}]})
+        result = fit(FakeBank(), spec)
+        self.assertEqual(result['employee_coverage'], {'direct_examples': 1, 'role_transfer': 99})
+        self.assertNotIn('representative_tasks', world['employees'][0])
+        with self.assertRaises(ValueError): attach_examples(world, {'unknown': []})
 
     def test_direct_unmatched_example_does_not_silently_borrow_other_role_evidence(self):
         spec = copy.deepcopy(SPEC)
