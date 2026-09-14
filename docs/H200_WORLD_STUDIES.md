@@ -724,3 +724,44 @@ work/judge calls and 6,921,381 recorded tokens. Neither had a completed SkillOpt
 update. The running studies, their budgets, backend, source checkouts and frozen
 analysis remain unchanged; the next learning evidence is the pilot's first
 scheduled update at day 6.
+
+## Editorial working-day consistency diagnostic
+
+The source task `internal/euw_v1_fr_014` explicitly includes Saturdays in
+working days and excludes Sundays plus five named 2025 holidays. The production
+supplement covers calendar subtraction but does not yet cover working-day
+counts or the strict `<10` flag. Commit `07b9051` adds a separate read-only
+diagnostic for these two calculations; it does not change the production
+grader, historical scores, skills or active study configuration.
+
+The H200 diagnostic selected every completed attempt of this calibration-training
+task in the pilot control arm, independent of score: **four attempts, 144 CSV
+rows**. All working-day counts and threshold flags matched the stated arithmetic.
+No additional arithmetic defects were found. This checks consistency with the
+candidate's stated delivery/review dates; it does not establish that every date
+choice, translator assignment, status or narrative judgment is correct. The
+four attempts belong to one dependent task family.
+
+Eight hand-calculated controls cover Saturday inclusion, Sunday exclusion,
+holiday boundaries, nine versus ten working days, and a negative interval.
+The targeted suite passed **11 tests in 0.80 seconds** on H200, including comparison
+against explicit date enumeration. The offline auditor reproduced the four
+attempts, and a copied diagnostic with one attempt omitted was rejected even
+after its results and summary were rebuilt. The complete original control file
+inventory remained unchanged. All this work made zero model calls.
+
+Frozen source is `/home/inference-testing/apps/Big-World-CL-editorial-arithmetic-v1`
+at `07b9051`; artifacts are `lifespan/artifacts/editorial-arithmetic-control-v1`
+there. The local copy is `lifespan/artifacts/editorial-arithmetic-control-v1-h200`:
+11 files, 276,715 bytes, all hash-verified after extraction. The plan SHA-256 is
+`104896dae3208c003d99b9b8b0cd1e4dffa1cc0b9ac79aa71ad4d6586170896d`, report SHA-256
+is `5d444c4cda6d1edb1fa33d52397009102d7e7496dd7c4260b2324b91d4968e15`, and archive
+SHA-256 is `2dc58959670f3aea30fa6dc2b504afed7ae57ebd2e26cd9200fe5cfd600f5e19`.
+
+At **23:22:05 UTC September 14**, both original experiment main processes remained
+live. The pilot learning arm had reached day 5 with 14 graded attempts, 197
+work/judge calls and 2,346,201 recorded tokens. Scale seed 401's control arm was on
+day 3 with 39 graded attempts, 559 calls and 7,357,173 recorded tokens. No
+SkillOpt update had completed. Actual consolidation costs and adoption evidence
+remain the next required observation; the original per-update budgets and study
+service limits remain unchanged.
