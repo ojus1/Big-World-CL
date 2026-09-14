@@ -17,6 +17,17 @@ from .qualitative import FrozenRubricJudge
 from .worlds import eligible_experiences
 
 
+def historical_request(study, attempt_root, record):
+    adapter = study['harness']
+    if adapter['name'] != 'native_hermes_task_package' or adapter['version'] not in (1, 2):
+        raise ValueError('Historical request importer does not recognize this adapter version')
+    filename = 'REQUEST.json' if adapter['version'] == 1 else 'PUBLIC_REQUEST.json'
+    path = attempt_root / filename
+    if record['artifact_inventory'].get(filename) != sha(path):
+        raise ValueError('Historical request bytes differ from the native attempt inventory')
+    return read(path)
+
+
 def qualify(bank, harness, judge, learner, source_study, employee, day, out):
     study = read(source_study / 'STUDY.json')
     if len(study['worlds']) != 1:
@@ -33,7 +44,7 @@ def qualify(bank, harness, judge, learner, source_study, employee, day, out):
         source = root / 'sessions' / row['id'] / 'ATTEMPT.json'
         if sha(source) != row['attempt_sha256'] or read(source)['grade'] != row['grade']:
             raise ValueError('Historical experience differs from its native attempt')
-        request = read(source.parent / 'PUBLIC_REQUEST.json')
+        request = historical_request(study, source.parent, read(source))
         if request['skill'] != SEED_SKILL or request['instruction'] != bank.public(row['task_id'])['instruction']:
             raise ValueError('Historical control must use the original brief and seed skill')
         expected = {'train': 'calibration_train', 'val': 'calibration_validation'}[row['split']]
