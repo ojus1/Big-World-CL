@@ -206,7 +206,7 @@ factory mechanism. The built-in example is
 `configs/worldlab/h200_judge_factory_v1.json`; it binds the verified bank,
 model, endpoint and token ceiling. The evaluator may use a different model.
 Each JSON file contains exactly `factory` (an importable `module:attribute`) and
-`kwargs` (constructor arguments). The factory implements the `Harness` or `Learner`
+`kwargs` (constructor arguments). The factory implements the `Harness`, `Learner` or `Judge`
 protocol in `worldlab/contracts.py`; it supplies native receipts and an honest
 identity including its external dependency versions. The experimental learner's
 name must be a safe path component distinct from the reserved `no_learning` arm.
@@ -220,8 +220,8 @@ positive `max_tokens` ceiling. Only the evaluator receives the bank and private
 rubrics. Complete receipts provide `success` (Boolean), `quality_score` in
 `[0, 1]`, textual `feedback`, and physical call/token accounting. Invalid or
 nonfinite scores, incomplete accounting, and exceeded allocations are rejected
-before feedback is released. A grader without a model provider records unknown
-same-model status rather than asserting independence.
+before feedback is released. If either model identity is unavailable, same-model
+status remains unknown rather than asserting independence.
 
 The shared auditor binds original task inputs, deployed skills, full attempt
 inventories and combined costs. The judge's auditor verifies its own evidence
@@ -230,7 +230,8 @@ and learning replays. It need not create Internal EuroBench's `rubric.json` or
 `GRADE.json`. The built-in r3 scorer retains its original checks behind this
 interface. Configured judges require their exact frozen identity during audit;
 a name matching the built-in judge cannot bypass the factory requirement.
-The prospective analysis also freezes and forwards `--judge-config`.
+The prospective analysis also freezes and forwards `--judge-config`, and rejects
+a missing or mismatched judge configuration before study execution.
 
 An end-to-end fixture checks a complete 20-session world pair plus a learner
 replay using binary evidence, an alternate native verdict format, and no r3

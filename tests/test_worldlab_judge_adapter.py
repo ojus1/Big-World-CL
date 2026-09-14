@@ -182,5 +182,25 @@ class Tests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 validate_grade({**valid, **change}, token_limit=100, call_limit=3)
 
+    def test_invalid_grade_does_not_finalize_an_attempt(self):
+        class Invalid(Judge):
+            def grade(self, *args, **kwargs):
+                return {**super().grade(*args, **kwargs), 'quality_score': float('nan')}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / 'attempt'
+            with self.assertRaisesRegex(ValueError, 'invalid score'):
+                execute_task(Bank(), Harness(), Invalid(), task_id='train-0', employee_id='writer',
+                             skill='seed', budget=Budget(), out=root)
+            self.assertTrue((root / 'EXECUTION_RECEIPT.json').exists())
+            self.assertFalse((root / 'ATTEMPT.json').exists())
+
+    def test_unknown_harness_model_does_not_claim_independent_judging(self):
+        class ModelJudge(Judge):
+            def identity(self): return {**super().identity(), 'provider': {'model': 'fixture'}}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / 'study'
+            prepare_study(Bank(), SPEC, [211], Harness(), ModelJudge(), Learner(), root)
+            self.assertIsNone(read(root / 'STUDY.json')['analysis']['same_model_judge'])
+
 
 if __name__ == '__main__': unittest.main()

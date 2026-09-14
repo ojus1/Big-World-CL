@@ -90,9 +90,15 @@ class Tests(unittest.TestCase):
     def test_judge_audit_configuration_and_reproduction_source_are_frozen(self):
         with tempfile.TemporaryDirectory() as tmp:
             root, out = Path(tmp) / 'study', Path(tmp) / 'analysis'
-            fixture(root)
+            study = fixture(root)
             config = Path(tmp) / 'judge.json'
             save(config, {'factory': 'example:Factory', 'kwargs': {}})
+            study['judge'] = {'operator_factory': {'configuration_sha256': analysis.digest(config)}}
+            save(root / 'STUDY.json', study)
+            save(root / 'PREPARED.json', {'study_sha256': analysis.digest(root / 'STUDY.json')})
+            with self.assertRaisesRegex(ValueError, 'exact configured judge'):
+                analysis.prepare(root, out, Path(tmp))
+            self.assertFalse(out.exists())
             analysis.prepare(root, out, Path(tmp), judge_config=config)
             plan = analysis.read(out / 'PLAN.json')
             self.assertEqual(plan['judge_config_sha256'], analysis.digest(config))
@@ -104,6 +110,16 @@ class Tests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'judge configuration changed'):
                     analysis.analyze(out, Path(tmp))
                 audit.assert_not_called()
+
+    def test_analysis_cannot_replace_builtin_judge_with_factory_configuration(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root, out = Path(tmp) / 'study', Path(tmp) / 'analysis'
+            fixture(root)
+            config = Path(tmp) / 'judge.json'
+            save(config, {'factory': 'example:Factory', 'kwargs': {}})
+            with self.assertRaisesRegex(ValueError, 'prepared built-in judge'):
+                analysis.prepare(root, out, Path(tmp), judge_config=config)
+            self.assertFalse(out.exists())
 
     def test_all_planned_probes_and_equal_world_weights_are_retained(self):
         with tempfile.TemporaryDirectory() as tmp:

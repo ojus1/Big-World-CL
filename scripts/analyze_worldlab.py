@@ -65,6 +65,12 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
     config = Path(harness_config).resolve() if harness_config else None
     learner = Path(learner_config).resolve() if learner_config else None
     judge = Path(judge_config).resolve() if judge_config else None
+    frozen_judge_factory = study.get('judge', {}).get('operator_factory')
+    if frozen_judge_factory is not None:
+        require(judge is not None and digest(judge) == frozen_judge_factory.get('configuration_sha256'),
+                'Freeze the exact configured judge before study execution')
+    else:
+        require(judge is None, 'Judge configuration does not match the prepared built-in judge')
     plan = {'schema_version': 1, 'kind': 'prospective_development_workplace_analysis',
             'prepared_unix': time.time(), 'study_root': str(root),
             'study_sha256': digest(root / 'STUDY.json'),

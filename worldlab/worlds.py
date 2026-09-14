@@ -170,6 +170,8 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
     work_reservation = (2 * sum(limit * (Budget(**spec.get('work_budget', {})).total_tokens + judge.max_tokens)
                                for limit in work_limits))
     learning_reservation = sum(len(w['workforce']) * len(spec.get('update_days', [])) for w in worlds) * learner.identity().get('budget', {}).get('max_tokens', 0)
+    harness_model = harness.identity().get('provider', {}).get('model')
+    judge_model = judge.identity().get('provider', {}).get('model')
     manifest = {'schema_version': 1, 'worlds': worlds, 'harness': harness.identity(),
                 'judge': judge.identity(), 'learner': learner.identity(), 'source_sha256': source_identity(),
                 'seed_skill': SEED_SKILL,
@@ -178,9 +180,8 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
                                               'total': work_reservation + learning_reservation},
                 'analysis': {'unit': 'world_pair', 'primary': 'post_learning_probe_quality_mean',
                              'scope': 'development', 'all_planned_probes_in_denominator': True,
-                             'same_model_judge': (harness.identity().get('provider', {}).get('model') ==
-                                judge.identity().get('provider', {}).get('model'))
-                                if judge.identity().get('provider', {}).get('model') is not None else None}}
+                             'same_model_judge': harness_model == judge_model
+                                if harness_model is not None and judge_model is not None else None}}
     if employee_factory is not None:
         manifest['employee_driver'] = employee_factory.identity()
         manifest['analysis']['primary'] = 'probe_accepted_on_time_fraction'
