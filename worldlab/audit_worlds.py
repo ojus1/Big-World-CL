@@ -9,21 +9,16 @@ from pathlib import Path
 from scripts.source_world_calibration import read, sha, child
 from .bank import Bank
 from .campaign import source_identity, SEED_SKILL
-from .qualitative import validate_verdict
-from .contracts import Budget, validate_execution
-from .verdict_grammar import contract as verdict_contract
-from .judge_transport import digest as transport_digest
+from .contracts import Budget, validate_execution, validate_grade
 from .worlds import eligible_experiences, stable_hash
 from .attempts import task_instruction
-from .mechanical_criteria import evaluate as mechanical_verdict
-from .public_requirements import evaluate as public_requirements, aggregate
 
 
 def require(condition, message):
     if not condition: raise ValueError(message)
 
 
-def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employee_message=None):
+def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employee_message=None, judge=None):
     record = read(root / 'ATTEMPT.json')
     actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} - {'ATTEMPT.json'}
     require(actual == set(record['artifact_inventory']), 'Attempt artifact inventory changed')
@@ -51,60 +46,20 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
     require(read(root / 'BASELINE.json') == expected_baseline, 'Original input baseline changed')
     require(record['trajectory'] == execution['trajectory'] and record['skill_sha256'] == execution['skill_sha256'],
             'Normalized trajectory or skill changed')
-    rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
+    if judge is None:
+        from .qualitative import FrozenRubricJudge
+        judge = FrozenRubricJudge
     grade = record['grade']
-    require(grade == read(root / 'judging/GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
-    verdicts = []
-    model_criteria = []
-    evidence = read(root / 'judging/EVIDENCE.json')
-    expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
-                      for p in workspace.rglob('*') if p.is_file() and
-                      str(p.relative_to(workspace)) != '.employee_identity' and
-                      not str(p.relative_to(workspace)).startswith('scratch/')}
-    require(evidence['files'] == expected_files and evidence['instruction'] == original,
-            'Judge evidence differs from original input and actual deliverables')
-    changed = [name for name, digest in expected_baseline.items()
-               if not child(workspace, name).is_file() or sha(child(workspace, name)) != digest]
-    unauthorized = [name for name in expected_files if name not in expected_baseline and not name.startswith('output/')]
-    require(sorted(changed) == sorted(grade['input_changes']) and sorted(unauthorized) == sorted(grade['unauthorized_files']),
-            'Preservation result differs from workspace')
-    for i, criterion in enumerate(rubric['criteria']):
-        payload = read(root / 'judging' / f'REQUEST-{i:02d}.json')
-        response = read(root / 'judging' / f'RESPONSE-{i:02d}.json')
-        require(payload['criterion'] == criterion and payload['evidence'] == read(root / 'judging/EVIDENCE.json'),
-                'Frozen criterion/evidence mismatch')
-        require(response['status'] == 'completed', 'Judge response incomplete')
-        mechanical = mechanical_verdict(payload)
-        require(response['evaluation_method'] == ('registered_literal_count' if mechanical is not None else 'model'),
-                'Criterion execution method changed')
-        if mechanical is None:
-            model_criteria.append(criterion)
-        else:
-            require(json.loads(response['text']) == mechanical, 'Literal count differs from source/output bytes')
-        verdicts.append(validate_verdict(json.loads(response['text']), criterion))
-    require(verdicts == grade['criteria'], 'Criterion verdicts changed')
-    supplement = public_requirements(bank, task_id, expected_files)
-    require(grade.get('public_requirements') == supplement and
-            read(root / 'judging/PUBLIC_REQUIREMENTS.json') == supplement,
-            'Public requirement checks differ from registered source and output bytes')
-    score, passed = aggregate(rubric['criteria'], verdicts, supplement)
-    valid_files = not grade['input_changes'] and not grade['unauthorized_files']
-    require(grade['quality_score'] == (score if valid_files else 0.) and
-            grade['success'] == (passed and valid_files), 'Quality aggregation mismatch')
+    validate_grade(grade)
+    require(grade['grading_complete'], 'Judgment incomplete')
+    judge.audit_grade(bank, task_id, workspace, expected_baseline, root / 'judging', grade)
     jm = grade['usage']
-    require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_criteria) and
-            jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
-    contracts = [transport_digest(verdict_contract(c['id'])) for c in rubric['criteria']]
-    require(jm['registered_structured_output_sha256'] == contracts and
-            [r['request_structured_outputs_sha256'] for r in jm['operations']] ==
-            [transport_digest(verdict_contract(c['id'])) for c in model_criteria],
-            'Physical judge constraints differ from the declared bounded grammar')
     require(record['tokens'] == execution['charged_tokens'] + jm['charged_tokens'] and
             record['model_calls'] == execution['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')
     return record
 
 
-def audit_updates(bank, world, root, state, name, harness, counts, learner=None, learner_identity=None):
+def audit_updates(bank, world, root, state, name, harness, counts, learner=None, learner_identity=None, judge=None):
     updates = state['updates']
     from .contracts import NoLearning
     skills = {e['id']: SEED_SKILL for e in world['workforce']}
@@ -133,7 +88,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
                 update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
         for replay in update['replay_evidence']:
             r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness,
-                                      employee_message=by_id[replay['id']].get('employee_message'))
+                                      employee_message=by_id[replay['id']].get('employee_message'), judge=judge)
             require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
             req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
             require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
@@ -172,14 +127,27 @@ def resolve_auditors(study, harness=None, learner=None):
     return tuple(resolved)
 
 
-def audit(bank, out, harness=None, learner=None):
+def resolve_judge(study, judge=None):
+    identity = study['judge']
+    if judge is not None:
+        require(judge.identity() == identity, 'Judge auditor differs from frozen identity')
+        require(callable(getattr(judge, 'audit_grade', None)), 'Judge needs its offline audit_grade method')
+        return judge
+    require('operator_factory' not in identity, 'Supply the frozen judge factory configuration for audit')
+    require(identity['name'] == 'frozen_internal_r3_text_judge', 'Supply an offline auditor for the registered judge')
+    from .qualitative import FrozenRubricJudge
+    return FrozenRubricJudge
+
+
+def audit(bank, out, harness=None, learner=None, judge=None):
     study = read(out / 'STUDY.json')
     require(sha(out / 'STUDY.json') == read(out / 'PREPARED.json')['study_sha256'], 'Study bytes changed')
     require(source_identity() == study['source_sha256'], 'Use the frozen source checkout for this study')
     harness, learner = resolve_auditors(study, harness, learner)
+    judge = resolve_judge(study, judge)
     if study.get('employee_driver') is not None:
         from .audit_reacting import audit_workplaces
-        return audit_workplaces(bank, out, study, harness, learner)
+        return audit_workplaces(bank, out, study, harness, learner, judge)
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
     for world in study['worlds']:
         require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
@@ -194,11 +162,11 @@ def audit(bank, out, harness=None, learner=None):
                 past = [u for u in updates if u['employee_id'] == slot['employee_id'] and
                         u['day'] < slot['day'] and u['result']['accepted']]
                 skill = past[-1]['result']['skill'] if past else SEED_SKILL
-                record = audit_attempt(bank, root / 'sessions' / slot['id'], slot['task_id'], skill, harness)
+                record = audit_attempt(bank, root / 'sessions' / slot['id'], slot['task_id'], skill, harness, judge=judge)
                 require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'], 'Session receipt mismatch')
                 require(sha(root / 'sessions' / slot['id'] / 'ATTEMPT.json') == session['attempt_sha256'], 'Session hash mismatch')
                 counts['online_attempts'] += 1
-            audit_updates(bank, world, root, state, name, harness, counts, learner, study['learner'])
+            audit_updates(bank, world, root, state, name, harness, counts, learner, study['learner'], judge)
             probes = [s for s in state['sessions'] if s['split'] == 'probe']
             require(report['probe_quality_mean'] == sum(s['grade']['quality_score'] for s in probes) / len(probes), 'Probe report mismatch')
             require(report['world_schedule_sha256'] == stable_hash(world), 'World schedule hash mismatch')
@@ -214,12 +182,16 @@ if __name__ == '__main__':
     p.add_argument('--out', required=True, type=Path)
     p.add_argument('--harness-config', type=Path)
     p.add_argument('--learner-config', type=Path)
+    p.add_argument('--judge-config', type=Path)
     a = p.parse_args()
-    harness = learner = None
+    harness = learner = judge = None
     if a.harness_config:
         from .adapters import load_adapter
         harness = load_adapter(a.harness_config, 'harness')
     if a.learner_config:
         from .adapters import load_adapter
         learner = load_adapter(a.learner_config, 'learner')
-    print(json.dumps(audit(Bank(a.bank), a.out.resolve(), harness=harness, learner=learner), indent=2))
+    if a.judge_config:
+        from .adapters import load_adapter
+        judge = load_adapter(a.judge_config, 'judge')
+    print(json.dumps(audit(Bank(a.bank), a.out.resolve(), harness=harness, learner=learner, judge=judge), indent=2))

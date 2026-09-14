@@ -87,6 +87,24 @@ class Tests(unittest.TestCase):
                     analysis.analyze(out, Path(tmp))
                 audit.assert_not_called()
 
+    def test_judge_audit_configuration_and_reproduction_source_are_frozen(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root, out = Path(tmp) / 'study', Path(tmp) / 'analysis'
+            fixture(root)
+            config = Path(tmp) / 'judge.json'
+            save(config, {'factory': 'example:Factory', 'kwargs': {}})
+            analysis.prepare(root, out, Path(tmp), judge_config=config)
+            plan = analysis.read(out / 'PLAN.json')
+            self.assertEqual(plan['judge_config_sha256'], analysis.digest(config))
+            self.assertEqual(analysis.digest(out / 'REPRODUCE.py'), plan['analysis_source_sha256'])
+            save(root / 'EXECUTION.json', {'started_unix': plan['prepared_unix'] + 1})
+            save(root / 'REPORT.json', {'status': 'completed'})
+            config.write_text(config.read_text() + '\n')
+            with patch.object(analysis.subprocess, 'run') as audit:
+                with self.assertRaisesRegex(ValueError, 'judge configuration changed'):
+                    analysis.analyze(out, Path(tmp))
+                audit.assert_not_called()
+
     def test_all_planned_probes_and_equal_world_weights_are_retained(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -1,6 +1,7 @@
 """Public execution contracts; evaluator answers never enter these objects."""
 from dataclasses import dataclass
 import hashlib
+import math
 from pathlib import Path
 from typing import Protocol
 
@@ -90,6 +91,41 @@ class Learner(Protocol):
                artifact_root: Path) -> dict: ...
     def audit_update(self, artifact_root: Path, update: dict, *, skill_before: str,
                      expected_identity: dict) -> None: ...
+
+
+class Judge(Protocol):
+    """Evaluator-owned scoring and offline evidence audit.
+
+    The scorer alone reads private rubrics. Complete grades expose a Boolean
+    success, quality_score in [0, 1], feedback and measured usage. The adapter
+    audits its original criteria, evidence, aggregation and resource receipts;
+    the controller audits source inputs, attempt inventories and combined costs.
+    Identity must include all scoring policy/source/provider dependencies.
+    """
+    max_tokens: int
+    def identity(self) -> dict: ...
+    def unsupported(self, public_task: dict) -> list[str]: ...
+    def grade(self, task_id: str, workspace: Path, baseline: dict, artifact_root: Path,
+              *, token_limit: int, call_limit: int, timeout_seconds: float) -> dict: ...
+    def audit_grade(self, bank, task_id: str, workspace: Path, baseline: dict,
+                    artifact_root: Path, receipt: dict) -> None: ...
+
+
+def validate_grade(receipt, *, token_limit=None, call_limit=None):
+    """A malformed adapter result must not become released learning feedback."""
+    if not isinstance(receipt, dict) or type(receipt.get('grading_complete')) is not bool:
+        raise ValueError('Judge receipt requires a Boolean grading_complete')
+    usage = receipt.get('usage', {})
+    for key, limit in [('physical_model_calls', call_limit), ('charged_tokens', token_limit)]:
+        value = usage.get(key)
+        if type(value) is not int or value < 0 or (limit is not None and value > limit):
+            raise ValueError('Invalid or exceeded judge budget: ' + key)
+    if receipt['grading_complete']:
+        score = receipt.get('quality_score')
+        if (usage.get('accounting_complete') is not True or type(receipt.get('success')) is not bool or
+                type(score) not in (int, float) or not math.isfinite(score) or not 0 <= score <= 1 or
+                not isinstance(receipt.get('feedback'), str)):
+            raise ValueError('Completed judge receipt has invalid score, feedback or accounting')
 
 
 class NoLearning:

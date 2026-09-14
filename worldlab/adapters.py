@@ -1,4 +1,4 @@
-"""Load operator-selected harness/learner factories without editing the runner.
+"""Load operator-selected harness, learner and judge factories.
 
 These files select trusted Python code. They are never read from task workspaces.
 Credentials belong in the factory's runtime environment, not its experiment file.
@@ -9,7 +9,8 @@ from pathlib import Path
 from scripts.source_world_calibration import read, sha
 
 METHODS = {'harness': ('identity', 'unsupported', 'run', 'audit_execution'),
-           'learner': ('identity', 'update', 'audit_update')}
+           'learner': ('identity', 'update', 'audit_update'),
+           'judge': ('identity', 'unsupported', 'grade', 'audit_grade')}
 
 
 class ConfiguredAdapter:
@@ -47,6 +48,8 @@ def load_adapter(path, kind):
     delegate = factory(**config['kwargs'])
     if any(not callable(getattr(delegate, method, None)) for method in METHODS[kind]):
         raise ValueError('Adapter does not implement the ' + kind + ' contract')
+    if kind == 'judge' and (type(getattr(delegate, 'max_tokens', None)) is not int or delegate.max_tokens <= 0):
+        raise ValueError('Judge must declare a positive integer max_tokens ceiling')
     adapter = ConfiguredAdapter(delegate, {'kind': kind, 'factory': symbol,
         'module_sha256': sha(source), 'configuration_sha256': sha(path)})
     adapter.identity()  # Fail before any study preparation on malformed identity.

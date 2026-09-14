@@ -201,6 +201,10 @@ python -m worldlab.audit_worlds --bank BANK --out OUT
 
 For operator-supplied adapters, replace `--hermes-root` with `--harness-config FILE`
 and/or `--skillopt-root` with `--learner-config FILE` in both prepare and execute.
+Use `--judge-config FILE` to select a different evaluator through the same
+factory mechanism. The built-in example is
+`configs/worldlab/h200_judge_factory_v1.json`; it binds the verified bank,
+model, endpoint and token ceiling. The evaluator may use a different model.
 Each JSON file contains exactly `factory` (an importable `module:attribute`) and
 `kwargs` (constructor arguments). The factory implements the `Harness` or `Learner`
 protocol in `worldlab/contracts.py`; it supplies native receipts and an honest
@@ -210,6 +214,30 @@ The loader additionally binds configuration bytes and factory-module bytes in th
 frozen identity. Changed factories/configurations fail before execution. Keep
 credentials in the runtime environment. Only operator-selected trusted code is
 loaded; task files do not select adapters.
+
+A judge implements `identity`, `unsupported`, `grade` and `audit_grade`, with a
+positive `max_tokens` ceiling. Only the evaluator receives the bank and private
+rubrics. Complete receipts provide `success` (Boolean), `quality_score` in
+`[0, 1]`, textual `feedback`, and physical call/token accounting. Invalid or
+nonfinite scores, incomplete accounting, and exceeded allocations are rejected
+before feedback is released. A grader without a model provider records unknown
+same-model status rather than asserting independence.
+
+The shared auditor binds original task inputs, deployed skills, full attempt
+inventories and combined costs. The judge's auditor verifies its own evidence
+format, original criteria, aggregation and usage receipts for both online work
+and learning replays. It need not create Internal EuroBench's `rubric.json` or
+`GRADE.json`. The built-in r3 scorer retains its original checks behind this
+interface. Configured judges require their exact frozen identity during audit;
+a name matching the built-in judge cannot bypass the factory requirement.
+The prospective analysis also freezes and forwards `--judge-config`.
+
+An end-to-end fixture checks a complete 20-session world pair plus a learner
+replay using binary evidence, an alternate native verdict format, and no r3
+rubric files. It also checks tampered grades and factory changes. This is
+interface validation, not JobBench document/research qualification, independent
+judge calibration, or evidence of skill learning. Existing frozen studies must
+continue using their original executable and analysis source.
 
 `configs/worldlab/h200_hermes_factory_v1.json` and
 `configs/worldlab/h200_skillopt_factory_v1.json` select the installed H200 baseline
@@ -276,7 +304,7 @@ include solver and judge usage. They point to the controller-created
 The adapter's policy auditor remains responsible for verifying how optimizer
 inputs and proposals were derived, including keeping validation out of training.
 
-Supply `--learner-config` as well as `--harness-config` to
+Supply `--judge-config`, `--learner-config` and `--harness-config` to
 `python -m worldlab.audit_worlds` when those factories were used. A configured
 implementation cannot silently use a built-in auditor just because its name
 matches. Factory preparation requires the learner audit method before dispatch.

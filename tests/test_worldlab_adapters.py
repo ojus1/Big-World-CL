@@ -42,6 +42,7 @@ class Judge:
     def grade(self, *args, **kwargs):
         self.calls += 1
         return {'grading_complete': True, 'quality_score': 1., 'success': True,
+                'feedback': 'Fixture assessment',
                 'usage': {'physical_model_calls': 2, 'charged_tokens': 40, 'accounting_complete': True}}
 
 

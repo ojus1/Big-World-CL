@@ -51,7 +51,7 @@ def verified_study(root):
     return study
 
 
-def prepare(study_root, out, frozen_source, python=sys.executable, harness_config=None, learner_config=None):
+def prepare(study_root, out, frozen_source, python=sys.executable, harness_config=None, learner_config=None, judge_config=None):
     root, out, frozen_source = map(lambda p: Path(p).resolve(), (study_root, out, frozen_source))
     study = verified_study(root)
     require(not (root / 'EXECUTION.json').exists() and not (root / 'worlds').exists(),
@@ -64,6 +64,7 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
                 for name, sha in sources.items()), 'Frozen audit source differs from prepared study')
     config = Path(harness_config).resolve() if harness_config else None
     learner = Path(learner_config).resolve() if learner_config else None
+    judge = Path(judge_config).resolve() if judge_config else None
     plan = {'schema_version': 1, 'kind': 'prospective_development_workplace_analysis',
             'prepared_unix': time.time(), 'study_root': str(root),
             'study_sha256': digest(root / 'STUDY.json'),
@@ -86,7 +87,9 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
             'harness_config': str(config) if config else None,
             'harness_config_sha256': digest(config) if config else None,
             'learner_config': str(learner) if learner else None,
-            'learner_config_sha256': digest(learner) if learner else None}
+            'learner_config_sha256': digest(learner) if learner else None,
+            'judge_config': str(judge) if judge else None,
+            'judge_config_sha256': digest(judge) if judge else None}
     require(len(plan['seeds']) <= plan['test']['max_pairs'],
             'This exact small-study analysis supports at most 20 pairs; choose another prospective protocol for larger studies')
     out.mkdir(parents=True)
@@ -203,7 +206,7 @@ def analyze(out, bank):
     require(read(root / 'EXECUTION.json')['started_unix'] >= plan['prepared_unix'], 'Study started before analysis preparation')
     require(read(root / 'REPORT.json')['status'] == 'completed', 'Entire planned study must complete before analysis')
     command = [plan['audit_python'], '-m', 'worldlab.audit_worlds', '--bank', str(bank), '--out', str(root)]
-    for kind in ('harness', 'learner'):
+    for kind in ('harness', 'learner', 'judge'):
         config = plan.get(kind + '_config')
         if config:
             require(digest(config) == plan[kind + '_config_sha256'], kind + ' configuration changed')
@@ -237,11 +240,12 @@ def main():
     p.add_argument('--python', default=sys.executable)
     p.add_argument('--harness-config', type=Path)
     p.add_argument('--learner-config', type=Path)
+    p.add_argument('--judge-config', type=Path)
     p.add_argument('--bank', type=Path)
     a = p.parse_args()
     if a.command == 'prepare':
         if not a.study or not a.frozen_source: p.error('Preparation needs --study and --frozen-source')
-        value = prepare(a.study, a.out, a.frozen_source, a.python, a.harness_config, a.learner_config)
+        value = prepare(a.study, a.out, a.frozen_source, a.python, a.harness_config, a.learner_config, a.judge_config)
     else:
         if not a.bank: p.error('Analysis needs --bank')
         value = analyze(a.out, a.bank)

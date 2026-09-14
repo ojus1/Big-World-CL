@@ -64,6 +64,7 @@ class FrozenRubricJudge:
 
     def identity(self):
         return {'name': 'frozen_internal_r3_text_judge', 'version': 8, 'provider': self.provider,
+                'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
@@ -172,3 +173,64 @@ class FrozenRubricJudge:
                   'scope': 'Frozen r3 development criteria plus source-reviewed public supplements. Registered counts and supplements are deterministic; other criteria are model judged. Full public-contract coverage and independent semantic calibration are not established.'}
         save(out / 'GRADE.json', result)
         return result
+
+    @staticmethod
+    def audit_grade(bank, task_id, workspace, baseline, artifact_root, grade):
+        """Recompute the original r3 policy from retained evidence; no model calls."""
+        from .judge_transport import digest as transport_digest
+        def require(condition, message):
+            if not condition: raise ValueError(message)
+        original = bank.public(task_id)['instruction']
+        rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
+        require(grade == read(artifact_root / 'GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
+        verdicts = []
+        model_criteria = []
+        evidence = read(artifact_root / 'EVIDENCE.json')
+        expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
+                          for p in workspace.rglob('*') if p.is_file() and
+                          str(p.relative_to(workspace)) != '.employee_identity' and
+                          not str(p.relative_to(workspace)).startswith('scratch/')}
+        require(evidence['files'] == expected_files and evidence['instruction'] == original,
+                'Judge evidence differs from original input and actual deliverables')
+        changed = [name for name, digest in baseline.items()
+                   if not child(workspace, name).is_file() or sha(child(workspace, name)) != digest]
+        unauthorized = [name for name in expected_files if name not in baseline and not name.startswith('output/')]
+        require(sorted(changed) == sorted(grade['input_changes']) and sorted(unauthorized) == sorted(grade['unauthorized_files']),
+                'Preservation result differs from workspace')
+        for i, criterion in enumerate(rubric['criteria']):
+            payload = read(artifact_root / f'REQUEST-{i:02d}.json')
+            response = read(artifact_root / f'RESPONSE-{i:02d}.json')
+            require(payload['criterion'] == criterion and payload['evidence'] == read(artifact_root / 'EVIDENCE.json'),
+                    'Frozen criterion/evidence mismatch')
+            require(response['status'] == 'completed', 'Judge response incomplete')
+            mechanical = mechanical_verdict(payload)
+            require(response['evaluation_method'] == ('registered_literal_count' if mechanical is not None else 'model'),
+                    'Criterion execution method changed')
+            if mechanical is None:
+                model_criteria.append(criterion)
+            else:
+                require(json.loads(response['text']) == mechanical, 'Literal count differs from source/output bytes')
+            verdicts.append(validate_verdict(json.loads(response['text']), criterion))
+        require(verdicts == grade['criteria'], 'Criterion verdicts changed')
+        supplement = public_requirements(bank, task_id, expected_files)
+        require(grade.get('public_requirements') == supplement and
+                read(artifact_root / 'PUBLIC_REQUIREMENTS.json') == supplement,
+                'Public requirement checks differ from registered source and output bytes')
+        score, passed = aggregate(rubric['criteria'], verdicts, supplement)
+        valid_files = not grade['input_changes'] and not grade['unauthorized_files']
+        require(grade['quality_score'] == (score if valid_files else 0.) and
+                grade['success'] == (passed and valid_files), 'Quality aggregation mismatch')
+        jm = grade['usage']
+        require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_criteria) and
+                jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
+        contracts = [transport_digest(verdict_contract(c['id'])) for c in rubric['criteria']]
+        require(jm['registered_structured_output_sha256'] == contracts and
+                [r['request_structured_outputs_sha256'] for r in jm['operations']] ==
+                [transport_digest(verdict_contract(c['id'])) for c in model_criteria],
+                'Physical judge constraints differ from the declared bounded grammar')
+
+
+def configured_judge(bank_root, model, base_url, *, max_tokens=400_000):
+    """JSON factory entry point; the verified bank stays inside the evaluator."""
+    from .bank import Bank
+    return FrozenRubricJudge(Bank(bank_root), model, base_url, max_tokens=max_tokens)

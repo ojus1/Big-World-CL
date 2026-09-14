@@ -141,6 +141,12 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
     spec = expand_workforce(spec)
     if not callable(getattr(learner, 'audit_update', None)):
         raise ValueError('Learner must provide an offline audit_update method before preparation')
+    if not callable(getattr(judge, 'audit_grade', None)):
+        raise ValueError('Judge must provide an offline audit_grade method before preparation')
+    if type(judge.max_tokens) is not int or judge.max_tokens <= 0:
+        raise ValueError('Judge must declare a positive integer max_tokens ceiling')
+    if judge.identity().get('bank_manifest_sha256', bank.verification['manifest_sha256']) != bank.verification['manifest_sha256']:
+        raise ValueError('Judge bank differs from the prepared task bank')
     name = learner.identity().get('name')
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', name) or name == 'no_learning':
         raise ValueError('The experimental learner needs a safe arm name distinct from no_learning')
@@ -172,7 +178,9 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
                                               'total': work_reservation + learning_reservation},
                 'analysis': {'unit': 'world_pair', 'primary': 'post_learning_probe_quality_mean',
                              'scope': 'development', 'all_planned_probes_in_denominator': True,
-                             'same_model_judge': harness.identity().get('provider', {}).get('model') == judge.identity()['provider']['model']}}
+                             'same_model_judge': (harness.identity().get('provider', {}).get('model') ==
+                                judge.identity().get('provider', {}).get('model'))
+                                if judge.identity().get('provider', {}).get('model') is not None else None}}
     if employee_factory is not None:
         manifest['employee_driver'] = employee_factory.identity()
         manifest['analysis']['primary'] = 'probe_accepted_on_time_fraction'

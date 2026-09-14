@@ -3,7 +3,7 @@ from dataclasses import asdict
 import time
 from pathlib import Path
 from scripts.source_world_calibration import save, sha
-from .contracts import TaskRequest, validate_execution
+from .contracts import TaskRequest, validate_execution, validate_grade
 
 
 def task_instruction(original, employee_message=None):
@@ -46,6 +46,7 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
         grade = judge.grade(task_id, workspace, baseline, out / 'judging',
                             token_limit=judge_tokens, call_limit=judge_calls,
                             timeout_seconds=max(0, deadline - time.monotonic()))
+        validate_grade(grade, token_limit=judge_tokens, call_limit=judge_calls)
         result.update(grade=grade, status='completed' if grade['grading_complete'] else 'grading_incomplete',
                       model_calls=(execution['physical_model_calls'] + grade['usage']['physical_model_calls']),
                       tokens=execution['charged_tokens'] + grade['usage']['charged_tokens'],

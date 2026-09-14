@@ -68,7 +68,7 @@ def qualify(bank, harness, judge, learner, source_study, employee, day, out):
         targets = [o for o in result['costs']['operations'] if o['kind'] == 'target']
         for replay in result['replay_evidence']:
             record = audit_attempt(bank, out / 'learning' / f'replay-{replay["attempt_index"]:03d}',
-                                   by_id[replay['id']]['task_id'], harness=harness)
+                                   by_id[replay['id']]['task_id'], harness=harness, judge=judge)
             operation = targets[replay['attempt_index']]
             if (replay['hard'] != float(record['grade']['success']) or replay['soft'] != record['grade']['quality_score'] or
                     operation['tokens'] != record['tokens'] or operation['model_calls'] != record['model_calls']):

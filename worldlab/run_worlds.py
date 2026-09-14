@@ -25,6 +25,7 @@ def main():
     p.add_argument('--skillopt-root', type=Path)
     p.add_argument('--harness-config', type=Path)
     p.add_argument('--learner-config', type=Path)
+    p.add_argument('--judge-config', type=Path)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
     p.add_argument('--mirofish-backend', type=Path)
@@ -39,7 +40,7 @@ def main():
         p.error('Supply exactly one of --skillopt-root and --learner-config')
     bank = Bank(a.bank)
     harness = load_adapter(a.harness_config, 'harness') if a.harness_config else Hermes(a.hermes_root, a.model, a.base_url)
-    judge = FrozenRubricJudge(bank, a.model, a.base_url)
+    judge = load_adapter(a.judge_config, 'judge') if a.judge_config else FrozenRubricJudge(bank, a.model, a.base_url)
     learner = load_adapter(a.learner_config, 'learner') if a.learner_config else SkillOpt(a.skillopt_root, a.model, a.base_url)
     employee_factory = None
     actor_options = [a.mirofish_backend, a.persona_cache, a.mirofish_service_url]

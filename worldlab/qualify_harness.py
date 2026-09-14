@@ -35,7 +35,7 @@ def qualify(bank, harness, judge, task_id, out, parallel=2):
                'calls': result['model_calls'], 'audited': False}
         rows.append(row)
         save(out / 'PROGRESS.json', rows)
-        audit_attempt(bank, out / slot['id'], task_id, SEED_SKILL, harness)
+        audit_attempt(bank, out / slot['id'], task_id, SEED_SKILL, harness, judge=judge)
         row['audited'] = True
         save(out / 'PROGRESS.json', rows)
     def journal(wave):

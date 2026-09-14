@@ -80,7 +80,8 @@ the first study dispatch. It binds the study bytes, complete seed list, analysis
 code and the original source checkout used for offline auditing. Keep this
 artifact outside the experiment directory. For example:
 
-For configured adapters, pass the same `--harness-config` and `--learner-config`
+For configured adapters, pass the same `--harness-config`, `--learner-config`
+and `--judge-config`
 when preparing the analysis. Their bytes are frozen and the recorded original
 auditor receives those configurations after execution. New analysis preparations
 also retain `REPRODUCE.py`; run that copy to analyze the study if the repository

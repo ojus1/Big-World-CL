@@ -34,6 +34,7 @@ class Judge:
     max_tokens = 1000
     def identity(self): return {'name': 'fake-judge', 'provider': {'model': 'fixture'}}
     def unsupported(self, public): return []
+    def audit_grade(self, *args): raise AssertionError('No grading audit in the scheduling fixture')
 
 
 class Learning(NoLearning):
