@@ -33,7 +33,11 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
                 'soft': grade['quality_score'] if grade and grade['grading_complete'] else 0.0,
                 'response': json.dumps({'messages': attempt['trajectory']}, ensure_ascii=False),
                 'feedback': grade['feedback'] if grade else '',
-                'tokens': attempt['tokens'], 'model_calls': attempt['model_calls'],
+                # The attempt's tokens include conservative reservations after
+                # an unknown provider receipt. The learner expects measured
+                # usage or None; retain its reservation when usage is unknown.
+                'tokens': attempt['tokens'] if attempt.get('accounting_complete') is True else None,
+                'model_calls': attempt['model_calls'],
                 'tool_calls': attempt['tool_calls'], 'latency_ms': attempt['seconds'] * 1000}
 
     update = learner.update(skill, experiences, replay, current_day=day, artifact_root=update_root)
