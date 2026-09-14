@@ -44,6 +44,12 @@ def child_case(name, root, hermes_root):
             payload = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
             requests.append({'path': self.path, 'payload': payload})
             save(root / 'WIRE.json', requests)
+            if self.path != '/v1/responses':
+                # Native construction probes local endpoints for model metadata.
+                # Record these reads and reject unsupported routes immediately;
+                # only the Responses request is the delayed fixture treatment.
+                self.send_error(404)
+                return
             time.sleep(case['delay_seconds'])
             response = {'id': 'fixture-response', 'object': 'response', 'created_at': 1,
                 'status': 'completed', 'error': None, 'incomplete_details': None,
@@ -108,8 +114,9 @@ def child_case(name, root, hermes_root):
                 'response_status': getattr(response, 'status', None), 'usage': meter.report(),
                 'scope': __doc__}
     save(root / 'RESULT.json', evidence)
-    assert len(requests) == 1 and requests[0]['path'] == '/v1/responses'
-    assert requests[0]['payload']['stream'] is False
+    inference_requests = [r for r in requests if r['path'] == '/v1/responses']
+    assert len(inference_requests) == 1 and inference_requests[0]['payload']['stream'] is False
+    assert all(r['path'] in ('/v1/responses', '/api/show') for r in requests)
     assert evidence['native_last_event_ts'] is None
     if name == 'final_body_success':
         assert response is not None and response.status == 'completed' and error is None
