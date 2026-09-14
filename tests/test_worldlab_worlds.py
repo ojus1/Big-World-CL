@@ -59,7 +59,7 @@ class Tests(unittest.TestCase):
         self.assertFalse(groups['train'] & groups['val'])
         self.assertFalse(groups['train'] & groups['probe'])
         self.assertTrue(all(s['day'] >= 8 for s in world['schedule'] if s['split'] == 'probe'))
-        self.assertEqual(len(groups['train']), 3)
+        self.assertGreaterEqual(len(groups['train']), 2)
 
     def test_selection_is_score_blind_delayed_and_lineage_distinct(self):
         world = compile_world(Bank(), SPEC, 211, Harness(), Judge())

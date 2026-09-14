@@ -73,9 +73,16 @@ def compile_world(bank, specification, seed, harness, judge):
             split = 'probe' if day >= probe_start else 'val' if day % 4 in (1, 3) else 'train'
             for ordinal in range(count):
                 available = pool[PARTITIONS[split]]
-                # Spread exposure across families before repeating any family.
-                least = min(used[split][r['calibration_group']] for r in available)
-                eligible = [r for r in available if used[split][r['calibration_group']] == least]
+                # Guarantee a minimally distinct early learning slice, then
+                # respect the calibrated frequency weights. Probe coverage uses
+                # every eligible family before a repeat.
+                required = (specification.get('train_cases', 2) if split == 'train'
+                            else specification.get('val_cases', 2))
+                if split == 'probe' or len(used[split]) < required:
+                    least = min(used[split][r['calibration_group']] for r in available)
+                    eligible = [r for r in available if used[split][r['calibration_group']] == least]
+                else:
+                    eligible = available
                 weights = [1 + 4 * mixture.get(r['id'], 0) if split == 'train' else 1 for r in eligible]
                 row = rng.choices(eligible, weights=weights, k=1)[0]
                 used[split][row['calibration_group']] += 1
@@ -122,15 +129,21 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out):
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')
     worlds = [compile_world(bank, spec, seed, harness, judge) for seed in seeds]
+    work_reservation = 2 * sum(s['work_budget']['total_tokens'] + judge.max_tokens for w in worlds for s in w['schedule'])
+    learning_reservation = sum(len(w['workforce']) * len(spec.get('update_days', [])) for w in worlds) * learner.identity().get('budget', {}).get('max_tokens', 0)
     manifest = {'schema_version': 1, 'worlds': worlds, 'harness': harness.identity(),
                 'judge': judge.identity(), 'learner': learner.identity(), 'source_sha256': source_identity(),
                 'seed_skill': SEED_SKILL,
+                'token_reservation_ceiling': {'work_including_judges': work_reservation,
+                                              'learning_including_replay_judges': learning_reservation,
+                                              'total': work_reservation + learning_reservation},
                 'analysis': {'unit': 'world_pair', 'primary': 'post_learning_probe_quality_mean',
                              'scope': 'development', 'all_planned_probes_in_denominator': True,
                              'same_model_judge': harness.identity().get('provider', {}).get('model') == judge.identity()['provider']['model']}}
     save(out / 'STUDY.json', manifest)
     save(out / 'PREPARED.json', {'study_sha256': sha(out / 'STUDY.json'), 'prepared_unix': time.time()})
     return {'study_sha256': sha(out / 'STUDY.json'), 'world_pairs': len(worlds),
+            'token_reservation_ceiling': manifest['token_reservation_ceiling'],
             'planned_work_sessions': 2 * sum(len(w['schedule']) for w in worlds)}
 
 

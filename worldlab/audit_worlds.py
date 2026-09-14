@@ -28,6 +28,12 @@ def audit_attempt(bank, root, task_id, expected_skill=None):
     require(request['instruction'] == bank.public(task_id)['instruction'], 'Public task instruction mismatch')
     if expected_skill is not None: require(request['skill'] == expected_skill, 'Wrong deployed skill')
     native = read(root / 'NATIVE.json')
+    workspace = root / request['employee_id'] / 'workspace'
+    prefix = bank.by_id[task_id]['public_directory'] + '/'
+    expected_baseline = {name[len(prefix):]: item['sha256'] for name, item in bank.inventory.items()
+                         if name.startswith(prefix) and name[len(prefix):] != 'task.json'}
+    expected_baseline['.employee_identity'] = hashlib.sha256((request['employee_id'] + '\n').encode()).hexdigest()
+    require(read(root / 'BASELINE.json') == expected_baseline, 'Original input baseline changed')
     meter = native['evaluation_budget']
     require(meter['accounting_complete'] and not meter.get('stopped'), 'Native accounting incomplete')
     require(meter['physical_model_calls'] == len(meter['operations']) and
@@ -35,11 +41,25 @@ def audit_attempt(bank, root, task_id, expected_skill=None):
     require(meter['physical_model_calls'] <= request['budget']['model_calls'] and
             meter['charged_tokens'] <= request['budget']['total_tokens'] and
             all(r['output_cap'] <= request['budget']['output_tokens'] for r in meter['operations']), 'Native budget exceeded')
-    require(native['skill_loaded'], 'Native skill was not loaded')
+    from lifespan.evaluation.runtime import skill_loaded
+    skill_path = root / 'hermes/skills/work-process/SKILL.md'
+    require(native['skill_loaded'] and skill_loaded(native.get('messages', []), sha(skill_path)), 'Native skill was not loaded')
     rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
     grade = record['grade']
     require(grade == read(root / 'judging/GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
     verdicts = []
+    evidence = read(root / 'judging/EVIDENCE.json')
+    expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
+                      for p in workspace.rglob('*') if p.is_file() and
+                      str(p.relative_to(workspace)) != '.employee_identity' and
+                      not str(p.relative_to(workspace)).startswith('scratch/')}
+    require(evidence['files'] == expected_files and evidence['instruction'] == request['instruction'],
+            'Judge evidence differs from original input and actual deliverables')
+    changed = [name for name, digest in expected_baseline.items()
+               if not child(workspace, name).is_file() or sha(child(workspace, name)) != digest]
+    unauthorized = [name for name in expected_files if name not in expected_baseline and not name.startswith('output/')]
+    require(sorted(changed) == sorted(grade['input_changes']) and sorted(unauthorized) == sorted(grade['unauthorized_files']),
+            'Preservation result differs from workspace')
     for i, criterion in enumerate(rubric['criteria']):
         payload = read(root / 'judging' / f'REQUEST-{i:02d}.json')
         response = read(root / 'judging' / f'RESPONSE-{i:02d}.json')
@@ -99,7 +119,14 @@ def audit(bank, out):
                     require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
                     req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'REQUEST.json')
                     require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
+                    operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
+                    operation = operations[replay['attempt_index']]
+                    require(operation['tokens'] == r['tokens'] and operation['model_calls'] == r['model_calls'],
+                            'Learning ledger differs from work plus judge usage')
                     counts['learning_replays'] += 1
+                for payload in update['optimizer_inputs']:
+                    require(all(e['task']['id'] in update['train_ids'] and e['task']['split'] == 'train'
+                                for e in payload['train_experiences']), 'Optimizer saw non-training evidence')
                 from scripts.audit_transfer import gate_check
                 gate_check(update)
                 counts['adoptions'] += int(update['accepted'])
