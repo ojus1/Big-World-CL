@@ -560,3 +560,32 @@ The local WorldLab suite passed **62 tests**, and all three new progress-command
 checks also passed on H200. Those checks cover unknown usage, a service polling
 timeout, live/terminal process states, incomplete checkpoint writes and replay
 costs already included in the learner ledger. They make no learning-effect claim.
+
+## Learner audit extension and subset-calibration verification
+
+At `0f8383d`, the learner adapter owns its policy-specific `audit_update` check.
+The shared audit still enforces employee identity, feedback chronology, replay
+provenance and accounting. SkillOpt retains its original gate checks and now
+also checks frozen configuration, skill hashes and optimizer transport receipts.
+Custom adapters must provide an auditor matching their recorded identity;
+matching a built-in name alone cannot substitute for that contract. Newly
+prepared analyses preserve their executable source and optional learner config.
+The already running studies and their prospective analysis remain unchanged.
+
+The H200 checks at this commit passed **1,060 tests, 6 skipped**, in two explicit
+scopes: `tests` passed 748 with 4 skipped in 99.85 seconds under
+`bigworld-canonical-tests-v6`; `lifespan/tests` passed 312 with 2 skipped in
+26.13 seconds under `bigworld-lifespan-tests-v6`, invocation
+`30742f8bab9a40258c2de66a40dcbd66`. These are software checks, including the
+existing one-example/100-employee and zero-example calibration cases, rather
+than evidence of a learning effect. Representative examples remain optional for
+any subset of employees; same-role/language transfer is a recorded assumption
+and uncovered employees retain simulator defaults.
+
+At **22:22:04 UTC on September 14**, the read-only progress command found both
+original study main processes present. The pilot control arm remained on day 5
+with 15 fully graded work attempts, 249 work/judge calls and 3,451,236 reported
+tokens. Scale seed 401's control arm was on day 0 with 11 fully graded work
+attempts, 142 work/judge calls and 1,466,008 reported tokens. These counts exclude
+separate employee interviews and unknown bootstrap/social usage. Neither study
+had a finalized learner update or a completed paired learning comparison.
