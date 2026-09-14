@@ -16,13 +16,14 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Independently check facts, calculations, units, omissions and unsupported assertions. '
          'Apply the frozen acceptable alternatives, ambiguity policy and evaluation guidance. '
          'Do not invent additional requirements or infer hidden agent reasoning. '
-         'Return only JSON with criterion_id, passed (boolean), reasoning (nonempty string), '
-         'and evidence (nonempty string naming concrete source/output files and details).')
+         'Return only JSON with criterion_id, evidence, reasoning, and finally passed (boolean). '
+         'Evidence must name concrete source/output files and verifiable details. Give a short factual '
+         'justification, then choose the final Boolean consistent with that evidence and conclusion.')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
 VERDICT_SCHEMA = {'type': 'object', 'properties': {
-    'criterion_id': {'type': 'string'}, 'passed': {'type': 'boolean'},
-    'reasoning': {'type': 'string'}, 'evidence': {'type': 'string'}},
-    'required': ['criterion_id', 'passed', 'reasoning', 'evidence'], 'additionalProperties': False}
+    'criterion_id': {'type': 'string'}, 'evidence': {'type': 'string'},
+    'reasoning': {'type': 'string'}, 'passed': {'type': 'boolean'}},
+    'required': ['criterion_id', 'evidence', 'reasoning', 'passed'], 'additionalProperties': False}
 
 
 def validate_verdict(value, criterion):
@@ -33,6 +34,17 @@ def validate_verdict(value, criterion):
     return {k: value[k] for k in ('criterion_id', 'passed', 'reasoning', 'evidence')}
 
 
+def request_verdict(client, provider, payload, timeout):
+    """Shared transport contract for production judging and calibration controls."""
+    return client.responses.create(model=provider['model'],
+        input=[{'role': 'system', 'content': RULES},
+               {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}],
+        max_output_tokens=4096, stream=False, store=False, timeout=timeout,
+        text={'format': {'type': 'json_schema', 'name': 'criterion_verdict',
+                         'strict': True, 'schema': VERDICT_SCHEMA}},
+        extra_body={'chat_template_kwargs': {'enable_thinking': False}})
+
+
 class FrozenRubricJudge:
     def __init__(self, bank, model, base_url, *, max_tokens=400_000, client_factory=None):
         self.bank = bank
@@ -41,7 +53,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 2, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 3, 'provider': self.provider,
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
@@ -108,13 +120,7 @@ class FrozenRubricJudge:
                 payload = {'criterion': criterion, 'ambiguities': rubric.get('ambiguities', []),
                            'evaluation_guidance': rubric.get('evaluation_guidance', []), 'evidence': evidence}
                 save(out / f'REQUEST-{index:02d}.json', payload)
-                response = client.responses.create(model=self.provider['model'],
-                    input=[{'role': 'system', 'content': RULES},
-                           {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}],
-                    max_output_tokens=4096, stream=False, store=False, timeout=min(120, remaining),
-                    text={'format': {'type': 'json_schema', 'name': 'criterion_verdict',
-                                     'strict': True, 'schema': VERDICT_SCHEMA}},
-                    extra_body={'chat_template_kwargs': {'enable_thinking': False}})
+                response = request_verdict(client, self.provider, payload, min(120, remaining))
                 text = response.output_text
                 save(out / f'RESPONSE-{index:02d}.json', {'text': text, 'status': response.status})
                 if response.status != 'completed': raise ValueError('Incomplete judge response')
