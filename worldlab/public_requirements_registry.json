@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "scope": "Source-reviewed supplements for known public numerical and structural omissions; not full-task coverage certification.",
+  "tasks": {
+    "internal/euw_v1_fr_014": {
+      "checker": "editorial_calendar_v1",
+      "public_descriptor_sha256": "c33f9c2fc51d794ebce2c9a3aca7e5e297f7777066d1d4a236b59854ed127f1b",
+      "input_sha256": {
+        "input/agenda_editorial_v3.csv": "3ea49b15b2c3100e08581eb677a59ffa5d6dc304f743fde35366a848e0ab50cd",
+        "input/charge_traducteurs.csv": "7fb483373c195facdf51433f2a0442599fdc902621ebc4c4353524ea5daeff5f",
+        "input/contrats_auteurs.csv": "f6865ebbeb046fb25dc5e9ef68417f82ef179d97fe6149c9eff1143c30f00b86",
+        "input/emails_auteurs.md": "0a351fdf66ee50a49a916680120daa879c28bb2da7b0557662c70ee5552a2ad7",
+        "input/indisponibilites.csv": "569a831caea080e8beb8ed8dd49e15912f9d5b5e977c13eb5f8da7b8b5b72829",
+        "input/politique_retards.md": "23a3ae6f17f91faaf61bdab8736d3fb3408428821d13ae8231ea60ab2c14d3cc"
+      }
+    },
+    "internal/euw_v1_es_017_en_bridge": {
+      "checker": "mri_scoring_v1",
+      "public_descriptor_sha256": "2e8cee62cd5fbabedcc0aedd1bc0b2c00190c63cb8ea1634a1b617524746fce4",
+      "input_sha256": {
+        "input/informe_coste_propiedad.csv": "90ff4595b842da906df248804b354aed3b2179ae27e535e7e10434d8a164de33",
+        "input/informes_tecnicos_internos.md": "d9828851671962576a8e4382182fc3cd713eaa42bf17a1a7aa9b778dc79e7f52",
+        "input/matriz_requisitos_clinicos.csv": "e10f9a1a4c848f67f9d1dbd5e887addbf1567a59179ddfb8ea0c7d3b1508efb3",
+        "input/parametros_tecnicos.csv": "e10f9a1a4c848f67f9d1dbd5e887addbf1567a59179ddfb8ea0c7d3b1508efb3",
+        "input/polica_adquisicion_2024.md": "05de14830c087567d33ffcc9c7217a3f5e1e688c56c2585b625cc2e695f95f1b",
+        "input/propuestas_proveedores.md": "c05f2c4e73239c8113489ede2677a1fa44af08f0d92c4ed10d97d26b6a82d06c"
+      }
+    }
+  }
+}

@@ -16,6 +16,7 @@ from .judge_transport import digest as transport_digest
 from .worlds import eligible_experiences, stable_hash
 from .attempts import task_instruction
 from .mechanical_criteria import evaluate as mechanical_verdict
+from .public_requirements import evaluate as public_requirements, aggregate
 
 
 def require(condition, message):
@@ -82,10 +83,14 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employ
             require(json.loads(response['text']) == mechanical, 'Literal count differs from source/output bytes')
         verdicts.append(validate_verdict(json.loads(response['text']), criterion))
     require(verdicts == grade['criteria'], 'Criterion verdicts changed')
-    score = sum(c['weight'] * v['passed'] for c, v in zip(rubric['criteria'], verdicts)) / sum(c['weight'] for c in rubric['criteria'])
+    supplement = public_requirements(bank, task_id, expected_files)
+    require(grade.get('public_requirements') == supplement and
+            read(root / 'judging/PUBLIC_REQUIREMENTS.json') == supplement,
+            'Public requirement checks differ from registered source and output bytes')
+    score, passed = aggregate(rubric['criteria'], verdicts, supplement)
     valid_files = not grade['input_changes'] and not grade['unauthorized_files']
     require(grade['quality_score'] == (score if valid_files else 0.) and
-            grade['success'] == (all(v['passed'] for v in verdicts) and valid_files), 'Quality aggregation mismatch')
+            grade['success'] == (passed and valid_files), 'Quality aggregation mismatch')
     jm = grade['usage']
     require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_criteria) and
             jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
