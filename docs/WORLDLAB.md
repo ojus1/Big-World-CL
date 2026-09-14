@@ -4,6 +4,10 @@ Representative examples are optional and may cover **any subset of employees**.
 The simulator owns the full workforce. A user can supply examples for just one
 employee without describing every colleague.
 
+Examples for every employee are never required. Supplying no examples at all
+is valid. These examples currently calibrate task selection; they do not prove
+that an individual's writing style or workplace behavior has been reproduced.
+
 This module connects the locked JobBench/Internal EuroBench bank to reproducible
 development calibration. It is an extension of the H200 work, not a claim that
 the final large-world learning study has been completed.

@@ -15,6 +15,12 @@ establishes statistically significant skill learning.
 | Larger coverage plan | `Big-World-CL-coverage-v1`, `da88f93` | `lifespan/artifacts/development-coverage-v1` | Cancelled before dispatch; zero work/learning calls |
 | Judge count controls | `Big-World-CL-judge-v3`, `cf30158` | `lifespan/artifacts/judge-count-qualification-v3` | Complete, 12/12 correct |
 | Revised parallel pair | `Big-World-CL-worlds-v3`, `437de52` | `lifespan/artifacts/development-world-v3` | Failed at day 5 in control arm; repeated judge whitespace |
+| Native workplace pair | `Big-World-CL-workplace-v3`, `3aa4fa1` | `lifespan/artifacts/native-workplace-v1` | Failed in control day 1 at native first-byte timeout; no completed arm |
+| Consolidation component | `Big-World-CL-learning-v3`, `7bcc1b8` | `lifespan/artifacts/consolidation-qualification-v3` | Failed in final validation; eight completed replays, zero optimizer calls or adoptions |
+| Judge format corpus | `Big-World-CL-judge-v5`, `c79c2d7` | `lifespan/artifacts/judge-corpus-v5` | Complete, 210/210 valid responses; not semantic accuracy |
+| Semantic controls | `Big-World-CL-semantics-v1`, `26d5cc4` | `lifespan/artifacts/semantic-controls-v1` | Complete, 33/33 source-grounded labels matched over one family |
+| Native timeout fixture | `Big-World-CL-watchdogs-v2`, `343dc2d` | `lifespan/artifacts/nonstreaming-watchdogs-v2` | Complete, all three real-clock transport controls passed; zero model inference |
+| Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Fresh two-task qualification in progress |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
@@ -278,7 +284,7 @@ initially could not import the document dependencies in MiroFish's environment;
 no diagnostic plan or grading ran then. It completed using the original evaluator
 environment `/home/inference-testing/benchmarks/eurobench-v1/.venv/bin/python`.
 
-Both live workplace-v1 and consolidation-v3 now have an
+Both workplace-v1 and consolidation-v3 received an
 `EVALUATION_LIMITATION.json` sidecar that binds this evidence and marks full-task
 success unqualified. Their frozen protocols and results remain intact. The next
 scoring contract must combine valid numerical/structural obligations with the
@@ -329,3 +335,67 @@ was not restarted. `judge-corpus-v5/RUNTIME_ADJUSTMENT.json` records before/afte
 readbacks. The fixed 210 cases, 120-second per-call deadline and model/token
 budgets are unchanged. The original one-hour deadline had not yet elapsed when
 this adjustment was recorded.
+
+## First-byte timeout correction and completed component evidence
+
+The native workplace pair failed at **21:15:22 UTC** on September 14. The two
+employees produced four recorded work attempts, three fully graded, totaling
+52 work/judge calls and 699,017 charged-or-reserved tokens. Of those tokens,
+641,324 have provider receipts and 57,693 remain a reservation for the failed
+request. Four employee decisions used another 14,934 interview tokens; native
+bootstrap/social usage remains unknown. No arm or learning update completed.
+
+Both request and stale timeout readbacks were 600 seconds. A separate native
+Codex watchdog nevertheless closed the final-body HTTP request at 120 seconds
+because it had emitted no SSE event. Hermes source remains pinned and unchanged.
+Adapter version 4 uses the supported `HERMES_CODEX_TTFB_TIMEOUT_SECONDS=0`
+environment setting in its isolated worker. It records and audits this setting
+alongside the request/stale limits; the parent whole-attempt limit also remains.
+The change neither invents stream activity nor adds retries.
+
+The real-clock qualification at `343dc2d` used native construction, native SDK
+clients, the native interruptible request helper and the actual final-body
+adapter against an isolated loopback fixture. The legacy setting stopped at
+120.029 seconds, the corrected setting returned the complete response at
+130.059 seconds, and a two-second request budget stopped at 2.026 seconds.
+All three cases passed, with no fabricated SSE events and zero model inference.
+Plan SHA: `9ef0e52a6365fac66f938558738591a63e013b4b92dd5e28c81642a5d1233db6`.
+The earlier fixture at `3d6ce09` retained correct timing observations but failed
+its request-count assertion because native metadata probes were also counted;
+its failed evidence remains in `nonstreaming-watchdogs-v1`.
+
+Consolidation v3 also failed at the same native first-byte watchdog, on its ninth
+replay during final validation. Eight replays completed, no optimizer call ran,
+and no skill was adopted. Its 106 work/judge calls charged or reserved 957,952
+tokens: 887,479 reported plus 70,473 reserved for the missing final receipt.
+The native attempt correctly recorded incomplete accounting, but the replay
+callback passed its charged total as measured usage to the learner. Thus the
+historical aggregate's `accounting_complete: true` is incorrect.
+`ACCOUNTING_LIMITATION.json` binds the original receipts and this correction.
+Commit `8cbf1d3` passes unknown usage as unknown across that boundary, retaining
+the learner's full replay reservation and known physical-call count. The
+regression check covers both known and unknown usage after execution failure.
+Original study, update, and attempt files remain unchanged.
+
+The semantic controls finished at **21:21:02 UTC**, with 33/33 labels matched,
+33 calls and 95,377 reported tokens. Their plan SHA is
+`83093ab80eba01c414a72f9762d17fe92d40cb7dbe44a73bb4c44baedb5f33c9`.
+All 47 evidence files were copied locally and checked against remote hashes.
+The format corpus finished at **21:25:53 UTC**, with 210/210 valid responses,
+210 calls and 1,613,226 reported tokens. Its process survived the original
+one-hour deadline after the recorded extension, without restarting. All 424
+evidence files were copied locally and checked against remote hashes. Neither
+qualification establishes full-task correctness or a learning effect.
+
+The focused suite after the timeout/accounting changes passes **52 tests**.
+The complete canonical suite at `8cbf1d3` passed **1,043 tests, 6 skipped** in
+125.85 seconds under `bigworld-canonical-tests-v4`, invocation
+`99cd8dd7273841db82570f1a832560e2`; the service was inactive with MainPID zero
+and result success afterward.
+The new native adapter qualification at `8cbf1d3` uses two fresh concurrent
+`internal/euw_fr_003_en_bridge` tasks, fixed before execution, on the same Qwen
+server. Its service is `bigworld-adapter-v4`, invocation
+`be196dc8b2ca4ea0bb9d60ef624cb3cb`. This is transport, worker isolation and receipt
+qualification only. The earlier failed world and consolidation are not resumed.
+Both new workers' `READY.json` receipts confirm request/stale limits of 600
+seconds and the explicit zero first-byte watchdog setting.
