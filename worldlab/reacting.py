@@ -1,0 +1,125 @@
+"""Run native employee decisions against a persistent, causally replayable workplace."""
+from copy import deepcopy
+import hashlib
+import json
+from pathlib import Path
+import random
+from scripts.source_world_calibration import save, sha
+from .attempts import execute_task
+from .campaign import SEED_SKILL
+from .contracts import Budget
+from .dispatch import dispatch_day
+from .experience_update import update_employee
+from .workplace import Workplace
+from .worlds import eligible_experiences, stable_hash
+
+
+def run_world(bank, world, harness, judge, learner, out, employee_factory):
+    out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
+    place = Workplace(world)
+    spec = world['specification']
+    skills = {e['id']: SEED_SKILL for e in world['workforce']}
+    state = {'skills': skills, 'sessions': [], 'updates': [], 'decisions': [], 'workplace': place.state}
+    driver = None
+
+    def checkpoint():
+        if driver is not None: state['actor_usage'] = driver.usage()
+        save(out / 'STATE.json', state)
+
+    try:
+        save(out / 'INFLIGHT.json', {'kind': 'employee_bootstrap'})
+        driver = employee_factory.open(world, world['employee_context'], out / 'actors')
+        (out / 'INFLIGHT.json').unlink()
+        for day in range(spec['days']):
+            place.advance(day); checkpoint()
+            for ordinal in range(max(e.get('sessions_per_day', 1) for e in world['workforce'])):
+                employees = sorted(skills)
+                random.Random(stable_hash([world['seed'], day, ordinal])).shuffle(employees)
+                work = []
+                for employee in employees:
+                    pending = place.available(employee)
+                    if not pending: continue
+                    oid = pending[0]
+                    key = f'd{day:03d}-{employee}-{ordinal:03d}'
+                    view = place.view(employee, oid, bank)
+                    save(out / 'INFLIGHT.json', {'kind': 'employee_decision', 'id': key})
+                    # Business validation may reject an actor answer before a
+                    # bounded native repair, but must not mutate the workplace.
+                    def validate(decision):
+                        deepcopy(place).decide(employee, oid, decision)
+                    decision = driver.decide(view, key, validate)
+                    delegated = place.decide(employee, oid, decision)
+                    state['decisions'].append({'id': key, 'day': day, 'employee_id': employee,
+                        'obligation_id': oid, 'view': view, 'decision': decision,
+                        'session_id': key if delegated else None})
+                    if delegated:
+                        place.start(oid, key)
+                        slot = {**place.arrivals[oid], 'id': key, 'obligation_id': oid, 'day': day,
+                                'day_order': ordinal * len(employees) + employees.index(employee),
+                                'feedback_day': day + place.delay, 'employee_message': decision['request']}
+                        work.append(slot)
+                    checkpoint(); (out / 'INFLIGHT.json').unlink()
+
+                def perform(slot):
+                    return execute_task(bank, harness, judge, task_id=slot['task_id'],
+                        employee_id=slot['employee_id'], skill=skills[slot['employee_id']],
+                        employee_message=slot['employee_message'], budget=Budget(**slot['work_budget']),
+                        out=out / 'sessions' / slot['id'], judge_tokens=judge.max_tokens)
+
+                def record(slot, result):
+                    state['sessions'].append({**slot, 'status': result['status'], 'grade': result['grade'],
+                        'tokens': result['tokens'], 'model_calls': result['model_calls'],
+                        'attempt_sha256': sha(out / 'sessions' / slot['id'] / 'ATTEMPT.json'),
+                        'skill_content_sha256': hashlib.sha256(skills[slot['employee_id']].encode()).hexdigest()})
+                    state['sessions'].sort(key=lambda s: (s['day'], s['day_order']))
+                    if result['status'] == 'completed' and result['grade']['grading_complete']:
+                        place.complete(slot['obligation_id'], slot['id'], {k: result['grade'][k]
+                                       for k in ('success', 'quality_score', 'feedback')})
+                    checkpoint()
+                    print(json.dumps({'seed': world['seed'], 'arm': learner.identity()['name'],
+                                      'day': day, 'session': slot['id'], 'status': result['status']}), flush=True)
+
+                def journal(wave):
+                    if wave:
+                        save(out / 'INFLIGHT.json', {'kind': 'work_wave', 'ids': [s['id'] for s in wave],
+                            'max_reserved_tokens': sum(s['work_budget']['total_tokens'] + judge.max_tokens for s in wave)})
+                    else:
+                        (out / 'INFLIGHT.json').unlink()
+
+                dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1))
+            if day not in spec.get('update_days', []): continue
+            for employee in sorted(skills):
+                selected = eligible_experiences(state['sessions'], employee, day,
+                                                 spec.get('train_cases', 2), spec.get('val_cases', 2))
+                if not selected: continue
+                save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
+                                            'budget': learner.identity().get('budget')})
+                update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
+                    skill=skills[employee], update_root=out / 'learning' / f'd{day:03d}-{employee}')
+                state['updates'].append({'day': day, 'employee_id': employee, 'result': update})
+                checkpoint()
+                if update['status'] not in ('completed', 'budget_exhausted'):
+                    raise RuntimeError('Learning failed; evidence preserved without automatic replay')
+                if update.get('accepted'): skills[employee] = update['skill']
+                checkpoint(); (out / 'INFLIGHT.json').unlink()
+        # Close the observation window without extra work opportunities. Delayed
+        # reviews and payments settle; outstanding obligations remain failures.
+        drain = max(place.delay + place.settlement_delay,
+                    max(s['due_day'] - s['day'] for s in world['schedule']) + place.grace) + 1
+        for day in range(spec['days'], spec['days'] + drain): place.advance(day)
+        checkpoint()
+        summary = place.summary()
+        report = {'status': 'completed', 'world_seed': world['seed'], 'arm': learner.identity()['name'],
+            'work_sessions': len(state['sessions']), 'probe_sessions': summary['probe_obligations'],
+            'probe_quality_mean': summary['probe_quality_mean'],
+            'probe_accepted_on_time_fraction': summary['probe_accepted_on_time_fraction'],
+            'learning_epochs': len(state['updates']), 'adoptions': sum(u['result']['accepted'] for u in state['updates']),
+            'work_and_judging_tokens': sum(s['tokens'] for s in state['sessions']),
+            'learning_and_replay_judging_tokens': sum(u['result']['costs']['tokens'] for u in state['updates']),
+            'actor_usage': driver.usage(), 'workplace': summary,
+            'world_schedule_sha256': stable_hash(world), 'scope': world['scope']}
+        save(out / 'REPORT.json', report)
+        return report
+    finally:
+        checkpoint()
+        if driver is not None: driver.close()

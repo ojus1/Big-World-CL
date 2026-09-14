@@ -135,12 +135,19 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
     return chosen
 
 
-def prepare_study(bank, spec, seeds, harness, judge, learner, out):
+def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
     out = Path(out).resolve()
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')
     worlds = [compile_world(bank, spec, seed, harness, judge) for seed in seeds]
+    if employee_factory is not None:
+        from .workplace import Workplace
+        for world in worlds:
+            Workplace(world)  # Validate consequence parameters before any native calls.
+            world['employee_context'] = employee_factory.prepare(world)
+            world['scope'] = ('Development workplace with native employee decisions, persistent queues, delayed feedback, '
+                              'rework and colleague messages. Roles and task arrivals are assigned; no final-test inference.')
     work_reservation = 2 * sum(s['work_budget']['total_tokens'] + judge.max_tokens for w in worlds for s in w['schedule'])
     learning_reservation = sum(len(w['workforce']) * len(spec.get('update_days', [])) for w in worlds) * learner.identity().get('budget', {}).get('max_tokens', 0)
     manifest = {'schema_version': 1, 'worlds': worlds, 'harness': harness.identity(),
@@ -152,6 +159,12 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out):
                 'analysis': {'unit': 'world_pair', 'primary': 'post_learning_probe_quality_mean',
                              'scope': 'development', 'all_planned_probes_in_denominator': True,
                              'same_model_judge': harness.identity().get('provider', {}).get('model') == judge.identity()['provider']['model']}}
+    if employee_factory is not None:
+        manifest['employee_driver'] = employee_factory.identity()
+        manifest['analysis']['primary'] = 'probe_accepted_on_time_fraction'
+        manifest['actor_reservations'] = {'max_logical_interviews': 4 * sum(len(w['schedule']) for w in worlds),
+                                          'input_and_bootstrap_token_ceiling': None,
+                                          'scope': 'Work and learning ceiling excludes native employee generation'}
     save(out / 'STUDY.json', manifest)
     save(out / 'PREPARED.json', {'study_sha256': sha(out / 'STUDY.json'), 'prepared_unix': time.time()})
     return {'study_sha256': sha(out / 'STUDY.json'), 'world_pairs': len(worlds),
@@ -210,35 +223,9 @@ def run_world(bank, world, harness, judge, learner, out):
             update_root = out / 'learning' / f'd{day:03d}-{employee}'
             save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
                                         'budget': learner.identity().get('budget')})
-            by_id = {s['id']: s for s in selected}
-            experiences = [{'id': s['id'], 'split': s['split'], 'available_day': s['day'],
-                            'feedback_available_day': s['feedback_day'],
-                            'source_session': s['lineage_group'], 'prompt': bank.public(s['task_id'])['instruction'],
-                            'context': '', 'feedback': s['grade']['feedback']} for s in selected]
-
-            def replay(payload, limits):
-                slot = by_id[payload['task']['id']]
-                replay_root = update_root / f'replay-{payload["attempt_index"]:03d}'
-                # Target ledger includes BOTH work and its judge. Reserve judging
-                # before giving the remaining allowance to native work.
-                jt = min(judge_tokens, limits['max_tokens'] // 2)
-                jc = min(8, limits['max_model_calls'] // 2)
-                wb = Budget(model_calls=min(slot['work_budget']['model_calls'], limits['max_model_calls'] - jc),
-                            output_tokens=min(slot['work_budget']['output_tokens'], limits['max_tokens'] - jt),
-                            total_tokens=min(slot['work_budget']['total_tokens'], limits['max_tokens'] - jt),
-                            seconds=max(1, min(slot['work_budget']['seconds'], int(limits['timeout_seconds']) - 300)))
-                attempt = execute_task(bank, harness, judge, task_id=slot['task_id'], employee_id=employee,
-                                       skill=payload['skill'], budget=wb, out=replay_root, judge_tokens=jt, judge_calls=jc,
-                                       total_timeout_seconds=limits['timeout_seconds'])
-                grade = attempt['grade']
-                return {'status': attempt['status'], 'hard': float(grade['success']) if grade else 0.0,
-                        'soft': grade['quality_score'] if grade and grade['grading_complete'] else 0.0,
-                        'response': json.dumps({'messages': attempt['trajectory']}, ensure_ascii=False),
-                        'feedback': grade['feedback'] if grade else '',
-                        'tokens': attempt['tokens'], 'model_calls': attempt['model_calls'],
-                        'tool_calls': attempt['tool_calls'], 'latency_ms': attempt['seconds'] * 1000}
-
-            update = learner.update(skills[employee], experiences, replay, current_day=day, artifact_root=update_root)
+            from .experience_update import update_employee
+            update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
+                                     skill=skills[employee], update_root=update_root, executor=execute_task)
             updates.append({'day': day, 'employee_id': employee, 'result': update})
             if update['status'] not in ('completed', 'budget_exhausted'):
                 save(out / 'STATE.json', state)
@@ -262,7 +249,7 @@ def run_world(bank, world, harness, judge, learner, out):
     return report
 
 
-def execute_study(bank, harness, judge, learner, out):
+def execute_study(bank, harness, judge, learner, out, employee_factory=None):
     from .contracts import NoLearning
     out = Path(out).resolve()
     study = read(out / 'STUDY.json')
@@ -271,6 +258,8 @@ def execute_study(bank, harness, judge, learner, out):
             study['judge'] != judge.identity() or study['learner'] != learner.identity() or
             any(w['bank_manifest_sha256'] != bank.verification['manifest_sha256'] for w in study['worlds'])):
         raise ValueError('Study preparation differs from current execution dependencies')
+    if study.get('employee_driver') != (employee_factory.identity() if employee_factory is not None else None):
+        raise ValueError('Employee driver differs from frozen preparation')
     with (out / 'EXECUTION.json').open('x') as f: json.dump({'started_unix': time.time()}, f)
     reports = []
     for index, world in enumerate(study['worlds']):
@@ -279,7 +268,12 @@ def execute_study(bank, harness, judge, learner, out):
         for arm in arms:
             root = out / 'worlds' / f'seed-{world["seed"]}' / arm.identity()['name']
             try:
-                reports.append(run_world(bank, world, harness, judge, arm, root))
+                if employee_factory is None:
+                    report = run_world(bank, world, harness, judge, arm, root)
+                else:
+                    from .reacting import run_world as run_reacting
+                    report = run_reacting(bank, world, harness, judge, arm, root, employee_factory)
+                reports.append(report)
             except BaseException as exc:
                 save(out / 'STATUS.json', {'status': 'incomplete', 'completed_arms': len(reports),
                                            'planned_arms': 2 * len(study['worlds']), 'error_type': type(exc).__name__,
@@ -292,6 +286,9 @@ def execute_study(bank, harness, judge, learner, out):
         rows = {r['arm']: r for r in reports if r['world_seed'] == world['seed']}
         pairs.append({'seed': world['seed'], 'probe_quality_delta':
                       rows[learner.identity()['name']]['probe_quality_mean'] - rows['no_learning']['probe_quality_mean']})
+        if employee_factory is not None:
+            pairs[-1]['probe_on_time_delta'] = (rows[learner.identity()['name']]['probe_accepted_on_time_fraction'] -
+                                                rows['no_learning']['probe_accepted_on_time_fraction'])
     result = {'status': 'completed', 'world_pairs': pairs, 'analysis': study['analysis'],
               'mean_probe_quality_delta': sum(p['probe_quality_delta'] for p in pairs) / len(pairs),
               'confirmatory_significance_claim': False}

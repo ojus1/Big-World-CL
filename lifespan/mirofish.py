@@ -47,8 +47,13 @@ def service_binding(url):
             'trust_env': False, 'follow_redirects': False}
 
 
-def imports():
-    sys.path.insert(0, str(BACKEND))
+def imports(backend=None):
+    backend = Path(backend or BACKEND).resolve()
+    existing = sys.modules.get('app')
+    if existing is not None and getattr(existing, '__file__', None):
+        if not Path(existing.__file__).resolve().is_relative_to(backend):
+            raise ValueError('A different MiroFish backend is already imported in this process')
+    sys.path.insert(0, str(backend))
 
 
 def save(path, value):
@@ -73,12 +78,13 @@ class MiroFishRuntime:
     evaluation_service_url = None
 
     def __init__(self, out, base_url=DEFAULT_SERVICE_URL, *, actor_output_contract=None,
-                 evaluation_service_url=None):
+                 evaluation_service_url=None, backend_root=None):
         import httpx
         explicit = normalize_service_url(evaluation_service_url) if evaluation_service_url is not None else None
         if explicit is not None and normalize_service_url(base_url) != explicit:
             raise ValueError('Configured MiroFish service differs from native client URL')
         self.out = Path(out)
+        self.backend = Path(backend_root or BACKEND).resolve()
         self.out.mkdir(parents=True, exist_ok=True)
         self.client = httpx.Client(base_url=base_url, timeout=httpx.Timeout(150, connect=10),
                                   headers={"Accept-Language": "en", "X-Language": "en"},
@@ -157,7 +163,7 @@ class MiroFishRuntime:
         raise TimeoutError(f"MiroFish stage exceeded {timeout}s: {path}")
 
     def bootstrap(self, blueprint, cohort):
-        imports()
+        imports(self.backend)
         from app.services.oasis_profile_generator import OasisAgentProfile
         from app.services.simulation_manager import SimulationManager, SimulationStatus
         from app.services.simulation_config_generator import (
@@ -197,7 +203,7 @@ class MiroFishRuntime:
             self.put("simulation", self.call("/api/simulation/create", {"project_id": project_id,
                        "enable_twitter": False, "enable_reddit": True}))
         sim = self.state["simulation"]["simulation_id"]
-        self.sim_dir = BACKEND / "uploads/simulations" / sim
+        self.sim_dir = self.backend / "uploads/simulations" / sim
         self.employee_ids = {emp["id"]: i for i, emp in enumerate(employees)}
         if "compiled" not in self.state:
             profiles = []

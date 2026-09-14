@@ -24,17 +24,26 @@ def main():
     p.add_argument('--skillopt-root', type=Path, required=True)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
+    p.add_argument('--mirofish-backend', type=Path)
+    p.add_argument('--persona-cache', type=Path)
+    p.add_argument('--mirofish-service-url')
     a = p.parse_args()
     bank = Bank(a.bank)
     harness = Hermes(a.hermes_root, a.model, a.base_url)
     judge = FrozenRubricJudge(bank, a.model, a.base_url)
     learner = SkillOpt(a.skillopt_root, a.model, a.base_url)
+    employee_factory = None
+    actor_options = [a.mirofish_backend, a.persona_cache, a.mirofish_service_url]
+    if any(actor_options):
+        if not all(actor_options): p.error('Native employees require backend, persona cache and service URL')
+        from .employees import MiroFishEmployees
+        employee_factory = MiroFishEmployees(*actor_options, a.model, a.base_url)
     if a.command == 'prepare':
         spec = expand_workforce(read(a.spec))
         if a.employee_examples: spec = attach_examples(spec, read(a.employee_examples))
-        value = prepare_study(bank, spec, a.seeds, harness, judge, learner, a.out)
+        value = prepare_study(bank, spec, a.seeds, harness, judge, learner, a.out, employee_factory)
     else:
-        value = execute_study(bank, harness, judge, learner, a.out)
+        value = execute_study(bank, harness, judge, learner, a.out, employee_factory)
     print(json.dumps(value, indent=2))
 
 

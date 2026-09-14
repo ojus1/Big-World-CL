@@ -6,8 +6,18 @@ from scripts.source_world_calibration import save, sha
 from .contracts import TaskRequest, validate_execution
 
 
+def task_instruction(original, employee_message=None):
+    if employee_message is None:
+        return original
+    if not isinstance(employee_message, str) or not employee_message.strip():
+        raise ValueError('A delegated task requires the employee request')
+    return ('Original task and deliverable requirements:\n' + original +
+            '\n\nEmployee request and observed workplace context:\n' + employee_message +
+            '\n\nComplete the original deliverables. Employee context does not waive source requirements.')
+
+
 def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, out,
-                 judge_tokens=400_000, judge_calls=8, total_timeout_seconds=None):
+                 judge_tokens=400_000, judge_calls=8, total_timeout_seconds=None, employee_message=None):
     started = time.monotonic()
     deadline = started + (total_timeout_seconds if total_timeout_seconds is not None else budget.seconds + 300)
     out = Path(out).resolve()
@@ -19,7 +29,10 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
     ident = workspace / '.employee_identity'
     ident.write_text(employee_id + '\n'); baseline['.employee_identity'] = sha(ident)
     save(out / 'BASELINE.json', baseline)
-    request = TaskRequest(out.name, employee_id, public['instruction'], public['language'], workspace, skill, budget)
+    instruction = task_instruction(public['instruction'], employee_message)
+    request = TaskRequest(out.name, employee_id, instruction, public['language'], workspace, skill, budget)
+    if employee_message is not None:
+        save(out / 'EMPLOYEE_REQUEST.json', {'message': employee_message, 'original_instruction': public['instruction']})
     save(out / 'PUBLIC_REQUEST.json', {**asdict(request), 'workspace': str(workspace)})
     execution = harness.run(request, out)
     save(out / 'EXECUTION_RECEIPT.json', execution)

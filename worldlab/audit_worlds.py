@@ -14,13 +14,14 @@ from .contracts import Budget, validate_execution
 from .verdict_grammar import contract as verdict_contract
 from .judge_transport import digest as transport_digest
 from .worlds import eligible_experiences, stable_hash
+from .attempts import task_instruction
 
 
 def require(condition, message):
     if not condition: raise ValueError(message)
 
 
-def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
+def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employee_message=None):
     record = read(root / 'ATTEMPT.json')
     actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} - {'ATTEMPT.json'}
     require(actual == set(record['artifact_inventory']), 'Attempt artifact inventory changed')
@@ -28,7 +29,11 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
         p = child(root, name)
         require(not p.is_symlink() and sha(p) == digest, 'Attempt file changed: ' + name)
     request = read(root / 'PUBLIC_REQUEST.json')
-    require(request['instruction'] == bank.public(task_id)['instruction'], 'Public task instruction mismatch')
+    original = bank.public(task_id)['instruction']
+    require(request['instruction'] == task_instruction(original, employee_message), 'Public task instruction mismatch')
+    if employee_message is not None:
+        require(read(root / 'EMPLOYEE_REQUEST.json') == {'message': employee_message, 'original_instruction': original},
+                'Employee delegation changed')
     if expected_skill is not None: require(request['skill'] == expected_skill, 'Wrong deployed skill')
     execution = read(root / 'EXECUTION_RECEIPT.json')
     require(execution == record['execution'], 'Execution receipt changed')
@@ -53,7 +58,7 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
                       for p in workspace.rglob('*') if p.is_file() and
                       str(p.relative_to(workspace)) != '.employee_identity' and
                       not str(p.relative_to(workspace)).startswith('scratch/')}
-    require(evidence['files'] == expected_files and evidence['instruction'] == request['instruction'],
+    require(evidence['files'] == expected_files and evidence['instruction'] == original,
             'Judge evidence differs from original input and actual deliverables')
     changed = [name for name, digest in expected_baseline.items()
                if not child(workspace, name).is_file() or sha(child(workspace, name)) != digest]
@@ -84,6 +89,39 @@ def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
     return record
 
 
+def audit_updates(bank, world, root, state, name, harness, counts):
+    updates = state['updates']
+    for item in updates:
+        update = item['result']
+        if name == 'no_learning':
+            require(not update['accepted'] and update['costs']['tokens'] == 0, 'Control learned')
+            continue
+        update_root = root / 'learning' / f'd{item["day"]:03d}-{item["employee_id"]}'
+        require(read(update_root / 'UPDATE.json') == update, 'Update evidence changed')
+        selected = eligible_experiences(state['sessions'], item['employee_id'], item['day'],
+                world['specification'].get('train_cases', 2), world['specification'].get('val_cases', 2))
+        by_id = {s['id']: s for s in selected}
+        require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
+                update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
+        for replay in update['replay_evidence']:
+            r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness,
+                                      employee_message=by_id[replay['id']].get('employee_message'))
+            require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
+            req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
+            require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
+            operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
+            operation = operations[replay['attempt_index']]
+            require(operation['tokens'] == r['tokens'] and operation['model_calls'] == r['model_calls'],
+                    'Learning ledger differs from work plus judge usage')
+            counts['learning_replays'] += 1
+        for payload in update['optimizer_inputs']:
+            require(all(e['task']['id'] in update['train_ids'] and e['task']['split'] == 'train'
+                        for e in payload['train_experiences']), 'Optimizer saw non-training evidence')
+        from scripts.audit_transfer import gate_check
+        gate_check(update)
+        counts['adoptions'] += int(update['accepted'])
+
+
 def audit(bank, out, harness=None):
     study = read(out / 'STUDY.json')
     if harness is None and study['harness']['name'] == 'native_hermes_task_package':
@@ -92,6 +130,9 @@ def audit(bank, out, harness=None):
     require(harness is not None, 'Supply an offline auditor for the registered harness')
     require(sha(out / 'STUDY.json') == read(out / 'PREPARED.json')['study_sha256'], 'Study bytes changed')
     require(source_identity() == study['source_sha256'], 'Use the frozen source checkout for this study')
+    if study.get('employee_driver') is not None:
+        from .audit_reacting import audit_workplaces
+        return audit_workplaces(bank, out, study, harness)
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
     for world in study['worlds']:
         require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
@@ -110,34 +151,7 @@ def audit(bank, out, harness=None):
                 require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'], 'Session receipt mismatch')
                 require(sha(root / 'sessions' / slot['id'] / 'ATTEMPT.json') == session['attempt_sha256'], 'Session hash mismatch')
                 counts['online_attempts'] += 1
-            for item in updates:
-                update = item['result']
-                if name == 'no_learning':
-                    require(not update['accepted'] and update['costs']['tokens'] == 0, 'Control learned')
-                    continue
-                update_root = root / 'learning' / f'd{item["day"]:03d}-{item["employee_id"]}'
-                require(read(update_root / 'UPDATE.json') == update, 'Update evidence changed')
-                selected = eligible_experiences(state['sessions'], item['employee_id'], item['day'],
-                        world['specification'].get('train_cases', 2), world['specification'].get('val_cases', 2))
-                by_id = {s['id']: s for s in selected}
-                require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
-                        update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
-                for replay in update['replay_evidence']:
-                    r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness)
-                    require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
-                    req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
-                    require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
-                    operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
-                    operation = operations[replay['attempt_index']]
-                    require(operation['tokens'] == r['tokens'] and operation['model_calls'] == r['model_calls'],
-                            'Learning ledger differs from work plus judge usage')
-                    counts['learning_replays'] += 1
-                for payload in update['optimizer_inputs']:
-                    require(all(e['task']['id'] in update['train_ids'] and e['task']['split'] == 'train'
-                                for e in payload['train_experiences']), 'Optimizer saw non-training evidence')
-                from scripts.audit_transfer import gate_check
-                gate_check(update)
-                counts['adoptions'] += int(update['accepted'])
+            audit_updates(bank, world, root, state, name, harness, counts)
             probes = [s for s in state['sessions'] if s['split'] == 'probe']
             require(report['probe_quality_mean'] == sum(s['grade']['quality_score'] for s in probes) / len(probes), 'Probe report mismatch')
             require(report['world_schedule_sha256'] == stable_hash(world), 'World schedule hash mismatch')
