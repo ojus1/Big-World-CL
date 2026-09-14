@@ -53,7 +53,7 @@ class Hermes:
         with (artifact_root / 'worker.log').open('w') as log:
             process = subprocess.Popen([str(self.root / 'venv/bin/python'), '-u', '-m',
                                         'worldlab.hermes_worker', str(artifact_root / 'REQUEST.json')],
-                                       cwd=request.workspace, env=env, stdout=log, stderr=log,
+                                       cwd=artifact_root, env=env, stdout=log, stderr=log,
                                        start_new_session=True)
             timed_out = False
             try:

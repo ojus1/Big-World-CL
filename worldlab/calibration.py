@@ -46,8 +46,8 @@ def fit(bank, specification):
         if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', employee['id']):
             raise ValueError('Invalid employee ID')
         anchors = employee.get('representative_tasks', [])
-        if not anchors or not employee.get('role') or not employee.get('language'):
-            raise ValueError('Each employee needs role, language and representative_tasks')
+        if not isinstance(anchors, list) or not employee.get('role') or not employee.get('language'):
+            raise ValueError('Each employee needs role and language; representative_tasks is an optional list')
         seen = set()
         for i, anchor in enumerate(anchors):
             if not isinstance(anchor.get('prompt'), str) or not anchor['prompt'].strip():
@@ -92,9 +92,50 @@ def fit(bank, specification):
                             'unfilled_matches': count - len(chosen)})
     total = sum(a['weight'] for a in matches)
     covered = sum(a['weight'] * (len(a['matches']) / a['requested_matches']) for a in matches)
+    workforce = assign_workforce(employees, matches)
     return {'schema_version': 1, 'bank_manifest_sha256': bank.verification['manifest_sha256'],
-            'anchors': matches, 'weighted_retrieval_coverage': covered / total,
-            'scope': 'Development task retrieval from representative prompts; weights supplied by the user, not measured employee prevalence. Similarity is not semantic equivalence or simulator fidelity.'}
+            'anchors': matches, 'weighted_retrieval_coverage': covered / total if total else None,
+            'workforce': workforce,
+            'employee_coverage': dict(Counter(e['calibration_status'] for e in workforce)),
+            'scope': 'Development task retrieval from an optional subset of employees. Weights are supplied, not measured prevalence. Role transfer is an assumption; unanchored employees retain simulator defaults. Similarity is not semantic equivalence or simulator fidelity.'}
+
+
+def assign_workforce(employees, anchors):
+    """Partial calibration never makes missing employees disappear from a world.
+
+    Direct examples take precedence. Transfer requires matching language and
+    calibration_role (or exact role label); broad cross-role fallback is absent.
+    A None task_mixture tells the caller to retain its existing simulator default.
+    """
+    by_employee = {}
+    for anchor in anchors:
+        by_employee.setdefault(anchor['employee_id'], []).append(anchor)
+
+    def role_key(employee):
+        return (employee.get('calibration_role', employee['role']).strip().casefold(), employee['language'])
+
+    workforce = []
+    for employee in employees:
+        direct = by_employee.get(employee['id'], [])
+        donors = [e['id'] for e in employees if e['id'] != employee['id'] and
+                  role_key(e) == role_key(employee) and e.get('representative_tasks')]
+        supplied = bool(employee.get('representative_tasks'))
+        selected = direct if supplied else [a for ident in donors for a in by_employee.get(ident, [])]
+        mixture = Counter()
+        for anchor in selected:
+            for match in anchor['matches']:
+                mixture[match['task_id']] += anchor['weight'] / anchor['requested_matches']
+        status = ('direct_examples' if supplied else 'role_transfer') if mixture else 'uncalibrated_default'
+        mass = sum(mixture.values())
+        workforce.append({'employee_id': employee['id'], 'role': employee['role'],
+                          'language': employee['language'], 'calibration_status': status,
+                          'examples_supplied': supplied,
+                          'evidence_employee_ids': [employee['id']] if supplied else donors,
+                          'task_mixture': {k: v / mass for k, v in sorted(mixture.items())} if mass else None,
+                          'assumption': 'Same role and language share a task mixture; no examples observed for this employee.'
+                                        if status == 'role_transfer' else None,
+                          'default_action': 'retain_simulator_default' if not mass else None})
+    return workforce
 
 
 def slots(bank, fit_result, config):

@@ -8,7 +8,7 @@ from unittest.mock import patch
 from scripts.source_world_calibration import save
 from worldlab.calibration import fit, slots
 from worldlab.contracts import Feedback, released_training
-from worldlab.campaign import prepare, execute, summarize
+from worldlab.campaign import prepare, execute, summarize, source_identity
 
 
 class FakeBank:
@@ -82,6 +82,41 @@ class Tests(unittest.TestCase):
         self.assertEqual(result['weighted_retrieval_coverage'], 0)
         self.assertEqual(result['anchors'][0]['unfilled_matches'], 2)
 
+    def test_examples_for_only_subset_preserve_all_employees(self):
+        spec = copy.deepcopy(SPEC)
+        spec['employees'] += [
+            {'id': 'colleague', 'role': 'Finance analyst', 'language': 'en'},
+            {'id': 'engineer', 'role': 'Software engineer', 'language': 'en'},
+            {'id': 'german-analyst', 'role': 'Finance analyst', 'language': 'de'}]
+        result = fit(FakeBank(), spec)
+        coverage = {e['employee_id']: e for e in result['workforce']}
+        self.assertEqual(len(coverage), 4)
+        self.assertEqual(coverage['analyst']['calibration_status'], 'direct_examples')
+        self.assertEqual(coverage['colleague']['calibration_status'], 'role_transfer')
+        self.assertEqual(coverage['colleague']['evidence_employee_ids'], ['analyst'])
+        self.assertEqual(coverage['colleague']['task_mixture'], coverage['analyst']['task_mixture'])
+        for ident in ['engineer', 'german-analyst']:
+            self.assertEqual(coverage[ident]['calibration_status'], 'uncalibrated_default')
+            self.assertIsNone(coverage[ident]['task_mixture'])
+        # Transferred employees are not fabricated calibration observations.
+        self.assertEqual(len(slots(FakeBank(), result, spec)), 4)
+
+    def test_zero_examples_is_valid_uncalibrated_world(self):
+        spec = copy.deepcopy(SPEC)
+        del spec['employees'][0]['representative_tasks']
+        result = fit(FakeBank(), spec)
+        self.assertEqual(result['anchors'], [])
+        self.assertIsNone(result['weighted_retrieval_coverage'])
+        self.assertEqual(result['workforce'][0]['default_action'], 'retain_simulator_default')
+
+    def test_direct_unmatched_example_does_not_silently_borrow_other_role_evidence(self):
+        spec = copy.deepcopy(SPEC)
+        spec['employees'].append({'id': 'specialist', 'role': 'Finance analyst', 'language': 'en',
+            'representative_tasks': [{'prompt': 'astronomy telescope nebula'}]})
+        result = fit(FakeBank(), spec)
+        self.assertEqual(result['workforce'][1]['calibration_status'], 'uncalibrated_default')
+        self.assertEqual(result['workforce'][1]['evidence_employee_ids'], ['specialist'])
+
     def test_future_and_validation_never_reach_training(self):
         def e(task, observed, released, partition='train'):
             return Feedback(task, task, observed, released, partition, 'request', [], 0, 'feedback')
@@ -135,6 +170,22 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError): execute(bank, harness, grader, out)
         with self.assertRaises(ValueError):
             summarize({'slots': [{'id': 'a'}]}, [{'id': 'a'}, {'id': 'a'}])
+
+    def test_generated_python_deliverables_do_not_change_execution_identity(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in ['worldlab/core.py', 'lifespan/core.py', 'scripts/source_world_calibration.py']:
+                p = root / name
+                p.parent.mkdir(exist_ok=True)
+                p.write_text('# execution')
+            with patch('worldlab.campaign.ROOT', root):
+                before = source_identity()
+                p = root / 'lifespan/artifacts/run/employee/workspace/output/answer.py'
+                p.parent.mkdir(parents=True)
+                p.write_text('# employee artifact')
+                self.assertEqual(source_identity(), before)
+                (root / 'worldlab/core.py').write_text('# changed execution')
+                self.assertNotEqual(source_identity(), before)
 
 
 if __name__ == '__main__': unittest.main()

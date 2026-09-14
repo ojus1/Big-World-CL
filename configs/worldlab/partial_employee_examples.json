@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "employees": [
+    {
+      "id": "finance-alex",
+      "role": "Finance analyst",
+      "language": "en",
+      "representative_tasks": [{
+        "prompt": "Reconcile supplier invoices against the correct tariff schedule, investigate variances and create a table and a short report.",
+        "matches": 2,
+        "selector": {"sources": ["internal_eurobench"]}
+      }]
+    },
+    {"id": "finance-blair", "role": "Finance analyst", "language": "en"},
+    {"id": "finance-cameron", "role": "Finance analyst", "language": "en"},
+    {"id": "engineering-devon", "role": "Software engineer", "language": "en"},
+    {"id": "operations-emile", "role": "Operations manager", "language": "fr"}
+  ]
+}
