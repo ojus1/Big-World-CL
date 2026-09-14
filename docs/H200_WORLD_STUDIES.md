@@ -492,3 +492,17 @@ The checkout is `Big-World-CL-workplace-scale-v1`, artifact
 The [study protocol](WORLDLAB_STUDY_PROTOCOL.md) describes the required adoption,
 deployment, paired-outcome and statistical evidence. None of these preparation
 counts establishes a statistically supported learning effect.
+
+The separate prospective analysis was frozen at **21:56 UTC** before any scale
+study execution, under `Big-World-CL-lab/lifespan/artifacts/native-workplace-scale-analysis-v1`.
+Its plan SHA is `019ba6cbb8b1b63d5beaa40a7c47673e3a128cb8fc55a8e744ac6fdaa7daa74e`.
+The implementation is at `c3bbd0e`; all 59 WorldLab tests passed locally. The
+analysis requires all six planned pairs and their original offline audits before
+computing the equal-world paired effect, uncertainty and exploratory sign-flip
+diagnostic. No analysis results or statistical significance are available yet.
+
+At **21:56:09 UTC**, the ten-day native pair remained active under the same
+MainPID and invocation. Its control arm had reached day 2 with six completed work
+sessions, eight recorded employee decisions, 92 work/judge calls and 1,265,579
+work/judge tokens. No learning update had run. These are live progress counts,
+not a completed paired result.
