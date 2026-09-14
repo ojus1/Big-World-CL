@@ -132,6 +132,16 @@ but do not certify complete task coverage across the bank. Further source and
 semantic validation is required before making full-task or general judge
 accuracy claims. Same-model semantic judging remains a development limitation.
 
+The separate `worldlab.editorial_diagnostic` checks a remaining calculation in
+the pinned editorial training task: working days exclude Sundays and the five
+specified holidays, while Saturdays remain included. It also checks the strict
+`<10` flag against recomputed days. `run --bank BANK --root COMPLETED_ARM --out OUT`
+selects every completed attempt of that task in the named arm; `audit --bank BANK
+--out OUT` verifies the complete selection and reproduces the results. Eight
+hand-checked calendar boundaries are retained with the diagnostic. This neither
+changes historical grades nor certifies date selection, translator allocation,
+risk argumentation, or the complete scheduling task.
+
 Native employee interview costs are metered. The running studies retain their
 original unknown bootstrap/social usage. A separate two-employee native
 qualification at `bafac6f` verifies optional simulation-bound social receipts for
