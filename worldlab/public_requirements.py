@@ -105,8 +105,8 @@ def procurement(inputs, outputs):
                 weighted.append(f'Weight {weight}: supplier A weighted score differs from rounded policy arithmetic.')
             if any(row[f'punt_{provider}'] != 'EXCLUDED' for provider in 'bc'):
                 exclusions.append(f'Weight {weight}: B and C require the public English EXCLUDED marker.')
-            # The public contract zeroes excluded TOTAL cells, not all subrows.
-            for provider in 'bc': number(row[f'ponderado_{provider}'])
+            # Only excluded TOTALs must be numeric zero. Intermediate weighted
+            # cells may be blank, marked excluded, zero or informational scores.
         expected_total = sum((v * w / 100).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) for w, v in expected.items())
         if number(total[0]['ponderado_a']) != expected_total:
             weighted.append('Supplier A TOTAL differs from source-derived rounded partials.')

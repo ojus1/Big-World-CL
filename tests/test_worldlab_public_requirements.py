@@ -39,7 +39,7 @@ class SourceIntegrationTests(unittest.TestCase):
     def test_all_source_grounded_controls_and_fixed_denominators(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = qualify(Bank(BANK), Path(tmp) / 'qualification')
-            self.assertTrue(result['ok']); self.assertEqual(result['cases'], 16)
+            self.assertTrue(result['ok']); self.assertEqual(result['cases'], 18)
 
     def test_public_numeric_failure_prevents_perfect_grade_despite_all_semantic_passes(self):
         bank = Bank(BANK)

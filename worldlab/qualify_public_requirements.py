@@ -70,6 +70,11 @@ def controls(bank):
     add('mri-component-positive', task, path, rows, [])
     alternative = deepcopy(rows); alternative[0]['ponderado_b'] = '2.7'
     add('mri-nonzero-excluded-intermediate-allowed', task, path, alternative, [])
+    for marker, label in [('', 'blank'), ('EXCLUDED', 'marked')]:
+        alternative = deepcopy(rows)
+        for row in alternative[:-1]:
+            for provider in 'bc': row[f'ponderado_{provider}'] = marker
+        add('mri-' + label + '-excluded-intermediates-allowed', task, path, alternative, [])
     wrong = deepcopy(rows); wrong[-1]['ponderado_a'] = '9.15'
     add('negative-mri-report-total', task, path, wrong, ['public_mri_weighted_scores'])
     wrong = deepcopy(rows); wrong[1]['punt_a'] = '9.0'

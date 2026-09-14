@@ -63,7 +63,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 7, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 8, 'provider': self.provider,
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
