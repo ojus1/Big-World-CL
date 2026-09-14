@@ -236,3 +236,96 @@ files, verified against source SHA-256 values and independently receipt-audited:
 two decisions, two calls, 4,914 interview tokens. The archive SHA is
 `520463516e4c7ad76b0d891da3e3da728dc45adcd6e9fc4503f964006f0d9cb7`;
 the local audit is `lifespan/artifacts/native-employees-v2-local-audit.json`.
+
+## Mechanical coverage audit and semantic controls
+
+The read-only diagnostic at `cd6d9de` ran against every attempt receipt present
+in the stopped worlds-v2/v3 studies and consolidation-v3 at snapshot time.
+`Big-World-CL-mechanical-v1/lifespan/artifacts/mechanical-agreement-v1` contains
+46 attempts from 13 lineage groups, with 44 complete qualitative judgments.
+The plan SHA is `b1203a7f94604fc2f23da59d1018d42585de0eab4a93adaf41447a3e20619d93`.
+It made zero model calls; a separate rerun verified all 46 mechanical results and
+source artifact hashes. Five diagnostic/review JSON files were copied locally and
+verified byte for byte. No historical grade or candidate output was changed.
+
+| Qualitative result | Mechanical fail | Mechanical pass |
+|---|---:|---:|
+| Fail | 16 | 0 |
+| Pass | 20 | 8 |
+
+This is disagreement, not an accuracy confusion matrix. Source inspection of
+three cases establishes why neither evaluator can simply replace the other:
+
+* `euw_fr_003_en_bridge`: mechanical JSON gold requires a sixth workshop benefit,
+  while the corrected r3 contract explicitly permits omission of that notes-only
+  possibility. Requiring it would add an obligation absent from the corrected
+  contract. A1–A5 coverage is not deficient merely because A6 is absent.
+* `euw_v1_fr_014`: a qualitative-passing output reports zero calendar days for
+  2025-01-20 through 2025-01-13. The public inclusive subtraction rule yields −6.
+  The r3 criteria largely cover the decision prose and ordering; they do not
+  replace this numerical obligation.
+* `euw_v1_es_017_en_bridge`: the public CSV yields TCO totals A=955,306,
+  B=875,758 and C=1,115,141, hence A's price score 9.2 and total 9.20. A passing
+  candidate instead used report-summary TCO and produced 9.15. But mechanical
+  requirements for Spanish `EXCLUIDO` markers conflict with public English
+  `EXCLUDED`, and zeroing every weighted subrow is stricter than the public
+  requirement for zero on the TOTAL row. Some failures in the same check group
+  are therefore valid and others are not.
+
+`SOURCE_REVIEW.json` preserves these findings with source and candidate hashes.
+The reviewer is Codex source inspection, not an independent human. The diagnostic
+initially could not import the document dependencies in MiroFish's environment;
+no diagnostic plan or grading ran then. It completed using the original evaluator
+environment `/home/inference-testing/benchmarks/eurobench-v1/.venv/bin/python`.
+
+Both live workplace-v1 and consolidation-v3 now have an
+`EVALUATION_LIMITATION.json` sidecar that binds this evidence and marks full-task
+success unqualified. Their frozen protocols and results remain intact. The next
+scoring contract must combine valid numerical/structural obligations with the
+corrected qualitative requirements before supporting a learning-effect claim.
+
+Semantic controls at `26d5cc4` run from `Big-World-CL-semantics-v1`, artifact
+`lifespan/artifacts/semantic-controls-v1`. There are 11 constructed cases over one
+source family (five positive, six negative), repeated three times. All cases,
+expected labels and rationales are frozen before calls. They cover optional A6,
+valid paraphrases, threshold direction, membership duration, invented guarantees,
+heading requirements and appendix ordering. `bigworld-semantic-controls-v1`
+started at **21:06:30 UTC**, invocation `7cb3782d77024d81a6d611c4702ba307`, with a
+4,500-second service ceiling. At **21:11:57 UTC**, 12/33 calls were complete and
+all 12 matched their labels (34,525 tokens). Even a full pass is one-family
+qualification, not general judge accuracy or actual solver performance.
+
+At that same snapshot, the original judge-format corpus was 169/210 (1,293,320
+tokens); consolidation-v3 had six completed replays and no final adoption
+decision; the native workplace was on day 1 with two completed work attempts and
+four metered employee decisions (14,934 interview tokens). All four inference
+services were confirmed active with nonzero MainPIDs.
+
+## Configurable experiment adapters
+
+`a4af361` adds operator-selected harness and learner factories to the existing
+runner. Their configuration bytes and factory-module hashes enter frozen adapter
+identity; changing them between prepare and execute is rejected before dispatch.
+The offline harness auditor accepts the same factory configuration. Existing
+direct Hermes/SkillOpt arguments retain their behavior; no Fluso implementation
+is implied by the loader.
+
+Both local and H200 focused suites passed **51 tests**. Actual installed Hermes
+and SkillOpt factories successfully prepared seed 331 in
+`Big-World-CL-factories-v1/lifespan/artifacts/factory-preparation-v1`, with study SHA
+`62da8e213e79989d05b668300b7ab76db4b43331a4fc889d82d8af8fd9520964`.
+That artifact is preparation-only: zero model calls and no experiment execution.
+The complete canonical suite passed **1,042 tests, 6 skipped** in 125.77 seconds
+at **21:13:33 UTC** under `bigworld-canonical-tests-v3`, invocation
+`24866588d9a548c082fb58ec1c9d2b30`. Its MainPID was zero and service result success
+when checked at 21:14:14 UTC. At that check, the semantic controls were 17/33
+completed and correct, the format corpus was 173/210, and all four inference
+services remained active. No consolidation adoption decision was available.
+
+At **21:15:42 UTC**, a service-specific systemd drop-in changed the format corpus
+service's observed `RuntimeMaxUSec` from 1h to 2h after a daemon reload. MainPID
+1824041 and invocation `4d1db414e04d4828bcfd214939fe4ab1` were unchanged; the process
+was not restarted. `judge-corpus-v5/RUNTIME_ADJUSTMENT.json` records before/after
+readbacks. The fixed 210 cases, 120-second per-call deadline and model/token
+budgets are unchanged. The original one-hour deadline had not yet elapsed when
+this adjustment was recorded.
