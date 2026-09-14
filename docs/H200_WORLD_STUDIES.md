@@ -20,7 +20,7 @@ establishes statistically significant skill learning.
 | Judge format corpus | `Big-World-CL-judge-v5`, `c79c2d7` | `lifespan/artifacts/judge-corpus-v5` | Complete, 210/210 valid responses; not semantic accuracy |
 | Semantic controls | `Big-World-CL-semantics-v1`, `26d5cc4` | `lifespan/artifacts/semantic-controls-v1` | Complete, 33/33 source-grounded labels matched over one family |
 | Native timeout fixture | `Big-World-CL-watchdogs-v2`, `343dc2d` | `lifespan/artifacts/nonstreaming-watchdogs-v2` | Complete, all three real-clock transport controls passed; zero model inference |
-| Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Fresh two-task qualification in progress |
+| Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Complete; both concurrent task receipts audited |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
@@ -399,3 +399,8 @@ server. Its service is `bigworld-adapter-v4`, invocation
 qualification only. The earlier failed world and consolidation are not resumed.
 Both new workers' `READY.json` receipts confirm request/stale limits of 600
 seconds and the explicit zero first-byte watchdog setting.
+At **21:30:57 UTC**, both native controls were complete and audited, using 8 and
+11 work/judge calls respectively: 43,815 and 69,234 tokens, or 19 calls and
+113,049 tokens combined, all with complete accounting. The service was inactive
+with MainPID zero and result success. The qualification plan SHA is
+`08e75c8728d34b1420a081e647c9f082e58c9110cb7b1d8fa4faacd6d4366e12`.
