@@ -26,9 +26,10 @@ class Hermes:
         self.provider = provider_contract(model, base_url)
 
     def identity(self):
-        return {'name': 'native_hermes_task_package', 'version': 2, 'revision': PIN,
+        return {'name': 'native_hermes_task_package', 'version': 3, 'revision': PIN,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
+                'nonstreaming_timeouts': 'request and stale windows are min(600 seconds, whole attempt budget)',
                 'tools': ['terminal', 'file', 'skills_list', 'skill_view']}
 
     def unsupported(self, public_task):
@@ -104,6 +105,10 @@ class Hermes:
         from lifespan.evaluation.runtime import skill_loaded
         root = Path(artifact_root)
         native, native_request = read(root / 'NATIVE.json'), read(root / 'REQUEST.json')
+        from .hermes_worker import native_timeouts
+        expected_timeouts = native_timeouts(request['budget'])
+        if native.get('native_timeouts') != expected_timeouts or read(root / 'READY.json').get('native_timeouts') != expected_timeouts:
+            raise ValueError('Native nonstreaming timeout readbacks differ from the declared policy')
         if any(native_request[k] != value for k, value in request.items()):
             raise ValueError('Native request differs from public execution contract')
         meter = native['evaluation_budget']

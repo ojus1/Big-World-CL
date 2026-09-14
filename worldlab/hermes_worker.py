@@ -6,6 +6,11 @@ import sys
 import traceback
 
 
+def native_timeouts(budget):
+    seconds = min(600, budget['seconds'])
+    return {'request_timeout_seconds': seconds, 'stale_timeout_seconds': seconds}
+
+
 def main():
     from scripts.source_world_calibration import save
     request = json.loads(Path(sys.argv[1]).read_text())
@@ -15,6 +20,7 @@ def main():
     import yaml
     config = {'model': {'default': request['provider']['model'], 'provider': 'custom',
                        'base_url': request['provider']['base_url'], 'api_mode': 'codex_responses'},
+              'providers': {'custom': native_timeouts(request['budget'])},
               'terminal': {'backend': 'local', 'cwd': '/workspace', 'timeout': 30, 'lifetime_seconds': 86400},
               'agent': {'max_turns': request['budget']['model_calls']},
               'skills': {'template_vars': False, 'inline_shell': False},
@@ -41,6 +47,12 @@ def main():
                     reasoning_config={'enabled': False}, quiet_mode=True, save_trajectories=True,
                     session_id=request['attempt_id'], session_db=SessionDB(), skip_context_files=True,
                     skip_background_review=True, checkpoints_enabled=False)
+    expected_timeouts = native_timeouts(request['budget'])
+    stale, implicit = agent._resolved_api_call_stale_timeout_base()
+    timeout_readback = {'request_timeout_seconds': agent._resolved_api_call_timeout(),
+                        'stale_timeout_seconds': stale}
+    if timeout_readback != expected_timeouts or implicit:
+        raise ValueError('Native Hermes did not apply the declared nonstreaming timeout settings')
     meter = install_native_budget(agent, max_model_calls=request['budget']['model_calls'],
                                   max_output_tokens=request['budget']['output_tokens'],
                                   max_total_tokens=request['budget']['total_tokens'],
@@ -50,6 +62,7 @@ def main():
     save(root / 'READY.json', {'pid': os.getpid(), 'sandbox_pid': sandbox.sandbox.process.pid,
                              'sandbox': sandbox.sandbox.initial, 'provider': request['provider'],
                              'transport': transport, 'skill': skill,
+                             'native_timeouts': timeout_readback,
                              'tools': [t.get('function', t).get('name') for t in agent.tools]})
     system = ('You are the assistant of fictional employee ' + request['employee_id'] + '. '
               'Complete the supplied professional task in its requested language using real files and tools. '
@@ -67,6 +80,7 @@ def main():
         result = {'worker_error': type(exc).__name__}
     finally:
         result.update(evaluation_budget=meter.report(), provider_contract=request['provider'],
+                      native_timeouts=timeout_readback,
                       evaluation_transport=transport, skill=skill,
                       skill_loaded=skill_loaded(result.get('messages', []), skill['native_file_sha256']))
         save(root / 'NATIVE.json', result)

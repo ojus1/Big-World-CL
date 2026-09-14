@@ -9,7 +9,7 @@ class Tests(unittest.TestCase):
     def test_old_and_normalized_native_request_receipts_are_explicitly_versioned(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            for version, filename in [(1, 'REQUEST.json'), (2, 'PUBLIC_REQUEST.json')]:
+            for version, filename in [(1, 'REQUEST.json'), (2, 'PUBLIC_REQUEST.json'), (3, 'PUBLIC_REQUEST.json')]:
                 value = {'instruction': 'original brief', 'skill': 'seed'}
                 save(root / filename, value)
                 study = {'harness': {'name': 'native_hermes_task_package', 'version': version}}
@@ -22,7 +22,13 @@ class Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); save(root / 'REQUEST.json', {'instruction': 'legacy'})
             with self.assertRaises(ValueError):
-                historical_request({'harness': {'name': 'native_hermes_task_package', 'version': 3}}, root, {})
+                historical_request({'harness': {'name': 'native_hermes_task_package', 'version': 99}}, root, {})
+
+    def test_nonstreaming_stale_and_request_windows_fit_whole_attempt_budget(self):
+        from worldlab.hermes_worker import native_timeouts
+        for whole, expected in [(1200, 600), (900, 600), (180, 180)]:
+            self.assertEqual(native_timeouts({'seconds': whole}),
+                             {'request_timeout_seconds': expected, 'stale_timeout_seconds': expected})
 
 
 if __name__ == '__main__': unittest.main()
