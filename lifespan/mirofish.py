@@ -76,10 +76,14 @@ def parse_object(text):
 class MiroFishRuntime:
     actor_output_contract = None
     evaluation_service_url = None
+    native_model_usage = False
 
     def __init__(self, out, base_url=DEFAULT_SERVICE_URL, *, actor_output_contract=None,
-                 evaluation_service_url=None, backend_root=None):
+                 evaluation_service_url=None, backend_root=None, native_model_usage=False):
         import httpx
+        if type(native_model_usage) is not bool:
+            raise ValueError('native_model_usage must be a boolean')
+        self.native_model_usage = native_model_usage
         explicit = normalize_service_url(evaluation_service_url) if evaluation_service_url is not None else None
         if explicit is not None and normalize_service_url(base_url) != explicit:
             raise ValueError('Configured MiroFish service differs from native client URL')
@@ -112,6 +116,9 @@ class MiroFishRuntime:
                 from .actor_contract import options, verify_support
                 self.actor_output_contract = options(actor_output_contract)
                 # Old servers must fail before bootstrap or any actor generation.
+                verify_support(self.call('/api/simulation/actor-contract-support'))
+            elif native_model_usage:
+                from .actor_contract import verify_support
                 verify_support(self.call('/api/simulation/actor-contract-support'))
         except Exception:
             self.client.close()
@@ -243,7 +250,11 @@ class MiroFishRuntime:
                 reddit_config=PlatformConfig(platform="reddit"), llm_model=Config.LLM_MODEL_NAME,
                 llm_base_url=Config.LLM_BASE_URL,
                 generation_reasoning=f"Compiled from {count} pinned Persona 8B records; no generated persona substitutions.")
-            save(self.sim_dir / "simulation_config.json", params.to_dict())
+            config = params.to_dict()
+            if self.native_model_usage:
+                from .native_usage import VERSION
+                config['native_model_usage'] = VERSION
+            save(self.sim_dir / "simulation_config.json", config)
             manager = SimulationManager()
             state = manager.get_simulation(sim)
             state.status = SimulationStatus.READY
@@ -253,6 +264,10 @@ class MiroFishRuntime:
             manager._save_simulation_state(state)
             self.put("compiled", {"profiles": count, "source": "actual Persona 8B records", "model": Config.LLM_MODEL_NAME})
         if "started" not in self.state:
+            from .native_usage import VERSION
+            expected = VERSION if self.native_model_usage else None
+            if json.loads((self.sim_dir / 'simulation_config.json').read_text()).get('native_model_usage') != expected:
+                raise ValueError('Native usage configuration differs from compiled simulation')
             self.put("started", self.call("/api/simulation/start", {"simulation_id": sim,
                 "platform": "reddit", "max_rounds": 1,
                 "enable_graph_memory_update": blueprint.get('enable_graph_memory_update', True)}))

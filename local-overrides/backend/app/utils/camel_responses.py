@@ -183,14 +183,27 @@ class OpenAIResponsesModel(OpenAIModel):
     def _run(self, messages, response_format=None, tools=None):
         if CURRENT.get() is not None:
             raise ContractError('contracted_interviews_require_async_native_execution')
-        self._provider(asynchronous=False)
-        return self._completion(self._client.responses.create(**self._request(messages, response_format, tools)))
+        provider = self._provider(asynchronous=False)
+        request = self._request(messages, response_format, tools)
+        recorder = getattr(self, '_model_usage', None)
+        if recorder is not None:
+            with recorder.call(request, provider) as receipt:
+                response = self._client.with_options(max_retries=0).responses.create(**request)
+                receipt.returned(response)
+                return self._completion(response)
+        return self._completion(self._client.responses.create(**request))
 
     async def _arun(self, messages, response_format=None, tools=None):
         provider = self._provider(asynchronous=True)
         request = self._request(messages, response_format, tools)
         scope = CURRENT.get()
         if scope is None:
+            recorder = getattr(self, '_model_usage', None)
+            if recorder is not None:
+                with recorder.call(request, provider) as receipt:
+                    response = await self._async_client.with_options(max_retries=0).responses.create(**request)
+                    receipt.returned(response)
+                    return self._completion(response)
             response = await self._async_client.responses.create(**request)
             return self._completion(response)
         remaining = scope.before_dispatch(request, provider=provider)
@@ -207,17 +220,23 @@ class OpenAIResponsesModel(OpenAIModel):
             raise ContractError('contracted_actor_provider_failure') from None
 
 
-def create_simulation_model(model, api_key, url):
+def create_simulation_model(model, api_key, url, *, usage_simulation_dir=None):
     from camel.models import ModelFactory
     from camel.types import ModelPlatformType
     provider = configured_provider_contract()
+    if usage_simulation_dir is not None and provider is None:
+        raise ValueError('Social usage receipts require an explicit provider profile')
     if provider is not None:
         require(provider_contract(model, url) == provider, 'actor_provider_contract_mismatch')
         # Fail fast on an unavailable profiled provider for ordinary social
         # calls too. Contracted interviews still apply their remaining deadline.
         # CAMEL's separate RateLimitError policy is unchanged.
-        return OpenAIResponsesModel(model_type=model, api_key=api_key, url=url,
-                                    model_config_dict={}, max_retries=0, timeout=120)
+        instance = OpenAIResponsesModel(model_type=model, api_key=api_key, url=url,
+                                       model_config_dict={}, max_retries=0, timeout=120)
+        if usage_simulation_dir is not None:
+            from .model_usage import ModelUsage
+            instance._model_usage = ModelUsage(usage_simulation_dir, provider)
+        return instance
     from .openai_chat_compat import is_gpt5_family, reasoning_config
     config = reasoning_config(model) if is_gpt5_family(model) else None
     if model.startswith('gpt-5.6-luna'):

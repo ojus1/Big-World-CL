@@ -54,7 +54,10 @@ class EmployeeFactory(Protocol):
 
 class MiroFishEmployees:
     def __init__(self, backend, persona_cache, service_url, model, base_url,
-                 output_contract=None):
+                 output_contract=None, *, meter_social_calls=False):
+        if type(meter_social_calls) is not bool:
+            raise ValueError('meter_social_calls must be a boolean')
+        self.meter_social_calls = meter_social_calls
         self.backend = Path(backend).resolve()
         self.persona_cache = Path(persona_cache).resolve()
         self.service_url = normalize_service_url(service_url)
@@ -63,7 +66,7 @@ class MiroFishEmployees:
                                                     'timeout_seconds': 120}
 
     def identity(self):
-        return {'name': 'native_mirofish_persona_employees', 'version': 3,
+        return {'name': 'native_mirofish_persona_employees', 'version': 4,
                 'provider': self.provider, 'service_url': self.service_url,
                 'backend_root': str(self.backend), 'persona_revision': REVISION, 'persona_shard_sha256': SHARD_SHA,
                 'actor_contract': provenance(self.output_contract, expected_provider=self.provider),
@@ -71,7 +74,9 @@ class MiroFishEmployees:
                 'source_sha256': sha(Path(__file__)), 'repair_limit': 1,
                 'graph_bootstrap': 'declared_local_organization', 'graph_memory_updates': False,
                 'graph_compiler_sha256': sha(Path(__file__).with_name('organization_graph.py')),
-                'accounting_scope': 'interviews metered; bootstrap and initial social generation unmetered'}
+                'meter_social_calls': self.meter_social_calls,
+                'accounting_scope': ('interviews and uncontracted native Responses calls separately metered; other bootstrap providers excluded'
+                                     if self.meter_social_calls else 'interviews metered; bootstrap and initial social generation unmetered')}
 
     def prepare(self, world):
         with tempfile.TemporaryDirectory() as tmp:
@@ -92,7 +97,7 @@ class NativeEmployees:
             raise ValueError('Native employee provider differs from frozen study')
         self.runtime = MiroFishRuntime(self.out, base_url=factory.service_url,
             evaluation_service_url=factory.service_url, actor_output_contract=factory.output_contract,
-            backend_root=factory.backend)
+            backend_root=factory.backend, native_model_usage=factory.meter_social_calls)
         if self.runtime.state:
             raise ValueError('Each world arm requires a fresh native employee environment')
         from .worlds import work_opportunity_limit
@@ -119,20 +124,52 @@ class NativeEmployees:
     def usage(self):
         path = self.out / 'evaluation_interview_ledger.json'
         rows = read(path)['requests'] if path.exists() else []
-        return {'model_calls': sum(r.get('physical_model_calls') or 0 for r in rows),
+        result = {'model_calls': sum(r.get('physical_model_calls') or 0 for r in rows),
                 'tokens': sum(r.get('tokens') or 0 for r in rows), 'logical_requests': len(rows),
                 'interview_accounting_complete': all(r.get('accounting_complete') for r in rows),
                 'bootstrap_and_social_tokens': None, 'whole_actor_accounting_complete': False}
+        if self.factory.meter_social_calls:
+            from lifespan.native_usage import summarize
+            result['social_model_usage'] = summarize(self.runtime.sim_dir / 'model_usage',
+                provider=self.factory.provider, simulation_id=self.runtime.sim_dir.name,
+                config_sha256=sha(self.runtime.sim_dir / 'simulation_config.json'))
+        return result
 
     def close(self):
         try:
-            source = self.runtime.sim_dir / 'reddit_simulation.db'
-            if source.is_file():
-                with sqlite3.connect(source) as src, sqlite3.connect(self.out / 'native_actor_state.db') as dst:
-                    src.backup(dst)
             self.runtime.close()
         finally:
-            self.runtime.client.close()
+            try:
+                if self.factory.meter_social_calls:
+                    import shutil
+                    # Retain the final receipts for offline audits without a
+                    # live backend directory. Never combine interview totals.
+                    shutil.copytree(self.runtime.sim_dir / 'model_usage', self.out / 'model_usage')
+                    shutil.copy2(self.runtime.sim_dir / 'simulation_config.json', self.out / 'NATIVE_SIMULATION_CONFIG.json')
+                source = self.runtime.sim_dir / 'reddit_simulation.db'
+                if source.is_file():
+                    with sqlite3.connect(source) as src, sqlite3.connect(self.out / 'native_actor_state.db') as dst:
+                        src.backup(dst)
+            finally:
+                self.runtime.client.close()
+
+
+def audit_social_usage(actor_root, identity, reported):
+    root = Path(actor_root)
+    if not identity.get('meter_social_calls'):
+        if 'social_model_usage' in reported or (root / 'model_usage').exists():
+            raise ValueError('Unexpected social accounting in an unmetered study')
+        return None
+    from lifespan.native_usage import summarize, VERSION
+    config = root / 'NATIVE_SIMULATION_CONFIG.json'
+    if read(config).get('native_model_usage') != VERSION:
+        raise ValueError('Native social usage was not enabled in the compiled simulation')
+    simulation_id = read(root / 'mirofish_state.json')['simulation']['simulation_id']
+    value = summarize(root / 'model_usage', provider=identity['provider'],
+                      simulation_id=simulation_id, config_sha256=sha(config))
+    if value != reported.get('social_model_usage'):
+        raise ValueError('Social accounting differs from native receipts')
+    return value
 
 
 def audit_native_decision(actor_root, identity, view, decision, key):

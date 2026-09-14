@@ -10,7 +10,7 @@ from pathlib import Path
 from scripts.source_world_calibration import read, save, sha
 from .bank import Bank
 from .campaign import source_identity
-from .employees import MiroFishEmployees, audit_native_decision
+from .employees import MiroFishEmployees, audit_native_decision, audit_social_usage
 from .hermes import Hermes
 from .qualitative import FrozenRubricJudge
 from .workforce import expand_workforce
@@ -42,12 +42,15 @@ def qualify(bank, spec, harness, judge, factory, out):
         (out / 'INFLIGHT.json').unlink()
         result = {'ok': len(rows) == len(place.profiles), 'employee_decisions': len(rows), 'usage': driver.usage(),
                   'plan_sha256': sha(out / 'PLAN.json'), 'scope': 'Native role/view/decision contract qualification only.'}
-        save(out / 'QUALIFICATION.json', result)
-        return result
     finally:
         save(out / 'WORKPLACE.json', place.state)
-        save(out / 'USAGE.json', driver.usage())
-        driver.close()
+        try:
+            save(out / 'USAGE.json', driver.usage())
+        finally:
+            driver.close()
+    result['social_usage_audit'] = audit_social_usage(out / 'actors', factory.identity(), result['usage'])
+    save(out / 'QUALIFICATION.json', result)
+    return result
 
 
 if __name__ == '__main__':
@@ -55,10 +58,12 @@ if __name__ == '__main__':
     for name in ('bank', 'spec', 'out', 'hermes-root', 'mirofish-backend', 'persona-cache'):
         p.add_argument('--' + name, required=True, type=Path)
     p.add_argument('--mirofish-service-url', default='http://127.0.0.1:5001')
+    p.add_argument('--meter-social-calls', action='store_true')
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
     a = p.parse_args()
     bank = Bank(a.bank)
-    factory = MiroFishEmployees(a.mirofish_backend, a.persona_cache, a.mirofish_service_url, a.model, a.base_url)
+    factory = MiroFishEmployees(a.mirofish_backend, a.persona_cache, a.mirofish_service_url, a.model, a.base_url,
+                               meter_social_calls=a.meter_social_calls)
     print(json.dumps(qualify(bank, read(a.spec), Hermes(a.hermes_root, a.model, a.base_url),
                             FrozenRubricJudge(bank, a.model, a.base_url), factory, a.out), indent=2))

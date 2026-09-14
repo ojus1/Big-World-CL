@@ -53,12 +53,13 @@ def replay_commands(bank, world, state):
 
 def audit_workplaces(bank, out, study, harness, learner):
     from .audit_worlds import audit_attempt, audit_updates
-    from .employees import audit_native_decision
+    from .employees import audit_native_decision, audit_social_usage
     from .organization_graph import declarations
     require(study['employee_driver']['name'] == 'native_mirofish_persona_employees',
             'Supply an auditor for this employee driver')
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0,
               'native_employee_decisions': 0, 'actor_interview_tokens': 0}
+    social = []
     for world in study['worlds']:
         require(world['bank_manifest_sha256'] == bank.verification['manifest_sha256'], 'Bank changed')
         for name in ('no_learning', study['learner']['name']):
@@ -89,6 +90,9 @@ def audit_workplaces(bank, out, study, harness, learner):
             require(report['actor_usage']['model_calls'] == calls and report['actor_usage']['tokens'] == tokens,
                     'Actor accounting differs from verified native receipts')
             counts['actor_interview_tokens'] += tokens
+            social_usage = audit_social_usage(root / 'actors', study['employee_driver'], report['actor_usage'])
+            if social_usage is not None:
+                social.append({'seed': world['seed'], 'arm': name, **social_usage})
             for session in state['sessions']:
                 past = [u for u in state['updates'] if u['employee_id'] == session['employee_id'] and
                         u['day'] < session['day'] and u['result']['accepted']]
@@ -107,5 +111,5 @@ def audit_workplaces(bank, out, study, harness, learner):
             for metric in ('probe_quality_mean', 'probe_accepted_on_time_fraction'):
                 require(report[metric] == place.summary()[metric], 'Primary or secondary metric changed')
         counts['world_pairs'] += 1
-    return {'ok': True, **counts, 'bootstrap_and_social_tokens': None,
+    return {'ok': True, **counts, 'bootstrap_and_social_tokens': None, 'social_model_usage': social,
             'scope': 'Causal state, native interviews, skill gate, work and replay audit; no certification of judgment truth or final significance.'}

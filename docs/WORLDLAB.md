@@ -31,6 +31,24 @@ keeps those categories separate and provides no misleading combined cost total.
 An in-flight marker does not prove that a process is alive, and service success
 does not prove a successful experiment audit or a learning effect.
 
+Fresh native studies can opt into `--meter-social-calls` on both prepare and
+execute, or use `MiroFishEmployees(..., meter_social_calls=True)`. The native
+qualification command accepts the same flag. This requires the updated bridge,
+Reddit worker patch and capability manifest in a separate fresh backend; do not
+replace an active study's backend. The option is frozen in the employee identity.
+It records otherwise uncontracted Responses calls under each simulation's
+`model_usage/`, then retains a copy with the arm for offline auditing. Interviews
+keep their existing ledger and are excluded from this new total.
+
+Each call has a receipt before dispatch, zero SDK retries, request/input hashes,
+terminal status and any valid provider-reported token counts. Output processing
+failures retain known consumption. Missing usage, interrupted calls and missing
+ledgers never become measured zeroes. Concurrent simulations use separate
+directories; prompts, outputs, credentials and exception messages are omitted.
+`social_model_usage` reports these calls separately from interview costs. It
+does not establish complete accounting for other bootstrap providers, evaluator
+accuracy or a learning effect. Existing unmetered runs remain unchanged.
+
 ## Calibrate a subset
 
 The simulator-generated workforce provides employee IDs, roles and languages.

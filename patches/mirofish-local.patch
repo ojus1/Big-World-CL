@@ -794,7 +794,7 @@ index 2a627ff..c3115e1 100644
  
  def get_active_agents_for_round(
 diff --git a/backend/scripts/run_reddit_simulation.py b/backend/scripts/run_reddit_simulation.py
-index 14907cb..e556d2a 100644
+index 14907cb..aacdf61 100644
 --- a/backend/scripts/run_reddit_simulation.py
 +++ b/backend/scripts/run_reddit_simulation.py
 @@ -161,9 +161,17 @@ class IPCHandler:
@@ -869,7 +869,7 @@ index 14907cb..e556d2a 100644
          llm_base_url = os.environ.get("LLM_BASE_URL", "")
          llm_model = os.environ.get("LLM_MODEL_NAME", "")
          
-@@ -461,10 +481,8 @@ class RedditSimulationRunner:
+@@ -461,10 +481,10 @@ class RedditSimulationRunner:
          
          print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
          
@@ -878,11 +878,13 @@ index 14907cb..e556d2a 100644
 -            model_type=llm_model,
 -        )
 +        from app.utils.camel_responses import create_simulation_model
-+        return create_simulation_model(llm_model, llm_api_key or None, llm_base_url or None)
++        from app.utils.model_usage import usage_directory
++        return create_simulation_model(llm_model, llm_api_key or None, llm_base_url or None,
++                                       usage_simulation_dir=usage_directory(self.config, self.simulation_dir))
      
      def _get_active_agents_for_round(
          self, 
-@@ -766,4 +784,3 @@ if __name__ == "__main__":
+@@ -766,4 +786,3 @@ if __name__ == "__main__":
          pass
      finally:
          print("模拟进程已退出")

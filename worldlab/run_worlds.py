@@ -30,6 +30,8 @@ def main():
     p.add_argument('--mirofish-backend', type=Path)
     p.add_argument('--persona-cache', type=Path)
     p.add_argument('--mirofish-service-url')
+    p.add_argument('--meter-social-calls', action='store_true',
+                   help='Opt in to simulation-bound native Responses usage receipts; requires a fresh updated backend')
     a = p.parse_args()
     if bool(a.hermes_root) == bool(a.harness_config):
         p.error('Supply exactly one of --hermes-root and --harness-config')
@@ -41,10 +43,13 @@ def main():
     learner = load_adapter(a.learner_config, 'learner') if a.learner_config else SkillOpt(a.skillopt_root, a.model, a.base_url)
     employee_factory = None
     actor_options = [a.mirofish_backend, a.persona_cache, a.mirofish_service_url]
+    if a.meter_social_calls and not all(actor_options):
+        p.error('--meter-social-calls requires native employees')
     if any(actor_options):
         if not all(actor_options): p.error('Native employees require backend, persona cache and service URL')
         from .employees import MiroFishEmployees
-        employee_factory = MiroFishEmployees(*actor_options, a.model, a.base_url)
+        employee_factory = MiroFishEmployees(*actor_options, a.model, a.base_url,
+                                            meter_social_calls=a.meter_social_calls)
     if a.command == 'prepare':
         spec = expand_workforce(read(a.spec))
         if a.employee_examples: spec = attach_examples(spec, read(a.employee_examples))

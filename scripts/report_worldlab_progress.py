@@ -123,7 +123,8 @@ def snapshot(root, unit=None):
                     'known_physical_model_calls': sum(r['physical_model_calls'] for r in interviews if integer(r.get('physical_model_calls'))),
                     'reported_tokens': sum(r['tokens'] for r in interviews if integer(r.get('tokens'))),
                     'requests_with_incomplete_accounting': sum(r.get('accounting_complete') is not True for r in interviews)},
-                'bootstrap_and_social_tokens': None})
+                'bootstrap_and_social_tokens': None,
+                'saved_social_model_usage': report.get('actor_usage', state.get('actor_usage', {})).get('social_model_usage')})
     saved_status = optional(root / 'STATUS.json') or {}
     saved_report = optional(root / 'REPORT.json') or {}
     value = {'observed_utc': datetime.now(timezone.utc).isoformat(), 'study_root': str(root),

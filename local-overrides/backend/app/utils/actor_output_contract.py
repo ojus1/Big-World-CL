@@ -190,7 +190,8 @@ def capabilities(*, expected_provider=USE_RUNTIME_PROVIDER):
     result = {'version': VERSION, 'transport_sha256': transport, 'platforms': ['reddit'], 'backends': ['responses'], 'max_physical_requests': 1,
         'role_schema_sha256': {role: digest(role_schema(role)) for role in ROLE_TYPES.values()},
         'contract_module_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        'bridge_module_sha256': hashlib.sha256(Path(__file__).with_name('camel_responses.py').read_bytes()).hexdigest()}
+        'bridge_module_sha256': hashlib.sha256(Path(__file__).with_name('camel_responses.py').read_bytes()).hexdigest(),
+        'model_usage_module_sha256': hashlib.sha256(Path(__file__).with_name('model_usage.py').read_bytes()).hexdigest()}
     provider = (configured_provider_contract() if expected_provider is USE_RUNTIME_PROVIDER
                 else validate_provider_contract(expected_provider) if expected_provider is not None else None)
     if provider is not None:
