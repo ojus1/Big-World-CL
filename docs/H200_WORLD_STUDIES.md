@@ -24,7 +24,7 @@ establishes statistically significant skill learning.
 | Public arithmetic v7 | `Big-World-CL-judge-v7`, `6f93d99` | `lifespan/artifacts/native-public-judge-v7` | Two native executions audited; one evaluator false negative preserved and corrected separately |
 | Public arithmetic v8 | `Big-World-CL-judge-v8`, `31a59a7` | `lifespan/artifacts/native-public-regrade-v8` | Both unchanged native outputs accepted under fresh v8 grading |
 | Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Active at 21:52 UTC September 14; two completed work sessions |
-| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Prepared only; no model calls or employee bootstrap |
+| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Launched 21:59 UTC September 14; 12 employee decisions and first work wave dispatched by 22:03 UTC |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
@@ -506,3 +506,43 @@ MainPID and invocation. Its control arm had reached day 2 with six completed wor
 sessions, eight recorded employee decisions, 92 work/judge calls and 1,265,579
 work/judge tokens. No learning update had run. These are live progress counts,
 not a completed paired result.
+
+## Six-world native study launched
+
+The scale study launched at **21:59:22 UTC on September 14**, from its unchanged
+`3e1719d` checkout and original prepared study. Service
+`bigworld-native-workplace-scale-v1` has invocation
+`d321a4ee4152473b86daeb36a74d5c73` and MainPID 1861095. The prospective analysis
+was already frozen; its plan and study hashes were checked before dispatch.
+The service has a 32-GiB controller ceiling and an operational seven-day runtime
+ceiling. Hitting that ceiling would leave an incomplete study; it does not change
+the frozen task, learner or token budgets. Launch and readback receipts are under
+`Big-World-CL/run/h200-20260914/native-workplace-scale-v1-{launch,started}.json`.
+
+The pre-dispatch server snapshot at **21:58:41 UTC** showed two running requests,
+zero waiting requests, zero preemptions and about 2.05% KV-cache use. The Qwen
+server remains on GPUs 0–3; GPUs 4–7 were idle. The pilot continues alongside the
+scale study. Their native simulations have separate project, graph, simulation
+and employee-state identities. Neither running checkout or installed backend
+was modified to start the larger study.
+
+At **22:02:58 UTC**, both services were active with their original MainPIDs and
+invocations. Scale seed 401's control arm had initialized all 12 native profiles,
+completed 12 employee decisions (12 calls, 34,146 reported tokens), and dispatched
+its first four work attempts. No scale work attempt had completed at that
+snapshot. The pilot control arm was on day 4 with 11 completed work attempts,
+177 work/judge calls and 2,463,650 work/judge tokens. Its 13 metered employee
+decisions used 71,013 additional tokens. Neither study had a learner update yet.
+
+A read-only inspection of scale simulation `sim_80f6a626cfc1` preserves a SQLite
+backup, native log snapshots and the installed OASIS agent source under
+`Big-World-CL-lab/lifespan/artifacts/native-actor-accounting-inspection-v1`.
+Its inspection SHA is
+`a98edd3790dbf2807a8f67f62a508e85a89526751329fc06d8e3be935b6bc9b8`.
+`perform_action_by_llm` receives CAMEL's response but logs tool names, arguments
+and results, not provider usage. Native trace rows likewise preserve actions
+rather than physical-call receipts. The known interview receipts do not cover
+these initial social calls. Shared-server counters cannot uniquely attribute
+concurrent traffic to this simulation. Bootstrap/social usage therefore remains
+unknown. Future metering belongs at the simulation-scoped provider dispatch and
+response boundary; these running sources and historical costs remain unchanged.

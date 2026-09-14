@@ -14,6 +14,23 @@ the final large-world learning study has been completed.
 The [study protocol](WORLDLAB_STUDY_PROTOCOL.md) records the scale configuration,
 required learning evidence and the boundary between development and confirmation.
 
+For a running workplace study, use the read-only progress command on its host:
+
+```bash
+python3 scripts/report_worldlab_progress.py \
+  --study /path/to/frozen-study-artifacts \
+  --service bigworld-native-workplace-scale-v1.service
+```
+
+The optional service is an operator-selected systemd user unit. Its current
+MainPID and state are reported separately from saved experiment progress; the
+command does not start or restart anything. It lists all planned world arms,
+completed and unfinished attempts, learning receipts, employee interviews and
+unknown accounting. Learner-ledger tokens already include replays, so the report
+keeps those categories separate and provides no misleading combined cost total.
+An in-flight marker does not prove that a process is alive, and service success
+does not prove a successful experiment audit or a learning effect.
+
 ## Calibrate a subset
 
 The simulator-generated workforce provides employee IDs, roles and languages.
