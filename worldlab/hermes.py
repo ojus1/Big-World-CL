@@ -1,5 +1,6 @@
 """Native Hermes adapter for fully specified, offline task packages."""
 from dataclasses import asdict
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,11 @@ from lifespan.evaluation.provider import provider_contract
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def native_trajectory(native):
+    return [{k: m[k] for k in ('role', 'content', 'tool_calls', 'tool_call_id', 'name') if k in m}
+            for m in native.get('messages', []) if m.get('role') in ('user', 'assistant', 'tool')]
+
+
 class Hermes:
     def __init__(self, hermes_root, model, base_url):
         self.root = Path(hermes_root).resolve()
@@ -20,7 +26,7 @@ class Hermes:
         self.provider = provider_contract(model, base_url)
 
     def identity(self):
-        return {'name': 'native_hermes_task_package', 'version': 1, 'revision': PIN,
+        return {'name': 'native_hermes_task_package', 'version': 2, 'revision': PIN,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
                 'tools': ['terminal', 'file', 'skills_list', 'skill_view']}
@@ -86,4 +92,39 @@ class Hermes:
                 'charged_tokens': meter['charged_tokens'], 'reported_tokens': meter['reported_tokens'],
                 'accounting_complete': meter['accounting_complete'],
                 'skill_loaded': result['skill_loaded'], 'native_sha256': sha(result_path),
+                'trajectory': native_trajectory(result),
+                'skill_content_sha256': hashlib.sha256(request.skill.encode()).hexdigest(),
+                'skill_sha256': sha(artifact_root / 'hermes/skills/work-process/SKILL.md'),
                 'exit_code': process.returncode}
+
+    @staticmethod
+    def audit_execution(artifact_root, request, receipt):
+        """Check native evidence without importing or running the Hermes agent."""
+        from scripts.source_world_calibration import read
+        from lifespan.evaluation.runtime import skill_loaded
+        root = Path(artifact_root)
+        native, native_request = read(root / 'NATIVE.json'), read(root / 'REQUEST.json')
+        if any(native_request[k] != value for k, value in request.items()):
+            raise ValueError('Native request differs from public execution contract')
+        meter = native['evaluation_budget']
+        if (not meter['accounting_complete'] or meter.get('stopped') or
+                meter['physical_model_calls'] != len(meter['operations']) or
+                meter['charged_tokens'] != sum(r['charged_tokens'] for r in meter['operations']) or
+                meter['physical_model_calls'] > request['budget']['model_calls'] or
+                meter['charged_tokens'] > request['budget']['total_tokens'] or
+                any(r['output_cap'] > request['budget']['output_tokens'] for r in meter['operations']) or
+                meter['provider_contract'] != native_request['provider']):
+            raise ValueError('Native accounting or provider contract mismatch')
+        skill_path = root / 'hermes/skills/work-process/SKILL.md'
+        expected_file = ('---\nname: work-process\ndescription: Employee work process learned from available experience.\n---\n\n'
+                         + request['skill'])
+        if skill_path.read_text() != expected_file:
+            raise ValueError('Installed skill differs from requested content')
+        if not native['skill_loaded'] or not skill_loaded(native.get('messages', []), sha(skill_path)):
+            raise ValueError('Native skill was not loaded')
+        checks = {'physical_model_calls': meter['physical_model_calls'], 'charged_tokens': meter['charged_tokens'],
+                  'trajectory': native_trajectory(native), 'skill_loaded': native['skill_loaded'],
+                  'skill_sha256': sha(skill_path), 'native_sha256': sha(root / 'NATIVE.json'),
+                  'skill_content_sha256': hashlib.sha256(request['skill'].encode()).hexdigest()}
+        if any(receipt.get(k) != value for k, value in checks.items()):
+            raise ValueError('Normalized receipt differs from native evidence')

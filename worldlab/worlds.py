@@ -17,6 +17,7 @@ from .attempts import execute_task
 from .calibration import fit
 from .campaign import SEED_SKILL, source_identity
 from .contracts import Budget
+from .dispatch import dispatch_day
 
 PARTITIONS = {'train': 'calibration_train', 'val': 'calibration_validation', 'probe': 'calibration_holdout'}
 
@@ -41,6 +42,9 @@ def compile_world(bank, specification, seed, harness, judge):
     if type(delay) is not int or delay < 1:
         raise ValueError('Feedback must be delayed by at least one day')
     work_budget = Budget(**specification.get('work_budget', {}))
+    parallel = specification.get('max_parallel_employees', 1)
+    if type(parallel) is not int or not 1 <= parallel <= 64:
+        raise ValueError('max_parallel_employees must be an integer from 1 to 64')
     workforce = []
     schedule = []
     issues = []
@@ -156,26 +160,38 @@ def run_world(bank, world, harness, judge, learner, out):
     judge_tokens = judge.max_tokens
     for day in range(spec['days']):
         state['day'] = day
-        for slot in [s for s in world['schedule'] if s['day'] == day]:
-            save(out / 'INFLIGHT.json', {'kind': 'work', 'id': slot['id'],
-                                        'max_reserved_tokens': slot['work_budget']['total_tokens'] + judge_tokens})
-            result = execute_task(bank, harness, judge, task_id=slot['task_id'], employee_id=slot['employee_id'],
+
+        def work(slot):
+            return execute_task(bank, harness, judge, task_id=slot['task_id'], employee_id=slot['employee_id'],
                                   skill=skills[slot['employee_id']], budget=Budget(**slot['work_budget']),
                                   out=out / 'sessions' / slot['id'], judge_tokens=judge_tokens)
+
+        def record_work(slot, result):
             record = {**slot, 'status': result['status'], 'tokens': result['tokens'],
                       'model_calls': result['model_calls'], 'grade': result['grade'],
                       'attempt_sha256': sha(out / 'sessions' / slot['id'] / 'ATTEMPT.json'),
                       'skill_content_sha256': hashlib.sha256(skills[slot['employee_id']].encode()).hexdigest()}
             sessions.append(record)
+            sessions.sort(key=lambda s: (s['day'], s['day_order']))
             events.append({'day': day, 'kind': 'work_completed' if result['status'] == 'completed' else 'work_incomplete',
                            'employee_id': slot['employee_id'], 'obligation_id': slot['id'],
                            'feedback_release_day': slot['feedback_day']})
             save(out / 'STATE.json', state)
-            if result['status'] != 'completed':
-                raise RuntimeError('Unscored or invalid work attempt; preserved for reconciliation')
-            (out / 'INFLIGHT.json').unlink()
             print(json.dumps({'world': world['seed'], 'arm': learner.identity()['name'], 'day': day,
-                              'session': slot['id'], 'quality': result['grade']['quality_score']}), flush=True)
+                              'session': slot['id'], 'status': result['status'],
+                              'quality': result['grade']['quality_score'] if result.get('grade') else None}), flush=True)
+
+        def journal_work(wave):
+            if wave:
+                reservations = [{'id': slot['id'], 'max_reserved_tokens': slot['work_budget']['total_tokens'] + judge_tokens}
+                                for slot in wave]
+                save(out / 'INFLIGHT.json', {'kind': 'work_wave', 'day': day, 'attempts': reservations,
+                                            'max_reserved_tokens': sum(r['max_reserved_tokens'] for r in reservations)})
+            else:
+                (out / 'INFLIGHT.json').unlink()
+
+        dispatch_day([s for s in world['schedule'] if s['day'] == day], work, record_work, journal_work,
+                     max_parallel=spec.get('max_parallel_employees', 1))
         if day not in spec.get('update_days', []): continue
         for employee in sorted(skills):
             selected = eligible_experiences(sessions, employee, day,

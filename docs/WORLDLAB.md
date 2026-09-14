@@ -104,7 +104,7 @@ physical-call meter enforces token reservations and disables unmetered auxiliary
 inference. Logs are outside the task workspace. Original input bytes and all
 native outputs are preserved.
 
-The current grader calls the original EuroBench mechanical evaluator. It
+The calibration campaign's grader calls the original EuroBench mechanical evaluator. It
 returns `quality_score: null` and `quality_judging: not_executed`; mechanical
 checks alone are not the frozen qualitative rubric. The following capabilities
 remain explicit gaps, and affected tasks are reported as unsupported:
@@ -112,13 +112,82 @@ remain explicit gaps, and affected tasks are reported as unsupported:
 - JobBench research and document-tool qualification.
 - Native app state and interactive employee tools.
 - Binary document runtime qualification and private executable grading.
-- Frozen qualitative/visual judging and the official JobBench rubric adapter.
+- Visual judging and the official JobBench rubric adapter.
 
-`NoLearning` implements the learner contract. Released-training selection
-excludes future and validation feedback and retains one latest observation per
-lineage group. The existing SkillOpt baseline remains implemented in the original
-world runner; bridging it into this task-package contract and adding a Fluso
-harness are outstanding integration work, not working adapters claimed here.
+The chronological task-world runner now connects native Hermes, the frozen
+Internal EuroBench text rubric and pinned SkillOpt. `NoLearning` provides the
+matched control. A Fluso adapter remains to be implemented and qualified.
+
+### Chronological task worlds
+
+`worldlab/worlds.py` compiles a complete schedule before execution. Each employee
+has a role/language task pool and optional calibration mixture. It maintains
+employee skills, delayed feedback, scheduled obligations and work receipts across
+days. The current execution mode is controlled skill transfer: each work attempt
+starts with fresh files and a fresh harness session. It does not yet simulate
+reacting colleagues, long conversations or an economy with consequences.
+
+Training, validation and probe families retain the bank's original separation.
+Released learning cases are selected by chronology and lineage, never by score.
+SkillOpt sees training feedback; validation stays in evaluator-owned callbacks.
+Accepted skill changes affect subsequent work. The final probe phase never enters
+learning. Paired arms have identical fixed schedules and opposite execution order
+on alternating seeds. An interrupted plan cannot automatically restart.
+
+```bash
+python -m worldlab.run_worlds prepare --bank BANK --out OUT \
+  --spec configs/worldlab/development_world_v1.json --seeds 211 \
+  --hermes-root HERMES --skillopt-root SKILLOPT
+python -m worldlab.run_worlds execute --bank BANK --out OUT \
+  --hermes-root HERMES --skillopt-root SKILLOPT
+python -m worldlab.audit_worlds --bank BANK --out OUT
+```
+
+The preparation records source and bank hashes, model/provider identities,
+complete schedules and token reservation ceilings. All model costs include
+judging: online work, target replays, replay judges and optimizer calls. The
+SkillOpt adapter uses the existing pinned upstream implementation, including its
+strict mixed-score improvement, per-case nonregression and fresh final validation
+gate. It does not substitute a locally invented learning algorithm.
+
+The qualitative judge uses each original frozen r3 criterion and complete text
+files, with one metered schema-constrained verdict per criterion. Private rubrics
+remain outside the worker sandbox. Judge-derived feedback is a constructed
+training signal, not feedback from a natural user. The current judge shares the
+solver model; offline audits verify evidence and arithmetic, not judgment truth.
+
+Two format controls passed on H200 at `6602bd1`: an intact editing artifact
+scored 1.0 and its copy with the required deliverable removed scored 0.5 and
+failed overall. These used eight calls and 26,456 tokens. An earlier unstructured
+negative control emitted prose outside JSON and was retained as an incomplete
+judgment. Schema-constrained output fixed that formatting failure. Two controls
+do not establish broad judge accuracy.
+
+### Adding and scaling harnesses
+
+`Harness.run()` returns normalized trajectory, usage and skill-loading evidence;
+`Harness.audit_execution()` independently checks that receipt against native
+logs. `PUBLIC_REQUEST.json` is controller-owned. Harness-specific filenames and
+skill directories stay inside the adapter. The attempt controller rejects
+over-budget, incompletely accounted or wrong-skill receipts before grading.
+An alternate adapter test executes without any Hermes files. The existing
+calibration CLI retains its older native audit; the task-world API uses the new
+adapter contract.
+
+To integrate another harness, implement `identity`, `unsupported`, `run` and
+`audit_execution`, then pass the adapter to `prepare_study` and `execute_study`.
+Pass its offline auditor to `audit`. A learner supplies `identity` and `update`;
+the replay callback remains controller-owned. Native Fluso runtime, isolation,
+physical-call accounting and skill-loading evidence must be qualified before
+labeling that adapter operational.
+
+Set `max_parallel_employees` in the world specification to run bounded waves of
+independent employees. Each employee's sessions remain ordered; daily feedback
+and learning wait for the day's work. The scheduler records all started peers if
+one fails, retains the wave reservation and stops further dispatch. It never
+retries a failed attempt or chooses work according to completion speed. The
+frozen `development-world-v2` study at `6602bd1` uses the earlier serial runner;
+later adapter and parallel-dispatch changes do not alter its execution checkout.
 
 ## Native H200 calibration
 
@@ -157,7 +226,9 @@ infrastructure corrections. Original mechanical regrading passed its audit. Both
 research-editing attempts passed mechanics; both facilities attempts failed them.
 All four loaded the exact seed skill, preserved inputs and had no unauthorized
 workspace files. The run used 42 physical calls and 642,834 tokens with complete
-accounting. Full qualitative judging has not been executed.
+accounting. Full qualitative judging of all four calibration attempts has not
+been executed; the separate judge controls above cover one artifact and its
+deliberately incomplete copy.
 
 The invalid first run also consumed 49 calls and 862,695 tokens. Across both
 calibration runs, the recorded cost is **91 physical calls and 1,505,529 tokens**.
@@ -181,7 +252,7 @@ development commits intentionally have different source identities.
 The final objective requires rich employee/world generation using this partial
 calibration, long-lived work and consequences, scalable sessions, harness/learner
 adapters, calibrated grading and prospectively frozen independent world pairs.
-The current task-package replay is a working development component of that system.
+The current task-world runner is a working development component of that system.
 
 Statistical inference must use independent world pairs, not thousands of
 dependent sessions or repetitions of the 329 sourced tasks. Freeze the primary

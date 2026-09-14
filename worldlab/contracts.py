@@ -1,5 +1,6 @@
 """Public execution contracts; evaluator answers never enter these objects."""
 from dataclasses import dataclass
+import hashlib
 from pathlib import Path
 from typing import Protocol
 
@@ -46,9 +47,34 @@ class Feedback:
 
 
 class Harness(Protocol):
+    """Adapter owns native logs and exposes a normalized, auditable receipt.
+
+    Completed receipts include trajectory, skill_loaded, skill_content_sha256,
+    skill_sha256, physical_model_calls, charged_tokens and accounting_complete.
+    The adapter's offline auditor checks these claims against native evidence.
+    Controller code must not know a harness's log names or skill directory.
+    """
     def identity(self) -> dict: ...
     def unsupported(self, public_task: dict) -> list[str]: ...
     def run(self, request: TaskRequest, artifact_root: Path) -> dict: ...
+    def audit_execution(self, artifact_root: Path, request: dict, receipt: dict) -> None: ...
+
+
+def validate_execution(receipt, budget, skill):
+    """Reject unusable learning evidence before sending it to a grader."""
+    if receipt['status'] not in ('completed', 'budget_exhausted'):
+        return
+    if receipt.get('accounting_complete') is not True:
+        raise ValueError('Completed harness receipt has incomplete accounting')
+    for key, ceiling in [('physical_model_calls', budget.model_calls), ('charged_tokens', budget.total_tokens)]:
+        if type(receipt.get(key)) is not int or not 0 <= receipt[key] <= ceiling:
+            raise ValueError('Invalid or exceeded harness budget: ' + key)
+    if not isinstance(receipt.get('trajectory'), list):
+        raise ValueError('Harness receipt lacks normalized trajectory')
+    if (receipt.get('skill_loaded') is not True or
+            receipt.get('skill_content_sha256') != hashlib.sha256(skill.encode()).hexdigest() or
+            not isinstance(receipt.get('skill_sha256'), str) or len(receipt['skill_sha256']) != 64):
+        raise ValueError('Harness receipt does not prove the requested skill was loaded')
 
 
 class Learner(Protocol):

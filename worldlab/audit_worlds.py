@@ -10,6 +10,7 @@ from scripts.source_world_calibration import read, sha, child
 from .bank import Bank
 from .campaign import source_identity, SEED_SKILL
 from .qualitative import validate_verdict
+from .contracts import Budget, validate_execution
 from .worlds import eligible_experiences, stable_hash
 
 
@@ -17,33 +18,30 @@ def require(condition, message):
     if not condition: raise ValueError(message)
 
 
-def audit_attempt(bank, root, task_id, expected_skill=None):
+def audit_attempt(bank, root, task_id, expected_skill=None, harness=None):
     record = read(root / 'ATTEMPT.json')
     actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} - {'ATTEMPT.json'}
     require(actual == set(record['artifact_inventory']), 'Attempt artifact inventory changed')
     for name, digest in record['artifact_inventory'].items():
         p = child(root, name)
         require(not p.is_symlink() and sha(p) == digest, 'Attempt file changed: ' + name)
-    request = read(root / 'REQUEST.json')
+    request = read(root / 'PUBLIC_REQUEST.json')
     require(request['instruction'] == bank.public(task_id)['instruction'], 'Public task instruction mismatch')
     if expected_skill is not None: require(request['skill'] == expected_skill, 'Wrong deployed skill')
-    native = read(root / 'NATIVE.json')
+    execution = read(root / 'EXECUTION_RECEIPT.json')
+    require(execution == record['execution'], 'Execution receipt changed')
+    validate_execution(execution, Budget(**request['budget']), request['skill'])
+    if harness is None:
+        raise ValueError('Supply the harness offline auditor')
+    harness.audit_execution(root, request, execution)
     workspace = root / request['employee_id'] / 'workspace'
     prefix = bank.by_id[task_id]['public_directory'] + '/'
     expected_baseline = {name[len(prefix):]: item['sha256'] for name, item in bank.inventory.items()
                          if name.startswith(prefix) and name[len(prefix):] != 'task.json'}
     expected_baseline['.employee_identity'] = hashlib.sha256((request['employee_id'] + '\n').encode()).hexdigest()
     require(read(root / 'BASELINE.json') == expected_baseline, 'Original input baseline changed')
-    meter = native['evaluation_budget']
-    require(meter['accounting_complete'] and not meter.get('stopped'), 'Native accounting incomplete')
-    require(meter['physical_model_calls'] == len(meter['operations']) and
-            meter['charged_tokens'] == sum(r['charged_tokens'] for r in meter['operations']), 'Native cost mismatch')
-    require(meter['physical_model_calls'] <= request['budget']['model_calls'] and
-            meter['charged_tokens'] <= request['budget']['total_tokens'] and
-            all(r['output_cap'] <= request['budget']['output_tokens'] for r in meter['operations']), 'Native budget exceeded')
-    from lifespan.evaluation.runtime import skill_loaded
-    skill_path = root / 'hermes/skills/work-process/SKILL.md'
-    require(native['skill_loaded'] and skill_loaded(native.get('messages', []), sha(skill_path)), 'Native skill was not loaded')
+    require(record['trajectory'] == execution['trajectory'] and record['skill_sha256'] == execution['skill_sha256'],
+            'Normalized trajectory or skill changed')
     rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
     grade = record['grade']
     require(grade == read(root / 'judging/GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
@@ -75,13 +73,17 @@ def audit_attempt(bank, root, task_id, expected_skill=None):
     jm = grade['usage']
     require(jm['accounting_complete'] and jm['physical_model_calls'] == len(rubric['criteria']) and
             jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
-    require(record['tokens'] == meter['charged_tokens'] + jm['charged_tokens'] and
-            record['model_calls'] == meter['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')
+    require(record['tokens'] == execution['charged_tokens'] + jm['charged_tokens'] and
+            record['model_calls'] == execution['physical_model_calls'] + jm['physical_model_calls'], 'Combined cost mismatch')
     return record
 
 
-def audit(bank, out):
+def audit(bank, out, harness=None):
     study = read(out / 'STUDY.json')
+    if harness is None and study['harness']['name'] == 'native_hermes_task_package':
+        from .hermes import Hermes
+        harness = Hermes  # Static offline auditor; no native environment needed.
+    require(harness is not None, 'Supply an offline auditor for the registered harness')
     require(sha(out / 'STUDY.json') == read(out / 'PREPARED.json')['study_sha256'], 'Study bytes changed')
     require(source_identity() == study['source_sha256'], 'Use the frozen source checkout for this study')
     counts = {'online_attempts': 0, 'learning_replays': 0, 'adoptions': 0, 'world_pairs': 0}
@@ -98,7 +100,7 @@ def audit(bank, out):
                 past = [u for u in updates if u['employee_id'] == slot['employee_id'] and
                         u['day'] < slot['day'] and u['result']['accepted']]
                 skill = past[-1]['result']['skill'] if past else SEED_SKILL
-                record = audit_attempt(bank, root / 'sessions' / slot['id'], slot['task_id'], skill)
+                record = audit_attempt(bank, root / 'sessions' / slot['id'], slot['task_id'], skill, harness)
                 require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'], 'Session receipt mismatch')
                 require(sha(root / 'sessions' / slot['id'] / 'ATTEMPT.json') == session['attempt_sha256'], 'Session hash mismatch')
                 counts['online_attempts'] += 1
@@ -115,9 +117,9 @@ def audit(bank, out):
                 require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
                         update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
                 for replay in update['replay_evidence']:
-                    r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'])
+                    r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness)
                     require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
-                    req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'REQUEST.json')
+                    req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
                     require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
                     operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
                     operation = operations[replay['attempt_index']]
