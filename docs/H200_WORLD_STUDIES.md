@@ -863,7 +863,7 @@ The pair plans 40 obligations, at most 80 work attempts and two employee updates
 its 96-million-token reservation ceiling is not measured cost. It uses the same
 Qwen endpoint, native Hermes and SkillOpt pins, with separate social metering
 enabled. Its employee backend is the previously qualified
-`Big-World-CL-social-meter-v1/MiroFish/backend` on port 5002, currently stopped.
+`Big-World-CL-social-meter-v1/MiroFish/backend` on port 5002, stopped at preparation.
 The existing experiments use their original backend on port 5001.
 
 The two prepared files were copied locally to
@@ -873,5 +873,48 @@ bytes, with the study hash checked against `PREPARED.json`. Archive SHA-256 is
 There is no execution marker or native world directory yet. Inspect the
 original pilot's first finalized learning ledger before adding another model
 workload; its unchanged one-hour per-update budget remains an operational
-constraint. The isolated pilot still needs backend startup, native execution,
-paired audit, and actual learning/deployment evidence.
+constraint. At preparation, backend startup, native execution, paired audit and
+actual learning/deployment evidence were pending.
+
+## Isolated pilot backend ready; original replay audit
+
+At **23:50:54 UTC September 14**, the separate backend was live under
+`bigworld-isolated-validation-backend-v1`, PID **1948435**, invocation
+`f8d694fe190844189dfa3aff3905e82c`. Its process working directory and loopback
+port-5002 listener matched the prepared pilot. The frozen `c833481` installation
+checker verified all five tracked override files, the pinned MiroFish revision
+and patch, and the local capability route with network/process dispatch denied.
+The subsequent live capability GET matched the frozen client contract. This
+qualifies installation and API readiness, not a new employee simulation.
+
+The original pilot, scale controller and port-5001 backend retained PIDs
+1853105, 1861095 and 1824221. The Qwen model-list GET and container start timestamp
+confirmed the existing inference server. The separate backend startup and these
+checks made zero model calls. The prepared isolated pilot still has no execution
+marker. Its backend has an 8-GiB memory ceiling and a 24-hour service lifetime;
+the frozen experiment budgets have not been changed.
+
+The readiness artifact is
+`Big-World-CL-isolated-validation-v1/lifespan/artifacts/isolated-validation-backend-readiness-v1`.
+`READINESS.json` SHA-256 is
+`a31bc40a9308023a29af42121ac7457eb681ac30458ef5ac2ac97923585154ab`.
+The local `isolated-validation-backend-readiness-v1-h200` copy has four verified
+files, 16,251 bytes; archive SHA-256 is
+`118667a8c8866bc39f03278c4936728104530fa7c84fba0117c0e38150e896ab`.
+
+A separate original-source audit at **23:51:55 UTC** covered all six replay
+receipts finalized at capture in the first French-editor epoch: two validation
+replays and four training replays, all using the seed skill. Each request matched
+the pre-update selection and original employee message; original input hashes,
+native execution, deployed skill, grader evidence and combined usage passed the
+frozen `31a59a7` auditor. Source receipts remained unchanged. The six attempts
+recorded **96 work/judge calls, 1,307,272 tokens and 1,246.46 seconds**. These
+seconds are summed attempt durations, not the complete epoch's wall clock or
+final ledger. No update receipt existed when the audit finished.
+
+That audit made zero model calls and establishes neither optimizer activity nor
+adoption or validation independence. Artifact
+`Big-World-CL-lab/lifespan/artifacts/native-first-epoch-partial-audit-v1` has report
+SHA-256 `4d46cac8825c5ace3db1a614074bd20cdfa50db5d1ff7f9d59761cea03c0ab1d`.
+Its local `-h200` copy has three verified files, 15,863 bytes; archive SHA-256 is
+`5b038d288e706f51cfc5655e09436a2487ef8fde9924a6139bdd80ed41b58d68`.
