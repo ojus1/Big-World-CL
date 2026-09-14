@@ -52,6 +52,20 @@ combining its outcomes with historical runs using different grading contracts.
 6. Audit the complete paired execution before interpreting its effect. A
    successful audit establishes provenance and arithmetic, not judge truth.
 
+The current frozen native workplace does not establish the context isolation
+required by item 3. A source-bound audit of the pilot's first update found that
+all four selected training requests were produced from employee views containing
+released validation feedback. Nine exposures to prior validation outcomes
+occurred across those views, all from families used by the current gate. The
+employee's request is retained in the training prompt and replay. This establishes
+an information path, not proof that the optimizer used that feedback or that it
+affected a skill. Task-family separation and delayed-feedback checks alone cannot
+certify an independent gate. Treat the current native gates as development
+selection; a future confirmatory protocol needs an evaluation context with no
+path into training employee memory, requests, colleague messages or reflection.
+The running studies retain their original source and budgets. Their original
+auditors do not test this semantic separation.
+
 ## Statistical boundary
 
 The primary workplace metric is the paired difference in the fraction of

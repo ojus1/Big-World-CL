@@ -765,3 +765,52 @@ day 3 with 39 graded attempts, 559 calls and 7,357,173 recorded tokens. No
 SkillOpt update had completed. Actual consolidation costs and adoption evidence
 remain the next required observation; the original per-update budgets and study
 service limits remain unchanged.
+
+## First-update expectations and employee-context exposure
+
+At **23:27:44 UTC September 14**, before any day-6 learning replay, the original
+pilot source selected two released training cases and two validation cases for
+each employee. The saved state and every selected attempt hash were verified.
+Day-6 work releases its feedback on day 7 and cannot alter this selection. The
+expectations artifact is `lifespan/artifacts/native-workplace-first-epoch-expectations-v1`
+in the H200 lab checkout. Plan SHA-256 is
+`4ae64467418436fbd6b66a0516bc63ef84d489e67b765d5ae8b3f0adab3e9338`;
+the local `-h200` copy contains five verified files totaling 1,073,426 bytes.
+
+A separate read-only diagnostic then reproduced all **17 saved employee views**
+from the original workplace command log. All four selected training requests
+were written with released validation feedback in their actor views: **nine
+exposure edges**, all from families used by that employee's current validation
+gate. The original request bytes are preserved in the training prompt and replay.
+This confirms an available information path through employee context. It does
+not prove semantic transfer, optimizer use of validation feedback, adoption or
+an effect size. Original task-ID and chronology audits remain narrower than
+context isolation; a passing gate in these native studies is a development
+selection result, not independent held-out evidence.
+
+The diagnostic ran twice against the same snapshot using original pilot source
+`31a59a7`, reproduced identical findings, and verified its source attempt and
+request receipts remained unchanged. It made zero model calls. The first
+auxiliary collector incorrectly assumed that replay 000 was a training case;
+its assertion failed after the exposure report was produced. That partial
+artifact is preserved as v1. The corrected v2 identifies the replay against all
+selected cases: replay 000 is the existing-skill validation of
+`d003-french-editor-001`, completed with 10 work/judge calls and 60,468 tokens.
+These are experiment costs, not diagnostic costs or a final learning ledger.
+
+The verified H200 lab artifact is
+`lifespan/artifacts/native-workplace-context-exposure-v2`; report SHA-256 is
+`b60ac6ac3044e8ec3f303defddbc0761e30dcc9489bff45e9456af2527f309a5`.
+Its local `-h200` copy contains five verified files totaling 31,361 bytes;
+archive SHA-256 is
+`0d583ef0919276646a7f03d27a7b417a45124aa33547608c873ef79e47374063`.
+The diagnostic and expectations snapshot are evaluator-side evidence and must
+not be mounted into solver or optimizer workspaces.
+
+At **23:34:43 UTC September 14**, both original main processes were live with
+their original invocation IDs. The pilot learning arm had 17 completed work
+attempts, 242 work/judge calls and 2,914,074 recorded work tokens. Its first
+French-editor epoch had one completed replay and replay 001 in progress, with
+no finalized update or adoption. Scale seed 401's control arm had 47 completed
+attempts, 683 calls and 9,306,398 recorded tokens on day 3. Frozen experiment
+code, active backend, inference flags and per-update budgets remain unchanged.
