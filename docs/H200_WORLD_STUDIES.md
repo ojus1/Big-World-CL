@@ -135,3 +135,55 @@ preserves the historical work, starts new target replays, grades those with the
 current frozen judge and audits completed replay receipts and the adoption gate.
 This avoids rerunning a whole control arm merely to reach consolidation. It is a
 component qualification, not a continuation or replacement of a failed study.
+
+
+## Native workplace and consolidation follow-up
+
+The declared-organization compiler at `33708c8` seeds only the assigned employees
+and departments through the native local graph API. It uses no model for ontology
+or initial graph extraction. It disables automatic graph-memory extraction in
+this workplace mode; OASIS interviews, explicit notes and delayed colleague mail
+retain state. Existing legacy bootstrap behavior remains the default elsewhere.
+
+`Big-World-CL-workplace-v2/lifespan/artifacts/native-employees-v2` completed:
+two actual Persona 8B employees, two verified native decisions, two model calls
+and **4,914 interview tokens**. Its plan SHA is
+`6c559a685a6c1e5e0ca51a6ceaebb313233214657297e85470816e86fa8beb2d`.
+Native graph readbacks and the actor database are preserved. Initial social-round
+model costs remain unknown; the 4,914 figure covers interviews only.
+
+The v6 count check in `Big-World-CL-learning-v1` passed **12/12 with zero model
+calls**, using the registered deterministic predicate. This is a mechanical
+control result, not a model-accuracy claim. Its plan SHA is
+`7952bc4376f191ab253d6e7f70a6a3b235d08cc44c1f6a19c05853f7d4911f16`.
+
+The first standalone consolidation invocation failed during historical request
+import before creating a plan or making model calls. Versioned import handles
+Hermes v1's `REQUEST.json` and later normalized request receipts. The second
+invocation (`Big-World-CL-learning-v2`, source `ebd2202`) failed on its first target
+replay: six calls reported 70,803 tokens, and a seventh returned a connection error
+after 120 seconds, retaining a 65,229-token reservation. This is not a scored
+learning failure and not evidence that optimization is ineffective.
+
+The corrected native Hermes configuration at `7bcc1b8` sets both request and
+stale-response windows to `min(600 seconds, whole task budget)`, using supported
+provider settings. Both values are checked against the actual native agent and
+saved in `READY.json` and `NATIVE.json`. Whole work and consolidation budgets
+remain unchanged. The native adapter is now version 3.
+
+`bigworld-consolidation-v3.service` runs from `Big-World-CL-learning-v3`, with
+artifacts at `lifespan/artifacts/consolidation-qualification-v3`. Its source
+experiences are the research analyst's days 2 and 4 (train) and days 3 and 5
+(validation), available at day 6 of the stopped v2 control. Selection is temporal,
+not based on scores. Fresh replays use the current judge and seed skill. Read the
+final `QUALIFICATION.json` and `AUDIT.json` before reporting completion or adoption.
+The first actual native request readbacks confirmed both 600-second settings.
+
+The focused suite passes **44 tests**. The full installed-environment rerun
+at `7bcc1b8` passed **1,035 tests, 6 skipped** in 125.64 seconds, finishing at
+2026-09-14 20:45:31 UTC under `bigworld-canonical-tests-v2.service`.
+
+At **20:46:48 UTC**, consolidation v3 remained active with its first native target
+replay in flight and both timeout readbacks verified at 600 seconds. The v5 judge
+corpus had completed 92 of its 210 fixed contexts. Neither was complete at this
+snapshot. No skill adoption or significant learning result is claimed.

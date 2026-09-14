@@ -359,3 +359,17 @@ handling that criterion without a model call. It records match offsets and is
 recomputed by the offline auditor. Other criteria remain model judged, using a
 finite ASCII response grammar; these judgments still need independent semantic
 calibration. Deterministic control passes are never reported as model accuracy.
+
+
+Native employee mode now seeds the declared employee/department graph directly
+through MiroFish's local graph implementation, with native episode storage,
+validation and API readbacks. No task or feedback content enters that initial
+graph. The old social-media ontology generator is not needed for known simulator
+assignments. Automatic graph-memory extraction is disabled in this mode; native
+interview history, employee notes and delayed messages still persist. The two-role
+native qualification passed; full workplace learning remains to be demonstrated.
+
+For long nonstreaming tool responses, the Hermes adapter configures both native
+request and stale-response windows to the lesser of 600 seconds and the whole
+attempt budget. It verifies the effective values before dispatch and audits their
+saved readbacks. No transport retry or increase in total calls/tokens is implied.
