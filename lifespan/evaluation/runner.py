@@ -118,12 +118,21 @@ class NativeActors:
         view['enterprise_objectives'].pop('cash', None)
         view['geopolitical_bulletin'] = deepcopy(eco.geopolitics)
         view['received_colleague_messages'] = deepcopy(getattr(self, 'mailbox', {}).get(employee, []))
+        # Mail is routed with global firm-qualified IDs, but employee-facing
+        # recipients are local IDs. Present both directions in the same namespace.
+        for message in view['received_colleague_messages']:
+            for field in ('sender', 'recipient'):
+                value = message[field]
+                prefix = fid + '__'
+                if not isinstance(value, str) or not value.startswith(prefix) or value[len(prefix):] not in w.employees:
+                    raise ValueError('Received colleague message crosses firm boundary')
+                message[field] = value[len(prefix):]
         view['colleagues'] = [e for e in w.employees if e != task.owner]
         view['substantive_work'] = case['request']
         prompt = (EMPLOYEE_PROMPT + '\nThis evaluation measures delegated work: delegate must be true. '
             'Set a useful request for your Hermes assistant to perform the substantive work with its real '
             'filesystem. Do not solve or invent the unseen task data. Keep your working notes based on '
-            'observed outcomes.\n' + json.dumps(view))
+            'observed outcomes. Use colleague recipient IDs exactly as listed in colleagues.\n' + json.dumps(view))
         def check(a):
             validate_decision(a, view)
             if a['delegate'] is not True:
