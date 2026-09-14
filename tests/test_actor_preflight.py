@@ -396,14 +396,14 @@ def test_full_tracked_overlay_installation_is_required(tmp_path, monkeypatch):
     root = tmp_path / 'checkout'; backend = root / 'MiroFish/backend'
     (backend / 'app').mkdir(parents=True); (backend / 'app/config.py').write_text('# fixture')
     names = ['local-overrides/backend/app/utils/' + name for name in (
-        'actor_output_contract.py', 'actor_contract_transport.json', 'camel_responses.py', 'local_graph.py')]
+        'actor_output_contract.py', 'actor_contract_transport.json', 'camel_responses.py', 'local_graph.py', 'model_usage.py')]
     monkeypatch.setattr(p, 'ROOT', root)
     monkeypatch.setattr(p.subprocess, 'check_output', lambda *a, **kw: '\n'.join(names))
     for name in names:
         source = root / name; source.parent.mkdir(parents=True, exist_ok=True); source.write_text(name)
         installed = backend / Path(name).relative_to('local-overrides/backend')
         installed.parent.mkdir(parents=True, exist_ok=True); installed.write_bytes(source.read_bytes())
-    assert len(p.installation(current=False)['overlay_sha256']) == 4
+    assert len(p.installation(current=False)['overlay_sha256']) == 5
     (backend / 'app/utils/actor_contract_transport.json').unlink()
     with pytest.raises(ValueError, match='overlay_missing'): p.installation(current=False)
 

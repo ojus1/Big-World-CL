@@ -92,7 +92,7 @@ def tracked_overlays():
     names = subprocess.check_output(['git', '-C', str(ROOT), 'ls-files', '--',
         'local-overrides/backend'], text=True).splitlines()
     expected = {'local-overrides/backend/app/utils/' + name for name in (
-        'actor_output_contract.py', 'actor_contract_transport.json', 'camel_responses.py', 'local_graph.py')}
+        'actor_output_contract.py', 'actor_contract_transport.json', 'camel_responses.py', 'local_graph.py', 'model_usage.py')}
     if set(names) != expected:
         raise ValueError('preflight_tracked_overlay_inventory_changed')
     return sorted(names)

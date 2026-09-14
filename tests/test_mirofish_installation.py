@@ -17,7 +17,7 @@ class InstallationTests(unittest.TestCase):
         self.tmp=self.enterContext(tempfile.TemporaryDirectory());self.root=Path(self.tmp)/'project'
         self.installed=Path(self.tmp)/'installed';self.installed.mkdir()
         self.files=('app/utils/actor_output_contract.py','app/utils/actor_contract_transport.json',
-                    'app/utils/camel_responses.py','app/utils/local_graph.py')
+                    'app/utils/camel_responses.py','app/utils/local_graph.py','app/utils/model_usage.py')
         self.expected={q.PREFIX+n:('fixture-'+n).encode() for n in self.files}
         self.expected[q.PATCH]=b'checked-in patch fixture'
         self.expected['lifespan/actor_contract.py']=b'checked-in verifier fixture'
@@ -37,16 +37,16 @@ class InstallationTests(unittest.TestCase):
 
     def check(self):return q.check_installation(self.installed,project_root=self.root)
 
-    def test_all_four_tracked_overrides_and_patch_are_checked_caches_ignored(self):
+    def test_all_tracked_overrides_and_patch_are_checked_caches_ignored(self):
         cache=self.root/'local-overrides/backend/app/utils/__pycache__/untracked.pyc'
         cache.parent.mkdir();cache.write_bytes(b'generated-cache')
         result=q.static_check(self.root,self.installed)
-        self.assertTrue(result['ok']);self.assertEqual(len(result['tracked_override_files']),4)
+        self.assertTrue(result['ok']);self.assertEqual(len(result['tracked_override_files']),5)
         self.assertTrue(all(r['status']=='matched' for r in result['tracked_override_files']))
         self.assertIn('not_full_tree_identity',result['patch_check'])
 
     def test_each_new_contract_file_is_required_before_route_import(self):
-        for name in self.files[:2]:
+        for name in (self.files[0], self.files[1], self.files[-1]):
             with self.subTest(name=name):
                 path=self.installed/'backend'/name;data=path.read_bytes();path.unlink()
                 with patch.object(q,'route_check') as route:
