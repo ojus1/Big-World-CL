@@ -1,0 +1,80 @@
+{
+  "report": {
+    "accounting_complete": true,
+    "charged_or_reserved_tokens": 642834,
+    "completed_native_attempts": 4,
+    "disagreeing_pairs": 0,
+    "distinct_lineage_groups": 2,
+    "known_physical_model_calls": 42,
+    "learning_claim_eligible": false,
+    "mechanical_successes": 2,
+    "mechanically_graded_attempts": 4,
+    "missing_slots": [],
+    "planned_slots": 4,
+    "quality_judging": "not_executed",
+    "recorded_slots": 4,
+    "repeated_case_pairs": 2,
+    "scope": "Development replay calibration. Repetitions and translated families are dependent. No learning effect or final-world inference.",
+    "status": "complete",
+    "status_counts": {
+      "completed": 4
+    },
+    "unknown_call_count_attempts": 0
+  },
+  "bank_manifest_sha256": "d526c0943ea6639e73cb7e64c5784aaa616b788ea996e91640d146ceced26e4f",
+  "plan_sha256": "8826ef7b9140d7d82cabd30eb9aec2f82fcd22b8ea54ea8ceb242a716bca9a64",
+  "source_commit": "6487c39",
+  "native_hermes_revision": "2c8a2b65aa148ceb178d2251c54a523af12092c9",
+  "model": "Qwen/Qwen3.8-Flash-Next-FP8",
+  "audit": {
+    "ok": true,
+    "verified_receipts": 4,
+    "method": "Frozen worldlab audit plus original mechanical regrading"
+  },
+  "per_task": [
+    {
+      "task_id": "internal/euw_v1_fr_007_en_bridge",
+      "repeat": 0,
+      "status": "completed",
+      "mechanical_success": false,
+      "physical_model_calls": 15,
+      "charged_tokens": 283326,
+      "skill_loaded": true,
+      "unauthorized_files": [],
+      "preservation_violations": []
+    },
+    {
+      "task_id": "internal/euw_it_003_en_bridge",
+      "repeat": 0,
+      "status": "completed",
+      "mechanical_success": true,
+      "physical_model_calls": 8,
+      "charged_tokens": 66427,
+      "skill_loaded": true,
+      "unauthorized_files": [],
+      "preservation_violations": []
+    },
+    {
+      "task_id": "internal/euw_v1_fr_007_en_bridge",
+      "repeat": 1,
+      "status": "completed",
+      "mechanical_success": false,
+      "physical_model_calls": 14,
+      "charged_tokens": 253381,
+      "skill_loaded": true,
+      "unauthorized_files": [],
+      "preservation_violations": []
+    },
+    {
+      "task_id": "internal/euw_it_003_en_bridge",
+      "repeat": 1,
+      "status": "completed",
+      "mechanical_success": true,
+      "physical_model_calls": 5,
+      "charged_tokens": 39700,
+      "skill_loaded": true,
+      "unauthorized_files": [],
+      "preservation_violations": []
+    }
+  ]
+}

@@ -152,9 +152,29 @@ The first run, `task-calibration-h200-v1`, exposed harness-generated
 preserved with `INVALIDATION.json`; they are not valid employee-performance
 evidence. Commit `6487c39` moved the host working directory outside the workspace
 and excluded generated Python deliverables from the execution-source inventory.
-`task-calibration-h200-v2` reruns the same preselected cases and budgets after
-these infrastructure corrections. No benchmark checks or expected answers were
-changed. Its source is frozen while execution is active.
+`task-calibration-h200-v2` completed the same four preselected cases after these
+infrastructure corrections. Original mechanical regrading passed its audit. Both
+research-editing attempts passed mechanics; both facilities attempts failed them.
+All four loaded the exact seed skill, preserved inputs and had no unauthorized
+workspace files. The run used 42 physical calls and 642,834 tokens with complete
+accounting. Full qualitative judging has not been executed.
+
+The invalid first run also consumed 49 calls and 862,695 tokens. Across both
+calibration runs, the recorded cost is **91 physical calls and 1,505,529 tokens**.
+Those infrastructure costs are retained, not hidden in the corrected-run total.
+See [the verified aggregate receipt](h200-task-calibration-v2-summary.json).
+
+The facilities task exposed a separate source-contract concern: its public CSV
+brief requests a `justification` column, but the original SQL comparison omits
+that column and rejects it as extra. Both outputs hit that check; additional
+report checks also failed. The original grader is preserved. This task needs
+contract review before interpreting failures as skill-addressable errors or
+using its score as a learning reward. No expected answers or checks were altered.
+
+Remote frozen checkouts `Big-World-CL-lab-frozen-v1` and
+`Big-World-CL-lab-frozen-v2` preserve each run's execution source for re-auditing.
+Run the matching version's auditor with the absolute artifact path; subsequent
+development commits intentionally have different source identities.
 
 ## Remaining path to the final study
 
