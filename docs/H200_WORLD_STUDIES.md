@@ -629,3 +629,44 @@ present. The pilot control arm had reached day 8 with 23 fully graded attempts,
 control arm was on day 1 with 20 fully graded attempts, 281 work/judge calls and
 3,514,676 reported work/judge tokens. No learner update or paired learning result
 had completed. Neither active study checkout nor its installed backend changed.
+
+## Pilot control complete; learner arm running
+
+By **22:48:54 UTC on September 14**, the pilot had completed its control arm and
+started a fresh SkillOpt arm under the original service PID and invocation. The
+control produced 27 graded work attempts, using 445 work/judge calls and
+6,119,480 reported work/judge tokens. Its 27 employee decisions used 28 metered
+interview calls and 200,703 tokens. Initial social usage remains unknown.
+
+The separate control-only audit uses the original `31a59a7` implementation. It
+rebuilds the workplace chronology, verifies all 27 work attempts and native
+employee receipts, checks the original seed skill throughout, and reconciles
+the four planned probe obligations and resource totals. Both scheduled control
+update records exactly match the zero-cost, unchanged-skill no-op policy. The
+input inventory was unchanged by the audit, which made no model calls. This is
+not the full paired audit or a statistical analysis.
+
+The audit artifact is `Big-World-CL-lab/lifespan/artifacts/native-workplace-control-audit-v2`,
+with plan SHA `903fc598e429d89365221dddd7529b91d3d816e8cc86f211701116f9da43b3e9`.
+Its three files and exact audit driver were copied locally and hash-verified.
+The earlier auxiliary v1 check is retained: its assertion incorrectly required
+an empty control update list, instead of verifying the normal no-op records.
+No experiment record or frozen source was changed to correct that check.
+
+A zero-call timing diagnostic selects only control observations released by the
+fixed first update cutoff, day 6, using the original chronology/lineage selector.
+For the pinned K2 gate schedule, repeated observed work durations give candidate
+cycle proxies of 3,054.41 seconds for the analyst and 3,398.25 seconds for the
+editor, before optimizer/setup overhead, against a 3,600-second epoch budget.
+These are planning proxies, not measured replay latency, feasibility guarantees,
+ETAs or learning outcomes. Actual learner history and candidate execution can
+differ. The diagnostic is `lifespan/artifacts/native-workplace-time-budget-v1`,
+with timing SHA `28240cbb0f217f910900ee1f45e703e2e99c2a70a42aba19ab9a4f670aa130cc`;
+the local copy's hash, selections and arithmetic were checked. The next relevant
+resource evidence is the first actual learner epoch's ledger; budgets remain
+frozen in both running studies.
+
+At **22:54:20 UTC**, the pilot SkillOpt arm was on day 1 with three graded work
+attempts. Scale seed 401's control arm was on day 2 with 26 graded attempts.
+Both original main processes remained present. No SkillOpt update or paired
+learning-effect result had completed at that snapshot.
