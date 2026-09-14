@@ -589,3 +589,43 @@ tokens. Scale seed 401's control arm was on day 0 with 11 fully graded work
 attempts, 142 work/judge calls and 1,466,008 reported tokens. These counts exclude
 separate employee interviews and unknown bootstrap/social usage. Neither study
 had a finalized learner update or a completed paired learning comparison.
+
+## Native social-call accounting qualified separately
+
+At `bafac6f`, a new opt-in native recorder captures simulation-bound Responses
+dispatch receipts, reported token usage and failures for uncontracted social
+calls. Interviews retain their existing separate ledger. Missing usage and
+unfinished requests remain unknown, and normalization failures retain any
+usage already returned by the provider. The installed-module inventory includes
+the recorder, and archived receipts are checked against their simulation,
+provider, configuration, source hashes and reported totals.
+
+The fresh qualification ran from `Big-World-CL-social-meter-v1`, using its own
+MiroFish checkout, database and backend on port 5002. It used the unchanged Qwen
+server and two employees from the existing workplace configuration; only the
+analyst had representative prompts. Its artifact is
+`lifespan/artifacts/native-social-usage-v1`, with plan SHA
+`fa5f1d5474469d8d9f542aed1bf62e9f797a78de879c3d16272397e0e6a57b52`.
+Both employee decisions passed their native receipt audits. The separate social
+ledger records **2 dispatches and 5,123 reported tokens**; the interview ledger
+records **2 calls and 5,218 reported tokens**. Neither ledger has unknown usage.
+This qualifies these native receipt paths, not other bootstrap providers or a
+learning effect. Historical runs remain unmetered in their original scope.
+
+The qualification service `bigworld-native-social-usage-v1` completed
+successfully (invocation `b1db7b84da6147bca78271b7eede3f7f`). Its temporary backend
+was then stopped. The full `tests` and `lifespan/tests` suite passed **1,074 tests,
+6 skipped**, in 118.15 seconds under `bigworld-social-meter-tests-v1`, invocation
+`98482e1adf8c4b4894b16531b2d94091`. The isolated-checkout dependency issue and
+old four-file preflight inventory found during validation were resolved before
+this final run. All 22 qualification files were copied locally and checked
+against remote SHA-256 hashes. The inventory SHA is
+`7b41de8d4364927197c67a78fac7da4fe2f467aeb94e851a00529fb63a93ffe0`;
+the local evidence is `lifespan/artifacts/native-social-usage-v1-h200`.
+
+At **22:40:09 UTC on September 14**, both original study processes remained
+present. The pilot control arm had reached day 8 with 23 fully graded attempts,
+374 work/judge calls and 5,135,298 reported work/judge tokens. Scale seed 401's
+control arm was on day 1 with 20 fully graded attempts, 281 work/judge calls and
+3,514,676 reported work/judge tokens. No learner update or paired learning result
+had completed. Neither active study checkout nor its installed backend changed.

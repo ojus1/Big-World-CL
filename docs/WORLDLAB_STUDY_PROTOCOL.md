@@ -131,8 +131,11 @@ but do not certify complete task coverage across the bank. Further source and
 semantic validation is required before making full-task or general judge
 accuracy claims. Same-model semantic judging remains a development limitation.
 
-Native employee interview costs are metered; bootstrap and initial social
-generation are still an accounting gap. The large native study, an audited
+Native employee interview costs are metered. The running studies retain their
+original unknown bootstrap/social usage. A separate two-employee native
+qualification at `bafac6f` verifies optional simulation-bound social receipts for
+future runs, without double-counting interviews; other bootstrap providers are
+outside that receipt scope. The large native study, an audited
 nontrivial skill adoption followed by later deployment, and a statistically
 supported learning effect remain to be demonstrated. Harness/learner factories
 permit new implementations; a production Fluso adapter is not yet supplied.
