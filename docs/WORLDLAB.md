@@ -749,9 +749,15 @@ Other command sessions in the same task keep their normal background lifetime.
 The sandbox applies the same memory, file-size and core limits through `prlimit`
 before bash starts. This removes Python's `preexec_fn` from the threaded server;
 [Python documents a pre-exec deadlock risk with threads](https://docs.python.org/3/library/subprocess.html#subprocess.Popen).
-Linux `prlimit` and pidfd signaling are required at startup. Version 6 needs
-fresh native qualification before any new study; the running version-7 study
-keeps adapter version 5 and its original source.
+Linux `prlimit` and pidfd signaling are required at startup. Version 6 passed
+94 H200 tests without skips, including 128 real RPCs from 64 concurrent clients,
+two ordinary native development tasks, and a separately planned operator
+interruption of one exact task sandbox. The interruption preserved known costs,
+stopped the owned processes, and remained ineligible for grading. An earlier
+model-driven interruption control did not trigger the failure and is preserved
+as inconclusive. These bounded results and every control's costs are recorded in
+[the execution ledger](H200_WORLD_STUDIES.md). The running version-7 study keeps
+adapter version 5 and its original source; broader failure forms remain untested.
 
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.

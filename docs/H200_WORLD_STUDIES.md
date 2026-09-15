@@ -21,6 +21,82 @@ global inference concurrency **64**. The pause receipt is
 `Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
 Do not resume Fluso work as part of the continuing Hermes baseline goal.
 
+## Native tool cleanup qualified: September 15, 12:21 UTC
+
+Frozen `Big-World-CL-tool-cleanup-v2` at
+`352d4a6ea1bad0c93dcadf869dafdaa9e234ade0` qualifies Hermes adapter version 6
+for future runs. The live version-7 study retains adapter version 5 and its
+original source. No study was restarted or edited for this qualification.
+
+An OS-only reproduction established a concrete command-timeout defect: GNU
+`timeout` created another process group in the shell's session, surviving the
+old shell-group kill and holding its output pipe open. A **0.25-second** request
+took **3.013 seconds** with an inner three-second timeout. The corrected source
+returned in **0.253 seconds** and both controlled sandboxes were removed. These
+short controls use no model calls. They explain that process/pipe mechanism;
+they do not recover version 6's missing final accounting or explain every part
+of its 900-second attempt.
+
+Cleanup now pins the command session and visible descendants, bounds pipe
+drainage, and terminates the task namespace if an escaped orphan still holds
+the pipe. Sandbox loss remains an infrastructure error even if the model later
+claims completion. The same resource limits are applied through `prlimit`
+before bash, removing Python's threaded `preexec_fn` path. The first Linux test
+run exposed a separate socket admission failure with 64 simultaneous clients;
+its **93 passes and one error** are preserved. Increasing the socket backlog
+from 16 to 128 passed the corrected **94-test suite with no skips**, including
+128 real RPCs from 64 concurrent clients and the pinned native Hermes fixture.
+
+Two ordinary native development tasks passed their full execution and grading
+audits: **21 calls / 129,094 reported tokens**. The model declined the first
+requested self-termination control; that control did not exercise sandbox loss
+and also failed the skill-read audit. It remains inconclusive and ungraded,
+with **4 calls / 27,268 tokens** preserved. No overall success report was added
+to that original qualification directory.
+
+A separately planned operator control waited for the native task's initial
+output file, pinned its exact sandbox PID and sent SIGTERM. The harness returned
+`infrastructure_error` with `SandboxExecutionError`, retained complete usage
+for **6 calls / 38,561 tokens**, and finished in **18.798 seconds**. The worker
+and sandbox were absent, the delayed output was absent, and no grading was
+dispatched. The ordinary completion audit correctly rejects this attempt.
+Interruption plan SHA
+`dc3a882b188784d6eb124c46861f1b76acb4912e0769061340978b903c74b645`.
+This qualifies the tested interruption path, not every process/provider failure.
+
+The combined read-only audit preserves all controls and charges **31 calls /
+194,923 reported tokens**, including the inconclusive control and eight grader
+calls. Its 23 primary native request IDs are distinct. Audit SHA
+`3af1c2ca88bede0e99d3ba9857b960dbab2901a41b5672fee776e75f6453c787`.
+The packet `lifespan/artifacts/native-tool-cleanup-evidence-v1-h200.tar.gz`
+is **5,870,834 bytes**, SHA
+`f8993f48cdab4b6367cd72e91cf54b0dc863ae25e71daf71870b58facc11ab1b`.
+All **199 payload hashes** were verified after safe local extraction; export SHA
+`5dca10c5d99b830c8e22c3451ebe526435fcf0bafb2d79fca10f443a76de7880`.
+
+At **12:21:12 UTC**, the exact study PID **3314046** and gateway PID **2974574**
+were live in their original user services. Version 7 had **405 completed online
+attempts**, no terminal pair/study status, no replay attempts and no finalized
+learning updates. The six active arms were on recorded days 3–5. The Qwen
+container and gateway instance were unchanged, global model concurrency remained
+**64**, and transport exceptions remained zero; 166 client cancellations were
+counted separately. Fluso remained stopped. This snapshot is not final study
+accounting, a general speedup or evidence of successful learning.
+
+A separate read-only readiness capture at **12:21:12 UTC** verified the six
+published arm snapshots and their attempt-receipt hashes. All **36 employee
+instances** in the three started learning arms had sufficient released
+experience for consolidation: three with direct representative prompts, six
+with role transfer and **27 with uncalibrated defaults**. They were on days 3–4;
+the first scheduled update remains day 6. The other three learning arms have
+not started because arm order is counterbalanced and sequential within each
+pair. Eligibility is not an update, adoption or evidence that the simulator's
+default behavior matches real users. No new model calls were made. Capture:
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-readiness-v7-20260915T1224Z`;
+plan SHA `9d2a6ef9699e7465430b5d4f2285c9a8705961a22c509a6343da15a57eea9c41`;
+report SHA `6be12f377cdbd5a656a8773753973d1427ca55bc9dfee3f9e055a99354b1d728`.
+The report and six state hashes were verified in the local copy.
+
 ## Native Fluso consolidation dispatched: September 15, 11:37 UTC
 
 `worldlab.qualify_learning --harness-config` now selects the target harness for
