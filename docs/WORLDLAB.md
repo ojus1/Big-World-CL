@@ -769,8 +769,13 @@ truncated judgment. Version 18 declares nine model calls per grade, covering up
 to eight rubric criteria and one format repair. Online work and learning replays
 use a judge's optional `max_model_calls` declaration; existing alternate adapters
 retain the eight-call default. Replays reserve judging inside the total call
-budget, and explicit lower limits remain binding. All 33 local tests passed;
-native qualification of this allocation remains required before a new study.
+budget, and explicit lower limits remain binding. All 33 focused tests passed
+locally and on H200. A fresh eight-criterion live check and two concurrent native
+tasks completed with full audits. The live case did not require a repair; the
+ninth-call path passed the controlled regression test. A fresh six-world
+development study now runs the combined changes, with its own prospective
+analysis and the same worlds and budgets. Exact source and qualification
+evidence are in [the execution ledger](H200_WORLD_STUDIES.md).
 
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.

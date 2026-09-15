@@ -21,6 +21,67 @@ global inference concurrency **64**. The pause receipt is
 `Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
 Do not resume Fluso work as part of the continuing Hermes baseline goal.
 
+## Qualified grader allocation; fresh version 8 launched: September 15, 12:51 UTC
+
+Frozen `Big-World-CL-workplace-v8` at
+`180f76336b59d5c6a8116a808919230555574ce5` uses Hermes adapter 6 and grader 18.
+The runtime cleanup and empty-file fixes remain included. The internal grader
+declares nine calls for up to eight criteria plus one format repair. Online work
+uses that declaration; replay judging is reserved within the original total
+call allowance. Explicit lower allocations remain binding, and valid verdicts
+are never retried. No generated-text character cap was added.
+
+All **33 focused tests passed locally and on H200**, including the controlled
+eighth-criterion truncation and charged ninth repair, the explicit lower call
+limit, constrained replay allocation, and rejection of outcome selection. A
+fresh live check on a separate copy of the eight-criterion case completed and
+passed the offline grading audit: **8 calls / 81,632 tokens**. This time the
+live response did not truncate, so **no native format repair was exercised**;
+that branch was exercised by the controlled regression test. The old failed
+attempt and its grade bytes are unchanged. Qualification plan SHA
+`206ca4366e5c4104002b9535f7fa8101dcc7a11c44186985f47d481d422afae7`.
+
+Two additional concurrent native tasks exercised the combined source through
+the ordinary attempt executor, Hermes sandbox and structured grader. Both
+completed with full native/grade audit, totaling **18 calls / 104,071 tokens**.
+Integrated plan SHA
+`d2d71d232c2740b2425d0550842b4cb97ec576eee2a7abd6a5faa40caa145189`.
+The three fresh controls therefore account for **26 calls / 185,703 tokens**.
+They qualify the tested components and integration, not learning or task
+performance across the whole workload.
+
+Version 8 preserves version 7's exact six worlds, employee identities, task
+schedules, sparse calibration, seed skills, source bank, social driver and
+optimizer policy. The qualification records declare the changed runtime and
+grading behavior prospectively in both arms. The same reservations remain
+upper bounds: 2,880 obligations, up to 5,760 work attempts and 7.776 billion
+tokens including work, judgments and learning replays. These are not measured
+usage. The separate analysis was frozen before dispatch and still requires
+every planned pair to complete and pass audit. It is exploratory, with no
+confirmatory significance claim.
+
+The service `bigworld-native-workplace-compact-v8` started at **12:51:50 UTC**,
+PID **3602809**, invocation **60e42fa8fcf641e1b057436d96b43187**. At
+**12:53:53 UTC**, that PID and its user service were live, six arms had published
+day-0 states and 71 employee decisions, and no terminal pair/study status existed.
+No completed attempt or learning update was present in that initial capture.
+The shared gateway had **64 active requests**, peak 64 and zero transport
+exceptions; client cancellations remained a separate counter. Gateway PID
+**2974574**, instance `533b651bc1af`, and the Qwen container, image and start time
+were unchanged. Version 7 and Fluso remained stopped.
+
+Study SHA `7addab0411bcdc8a31323e4034a36974830c43660b680e6347240a9912ff119a`;
+analysis plan SHA `23cd50f20ac98336f9e92dd2aec7cd23cd375243545ad8122fc5c8392019bba6`;
+compatibility SHA `26716cb94dce2926f78205716ce17dccee147fc83d9acc1dff8775d98dc355e2`.
+The packet `lifespan/artifacts/native-compact-v8-start-evidence-h200.tar.gz`
+contains the complete fresh qualification traces, tests, audits, preparation,
+analysis, launch lifecycle and initial observation: **1,376,777 bytes**, SHA
+`5703f24d31757036183e3a4be1b30a1522c1ba29b16f0c2c0871d869191f354d`.
+All **158 payload hashes** were verified after safe local extraction; export SHA
+`f88ef72fd37a7fe04cc716bc02b8754b1ddd0bc01cb99828ce0468497036a54c`.
+No successful nontrivial adoption, later deployment effect, final-bank result
+or statistical significance has yet been established.
+
 ## Version 7 stopped after empty-file evidence rejection: September 15, 12:27 UTC
 
 Version 7 is **stopped and incomplete**. Its seed-409 learning arm recorded a
@@ -77,8 +138,8 @@ allocation, and learning replays reserve it inside their existing total call
 budget. Explicit lower caller limits remain binding; alternate judges without a
 declaration retain their eight-call default. All **33 local tests passed**,
 including an eighth-criterion truncation, one charged ninth repair, preserved
-failing verdicts and a constrained replay budget. Native qualification of the
-new allocation remains pending before another study can be launched.
+failing verdicts and a constrained replay budget. The subsequent native
+qualification and version-8 launch are recorded above.
 
 The stop packet `lifespan/artifacts/compact-v7-stop-archive-v1-h200.tar.gz` is
 **6,243,162 bytes**, SHA
