@@ -588,3 +588,41 @@ semantic paraphrases, threshold direction, invented guarantees, exact headings
 and appendix ordering. These are constructed evaluator controls, never solver
 performance or employee training data; passing them does not establish general
 professional-quality calibration.
+
+`worldlab.qualify_semantic_suite` adds a separately prepared, concurrent suite
+with **38 cases: 18 positive and 20 negative**. It includes the 11 English
+association controls, 13 German receivables-reconciliation controls and 14 French
+coordination-letter controls. Reviewed task, rubric and input hashes prevent a
+changed source package from silently reusing old labels. Controls cover permitted
+paraphrases, locale number formatting, equivalent JSON Unicode escapes, signed
+differences, cancelled receivables, contradictory deliverables, source precedence,
+exact schema types/order, stale subjects and unsupported commercial commitments.
+
+Prepare from a source checkout that will remain frozen through execution and
+audit. The default two repetitions produce 76 requests with concurrency 64:
+
+```bash
+python -m worldlab.qualify_semantic_suite prepare \
+  --bank /path/to/final-world-calibration-v1 \
+  --model Qwen/Qwen3.8-Flash-Next-FP8 \
+  --base-url http://127.0.0.1:8011/v1 \
+  --out /path/to/new-semantic-qualification
+python -m worldlab.qualify_semantic_suite run --out /path/to/new-semantic-qualification
+python -m worldlab.qualify_semantic_suite audit --out /path/to/new-semantic-qualification
+```
+
+Preparation dispatches nothing. Execution retains every planned response and
+charges one metered request per slot; valid failures, format failures and unknown
+usage are never retried. Failed setup with no dispatch is reported separately
+from unknown provider usage. A failed or interrupted output directory cannot be
+resumed. The offline audit checks original case/request bytes, structured-output
+and prompt hashes, label agreement, accounting and the complete planned roster.
+Only payload evidence and criteria reach the model; expected labels and label
+rationales stay in the qualification controller.
+
+This suite's fixtures pass a real 64-thread overlap test and failure/tampering
+checks. Source preparation succeeds for all 38 controls. Those checks do not
+establish a live model pass: the broader model qualification remains pending.
+Its traffic is kept out of the running frozen workplace study. Repeated variants
+within three families are dependent development controls, not independent samples
+for a general accuracy estimate or a learning-effect claim.
