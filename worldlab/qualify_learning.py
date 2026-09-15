@@ -19,7 +19,7 @@ from .worlds import eligible_experiences
 
 def historical_request(study, attempt_root, record):
     adapter = study['harness']
-    if adapter['name'] != 'native_hermes_task_package' or adapter['version'] not in (1, 2, 3, 4):
+    if adapter['name'] != 'native_hermes_task_package' or adapter['version'] not in (1, 2, 3, 4, 5):
         raise ValueError('Historical request importer does not recognize this adapter version')
     filename = 'REQUEST.json' if adapter['version'] == 1 else 'PUBLIC_REQUEST.json'
     path = attempt_root / filename

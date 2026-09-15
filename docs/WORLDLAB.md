@@ -692,6 +692,27 @@ serialize or contaminate other employees. Within an employee's epoch the native
 replay and validation sequence is preserved. The shared inference gateway caps
 aggregate model requests, even when more work processes are ready.
 
+Hermes adapter version 5 separates the active task window from accounting
+settlement. Its same-host monotonic clock is recorded before worker launch.
+At the active deadline the controller closes model admissions and terminates
+the task sandbox; file/terminal calls also check the remaining task window.
+The audit requires sandbox cleanup within ten seconds of the deadline. Already
+admitted inference may settle for `min(600, active_seconds) + 15` additional
+seconds, matching the maximum configured native request timeout plus cleanup.
+The elapsed-time receipt includes this settlement; it is not extra task time
+or a free resource allowance. A replay can still exhaust its enclosing learning
+time budget and prevent adoption.
+
+The native meter atomically saves reservations before physical dispatch and
+usage after nonstreaming responses. A missing final worker return preserves
+the verified checkpoint's reported tokens and outstanding reservations, while
+remaining incomplete and ungraded. Successful budget exhaustion needs a full
+native return, known usage, skill evidence and verified sandbox termination
+before the ordinary grader can assess the files. Provider failure and unknown
+usage remain separate failure cases. Native task/deadline qualification and a
+fresh study are required before using version 5; older stopped runs retain their
+original source and classifications.
+
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.
 Parallel modes require adapters that can be serialized into spawned processes,

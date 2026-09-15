@@ -87,7 +87,7 @@ class BubblewrapSandbox:
             self.alias.rmdir()
 
 
-def install_hermes_backend(root):
+def install_hermes_backend(root, *, deadline_monotonic=None):
     """Adapt Hermes' native BaseEnvironment without modifying its source tree.
 
     Populate both its shared and explicit task cache, and replace this worker's
@@ -105,7 +105,10 @@ def install_hermes_backend(root):
             self.init_session()
         def _run_bash(self,cmd_string,*,login=False,timeout=120,stdin_data=None):
             def execute():
-                r=self.sandbox.execute(cmd_string,timeout,stdin_data,login)
+                remaining = deadline_monotonic - time.monotonic() if deadline_monotonic is not None else timeout
+                if remaining <= 0:
+                    return 'Declared task deadline exhausted; no command was dispatched.', 124
+                r=self.sandbox.execute(cmd_string,min(timeout,remaining),stdin_data,login)
                 return r['output'],r['returncode']
             return _ThreadedProcessHandle(execute)
         def cleanup(self):

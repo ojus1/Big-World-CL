@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import json
+import math
 import re
 import threading
 import time
@@ -54,7 +55,8 @@ def availability_classification(error_type, http_status=None):
 
 class ResponsesBudget:
     def __init__(self, *, max_model_calls, max_output_tokens, max_total_tokens=None,
-                 on_block=None, framing_reserve=2048, provider_contract=None, on_failure=None):
+                 on_block=None, framing_reserve=2048, provider_contract=None, on_failure=None,
+                 on_checkpoint=None, deadline_monotonic=None):
         for name, value in (("max_model_calls", max_model_calls),
                             ("max_output_tokens", max_output_tokens),
                             ("framing_reserve", framing_reserve)):
@@ -68,6 +70,12 @@ class ResponsesBudget:
         self.framing_reserve = framing_reserve
         self.on_block = on_block
         self.on_failure = on_failure
+        if deadline_monotonic is not None and (type(deadline_monotonic) not in (int, float)
+                or not math.isfinite(deadline_monotonic) or deadline_monotonic <= 0):
+            raise ValueError('Deadline must be a positive finite monotonic timestamp')
+        self.on_checkpoint = on_checkpoint
+        self.deadline_monotonic = deadline_monotonic
+        self.exhaustion_reason = None
         if provider_contract is not None:
             from .provider import validate_contract
             provider_contract = validate_contract(provider_contract)
@@ -84,6 +92,21 @@ class ResponsesBudget:
         # retry loop. Serialize the profiled physical seam across all of them,
         # so a waiting request cannot pass a check made before the first error.
         self._dispatch_lock = threading.RLock()
+        self.checkpoint()
+
+    def checkpoint(self):
+        # Serialize persistence with mutation. A failed pre-dispatch write must
+        # prevent the physical request, rather than lose its reservation.
+        with self._lock:
+            if self.on_checkpoint:
+                self.on_checkpoint(self.report())
+
+    def expire(self):
+        """Close admissions without cancelling a request already being settled."""
+        with self._lock:
+            self.exhausted = True
+            self.exhaustion_reason = 'task_deadline'
+            self.checkpoint()
 
     def ensure_running(self):
         with self._lock:
@@ -109,6 +132,7 @@ class ResponsesBudget:
                     'observed_monotonic': time.monotonic()}
                 if 'gateway_request_id' in row:
                     self.terminal_failure['gateway_request_id'] = row['gateway_request_id']
+            self.checkpoint()
         if first:
             # Publish before native cancellation (which may wait on a native
             # lock). Preserve safe callback failures without masking costs or
@@ -128,6 +152,7 @@ class ResponsesBudget:
             self.ensure_running()
             self.exhausted = True
             self.blocked_calls += 1
+            self.checkpoint()
         if self.on_block:
             self.on_block(reason)
         raise NativeBudgetExceeded(reason)
@@ -145,6 +170,12 @@ class ResponsesBudget:
                    + request["max_output_tokens"] + self.framing_reserve)
         with self._lock:
             self.ensure_running()
+            admitted = time.monotonic()
+            if self.deadline_monotonic is not None:
+                if admitted >= self.deadline_monotonic:
+                    self.expire()
+                if self.exhausted:
+                    self.block('No request can be admitted after task budget exhaustion')
             if len(self.rows) >= self.max_model_calls:
                 self.block("Declared physical model-call budget exhausted")
             if self.max_total_tokens is not None and self.charged_tokens + reserve > self.max_total_tokens:
@@ -155,6 +186,8 @@ class ResponsesBudget:
                    "total_tokens": None, "cache_read_tokens": None, "reasoning_tokens": None,
                    "output_cap": request["max_output_tokens"],
                    "request_stream": request.get("stream", False)}
+            if self.deadline_monotonic is not None:
+                row['admitted_monotonic'] = admitted
             self.rows.append(row)
             self.charged_tokens += reserve
         return request, row
@@ -201,11 +234,14 @@ class ResponsesBudget:
 
         def dispatch(kwargs):
             self.ensure_running()
+            if self.deadline_monotonic is not None and time.monotonic() >= self.deadline_monotonic:
+                self.expire()
             if self.exhausted:
                 self.block("Evaluation transport already stopped at its declared bound")
             readbacks = self._provider_readbacks(client, kwargs)
             request, row = self._reserve(kwargs)
             row.update(readbacks)
+            self.checkpoint()
             started = time.monotonic()
             try:
                 response = original(**request)
@@ -221,6 +257,7 @@ class ResponsesBudget:
                     else None)
                 self._receipt(row, response, "completed")
                 row["wall_seconds"] = time.monotonic() - started
+                self.checkpoint()
             except Exception as exc:
                 row.update(status="dispatch_error", error_type=_error_type(exc),
                            wall_seconds=time.monotonic() - started)
@@ -230,6 +267,7 @@ class ResponsesBudget:
                     request_id = gateway_request_id(getattr(exc, 'request_id', None))
                     if request_id is not None:
                         row['gateway_request_id'] = request_id
+                self.checkpoint()
                 self._fail(row, 'dispatch_error')
                 raise
             if row['status'] in ('missing_or_invalid_usage', 'provider_budget_overrun'):
@@ -278,6 +316,8 @@ class ResponsesBudget:
                     "exhausted": self.exhausted, "blocked_calls": self.blocked_calls,
                     "disabled_auxiliary_calls": list(self.disabled_auxiliary_calls),
                     "operations": rows,
+                    **({'deadline_monotonic': self.deadline_monotonic,
+                        'exhaustion_reason': self.exhaustion_reason} if self.deadline_monotonic is not None else {}),
                     **({'provider_contract': deepcopy(self.provider_contract), 'stopped': self.stopped,
                         'terminal_failure': deepcopy(self.terminal_failure)}
                        if self.provider_contract is not None else {})}
@@ -346,7 +386,7 @@ class _MeteredStream:
 
 
 def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_total_tokens=None,
-                          provider_contract=None, on_failure=None):
+                          provider_contract=None, on_failure=None, on_checkpoint=None, deadline_monotonic=None):
     """Install on one pinned native Hermes ``codex_responses`` agent.
 
     Return a meter whose report is authoritative for transport attempts. Disable
@@ -363,7 +403,8 @@ def install_native_budget(agent, *, max_model_calls, max_output_tokens, max_tota
 
     budget = ResponsesBudget(max_model_calls=max_model_calls, max_output_tokens=max_output_tokens,
                              max_total_tokens=max_total_tokens, on_block=stop,
-                             provider_contract=provider_contract, on_failure=on_failure)
+                             provider_contract=provider_contract, on_failure=on_failure,
+                             on_checkpoint=on_checkpoint, deadline_monotonic=deadline_monotonic)
     for name in ("_ensure_primary_openai_client", "_create_request_openai_client"):
         original = getattr(agent, name)
 
