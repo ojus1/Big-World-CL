@@ -5,6 +5,79 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Native Fluso task adapter qualified: September 15, 10:24 UTC
+
+The interchangeable `worldlab.fluso:Fluso` harness now executes real development
+tasks through the existing task, grading and learning-replay interfaces. Its
+frozen source is `Big-World-CL-fluso-harness-v2` at
+`effc7435fed7d8acd5040eed14d6485621f28de3`. Select
+`configs/worldlab/fluso_h200_v1.json` with `--harness-config`; install the optional
+`requirements-worldlab-fluso.txt` in a separate controller environment. The
+qualified environment uses Python **3.12.3**, aiohttp **3.14.3**, OpenAI
+**1.109.1** and httpx **0.28.1**. The immutable native image remains
+`sha256:3eea3855506e6c5694143609a73f7f4a0469d60d136e250c0ecf3c91ac75749d`.
+
+The adapter isolates each task in a fresh native project and puts its public
+workspace in `projects/Home/task`, outside Fluso's project metadata and memory.
+The skill is mounted read-only. Only the loopback relay can reach the metered
+provider; native primary and auxiliary generation share the attempt budget and
+global LLM concurrency **64**. Audit binds the original prompt, full skill read,
+subsequent skill consumption, native tool results and assistant messages to the
+actual inference bytes. It also checks Docker configuration, terminal state,
+usage and container removal. No generated-text character cap is introduced.
+
+Two fresh executions of `internal/euw_fr_003_en_bridge` passed the full execution
+and grading audits, with **30 model calls and 159,870 reported tokens**. These
+include **11 primary Fluso calls, 11 auxiliary calls and 8 grader calls**. Both
+grades are complete, successful and quality **1.0**. These are repeated runs of
+one public development task with a same-model judge; they do not establish
+general task coverage, independent grading accuracy or skill-learning effects.
+The checks co-ran with the version-6 development study, so their elapsed times
+are not an isolated throughput comparison. The serving container and gateway
+instance remained unchanged.
+
+The first qualification at source `313e9dcd` is preserved as failed: both tasks
+ran, but configuration audit rejected Docker's expected hostname transition
+when the solver joined the relay's network namespace. Its **26 native calls and
+151,942 tokens** remain charged and ungraded. Version 2 allows only the exact
+relay-hostname transition; every other configuration field must still match.
+It rejects a terminal container that is running, OOM-killed or reports a Docker
+state error. No failed receipt was rewritten. **51 targeted tests passed both
+locally and on H200**, including configuration tampering and native evidence.
+
+Two prospective native budget controls also passed. The call ceiling permitted
+exactly **one call / 462 tokens**; the input-token ceiling blocked generation
+before any model call. Both stopped the solver, retained complete meter
+accounting and removed their containers. Both correctly return
+`budget_exhausted_unverified`, with no scored attempt or learning trajectory.
+These controls do not qualify other partial-output or terminal forms. Abrupt
+controller death, a full Fluso learning epoch, document formats and JobBench
+remain to be qualified before broader use.
+
+Successful task plan SHA
+`9b63e9d134736ae3389083fd1224c3d758265e621110d4fd5d20f72da0253bd7`;
+qualification SHA
+`987fe880c46e72b1d397b92cac9ecbf2e2ef9e050f82b2cf7d518ea19680c70e`.
+Terminal plan SHA
+`9716af41245f4afef23cd21f6c338092d9e9f8cd3f16fd54e90005b3da39990f`;
+report SHA `4f10640a6a843fdbea1db90994444f5cdb8a62cf723a5447b74dd44c26d083f6`.
+The packet includes both failed and passed task qualifications, both terminal
+controls, operational state, test logs and an offline audit. All **12 owned
+containers** were confirmed absent. The **1,815,465-byte** archive was copied,
+safely extracted and all **564 payload hashes** verified locally under
+`lifespan/artifacts/native-fluso-harness-qualification-evidence-v2-h200`.
+Archive SHA `9599cb64fd939000d651d8b8e587f70101cc9f4f047a9496b9991c51d2971eb9`;
+export SHA `2fed89c8186804d38bf667c9ede04176a647c04f2ee3f44c5b399d30d48ff107`.
+
+At **10:32:44 UTC**, the unchanged version-6 study had **414 completed work
+attempts**, no pair or study terminal status, no finalized learning updates and
+no adoptions. Its original PID **2975707** was present and the service was
+active/running. The shared gateway retained peak concurrency **64**, zero
+transport errors and 88 client cancellations, counted separately. These are
+nontransactional progress counts, not final accounting or learning results.
+The separate lab snapshot is
+`lifespan/artifacts/native-workplace-v6-progress-20260915T103244Z.json`.
+
 ## Fresh inference connections qualified and deployed: September 15, 09:28 UTC
 
 Frozen source `d92debe7623ba2ad33f3c9bb5453db8409f9021c` adds fresh upstream

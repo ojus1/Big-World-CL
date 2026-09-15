@@ -640,7 +640,11 @@ mount. The adapter verifies actual Docker image, network, mount, privilege and
 resource configuration before starting the native solver, then retains its
 exit state and removal receipts. All primary and auxiliary inference shares
 the attempt meter and global concurrency limit. Native task and terminal-case
-qualification is required before including this adapter in a study.
+qualification is required before including this adapter in a study. The
+[H200 execution ledger](H200_WORLD_STUDIES.md) records two audited development
+task executions and native call/token budget-stop controls at source `effc7435`.
+A full Fluso learning epoch and abrupt controller-death cleanup remain to be
+qualified; these task controls do not establish broad task capability.
 
 Completed receipts require a full skill read and subsequent consumption, a
 completed primary assistant turn, validated provider usage and clean container
@@ -682,9 +686,10 @@ The offline audit reconstructs every causal command, regenerates visible views,
 checks native interview receipts and binds outcomes to actual task artifacts.
 All planned probes remain in the denominator. The primary workplace metric is
 on-time accepted work; soft quality and configured synthetic utility are secondary.
-Bootstrap/social model costs remain unmetered and explicitly unknown. There is
-still no operational Fluso adapter, multiturn employee channel, qualified JobBench
-document solver, human-calibrated judge or completed final significance study.
+Bootstrap/social model costs remain unmetered and explicitly unknown. The Fluso
+adapter has bounded native task qualification; a full Fluso study, multiturn
+employee channel, qualified JobBench document solver, human-calibrated judge and
+completed final significance study remain outstanding.
 
 
 The judge keeps original r3 criterion bytes. Its registered exact-reference-count
