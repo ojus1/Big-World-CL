@@ -2489,3 +2489,34 @@ provenance SHA is
 `5f16e94e5b89374b163eabdb427241d8d9d5590e9e667817c9ddbd87f408f7fd`.
 This package includes dependent development qualifications and partial study
 progress; it is not a completed experiment or a successful-learning result.
+
+## Version 10 prepared; inference resource conflict
+
+At September 15, 2026 20:29 UTC, the next complete matched study was prepared
+from frozen source `d936482b3f641fa670be774887e7e547fae23b00` in
+`/home/inference-testing/apps/Big-World-CL-workplace-v10`. This follows the stopped
+version-9 study and its artifact/replay failures documented in
+`WORLDLAB_CURRENT_STATUS.md`; old failed runs remain unchanged.
+
+Preparation retained all six seeds, 12 employees per arm, 20 days, assignments,
+isolated validation cases, sparse calibration and native learning budgets.
+There are 2,880 planned obligations and capacity for up to 5,760 work sessions.
+Source comparison ties the new run to the passing native artifact/admission
+qualification and the 25 local plus 25 H200 cancellation checks. Only the new
+failure policy changes the world specification. Original grading rules and
+methods are unchanged outside the qualified evidence projection.
+
+Study SHA:
+`936477c1fb9a35b2e11d88f3434bf751a872c81b875022aabfe459412f755348`.
+Prospective analysis SHA:
+`30c370c6cc9b64a41ed4f3a7bd0a0c743ffac1332819bb3cc68ea484001b2099`.
+Compatibility SHA:
+`959d038ae0c15a5e0564f8530d47d9ee6d4ee29d502d759deacd5e873660e824`.
+
+The model container pinned by the launch operator is stopped. The replacement
+on GPUs 4–7 and port 8002 serves the same revision with different inference
+settings, so the exact-runtime check refused it before creating a study process.
+No model calls were made during preparation. Fluso remains paused. The prepared
+development study is not a completed comparison or a statistically supported
+learning result. Local preparation receipts and hash verification are in
+`lifespan/artifacts/native-compact-v10-local/`.

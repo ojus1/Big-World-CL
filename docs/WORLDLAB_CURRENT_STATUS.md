@@ -10,6 +10,35 @@ its GPUs 4–7 and port 8002. No new baseline was launched and neither runtime w
 modified by this task. Resolve this resource conflict and verify the intended
 inference identity before launching a fresh study.
 
+Version 10 is now prepared offline at frozen source
+`d936482b3f641fa670be774887e7e547fae23b00`, with no study execution or inference
+calls during preparation. It retains six world pairs, 12 employees per arm,
+20 days, 2,880 planned obligations and capacity for 5,760 work sessions. Each
+world uses direct examples for one employee, role transfer for two and defaults
+for nine; examples for every employee are not required. The native learner's
+original budget is explicit in its factory configuration, including the
+1,200-second replay allowance that fits 900 seconds of work plus 300 of judging.
+The only specification change is `failure_policy: stop_after_current_wave`.
+World assignments, validation cases, task coverage, personas and resource
+reservations passed exact comparison with version 9. Original rubric rules,
+request/validation methods and grade computation passed AST equality checks;
+evidence projection and the qualified controller fixes are separately recorded.
+
+Study SHA:
+`936477c1fb9a35b2e11d88f3434bf751a872c81b875022aabfe459412f755348`.
+Prospective analysis SHA:
+`30c370c6cc9b64a41ed4f3a7bd0a0c743ffac1332819bb3cc68ea484001b2099`.
+Preparation, the study, analysis, corrected coverage report and runtime refusal
+are copied locally under `lifespan/artifacts/native-compact-v10-local/`, with
+all 13 payload hashes and their cross-file bindings verified. Its operator is
+`lifespan/artifacts/prepare-launch-native-compact-v10.py`: `prepare` performs no
+inference; the separate `launch` checks the original model container, image,
+arguments, GPUs and shared gateway before creating an execution service. The
+replacement enables MTP and omits the qualified structured-output configuration,
+so the runtime check correctly refuses it. No launch directory or study
+`EXECUTION.json` exists. This remains a development comparison with narrow source
+families and same-model grading, not a final significance study.
+
 Shared controller commit `4114679e6b9f29d30c4f8e5cbbc8157c4720103a` adds
 coordinated cancellation after terminal failures. New work stops at admission
 boundaries while already admitted operations retain their original budgets and
