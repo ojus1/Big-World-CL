@@ -14,8 +14,8 @@
 * Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
-  `/home/inference-testing/apps/Big-World-CL-judge-v13/lifespan/artifacts/native-workplace-compact-v3`.
-* Most recent scale service: `bigworld-native-workplace-compact-v3` (stopped after a pair failure).
+  `/home/inference-testing/apps/Big-World-CL-judge-v15/lifespan/artifacts/native-workplace-compact-v4`.
+* Current scale service: `bigworld-native-workplace-compact-v4` (launched September 15, 06:09 UTC).
 * Native employee backend: `http://127.0.0.1:5005`, installed under
   `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
@@ -71,9 +71,13 @@ The inference server remains available. The broader 76-call semantic check then
 completed with known usage but matched only 75 labels. Fresh-source qualification
 is required before another scale launch. No successful-learning result exists.
 The version-14 suite also matched 75/76 labels and failed qualification. The
-prospective version-15 judge explicitly requests temperature zero and top-p one,
-with dispatch enforcement and audited sampling metadata. This still requires
-fresh qualification. See the execution ledger for receipts and corrections.
+version-15 judge explicitly requests temperature zero and top-p one, with
+dispatch enforcement and audited sampling metadata. It passed 76/76 semantic
+controls in 8.994 seconds, all 226 saved-output grading audits and two fresh
+native Hermes controls. The fresh complete six-pair study launched at 06:09:20
+UTC with its analysis frozen beforehand. Its initial checkpoint has no observed
+pair failure; no completed-pair or successful-learning result exists yet.
+See the execution ledger for receipts and corrections.
 
 ## Serving configuration
 

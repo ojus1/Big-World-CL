@@ -5,7 +5,57 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
-## Latest qualification: September 15, 05:58 UTC
+## Latest launch: September 15, 06:09 UTC
+
+`native-workplace-compact-v4` launched at **06:09:20 UTC** from frozen source
+`Big-World-CL-judge-v15` at `1096af56c1f1ba7f62f34de4643e46588b47651a`.
+Its initial checkpoint at 06:09:43 UTC shows all six first arms recording
+native employee decisions, no observed pair/study failure, and the supervisor
+active with MainPID **2257476**, invocation `0aaae18820394c3cb08326f05907a0a1`.
+There was no finalized work or completed pair at this initial checkpoint.
+Service liveness is reported separately from pair and study failure records.
+
+The version-15 semantic suite matched **76/76** labels in **8.994 seconds**:
+74 structured model calls, two registered negative-only source checks,
+189,504 reported tokens, no unknown usage. Its plan SHA is
+`a9708a91159086ff17add7ddd303864281d7c449fa6259db33e33e8240d7dd1f`.
+The same labels that failed earlier qualifications remain in the suite. The
+source-heading correction and greedy decoding were developed using these
+controls; this is a development regression gate, not held-out accuracy evidence.
+
+All **226** saved contexts passed fresh grading and offline audits, including
+one solver output that had failed before evidence creation. Five interrupted
+solver attempts without gradeable outputs are explicitly recorded as excluded,
+without assigning scores. This qualification used **1,099 calls**, **8,171,475
+reported tokens**, one metered format recovery, and no unknown accounting.
+Plan SHA: `dddcb50187edf38c114a11c559336fab9fda88c9ccda8294ece9ecdc9b2bc254`.
+Two fresh native Hermes controls passed, with **21 calls** and **125,489 tokens**;
+plan SHA: `a49fdf6cd43d4fdbdb8a8e2806c24cb3fbf4f2d75033004545acae6afbc419fa`.
+Both used the same global concurrency-64 gateway. Earlier employee and optimizer
+component qualifications were reused only after source and frozen identity
+comparison; a fresh installed-backend check passed. These checks establish
+execution and auditing, not successful learning or general semantic accuracy.
+
+The study retains seeds 401, 409, 419, 421, 431 and 433; 20 simulated days;
+12 employees; update days 6, 10 and 14; probe days 16–19; and isolated validation
+tasks. One employee has representative examples, two have labeled role-transfer
+assumptions, and nine use defaults. Global LLM and world/employee/update ceilings
+remain **64**. The same container, GPUs 4–7, model revision, structured-output
+backend and non-MTP serving settings are unchanged. Only grading uses explicit
+temperature zero and top-p one. No extra character rejection is imposed.
+
+The fresh study SHA is
+`978d77c3671bee7f397f97263153a8572f8ba9ed12aff84da80fe5f1e91345f6`.
+Its analysis was frozen before dispatch under
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-compact-analysis-v4`, plan
+SHA `a4b900b5e8e39eb0ad0a247d153034db8d9a4d74bcce40e25275fff4a1163796`.
+The plan requires all six pairs and a full original-source audit; its statistical
+diagnostic is exploratory, not confirmatory. Launch evidence is
+`Big-World-CL-lab/lifespan/artifacts/native-compact-launch-v4`.
+No adoption, later learned-skill deployment or significant improvement has yet
+been established. The earlier failed study and qualifications remain intact.
+
+## Preserved qualification: September 15, 05:58 UTC
 
 The fresh version-14 source `336934a` passed 111 local WorldLab tests and the
 same H200 suite (one dependency-specific skip). Its semantic qualification
