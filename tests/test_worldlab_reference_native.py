@@ -23,12 +23,11 @@ from test_worldlab_references import library
 from worldlab.references import install_native_tools, audit_accesses
 from scripts.source_world_calibration import save
 from tools.registry import registry
-from toolsets import get_tool_names_for_toolset
 root=Path(os.environ['HOME']); attempt=root/'attempt'; attempt.mkdir()
 content='# Native guide\\nComplete café evidence.\\n' * 2000
 lib=library(root/'library',content)
 toolset=install_native_tools(lib,attempt)
-names=set(get_tool_names_for_toolset(toolset))
+names=set(registry.get_tool_names_for_toolset(toolset))
 assert names=={'list_references','read_reference'}
 schemas=registry.get_definitions(names,quiet=True)
 assert {s['function']['name'] for s in schemas}==names
