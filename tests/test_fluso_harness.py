@@ -14,7 +14,7 @@ try:
 except ImportError:
     raise unittest.SkipTest('Install requirements-inference-gateway.txt')
 
-from worldlab import chat_relay
+from worldlab import chat_relay, fluso_guardian
 from worldlab.chat_budget_gateway import create_app, encoded, sha
 from worldlab.contracts import Budget, TaskRequest, validate_execution
 from worldlab.fluso_runtime import (DATA, WORKSPACE, TASK_DIRECTORY, SKILL_PATH, THREAD,
@@ -107,8 +107,15 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
         plan = {'request': native_request, 'identity': identity, 'prompt': task_prompt(request.instruction),
             'catalog': catalog(self.harness.model, request.budget.output_tokens),
             'environment': environment(self.harness.model, request.budget.seconds),
-            'relay': 'fixture-relay', 'solver': 'fixture-solver', 'user': '1000:1000', 'socket': '/private/socket'}
+            'relay': 'worldlab-aaaaaaaaaaaaaaaaaaaa-relay', 'solver': 'worldlab-aaaaaaaaaaaaaaaaaaaa-solver',
+            'user': '1000:1000', 'socket': '/private/socket',
+            'guardian': {'owner': 'aaaaaaaaaaaaaaaaaaaa', 'parent_pid': 123, 'parent_start_ticks': 456,
+                'unit': 'worldlab-fluso-aaaaaaaaaaaaaaaaaaaa-guardian.service', 'deadline_monotonic': 99,
+                'settle_seconds': 5, 'cleanup_seconds': 60}}
         write('PLAN.json', plan); write('models.json', plan['catalog'])
+        write('GUARDIAN_READY.json', {'guardian_pid': 124, 'guardian': plan['guardian'],
+                                     'plan_sha256': sha((root / 'PLAN.json').read_bytes())})
+        write('GUARDIAN_LAUNCH_RESULT.json', {'returncode': 0})
         (root / 'skill').mkdir(); (root / 'skill/SKILL.md').write_text(skill_file(request.skill))
         relay = container(identity['image'], plan['relay'], 'none', {
             '/run/meter.sock': (plan['socket'], False), '/run/relay.py': (str(Path(chat_relay.__file__).resolve()), False)},
@@ -118,6 +125,8 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
             WORKSPACE + '/skills/work-process': (str(root / 'skill'), False), TASK_DIRECTORY: (str(request.workspace), True)},
             entrypoint=['/usr/local/bin/bun'], cmd=['harness.ts', 'send', '--thread', THREAD, plan['prompt']],
             env=[k + '=' + v for k, v in plan['environment'].items()])
+        for info in (relay, solver):
+            info['Config']['Labels'] = {fluso_guardian.LABEL: plan['guardian']['owner']}
         terminal = copy.deepcopy(solver)
         terminal['Config']['Hostname'] = relay['Config']['Hostname']
         write('RELAY_INSPECT.json', relay); write('SOLVER_INSPECT.json', solver); write('TERMINAL_INSPECT.json', terminal)
@@ -155,6 +164,11 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
             'trace_files': [str(trace.relative_to(root))], 'meter_sha256': sha((root / 'meter/METER.json').read_bytes()),
             'plan_sha256': sha((root / 'PLAN.json').read_bytes())}
         write('RESULT.json', result)
+        write('GUARDIAN_DISARM.json', {'plan_sha256': sha((root / 'PLAN.json').read_bytes()),
+            'cleanup_sha256': sha((root / 'CLEANUP.json').read_bytes()),
+            'result_sha256': sha((root / 'RESULT.json').read_bytes())})
+        write('GUARDIAN_EXIT.json', {'status': 'disarmed', 'guardian': plan['guardian'],
+                                   'plan_sha256': sha((root / 'PLAN.json').read_bytes())})
         return result
 
     async def run_fixture(self):
@@ -192,7 +206,18 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
         receipt = await self.run_fixture()
         path = self.root / 'fluso/CLEANUP.json'
         value = json.loads(path.read_bytes()); value[0]['returncode'] = 1; path.write_bytes(encoded(value))
-        with self.assertRaisesRegex(ValueError, 'containers were not removed'): self.audit(receipt)
+        with self.assertRaisesRegex(ValueError, 'Guardian did not acknowledge'): self.audit(receipt)
+
+    async def test_guardian_intervention_or_owner_tampering_withholds_completion(self):
+        receipt = await self.run_fixture()
+        path = self.root / 'fluso/GUARDIAN_INTERVENTION.json'
+        path.write_bytes(encoded({'reason': 'controller_exited'}))
+        with self.assertRaisesRegex(ValueError, 'interruption cannot be graded'): self.audit(receipt)
+        path.unlink()
+        path = self.root / 'fluso/SOLVER_INSPECT.json'
+        value = json.loads(path.read_bytes()); value['Config']['Labels'][fluso_guardian.LABEL] = 'another-owner'
+        path.write_bytes(encoded(value))
+        with self.assertRaisesRegex(ValueError, 'ownership differs'): self.audit(receipt)
 
     async def test_only_relay_hostname_transition_is_allowed(self):
         receipt = await self.run_fixture()

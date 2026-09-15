@@ -8,13 +8,14 @@ from pathlib import Path
 from .chat_budget_gateway import audit_meter, encoded, origin, require, sha
 from .contracts import Budget
 from .fluso_evidence import audit_skill_and_responses
+from .fluso_guardian import audit_disarm
 from .fluso_runtime import IMAGE, SKILL_PATH, execute, audit_runtime_configuration, skill_file, task_prompt
 
 
 def source_hashes():
     return {name: sha(Path(__file__).with_name(name).read_bytes()) for name in (
         'fluso.py', 'fluso_runtime.py', 'fluso_evidence.py', 'qualify_fluso_isolation.py',
-        'chat_relay.py', 'chat_budget_gateway.py', 'contracts.py')}
+        'chat_relay.py', 'chat_budget_gateway.py', 'contracts.py', 'fluso_guardian.py')}
 
 
 class Fluso:
@@ -24,13 +25,14 @@ class Fluso:
         self.model, self.upstream, self.tokenizer = model, origin(upstream), origin(tokenizer)
 
     def identity(self):
-        return {'name': 'native_fluso_task_package', 'version': 1, 'image': IMAGE,
+        return {'name': 'native_fluso_task_package', 'version': 2, 'image': IMAGE,
             'provider': {'model': self.model, 'base_url': self.upstream + '/v1',
                          'profile': 'text_tools_chat_no_thinking_single_choice_v1'},
             'upstream': self.upstream, 'tokenizer': self.tokenizer, 'source_sha256': source_hashes(),
             'sandbox': 'nonroot_readonly_container_shared_network_none_relay',
             'state': 'fresh_user_project_session_and_files_per_attempt',
             'accounting': 'all primary and auxiliary model calls share the attempt budget',
+            'cleanup': 'independent user-systemd guardian with Linux pidfd and exact container ownership',
             'retries': 0, 'unqualified_terminal_policy': 'preserve receipts and withhold grading',
             'capability_scope': 'offline text and tool task packages; native task and exhaustion qualification required before a study'}
 
@@ -64,6 +66,7 @@ class Fluso:
             audit_meter(root / 'meter', budget=request.budget, model=self.model,
                         upstream=self.upstream, tokenizer=self.tokenizer)
             require(not result['error_type'] and not result['cleanup_error'], 'Native runtime or cleanup failed')
+            audit_disarm(root, json.loads((root / 'PLAN.json').read_bytes()))
             require(meter['accounting_complete'] and not (meter['stopped'] and not meter['exhausted']),
                     'Native inference or accounting failed')
             require(len(result['trace_files']) == 1, 'Expected one primary native session')
@@ -97,6 +100,7 @@ class Fluso:
         audited = audit_meter(root / 'meter', budget=budget, model=self.model, upstream=self.upstream, tokenizer=self.tokenizer)
         require(audited['accounting_complete'] and not result['error_type'] and not result['cleanup_error']
                 and not (meter['stopped'] and not meter['exhausted']), 'Native runtime or accounting is incomplete')
+        audit_disarm(root, json.loads((root / 'PLAN.json').read_bytes()))
         require(sha((root / 'meter/METER.json').read_bytes()) == result['meter_sha256']
                 and sha((root / 'PLAN.json').read_bytes()) == result['plan_sha256'], 'Native final receipt changed')
         require(len(result['trace_files']) == 1 and not Path(result['trace_files'][0]).is_absolute()

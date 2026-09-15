@@ -643,8 +643,25 @@ the attempt meter and global concurrency limit. Native task and terminal-case
 qualification is required before including this adapter in a study. The
 [H200 execution ledger](H200_WORLD_STUDIES.md) records two audited development
 task executions and native call/token budget-stop controls at source `effc7435`.
-A full Fluso learning epoch and abrupt controller-death cleanup remain to be
-qualified; these task controls do not establish broad task capability.
+A full Fluso learning epoch remains to be qualified; these task controls do not
+establish broad task capability.
+
+The current adapter requires Linux pidfds and a user systemd manager. Before
+creating containers it starts an independent, bounded `worldlab.fluso_guardian`
+service. The service watches the exact controller process and a cleanup
+deadline, outside the controller's service/process group. Only containers with
+the attempt's exact names, pinned image and unique owner label can be removed;
+mutation uses inspected immutable container IDs. Repeated scans catch delayed
+container creation. A failed Docker listing never counts as successful cleanup.
+
+Normal completion requires the guardian's acknowledgement of hashed cleanup and
+result receipts. Controller death or a cleanup deadline produces separate
+interruption evidence and removes owned containers without changing retained
+model accounting. Such an attempt remains ungraded; unknown usage reservations
+cannot be converted into reported usage. Guardian source and ownership are bound
+to the harness identity and execution audit. Native interruption qualification
+is required before relying on this behavior in a study. This is bounded cleanup
+on a functioning Docker/systemd host, not recovery from host or daemon failure.
 
 Completed receipts require a full skill read and subsequent consumption, a
 completed primary assistant turn, validated provider usage and clean container

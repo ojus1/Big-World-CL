@@ -9,7 +9,7 @@ import uuid
 
 from aiohttp import web
 
-from . import chat_relay
+from . import chat_relay, fluso_guardian
 from .chat_budget_gateway import METER, create_app, encoded, require, sha
 from .qualify_fluso_isolation import IMAGE, DATA, WORKSPACE, catalog, environment, common, command
 
@@ -70,6 +70,13 @@ def audit_runtime_configuration(root, request, identity):
     require((root / 'models.json').read_bytes() == encoded(plan['catalog']), 'Native model catalog changed')
     require((root / 'skill/SKILL.md').read_text() == skill_file(request['skill']), 'Installed skill changed')
     relay, solver = read(root / 'RELAY_INSPECT.json'), read(root / 'SOLVER_INSPECT.json')
+    guardian = fluso_guardian.validate_plan(plan)
+    ready = read(root / 'GUARDIAN_READY.json')
+    require(ready['guardian'] == guardian and ready['plan_sha256'] == sha((root / 'PLAN.json').read_bytes())
+            and read(root / 'GUARDIAN_LAUNCH_RESULT.json')['returncode'] == 0,
+            'Independent cleanup guardian was not ready before execution')
+    require(all(info['Config'].get('Labels', {}).get(fluso_guardian.LABEL) == guardian['owner']
+                for info in (relay, solver)), 'Container cleanup ownership differs')
     image = identity['image']
     relay_mounts = {'/run/meter.sock': (plan['socket'], False),
                     '/run/relay.py': (str(Path(chat_relay.__file__).resolve()), False)}
@@ -130,9 +137,9 @@ async def execute(request, root, identity):
     save = lambda name, value: (root / name).write_bytes(encoded(value))
     common_flags = common('none', relay_name)
     user = common_flags[common_flags.index('--user') + 1]
-    plan = {'version': 1, 'identity': identity, 'request': native_request, 'prompt': task_prompt(request.instruction),
+    plan = {'version': 2, 'identity': identity, 'request': native_request, 'prompt': task_prompt(request.instruction),
             'catalog': model_catalog, 'environment': env, 'relay': relay_name, 'solver': solver_name,
-            'user': user, 'socket': socket}
+            'user': user, 'socket': socket, 'guardian': fluso_guardian.contract(suffix, budget.seconds)}
     save('PLAN.json', plan)
     try:
         image = json.loads((await command(['docker', 'image', 'inspect', identity['image']]))['stdout'])[0]
@@ -140,7 +147,9 @@ async def execute(request, root, identity):
         save('IMAGE.json', {'Id': image['Id'], 'Created': image['Created']})
         await runner.setup(); prepared = True
         await web.UnixSite(runner, socket).start()
-        relay_cmd = ['docker', 'create', *common_flags, '--mount', bind(socket, '/run/meter.sock', True),
+        await fluso_guardian.launch(root, plan, command)
+        ownership = ['--label', fluso_guardian.LABEL + '=' + suffix]
+        relay_cmd = ['docker', 'create', *common_flags, *ownership, '--mount', bind(socket, '/run/meter.sock', True),
             '--mount', bind(Path(chat_relay.__file__), '/run/relay.py', True), '--entrypoint', 'python3',
             identity['image'], '/run/relay.py', '--socket', '/run/meter.sock', '--timeout', str(budget.seconds)]
         save('RELAY_COMMAND.json', relay_cmd)
@@ -148,7 +157,7 @@ async def execute(request, root, identity):
         await command(['docker', 'start', relay_id])
         relay = json.loads((await command(['docker', 'inspect', relay_id]))['stdout'])[0]
         save('RELAY_INSPECT.json', relay)
-        solver_cmd = ['docker', 'create', *common('container:' + relay_id, solver_name),
+        solver_cmd = ['docker', 'create', *common('container:' + relay_id, solver_name), *ownership,
             '--mount', bind(root / 'data', DATA), '--mount', bind(root / 'models.json', '/run/models.json', True),
             '--mount', bind(root / 'skill', WORKSPACE + '/skills/work-process', True),
             '--mount', bind(workspace, TASK_DIRECTORY), '--workdir', '/opt/fluso/agents/dev-harness']
@@ -176,7 +185,11 @@ async def execute(request, root, identity):
         # Stop the owned native process before closing admissions. The relay
         # continues draining already accepted requests until their own deadline.
         if solver_id and process is not None and process.returncode is None:
-            await command(['docker', 'stop', '--time', '2', solver_id], check=False)
+            try:
+                save('STOP_INTENT.json', {'reason': 'controller_exception_cleanup', 'container': solver_id})
+                save('STOP_RESULT.json', await command(['docker', 'stop', '--time', '2', solver_id], check=False))
+            except Exception as exc:
+                cleanup_error = type(exc).__name__
         if prepared:
             try:
                 await runner.cleanup()
@@ -205,4 +218,10 @@ async def execute(request, root, identity):
               'meter_sha256': sha((root / 'meter/METER.json').read_bytes()),
               'plan_sha256': sha((root / 'PLAN.json').read_bytes())}
     save('RESULT.json', result)
+    if (root / 'GUARDIAN_READY.json').exists():
+        try:
+            await fluso_guardian.disarm(root, plan)
+        except Exception as exc:
+            result['cleanup_error'] = type(exc).__name__
+            save('RESULT.json', result)
     return result
