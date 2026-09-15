@@ -5,6 +5,43 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Power planning and live progress: September 15, 07:52 UTC
+
+At **07:52:18 UTC**, the unchanged version-5 study had **377 fully graded work
+attempts**, **404 employee decisions**, and zero finalized learning updates or
+adoptions. The six first arms were on days 3–4; first learning updates remain
+scheduled for day 6. MainPID **2364472** was present, its service was active and
+running, and both pair and whole-study status showed no observed failure.
+The shared gateway still enforced **64** concurrent model requests with peak 64.
+This snapshot is not a completed execution or learning-effect audit.
+Progress SHA `3109a602fda153fa5e7eb7aff58a05a4fd30fa66f53bbece09139be690ac4d03`;
+local verified copy: `lifespan/artifacts/compact-v5-power-progress-v1-h200.json`.
+
+Separate mutable source `2fc9cde443c64d25269b65e442186477e3d8ebe3` adds the
+outcome-free power planner described in the [study protocol](WORLDLAB_STUDY_PROTOCOL.md#outcome-free-power-sensitivity).
+Twenty targeted power and analysis tests passed locally and on H200, including
+an independent chi-square mixture integral, simulation of 50,000 normal-data
+samples, the adjacent-integer sample-size threshold and the closed-form bounded
+mean calculation. No live study outcome was used to choose these scenarios.
+
+Nine constructed effect/SD scenarios produced identical sample sizes locally
+and on H200; the largest probability difference was `3.33e-16`. Both used
+NumPy **2.4.2** and SciPy **1.17.1**, in isolated planning environments. Python
+was **3.14.6** locally and **3.12.3** on H200. Each report retains configuration,
+source, versions and a hash manifest. The H200 five-file package was copied and
+hash-verified locally at `lifespan/artifacts/power-scenarios-v1-h200`.
+Local report SHA `a6f7561aecc87bfd535804ba59cda466edc6c6c741c1037c32579fcfcd87bb5d`;
+H200 report SHA `19a3f44e18cc76c6b03aca10c17fd953aa970a07035da66a3627eb56135a2d44`.
+Comparison: `lifespan/artifacts/power-scenarios-comparison-v1.json`.
+
+These are planning sensitivities, not observed power or a selected final N/test.
+At a constructed five-point improvement, paired-normal SD assumptions of ten
+and twenty points give 34 and 128 world pairs respectively at 80% positive
+rejection power and two-sided alpha 0.05. The bounded-mean sufficient count is
+8,138 pairs. Each result has distinct assumptions; none changes the original
+six-pair sign-flip analysis or establishes that more seeds broaden task coverage.
+The frozen running source remains `b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`.
+
 ## Observed learning supply: September 15, 07:33 UTC
 
 A source-bound readiness capture at **07:33:57 UTC** found that all **36**
