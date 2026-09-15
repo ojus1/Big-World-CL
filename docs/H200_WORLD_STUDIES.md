@@ -5,6 +5,41 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Checkpoint audit and larger-analysis controls: September 15, 07:18 UTC
+
+The version-5 pre-learning checkpoint audit completed at **07:18:39 UTC**. It
+validated all **107 published completed work attempts** and **145 native employee
+decisions** in the six captured arm states. Work and judging used **1,531 physical
+calls** and **18,577,302 tokens**; the audited employee decisions used **145 calls**
+and **467,426 tokens**. These categories exclude inflight work, unpublished
+parallel receipts and other bootstrap/social accounting. The audit makes zero
+model calls and does not certify a complete world, causal replay of unfinished
+commands, an adopted skill or a learning effect.
+
+Checkpoint plan SHA:
+`29795b95a2be3bd36c406aa743287d98748a31b6810a5f1fdee27b65bd178996`;
+report SHA `40817fa55978b9a3e131882d49448e5380e2928b50b25d43f4625bceea414831`.
+The eight plan/report/snapshot files were copied locally and verified under
+`lifespan/artifacts/compact-v5-checkpoint-audit-v1-h200` in the lab checkout.
+Original native receipts remain on H200. At the preceding 07:14:46 observation,
+the supervisor was live, six first arms had recorded progress, and there were
+82 fully graded attempts with no observed pair failure. No learning update had yet occurred.
+
+Future analysis source `fdeae8aaa1f6eb6722808d52f9a02c320af6b639` removes the
+20-pair computational cap using integer-lattice exact counts and a frozen
+outcome-independent state budget. Twelve targeted tests passed locally and on
+H200, including independent exhaustive enumeration, a 220-pair binomial tail,
+zero-pair multiplicity, computation-budget rejection and floating-point underflow.
+Constructed controls at 6, 64, 128, 512 and 1,024 pairs produced identical exact
+tails on both machines. The largest used 6,352 reachable sums and took 0.424
+seconds locally and 0.439 seconds on H200. These are arithmetic/performance
+fixtures, not study outcomes, power estimates or a choice of final sample size.
+Local report SHA `7e7c057cad90f52a87ec840598f4e3ba85801496041ca9fccb5c721dcf4c247f`;
+H200 report SHA `7bf6b7547132249358a08cd03f8d43f50002f6f277bb5adf074b40c452923209`.
+Both are retained in the lab under `exact-analysis-scale-controls-v2` and
+`exact-analysis-scale-controls-v2-h200`. The running source, workload, six-pair
+analysis, inference configuration and learning policy remain unchanged.
+
 ## Latest launch: September 15, 07:03 UTC
 
 `native-workplace-compact-v5` launched at **07:03:20 UTC** from source
