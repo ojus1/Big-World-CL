@@ -44,11 +44,56 @@ result. Other work interrupted by the service stop retains its partial evidence.
 The next grader version retains empty regular files as exact empty text with
 their original filename and SHA, including extensionless files. Empty files
 remain visible to the rubric and to audit; they are not silently excluded.
-Nonempty unsupported payloads remain unqualified. All **29 local grading and
-evidence tests passed**, including file-change audit rejection and the original
-archive controls. Native qualification of this correction remains pending.
+Nonempty unsupported payloads remain unqualified. Frozen
+`Big-World-CL-empty-evidence-v1` at `284cf011f0c06f6265531519190542356a2dbcff`
+passed all **29 grading and evidence tests locally and on H200**, including
+file-change audit rejection and the original archive controls. A fresh grader
+check on a separate copy of the failed case completed **4 structured model calls /
+12,407 reported tokens**, with full usage and offline grade audit. The empty
+file remained in the supplied evidence. The original case is still ungraded
+and unchanged; this component check does not recover an outcome for version 7.
+Qualification plan SHA
+`585d3b3cc7b3ae5dfc42ab92975370d126c2c0592c0c2d92dc49a6e55667a609`.
 Stop receipts and the source-level diagnosis are in
 `Big-World-CL-lab/lifespan/artifacts/compact-v7-stop-evidence-v1`.
+
+At **12:33:56 UTC**, the stopped study had **452 completed attempt receipts**,
+one `grading_incomplete` receipt, four attempt directories without final
+`ATTEMPT.json`, no replays and no learning updates. All known native worker and
+sandbox PIDs were absent. One interrupted worker had no native return and its
+checkpoint retained **479,025 charged tokens**, including a reservation above
+its **376,984 reported tokens**. These are partial evidence counts, not a
+completed-study usage total or successful world pairs.
+
+The additional incomplete grade is seed 431's
+`d005-operations-fr-003-001`: its eighth judgment response reached the **4,096-token
+request limit**, and the attempted format repair was blocked by the original
+eight-call allocation. The grade retains **8 calls / 85,693 reported tokens**
+and one blocked call. This is separate from the empty-file defect. The registered
+format-repair policy needs a prospective call allocation that includes its repair;
+no valid verdict may be retried or selected. Version 18 declares nine calls for
+eight supported criteria plus one format repair. Online tasks use that declared
+allocation, and learning replays reserve it inside their existing total call
+budget. Explicit lower caller limits remain binding; alternate judges without a
+declaration retain their eight-call default. All **33 local tests passed**,
+including an eighth-criterion truncation, one charged ninth repair, preserved
+failing verdicts and a constrained replay budget. Native qualification of the
+new allocation remains pending before another study can be launched.
+
+The stop packet `lifespan/artifacts/compact-v7-stop-archive-v1-h200.tar.gz` is
+**6,243,162 bytes**, SHA
+`42cc2682c072e1af5dd52f0c3f9d2161214d9b184023162344613e9623ef59f2`.
+All **88 payload hashes** were verified after safe local extraction; export SHA
+`ea90789a4046e80e67d7bd1489793dc33996a135b1cc7f4821c153ba82512728`.
+It preserves the original empty-file case, stop lifecycle, final state snapshots
+and partial native receipts. Full study artifacts remain on H200.
+
+The empty-file qualification and separate original grading-budget failure are
+in `lifespan/artifacts/native-empty-evidence-evidence-v1-h200.tar.gz`:
+**257,796 bytes**, SHA
+`911b9a683fa7b2e9bd628ea3f43ca2d6acc685e51d6a367a913d736223a01ece`.
+All **90 payload hashes** were verified after safe local extraction; export SHA
+`aa04e102e4b5592452b703d78287c70e5acfd2cb615e06d460ab72b5cd04b592`.
 
 ## Native tool cleanup qualified: September 15, 12:21 UTC
 

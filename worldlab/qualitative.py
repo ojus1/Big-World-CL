@@ -112,6 +112,9 @@ def workspace_evidence(workspace):
 
 
 class FrozenRubricJudge:
+    # Eight supported rubric criteria plus one metered format-repair request.
+    max_model_calls = 9
+
     def __init__(self, bank, model, base_url, *, max_tokens=400_000, client_factory=None):
         self.bank = bank
         self.provider = provider_contract(model, base_url)
@@ -119,11 +122,12 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 17, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 18, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
+                'max_model_calls': self.max_model_calls,
                 'request_timeout_seconds': 300,
                 'evidence_scope': {'excluded_workspace_root': 'scratch',
                                    'excluded_metadata': '.employee_identity',

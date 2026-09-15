@@ -53,7 +53,7 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
         # Target ledger includes BOTH work and its judge. Reserve judging
         # before giving the remaining allowance to native work.
         jt = min(judge_tokens, limits['max_tokens'] // 2)
-        jc = min(8, limits['max_model_calls'] // 2)
+        jc = min(getattr(judge, 'max_model_calls', 8), limits['max_model_calls'] // 2)
         wb = Budget(model_calls=min(slot['work_budget']['model_calls'], limits['max_model_calls'] - jc),
                     output_tokens=min(slot['work_budget']['output_tokens'], limits['max_tokens'] - jt),
                     total_tokens=min(slot['work_budget']['total_tokens'], limits['max_tokens'] - jt),

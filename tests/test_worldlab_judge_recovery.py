@@ -109,6 +109,29 @@ class Tests(unittest.TestCase):
         self.assertEqual(grade['usage']['physical_model_calls'], 1)
         self.assertEqual(grade['usage']['charged_tokens'], 60)
 
+    def test_eighth_criterion_can_use_declared_ninth_call_without_retrying_valid_verdicts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); bank = Bank(root)
+            criteria = [{'id': f'q{i}', 'weight': 1, 'requirement': 'Use the source.'} for i in range(8)]
+            save(root / 'private/rubric.json', {'criteria': criteria})
+            bank.by_id['fixture']['rubric_sha256'] = sha(root / 'private/rubric.json')
+            workspace = root / 'workspace'; (workspace / 'output').mkdir(parents=True)
+            (workspace / 'source.md').write_text('Source fact.')
+            (workspace / 'output/result.md').write_text('Candidate result.')
+            def verdict(index):
+                value = json.loads(response(False).output_text); value['criterion_id'] = f'q{index}'
+                return response(text=json.dumps(value))
+            client = Client([*(verdict(i) for i in range(7)), response(status='incomplete', text='{'), verdict(7)])
+            judge = FrozenRubricJudge(bank, 'fixture', client.base_url, client_factory=lambda: client)
+            baseline = {'source.md': sha(workspace / 'source.md')}; out = root / 'judging'
+            grade = judge.grade('fixture', workspace, baseline, out, call_limit=judge.max_model_calls)
+            self.assertTrue(grade['grading_complete']); self.assertFalse(grade['success'])
+            self.assertEqual(grade['usage']['physical_model_calls'], 9)
+            self.assertEqual(grade['usage']['charged_tokens'], 540)
+            self.assertEqual(grade['format_recoveries'], [{'criterion_index': 7, 'criterion_id': 'q7', 'reason': 'incomplete'}])
+            self.assertEqual(len(list(out.glob('REPAIR-RESPONSE-*'))), 1)
+            judge.audit_grade(bank, 'fixture', workspace, baseline, out, grade)
+
     def test_auditor_rejects_outcome_selection_or_changed_repair_context(self):
         for tamper in ['valid_initial', 'changed_evidence', 'changed_prompt_receipt']:
             with self.subTest(tamper=tamper):

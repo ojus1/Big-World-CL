@@ -756,13 +756,21 @@ interruption of one exact task sandbox. The interruption preserved known costs,
 stopped the owned processes, and remained ineligible for grading. An earlier
 model-driven interruption control did not trigger the failure and is preserved
 as inconclusive. These bounded results and every control's costs are recorded in
-[the execution ledger](H200_WORLD_STUDIES.md). The running version-7 study keeps
+[the execution ledger](H200_WORLD_STUDIES.md). The stopped version-7 study retains
 adapter version 5 and its original source; broader failure forms remain untested.
-That study subsequently stopped after its original grader rejected an empty
+It stopped after its original grader rejected an empty
 extensionless file. Grader version 17 retains every empty regular file as exact
 empty text with its filename and hash, keeping it available to the rubric and
-audit. This adds no decoder for nonempty binary/document evidence. Native
-qualification of that separate correction remains pending in the execution ledger.
+audit. This adds no decoder for nonempty binary/document evidence. All 29 focused
+tests passed locally and on H200; a fresh copied-evidence check completed four
+structured judging calls and passed offline audit. The original case remains
+ungraded. A separate call-allocation defect blocked format repair after an eighth
+truncated judgment. Version 18 declares nine model calls per grade, covering up
+to eight rubric criteria and one format repair. Online work and learning replays
+use a judge's optional `max_model_calls` declaration; existing alternate adapters
+retain the eight-call default. Replays reserve judging inside the total call
+budget, and explicit lower limits remain binding. All 33 local tests passed;
+native qualification of this allocation remains required before a new study.
 
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.

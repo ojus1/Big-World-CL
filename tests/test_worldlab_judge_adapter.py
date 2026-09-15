@@ -108,6 +108,17 @@ class UnauditableJudge:
 
 
 class Tests(unittest.TestCase):
+    def test_online_attempt_uses_declared_judge_calls_and_respects_explicit_override(self):
+        class DeclaredJudge(Judge):
+            max_model_calls = 9
+        for override, expected in [(None, 9), (3, 3)]:
+            with self.subTest(override=override), tempfile.TemporaryDirectory() as tmp:
+                judge = DeclaredJudge()
+                with patch.object(judge, 'grade', wraps=judge.grade) as grade:
+                    execute_task(Bank(), Harness(), judge, task_id='a', employee_id='employee',
+                                 skill='seed', budget=Budget(), out=Path(tmp) / 'attempt', judge_calls=override)
+                    self.assertEqual(grade.call_args.kwargs['call_limit'], expected)
+
     def test_complete_world_pair_with_alternate_binary_evidence_and_offline_audit(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); config = root / 'judge.json'
