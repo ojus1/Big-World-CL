@@ -5,6 +5,22 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Fluso work paused by user: September 15, 11:43 UTC
+
+The user requested **"stop fluso work for now"**. Fluso development,
+qualification and experiments are paused until the user explicitly resumes
+them. The native qualification had already exited: one completed replay, one
+`budget_exhausted_unverified` attempt, failed qualification and no adoption.
+No stop signal or restart was needed. All partial artifacts remain preserved.
+
+At **11:43:11 UTC**, the exact Fluso service was inactive, original PID
+**3390547** was absent, both guardians were inactive and all four owned
+solver/relay containers were absent. Hermes study PID **3314046**, gateway PID
+**2974574** and the unchanged Qwen serving container remained running, with
+global inference concurrency **64**. The pause receipt is
+`Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
+Do not resume Fluso work as part of the continuing Hermes baseline goal.
+
 ## Native Fluso consolidation dispatched: September 15, 11:37 UTC
 
 `worldlab.qualify_learning --harness-config` now selects the target harness for
