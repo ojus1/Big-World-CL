@@ -646,6 +646,25 @@ task executions and native call/token budget-stop controls at source `effc7435`.
 A full Fluso learning epoch remains to be qualified; these task controls do not
 establish broad task capability.
 
+The standalone native SkillOpt component check also accepts `--harness-config`
+in place of `--hermes-root`. It imports the same four released historical Hermes
+experiences and runs fresh replays through the selected target harness. It does
+not reinterpret the historical work as Fluso execution or resume the source
+study. Completed checks audit target artifacts, fresh grades, optimizer
+transport, accounting and the adoption gate. For example:
+
+```sh
+python -m worldlab.qualify_learning \
+  --bank /path/to/development-bank --source-study /path/to/historical-single-world \
+  --employee research-analyst --day 6 --skillopt-root /path/to/SkillOpt \
+  --harness-config configs/worldlab/fluso_h200_v1.json \
+  --out /path/to/fresh-fluso-learning-qualification
+```
+
+This is a component check with fresh target scores, not a paired harness
+comparison or evidence of later workplace gains. Native Fluso consolidation
+must complete its own qualification before a Fluso world study is launched.
+
 The current adapter requires Linux pidfds and a user systemd manager. Before
 creating containers it starts an independent, bounded `worldlab.fluso_guardian`
 service. The service watches the exact controller process and a cleanup

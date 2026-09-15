@@ -15,6 +15,7 @@ from .hermes import Hermes
 from .learning import SkillOpt
 from .qualitative import FrozenRubricJudge
 from .worlds import eligible_experiences
+from .adapters import load_adapter
 
 
 def historical_request(study, attempt_root, record):
@@ -63,7 +64,6 @@ def qualify(bank, harness, judge, learner, source_study, employee, day, out):
     audit = None
     if result['status'] == 'completed':
         from .audit_worlds import audit_attempt
-        from scripts.audit_transfer import gate_check
         by_id = {s['id']: s for s in selected}
         targets = [o for o in result['costs']['operations'] if o['kind'] == 'target']
         for replay in result['replay_evidence']:
@@ -73,9 +73,10 @@ def qualify(bank, harness, judge, learner, source_study, employee, day, out):
             if (replay['hard'] != float(record['grade']['success']) or replay['soft'] != record['grade']['quality_score'] or
                     operation['tokens'] != record['tokens'] or operation['model_calls'] != record['model_calls']):
                 raise ValueError('Native replay score or cost differs from consolidation evidence')
-        gate_check(result)
+        learner.audit_update(out / 'learning', result, skill_before=SEED_SKILL,
+                             expected_identity=learner.identity())
         audit = {'ok': True, 'replays_checked': len(result['replay_evidence']),
-                 'scope': 'Native task artifacts, replay scores/costs and adoption gate; not semantic judge truth.'}
+                 'scope': 'Native task artifacts, replay scores/costs, optimizer transport and adoption gate; not semantic judge truth.'}
         save(out / 'AUDIT.json', audit)
     summary = {'completed': result['status'] == 'completed', 'status': result['status'],
                'accepted': result['accepted'], 'replays': len(result.get('replay_evidence', [])),
@@ -86,16 +87,25 @@ def qualify(bank, harness, judge, learner, source_study, employee, day, out):
     return summary
 
 
-if __name__ == '__main__':
+def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__)
-    for name in ('bank', 'source-study', 'out', 'hermes-root', 'skillopt-root'):
+    for name in ('bank', 'source-study', 'out', 'skillopt-root'):
         p.add_argument('--' + name, type=Path, required=True)
+    harness = p.add_mutually_exclusive_group(required=True)
+    harness.add_argument('--hermes-root', type=Path)
+    harness.add_argument('--harness-config', type=Path,
+                         help='Trusted Harness factory for fresh replays; historical source stays unchanged')
     p.add_argument('--employee', required=True)
     p.add_argument('--day', type=int, required=True)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
-    a = p.parse_args()
+    return p.parse_args(argv)
+
+
+if __name__ == '__main__':
+    a = parse_args()
     bank = Bank(a.bank)
-    result = qualify(bank, Hermes(a.hermes_root, a.model, a.base_url), FrozenRubricJudge(bank, a.model, a.base_url),
+    harness = load_adapter(a.harness_config, 'harness') if a.harness_config else Hermes(a.hermes_root, a.model, a.base_url)
+    result = qualify(bank, harness, FrozenRubricJudge(bank, a.model, a.base_url),
                      SkillOpt(a.skillopt_root, a.model, a.base_url), a.source_study, a.employee, a.day, a.out)
     print(json.dumps({k: v for k, v in result.items() if k != 'costs'}, indent=2))
