@@ -540,6 +540,25 @@ limit, live and peak concurrency, queue depth and failures. Calls made directly
 to the underlying model server are outside this shared limit. Existing frozen
 experiments retain their original providers; use `--base-url` for other deployments.
 
+New gateway source defaults to a fresh upstream TCP connection for each request;
+`--connection-policy keepalive` selects the comparison policy. The same 64-call
+limit holds through response EOF. `/status` binds the implementation hash,
+aiohttp version, connection policy and connection counts. Failure diagnostics
+record stage, exception class, HTTP status, connection reuse and byte counts;
+they omit bodies, queries, credentials and exception messages. `--events` writes
+to a fresh JSONL file or the service journal is used. A gateway-generated
+`X-Request-ID` links the error event to the native Hermes physical-call receipt.
+No retry is added and unknown usage keeps its original reservation.
+
+`python -m worldlab.qualify_gateway --out FRESH_OUT` runs 1,088 synthetic native
+requests: warmup, counterbalanced keepalive/fresh phases, then a fresh-connection
+stress phase, all at a maximum concurrency of 64. It retains every request and
+response across Responses JSON, Chat JSON and Chat SSE, together with serving
+identity and per-phase metrics. Run when other callers of that model are idle;
+qualification phases use one ephemeral gateway at a time. Tiny completions and
+repeated context make this a transport check, not a workplace throughput result.
+The fresh-connection fixture does not establish the cause of the old HTTP 502.
+
 Future Chat Completions harnesses can use `worldlab.chat_budget_gateway` for a
 separate **per-attempt** budget ahead of that shared gateway. Each instance owns
 a fresh private Unix socket and receipt directory. It tokenizes the actual

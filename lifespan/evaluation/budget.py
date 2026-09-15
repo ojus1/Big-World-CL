@@ -35,6 +35,11 @@ def _error_type(exc):
     return name if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]{0,79}', name) else 'Exception'
 
 
+def gateway_request_id(value):
+    """Only retain gateway-generated correlation IDs, never arbitrary headers."""
+    return value if type(value) is str and re.fullmatch(r'wl-[0-9a-f]{12}-[1-9][0-9]{0,15}', value) else None
+
+
 def availability_classification(error_type, http_status=None):
     if error_type in ('APITimeoutError', 'TimeoutError', 'TimeoutException', 'ConnectTimeout',
                       'ReadTimeout', 'WriteTimeout', 'PoolTimeout'):
@@ -102,6 +107,8 @@ class ResponsesBudget:
                     'availability_classification': availability_classification(
                         row.get('error_type'), row.get('http_status')),
                     'observed_monotonic': time.monotonic()}
+                if 'gateway_request_id' in row:
+                    self.terminal_failure['gateway_request_id'] = row['gateway_request_id']
         if first:
             # Publish before native cancellation (which may wait on a native
             # lock). Preserve safe callback failures without masking costs or
@@ -202,6 +209,10 @@ class ResponsesBudget:
             started = time.monotonic()
             try:
                 response = original(**request)
+                if self.provider_contract is not None:
+                    request_id = gateway_request_id(getattr(response, '_request_id', None))
+                    if request_id is not None:
+                        row['gateway_request_id'] = request_id
                 if request.get("stream"):
                     return _MeteredStream(self, row, response, started)
                 provider_status = _get(response, "status")
@@ -216,6 +227,9 @@ class ResponsesBudget:
                 if self.provider_contract is not None:
                     code = getattr(exc, 'status_code', None)
                     row['http_status'] = code if type(code) is int and 100 <= code <= 599 else None
+                    request_id = gateway_request_id(getattr(exc, 'request_id', None))
+                    if request_id is not None:
+                        row['gateway_request_id'] = request_id
                 self._fail(row, 'dispatch_error')
                 raise
             if row['status'] in ('missing_or_invalid_usage', 'provider_budget_overrun'):

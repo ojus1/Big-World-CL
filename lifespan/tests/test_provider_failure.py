@@ -41,6 +41,25 @@ def meter(client, **kwargs):
 
 
 class StopTests(unittest.TestCase):
+    def test_gateway_ids_are_bound_to_failure_receipts_without_retaining_arbitrary_headers(self):
+        for value, kept in [('wl-012345abcdef-23', True), ('PRIVATE_HEADER', False),
+                            ('wl-012345abcdef-0', False), ('wl-012345abcdef-23\nPRIVATE', False)]:
+            with self.subTest(value=value):
+                error = RuntimeError('PRIVATE_BODY')
+                error.request_id, error.status_code = value, 502
+                client = Client([error]); budget = meter(client)
+                with self.assertRaises(NativeProviderStopped): client.responses.create(**request())
+                report = budget.report()
+                self.assertEqual(report['operations'][0].get('gateway_request_id'), value if kept else None)
+                self.assertEqual(report['terminal_failure'].get('gateway_request_id'), value if kept else None)
+                self.assertNotIn('PRIVATE', json.dumps(report))
+
+    def test_successful_gateway_id_is_preserved_in_physical_receipt(self):
+        response = answer(); response._request_id = 'wl-012345abcdef-1'
+        client = Client([response]); budget = meter(client)
+        client.responses.create(**request())
+        self.assertEqual(budget.report()['operations'][0]['gateway_request_id'], response._request_id)
+
     def test_error_notifies_before_cancel_then_blocks_both_factories_and_old_clients(self):
         primary = Client([answer(), ConnectionError('PRIVATE_PROVIDER_BODY'), answer()])
         replacement = Client([answer()]); primary.base_url = replacement.base_url = POLICY['base_url']
@@ -141,7 +160,8 @@ class StopTests(unittest.TestCase):
                     seen.append(True)
                     if mode == 'timeout': raise httpx.ReadTimeout('PRIVATE_TIMEOUT', request=req)
                     if mode == 'connect': raise httpx.ConnectError('PRIVATE_CONNECT', request=req)
-                    return httpx.Response(mode, json={'error': {'message': 'PRIVATE_BODY', 'type': 'fixture'}}, request=req)
+                    return httpx.Response(mode, json={'error': {'message': 'PRIVATE_BODY', 'type': 'fixture'}},
+                                          headers={'X-Request-ID': 'wl-012345abcdef-7'}, request=req)
                 with openai.OpenAI(api_key='DUMMY_OFFLINE', base_url=POLICY['base_url'],
                     http_client=httpx.Client(transport=httpx.MockTransport(handler))) as client:
                     budget = meter(client)
@@ -152,9 +172,22 @@ class StopTests(unittest.TestCase):
                     self.assertEqual(report['terminal_failure']['availability_classification'], classification)
                     self.assertFalse(report['accounting_complete']); self.assertGreater(report['charged_tokens'], 0)
                     self.assertNotIn('PRIVATE', json.dumps(report))
+                    if type(mode) is int:
+                        self.assertEqual(report['terminal_failure']['gateway_request_id'], 'wl-012345abcdef-7')
 
 
 class NotificationTests(unittest.TestCase):
+    def test_gateway_correlation_id_survives_strict_notification_and_cannot_be_changed(self):
+        error = RuntimeError('PRIVATE_BODY'); error.request_id = 'wl-012345abcdef-23'; error.status_code = 502
+        client = Client([error]); budget = meter(client, on_failure=evidence.notifier(self.root, COMPUTER))
+        with self.assertRaises(NativeProviderStopped): client.responses.create(**request())
+        payload = evidence.read_failure(self.root)
+        self.assertEqual(payload['evaluation_budget']['terminal_failure']['gateway_request_id'], error.request_id)
+        altered = deepcopy(payload)
+        altered['evaluation_budget']['terminal_failure']['gateway_request_id'] = 'wl-012345abcdef-24'
+        altered['evaluation_budget_sha256'] = evidence._digest(altered['evaluation_budget'])
+        with self.assertRaises(ValueError): evidence.validate(altered)
+
     def setUp(self):
         self.temp = self.enterContext(tempfile.TemporaryDirectory()); self.root = Path(self.temp)
         (self.root / 'workspace').mkdir()

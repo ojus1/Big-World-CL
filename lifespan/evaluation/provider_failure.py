@@ -29,7 +29,7 @@ ROW_KEYS = {'dispatch', 'reserved_tokens', 'charged_tokens', 'accounting', 'stat
     'input_tokens', 'output_tokens', 'total_tokens', 'cache_read_tokens', 'reasoning_tokens',
     'output_cap', 'request_stream', 'provider_response_status', 'error_type', 'wall_seconds',
     'observed_usage', 'http_status', 'provider_contract', 'request_api_mode', 'request_model',
-    'request_base_url', 'request_store', 'request_chat_template_kwargs'}
+    'request_base_url', 'request_store', 'request_chat_template_kwargs', 'gateway_request_id'}
 REASONS = {'dispatch_error', 'missing_or_invalid_usage', 'provider_budget_overrun',
            'provider_response_not_completed'}
 
@@ -92,6 +92,9 @@ def validate(payload, *, worker_pid=None, computer_id=None):
         _require(row.get('provider_response_status') in (None, 'completed', 'incomplete', 'failed', 'cancelled', 'queued', 'in_progress'))
         _require(_class(row.get('error_type')) and (row.get('http_status') is None or
             (type(row['http_status']) is int and 100 <= row['http_status'] <= 599)))
+        if 'gateway_request_id' in row:
+            from .budget import gateway_request_id
+            _require(gateway_request_id(row['gateway_request_id']) is not None)
         _require(type(row.get('wall_seconds')) in (int, float) and math.isfinite(row['wall_seconds']) and row['wall_seconds'] >= 0)
         if 'observed_usage' in row:
             value = row['observed_usage']
@@ -108,12 +111,14 @@ def validate(payload, *, worker_pid=None, computer_id=None):
     _require(meter['reported_tokens'] == meter['total_tokens'] and
              meter['accounting_complete'] == all(row['accounting'] == 'reported' for row in rows))
     failure = meter['terminal_failure']
-    _require(type(failure) is dict and set(failure) == {'reason', 'dispatch', 'operation_status',
-        'error_type', 'accounting', 'provider_response_status', 'http_status', 'availability_classification', 'observed_monotonic'})
+    failure_keys = {'reason', 'dispatch', 'operation_status', 'error_type', 'accounting',
+                    'provider_response_status', 'http_status', 'availability_classification', 'observed_monotonic'}
+    _require(type(failure) is dict and set(failure) in (failure_keys, failure_keys | {'gateway_request_id'}))
     _require(failure['reason'] in REASONS and type(failure['dispatch']) is int and failure['dispatch'] == len(rows))
     _require(type(failure['observed_monotonic']) in (int, float) and math.isfinite(failure['observed_monotonic'])
              and failure['observed_monotonic'] >= 0)
     last = rows[-1]
+    _require(failure.get('gateway_request_id') == last.get('gateway_request_id'))
     for field, name in (('operation_status', 'status'), ('error_type', 'error_type'), ('accounting', 'accounting'),
                          ('provider_response_status', 'provider_response_status'), ('http_status', 'http_status')):
         _require(failure[field] == last.get(name))
