@@ -37,6 +37,50 @@ HEADING_CRITERION = {
 }
 
 
+# Source-reviewed exact deliverable set; only violations are decided here.
+DELIVERABLE_CRITERION = {'acceptable_alternatives': ['A different greeting, closing or prose structure is acceptable.',
+                             '5×4 is the retained pouch arrangement, not a stale 4-shelf value.'],
+ 'evidence_anchors': ['output/coordination_final.md', 'output/appendix_facts.json'],
+ 'failure_examples': ['A change log replaces the revised letter or an unchanged subject still requests four '
+                      'shelves.'],
+ 'id': 'Q04',
+ 'requirement': 'Exactly output/coordination_final.md and output/appendix_facts.json are supplied; the '
+                'Markdown is a coherent revised coordination letter in French that retains the request to '
+                'WOW Display and avoids stale draft values throughout, including any subject line, without '
+                'introducing unsupported commercial commitments.',
+ 'weight': 1}
+DELIVERABLE_INSTRUCTION_SHA256 = 'ed9e515d23796e0777ad96c929ed107b2ea84f638738851a431bfdff71fc7865'
+DELIVERABLE_SOURCES = {'input/draft_coordination.md': 'd15ed59cce9e53aa906c264e3f4683ef38ed2cfdefd810a4bd0d209f9ef79843',
+ 'input/revision_notes.md': '4b4c6036d60af53da9057332008898e0df5c2997624208dd67c295635246f977',
+ 'input/spec_display.csv': '3792709909bd72b3d944da053aa1822e5db18d37eb1140d33d804e8b36fcc22c'}
+DELIVERABLE_OUTPUTS = {'output/coordination_final.md', 'output/appendix_facts.json'}
+
+
+def deliverable_set_veto(payload):
+    evidence = payload.get('evidence', {})
+    instruction = evidence.get('instruction')
+    if (payload.get('criterion') != DELIVERABLE_CRITERION or not isinstance(instruction, str)
+            or hashlib.sha256(instruction.encode()).hexdigest() != DELIVERABLE_INSTRUCTION_SHA256):
+        return None
+    files = evidence.get('files', {})
+    for name, expected in DELIVERABLE_SOURCES.items():
+        text = files.get(name, {}).get('text')
+        if not isinstance(text, str):
+            return None
+        if hashlib.sha256(text.replace('\r\n', '\n').replace('\r', '\n').encode()).hexdigest() != expected:
+            return None
+    actual = {name for name in files if name.startswith('output/')}
+    if actual == DELIVERABLE_OUTPUTS:
+        return None
+    return {'criterion_id': DELIVERABLE_CRITERION['id'], 'passed': False,
+            'evidence': 'Output file inventory: ' + ', '.join(sorted(actual)) +
+                        '; missing: ' + ', '.join(sorted(DELIVERABLE_OUTPUTS - actual)) +
+                        '; extra: ' + ', '.join(sorted(actual - DELIVERABLE_OUTPUTS)) + '.',
+            'reasoning': 'The reviewed public instruction and Q04 require exactly the two named deliverables. '
+                         'The actual file set violates that condition. Letter quality still needs judgment '
+                         'when the file set matches.'}
+
+
 def missing_heading_veto(payload):
     evidence = payload.get('evidence', {})
     instruction = evidence.get('instruction')
@@ -70,6 +114,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    if payload.get('criterion') == DELIVERABLE_CRITERION:
+        return 'registered_deliverable_set_veto'
     return 'registered_missing_heading_veto' if payload.get('criterion') == HEADING_CRITERION else 'registered_literal_count'
 
 
@@ -78,6 +124,8 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    if payload.get('criterion') == DELIVERABLE_CRITERION:
+        return deliverable_set_veto(payload)
     if payload.get('criterion') == HEADING_CRITERION:
         return missing_heading_veto(payload)
     if payload.get('criterion') != CRITERION:

@@ -96,7 +96,7 @@ lineages, and the isolated gate catalogs contain 144 descriptors drawn from
 12 tasks and nine lineages. All 216 planned updates have sufficient hypothetical
 scheduled supply. These are corpus-conditional development observations; neither
 repetition nor additional world seeds broadens the task-family coverage itself.
-The running study remains unchanged. A final protocol needs enough probe
+The failed and stopped study remains unchanged. A final protocol needs enough probe
 coverage within each intended role to support its declared transfer claim.
 
 A September 15 catalog-only review of the reserved Internal EuroBench candidates
@@ -201,7 +201,7 @@ hand-checked calendar boundaries are retained with the diagnostic. This neither
 changes historical grades nor certifies date selection, translator allocation,
 risk argumentation, or the complete scheduling task.
 
-Native employee interview costs are metered. The running studies retain their
+Native employee interview costs are metered. Historical studies retain their
 original unknown bootstrap/social usage. A separate two-employee native
 qualification at `bafac6f` verifies optional simulation-bound social receipts for
 future runs, without double-counting interviews; other bootstrap providers are

@@ -16,9 +16,9 @@ class Tests(unittest.TestCase):
         value = {'criterion_id': 'c', 'evidence': 'acc\u00e9nt ' * 400,
                  'reasoning': '"' * 2000, 'passed': False}
         self.assertEqual(validate_verdict(value, {'id': 'c'}), value)
-        expected = contract('c')['json']
+        expected = contract('c', ['input.txt', 'output.txt'])['json']
         self.assertEqual(expected['properties']['criterion_id']['enum'], ['c'])
-        self.assertEqual(expected['properties']['evidence'], {'type': 'string'})
+        self.assertEqual(expected['properties']['evidence'], {'type': 'string', 'enum': ['input.txt', 'output.txt']})
         self.assertFalse(expected['additionalProperties'])
         for invalid in [dict(value, criterion_id='other'), dict(value, extra='unexpected'),
                         dict(value, passed=1), dict(value, evidence=None)]:
@@ -55,6 +55,17 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError): client.responses.create(**bad)
         self.assertEqual(len(calls), 1)
         self.assertEqual(meter.report()['physical_model_calls'], 1)
+
+    def test_filename_enum_is_enforced_without_a_reasoning_length_rule(self):
+        value = {'criterion_id': 'c', 'evidence': 'output.txt', 'reasoning': 'Long explanation. ' * 2000,
+                 'passed': False}
+        self.assertEqual(validate_verdict(value, {'id': 'c'}, ['output.txt']), value)
+        for bad in ['invented.txt', 'output.txt: an exhaustive quotation']:
+            with self.assertRaises(ValueError):
+                validate_verdict(dict(value, evidence=bad), {'id': 'c'}, ['output.txt'])
+        for paths in [[], [None], ['']]:
+            with self.assertRaises(ValueError): contract('c', paths)
+
 
 
 if __name__ == '__main__': unittest.main()

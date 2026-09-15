@@ -46,7 +46,7 @@ def qualify(request_path, out, model, base_url):
                             'scope': 'Twelve fixed calls on four constructed count controls; not general judge calibration.'})
     from openai import OpenAI
     client = OpenAI(base_url=base_url, api_key=os.environ.get('WORLDLAB_API_KEY', 'EMPTY'), max_retries=0, timeout=120)
-    meter = StructuredJudgeBudget(structured_contracts=[verdict_contract(payload['criterion']['id'])],
+    meter = StructuredJudgeBudget(structured_contracts=[verdict_contract(payload['criterion']['id'], payload['evidence']['files'])],
                             max_model_calls=12, max_output_tokens=4096, max_total_tokens=400000,
                             provider_contract=provider)
     meter.wrap_client(client)
@@ -59,7 +59,8 @@ def qualify(request_path, out, model, base_url):
                    'evaluation_method': getattr(response, 'evaluation_method', 'model')}
             save(out / (slot['id'] + '-RESPONSE.json'), raw)
             if response.status != 'completed': raise ValueError('Incomplete criterion response')
-            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'])
+            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'],
+                payload['evidence']['files'] if getattr(response, 'evaluation_method', 'model') == 'model' else None)
             rows.append({'id': slot['id'], 'expected': slot['expected'], 'verdict': verdict,
                          'correct': verdict['passed'] == slot['expected']})
             save(out / 'PROGRESS.json', {'rows': rows, 'usage': meter.report()})

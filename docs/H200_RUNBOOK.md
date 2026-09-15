@@ -15,7 +15,7 @@
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
   `/home/inference-testing/apps/Big-World-CL-judge-v15/lifespan/artifacts/native-workplace-compact-v4`.
-* Current scale service: `bigworld-native-workplace-compact-v4` (launched September 15, 06:09 UTC).
+* Latest scale service: `bigworld-native-workplace-compact-v4` **failed and stopped** September 15, 06:31 UTC; no replacement study is running.
 * Native employee backend: `http://127.0.0.1:5005`, installed under
   `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.

@@ -104,7 +104,7 @@ def run(out, *, client_factory=None):
         payload = case['payload']
         save(root / 'REQUEST.json', payload)
         save(root / 'INFLIGHT.json', {'started_at': now()})
-        meter = StructuredJudgeBudget(structured_contracts=[contract(payload['criterion']['id'])],
+        meter = StructuredJudgeBudget(structured_contracts=[contract(payload['criterion']['id'], payload['evidence']['files'])],
             max_model_calls=1, max_output_tokens=plan['max_output_tokens'],
             max_total_tokens=slot['max_reserved_tokens'], provider_contract=provider)
         client = None; started = time.monotonic(); error = None; verdict = None
@@ -127,7 +127,7 @@ def run(out, *, client_factory=None):
             if callable(getattr(response, 'model_dump', None)):
                 record['raw'] = response.model_dump(mode='json')
             save(root / 'RESPONSE.json', record)
-            verdict = parsed_response(record, payload['criterion'])
+            verdict = parsed_response(record, payload['criterion'], payload['evidence']['files'])
         except Exception as exc:
             error = type(exc).__name__
         finally:
@@ -188,14 +188,14 @@ def audit(out):
             if response['evaluation_method'] != slot['evaluation_method']:
                 raise ValueError('Semantic response execution method changed')
             try:
-                verdict = parsed_response(response, case['payload']['criterion'])
+                verdict = parsed_response(response, case['payload']['criterion'], case['payload']['evidence']['files'])
             except (ValueError, TypeError):
                 pass
         valid = verdict is not None
         if (row['valid'] != valid or row['actual'] != (verdict['passed'] if valid else None)
                 or row['correct'] != (valid and verdict['passed'] == case['expected'])):
             raise ValueError('Recorded verdict differs from the retained response')
-        structure = digest(contract(case['payload']['criterion']['id']))
+        structure = digest(contract(case['payload']['criterion']['id'], case['payload']['evidence']['files']))
         if usage['registered_structured_output_sha256'] != [structure]:
             raise ValueError('Semantic schema differs from the prepared criterion')
         for op in ops:

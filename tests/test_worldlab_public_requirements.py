@@ -49,7 +49,7 @@ class SourceIntegrationTests(unittest.TestCase):
             calls.append(kwargs)
             criterion = json.loads(kwargs['input'][1]['content'])['criterion']
             return SimpleNamespace(status='completed', output_text=json.dumps({
-                'criterion_id': criterion['id'], 'evidence': 'Synthetic passing semantic response.',
+                'criterion_id': criterion['id'], 'evidence': 'output/tabla_puntuacion.csv',
                 'reasoning': 'Fixture only; does not evaluate quality.', 'passed': True}),
                 usage=SimpleNamespace(input_tokens=10, output_tokens=5, total_tokens=15))
         client = SimpleNamespace(base_url='http://127.0.0.1:8000/v1', max_retries=0,

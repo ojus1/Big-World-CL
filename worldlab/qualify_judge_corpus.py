@@ -25,7 +25,7 @@ def qualify(studies, out, model, base_url):
         parents.append({'path': str(study), 'study_sha256': sha(study / 'STUDY.json')})
         for source in sorted((study / 'worlds').glob('*/*/sessions/*/judging/REQUEST-*.json')):
             payload = read(source)
-            structure = contract(payload['criterion']['id'])
+            structure = contract(payload['criterion']['id'], payload['evidence']['files'])
             constraints[digest(structure)] = structure
             key = f'criterion-{len(slots):04d}'
             save(out / 'requests' / (key + '.json'), payload)
@@ -55,7 +55,8 @@ def qualify(studies, out, model, base_url):
             response = request_verdict(client, provider, payload, 120)
             save(out / 'responses' / (slot['id'] + '.json'), {'text': response.output_text, 'status': response.status})
             if response.status != 'completed': raise ValueError('Incomplete judge response')
-            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'])
+            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'],
+                payload['evidence']['files'] if getattr(response, 'evaluation_method', 'model') == 'model' else None)
             rows.append({'id': slot['id'], 'valid': True, 'passed': verdict['passed'],
                          'evidence_chars': len(verdict['evidence']), 'reasoning_chars': len(verdict['reasoning'])})
             save(out / 'PROGRESS.json', {'rows': rows, 'planned': len(slots), 'usage': meter.report()})

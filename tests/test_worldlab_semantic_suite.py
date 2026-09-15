@@ -65,7 +65,7 @@ class Tests(unittest.TestCase):
                 self.assertEqual(request['temperature'], 0.0)
                 self.assertEqual(request['top_p'], 1.0)
                 self.assertEqual(request['extra_body']['structured_outputs']['json']['properties']['evidence'],
-                                 {'type': 'string'})
+                                 {'type': 'string', 'enum': ['output.txt']})
                 if ordinal <= 64:
                     barrier.wait(timeout=10)
                 return response(request)

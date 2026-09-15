@@ -99,7 +99,7 @@ def qualify(bank, out, model, base_url, repeats=3):
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     judge = FrozenRubricJudge(bank, model, base_url)
     provider = judge.provider
-    structures = [contract(c['payload']['criterion']['id']) for c in cases[:4]]
+    structures = [contract(c['payload']['criterion']['id'], c['payload']['evidence']['files']) for c in cases[:4]]
     slots = [{'id': f'r{r}-{c["id"]}', 'case_id': c['id'], 'expected': c['expected']}
              for r in range(repeats) for c in cases]
     for c in cases: save(out / 'cases' / (c['id'] + '.json'), c)
@@ -123,7 +123,8 @@ def qualify(bank, out, model, base_url, repeats=3):
             response = request_verdict(client, provider, payload, 120)
             save(out / 'responses' / (slot['id'] + '.json'), {'text': response.output_text, 'status': response.status})
             if response.status != 'completed': raise ValueError('Incomplete semantic control response')
-            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'])
+            verdict = validate_verdict(json.loads(response.output_text), payload['criterion'],
+                payload['evidence']['files'] if getattr(response, 'evaluation_method', 'model') == 'model' else None)
             results.append({**slot, 'actual': verdict['passed'], 'correct': verdict['passed'] == slot['expected']})
             save(out / 'PROGRESS.json', {'rows': results, 'usage': meter.report()})
             (out / 'INFLIGHT.json').unlink()

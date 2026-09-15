@@ -5,7 +5,49 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
-## Latest launch: September 15, 06:09 UTC
+## Current state: September 15, 06:52 UTC
+
+The version-4 scale study **failed and was stopped**. Two pair failures were
+observed at 06:29:34 UTC despite its supervisor still being alive. Pair 401's
+control arm completed a French operations task but the evidence reader rejected
+an extra TAR.GZ file before grading. Pair 409's learning arm exhausted both the
+original and one repair verdict's 4,096-token budgets while listing evidence
+for `r8_evidence_entailment`. That grade used three calls and 42,155 reported
+tokens; it remains incomplete. Neither failure is a completed pair.
+
+The owned service was stopped after preserving its failure state. At 06:31:27
+UTC MainPID was zero, its old process was absent, and gateway active/queued
+counts were zero. Stop evidence is in
+`Big-World-CL-lab/lifespan/artifacts/compact-v4-stop-after-pair-failure-v1`;
+intent SHA `add2efc7046731e9e57d946d3a537825461cd0809437e76270582f1b1c30e34d`.
+The original study, source, outputs and failed grades remain unchanged. No new
+scale study has launched. Serving remains on the same concurrency-64 gateway.
+
+Two prospective structured-output diagnostics are retained under the lab's
+artifact directory. `decision-json-qualification-v1` completed 78/78 requests in
+5.527 seconds but matched only 71/76 predeclared labels, so its Boolean-only
+format was rejected. `cited-verdict-qualification-v1` kept brief reasoning and
+constrained the evidence field to an actual filename. It completed 78/78 in
+11.102 seconds, used 214,603 reported tokens with no unknown accounting, and
+matched 75/76 labels. Its two unlabeled copies of the prior truncation context
+completed. Plan SHA:
+`039338146d7f84ff0331252d7df28c25c4e7b734d0b525073b89a67cd09a7eb0`.
+The remaining error incorrectly accepted an extra deliverable. These are failed
+development gates; neither report is a general accuracy or learning claim.
+
+A zero-inference reproduction confirmed that the extra archive in pair 401
+contains exactly three byte-identical copies of the visible text deliverables.
+`compact-v4-archive-reproduction-v1` records the original exception and a
+prospective projection, SHA
+`47b14fcd3208f55d8667a6b5e308d2669836076d13baface5593d218b6e81d98`.
+The prospective reader only describes verified duplicate archives; it never
+extracts them or silently accepts new archived evidence. The prospective judge
+also binds filename citations into its request schema and applies a negative-only
+exact-deliverable-set check for the reviewed French coordination source. The
+latter enforces the source's own requirement, not an invented output quota.
+Fresh qualification is required before another study.
+
+## Preserved launch: September 15, 06:09 UTC
 
 `native-workplace-compact-v4` launched at **06:09:20 UTC** from frozen source
 `Big-World-CL-judge-v15` at `1096af56c1f1ba7f62f34de4643e46588b47651a`.
