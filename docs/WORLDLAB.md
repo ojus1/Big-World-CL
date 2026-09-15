@@ -576,6 +576,26 @@ a Fluso benchmark or learning run. Dependencies are the same optional
 `requirements-inference-gateway.txt`. Reproduce older receipt audits using their
 frozen source version.
 
+`worldlab.chat_relay` exposes only model listing and Chat Completions from a
+controller-owned Unix socket. It forwards native JSON/SSE bytes immediately,
+discards client authorization and routing headers, and never retries. For the
+prospective Fluso integration, the relay runs in a Docker `--network none`
+container. Fluso shares only that container's network namespace and reaches
+the relay over loopback; it has no host or internet network interface. The Unix
+socket and receipt directory remain outside Fluso's mounts.
+
+`python -m worldlab.qualify_fluso_isolation --out FRESH_OUT` exercises this
+topology on H200 using the existing immutable Fluso runtime image. A probe with
+the same mounts and network as the solver checks model access, blocked private
+routes, missing controller files, no external TCP/DNS and a loopback-only
+interface list. A synthetic Fluso task then reads a supplied CSV and installed
+work-process skill and writes a JSON result. All primary and auxiliary requests
+share one budget. The controller records Docker configuration, native logs,
+usage and cleanup. These are integration controls; full native skill-read audit,
+trajectory normalization, the production Harness contract and task capability
+qualification remain separate requirements. No benchmark score or learning
+effect follows from this control.
+
 The new `development_workplace_concurrency64_v1.json` configuration sets work,
 world-pair and employee-update concurrency ceilings to 64 and keeps validation
 cases outside the live workplace. World pairs use separate processes, preserving
