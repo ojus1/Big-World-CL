@@ -59,7 +59,11 @@ def execute(request):
           '--fsize=67108864:67108864','--core=0:0','--',
           '/bin/bash','-lc' if request.get('login') else '-c',request['command']]
     with subprocess.Popen(args,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
-                          text=True,start_new_session=True) as process:
+                          text=True,encoding='utf-8',errors='backslashreplace',start_new_session=True) as process:
+        # Shell previews (e.g. cut/head) can split a UTF-8 sequence, and commands
+        # may emit binary bytes. Escape undecodable bytes in terminal display;
+        # do not turn ordinary stdout into a fatal RPC error. Workspace files
+        # retain their exact bytes for later tools and complete grading evidence.
         try:
             output,_=process.communicate(request.get('stdin'),timeout=min(request.get('timeout',30),120))
             return {'output':output,'returncode':process.returncode}

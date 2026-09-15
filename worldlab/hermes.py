@@ -27,7 +27,7 @@ class Hermes:
         self.provider = provider_contract(model, base_url)
 
     def identity(self):
-        return {'name': 'native_hermes_task_package', 'version': 6, 'revision': PIN,
+        return {'name': 'native_hermes_task_package', 'version': 7, 'revision': PIN,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
                 'nonstreaming_timeouts': 'request and stale windows are min(600 seconds, whole attempt budget)',
@@ -36,6 +36,7 @@ class Hermes:
                 'meter_persistence': 'atomic checkpoint before every dispatch and after every nonstreaming receipt',
                 'tool_cleanup': 'pinned session and descendant PIDs; bounded pipe drain; lost sandbox execution is ungraded',
                 'tool_resource_limits': 'external prlimit before bash; no Python preexec callback in threaded server',
+                'tool_output_encoding': 'UTF-8 with backslash escapes for undecodable terminal bytes; workspace bytes unchanged',
                 'tools': ['terminal', 'file', 'skills_list', 'skill_view']}
 
     def unsupported(self, public_task):

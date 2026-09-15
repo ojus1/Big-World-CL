@@ -92,6 +92,27 @@ print(json.dumps({'limits':limits,'raised':raised}))
             results=list(executor.map(run,range(64)))
         self.assertEqual(results,list(range(64)))
 
+    def test_split_utf8_preview_does_not_poison_later_commands(self):
+        original='†' + 'a'*84 + 'é'*8 + '\n'
+        source=self.computer.workspace/'source.txt'
+        source.write_bytes(original.encode())
+        # This reproduces a native French task's grep/cut terminal preview.
+        result=self.sandbox.execute("grep -n '†' /workspace/source.txt | cut -c1-90")
+        expected=(b'1:'+original.encode())[:90]+b'\n'
+        with self.assertRaises(UnicodeDecodeError): expected.decode('utf-8')
+        self.assertEqual(result,{'output':expected.decode('utf-8',errors='backslashreplace'),'returncode':0})
+        self.assertEqual(source.read_bytes(),original.encode())
+        self.assertEqual(self.sandbox.execute('cat /workspace/source.txt'),{'output':original,'returncode':0})
+
+    def test_binary_stdout_stderr_and_timeout_are_displayed_without_rpc_failure(self):
+        code="import os;os.write(1,b'\\xff\\x00');os.write(2,b'\\xc2\\n')"
+        result=self.sandbox.execute('python3 -c '+shlex.quote(code))
+        self.assertEqual(result,{'output':'\\xff\x00\\xc2\n','returncode':0})
+        result=self.sandbox.execute('python3 -c '+shlex.quote(code)+'; sleep 5',timeout=.2)
+        self.assertEqual(result['returncode'],124)
+        self.assertIn('\\xff\x00\\xc2\n',result['output'])
+        self.assertEqual(self.sandbox.execute('echo still-ready')['output'],'still-ready\n')
+
 
 HERMES_ROOT=Path(os.environ.get('WORLDLAB_HERMES_TEST_ROOT','/nonexistent-hermes-test-root'))
 
