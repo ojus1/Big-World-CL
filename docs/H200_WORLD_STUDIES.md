@@ -5,6 +5,101 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Version 5 stopped after a transport failure: September 15, 09:00 UTC
+
+The version-5 campaign is **stopped and incomplete**. Its seed-431 control arm
+failed on `d008-communications-fr-003-000` (`internal/euw_v1_de_013_fr_bridge`).
+Native inference dispatch 23 received **HTTP 502** after about **0.016 seconds**
+at 08:48:40 UTC. The first 22 calls reported **388,768 tokens**; the failed call
+retained its **91,954-token reservation**, for **480,722 charged/reserved tokens**.
+The attempt is ungraded, with incomplete accounting. This was a provider
+transport failure, not a valid negative task score. The retained provider-window
+log has no corresponding error stack; the gateway does not retain exception
+details, so the underlying transport cause is not established.
+
+The pair failure became terminal after its remaining parallel work joined at
+08:55 UTC. The supervisor was still live when the status check detected the
+failed pair. An owned-service stop was issued at **08:57:30 UTC**, with status,
+study bytes, journal, stop intent, dispatch result and post-stop checks retained.
+MainPID **2364472** is absent; the service is inactive/dead and the shared gateway
+has **zero active and queued requests**. The Qwen serving container remains
+running under the same ID and start time. Frozen study source `b3ddb534` and
+the original analysis are unchanged; this campaign must not be restarted.
+
+The stable post-stop snapshot at **09:00:32 UTC** has **701 fully graded work
+attempts**, **711 employee decisions**, **239 fully graded learning replays**,
+**5 finalized learning epoch receipts** and **zero adoptions**. No world pair
+completed. Finalized receipts exclude interrupted work and cannot establish
+whole-study accounting or a treatment effect.
+
+All five finalized epochs passed the frozen source's offline audit, including
+**52 replays**, optimizer provenance, selection and gate decisions. They consumed
+**6,720,802 tokens**. One epoch made an optimizer call and rejected its proposed
+edits after validation regression; four made no optimizer call. The ordered
+controller had not yet recorded any of these receipts in arm state. The audit
+therefore uses explicit, transient per-epoch views of the original captured
+states; it does not change or resume them. Pending epochs are censored. These
+are diagnostic results, not a completed causal prefix or deployed skill proof.
+
+Stop export SHA `aa6d7dccbcc165454e912e18b4fcb0ee407d01852b2e7c68f6c335f055bca392`.
+Epoch audit plan SHA `62f9439bd41af80fca9b85aea043e8f62cef847daf20e5e1bc6ea750001b4b8c`;
+report SHA `ac0e1c5f1b6ae1f8b61f85263da315a0247420e1ba5a090245786cd3d5f29562`;
+export SHA `b1de1f45fcd32e0acceb3de7906e04636e26f4d438851b9ea556b84a8582fec6`.
+H200 evidence directories are `lifespan/artifacts/compact-v5-stop-evidence-v1`
+and `lifespan/artifacts/compact-v5-finalized-epoch-audit-v1` in the lab checkout.
+The export contains stop lifecycle, arm snapshots, failed-attempt core receipts
+and finalized-epoch audit results; full native attempts remain on H200.
+The 39-file packet was copied, safely extracted and hash-verified locally under
+`lifespan/artifacts/compact-v5-stopped-evidence-v1-h200`. Archive size:
+**10,086,235 bytes**; SHA
+`23424d8462bce10a88da19000d901ee08fa830d990eb7f1506a1f03612b6ea0e`.
+
+## Isolated native Fluso control: September 15, 08:50 UTC
+
+The corrected native Fluso control passed in **18.022 seconds**, with **9 model
+calls and 43,415 reported tokens**, including auxiliary work. The native primary
+session accounts for four calls; five others are also charged by the meter.
+It read the CSV, read the installed work-process skill, and wrote the expected
+JSON total and skill marker. Offline audit matched every primary assistant
+response and its usage to provider bytes, linked the exact native skill read
+to subsequent inference input, and reconstructed a common trajectory.
+
+The relay runs with Docker `--network none`; Fluso shares its loopback-only
+network namespace. A probe with the same mounts/network passed model access,
+blocked direct inference and internet TCP, blocked external DNS, absence of
+controller-only files, and forbidden-route checks. Solver mounts contain only
+its own data, model catalog and read-only learned skill. Both native controls'
+containers were removed successfully. The existing global gateway remains at
+**64**, with verified peak 64. This single control is not a throughput benchmark.
+
+The first control's task execution and isolation checks succeeded, but its audit
+started while a background memory request remained in flight. Its failed receipt
+preserves **12 dispatches, 68,809 charged/reserved tokens**, including a
+**7,326-token reservation** with unknown usage. The fix drains already accepted
+requests before auditing and keeps the relay alive through provider EOF, even
+when the native client has exited. Inputs/output collection now use Fluso's
+project directory. Both controls are retained; the first remains a failed
+qualification. Eight relay tests and eight native-evidence tests passed locally
+and on H200, including shutdown/client-exit regression cases and tampering.
+
+Runtime image: `sha256:3eea3855506e6c5694143609a73f7f4a0469d60d136e250c0ecf3c91ac75749d`.
+Corrected frozen control source: `Big-World-CL-fluso-isolation-v2` at
+`f015944d6b713f3569a6a4382a4b8d67187a473c`; evidence auditor at
+`915ddf34692d0a68654a7e339fae0b0571c788c7`.
+Corrected plan SHA `4114566eb177ba71c0b8a1d8112f1c7f3a58aa4722281e5d9258d0b634361894`;
+report SHA `d3269040adf0615db0c4d707afca5846e6f46df0fe71b3330ef9cf6079896bc1`;
+export SHA `501efe6ea42138ac3b676d9017a2a0bbfb13e14bebbb60775d3bf173feda9479`.
+Combined offline audit report SHA
+`24e6e582bf05916d4cb2f1dfac43baec3d0b5498e3db622cc52e6b240a1f5733`.
+
+All 100 first-control files, 78 corrected-control files, four audit files and
+their export manifests were copied and hash-verified locally under
+`lifespan/artifacts/native-fluso-isolation-qualification-v{1,2}-h200` and
+`lifespan/artifacts/native-fluso-evidence-audit-v1-h200`. These checks qualify
+integration components. The complete Fluso Harness adapter, complete native
+runtime-event audit and JobBench document/research/evaluator qualification remain
+unfinished. No benchmark result or learning effect follows from this control.
+
 ## First learning replay audit: September 15, 08:34 UTC
 
 At **08:34:20 UTC**, the unchanged version-5 study had **637 fully graded work
