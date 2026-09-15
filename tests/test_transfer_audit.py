@@ -78,6 +78,12 @@ class LearningAuditTests(unittest.TestCase):
         self.assertEqual(self.raw_audit.call_count, 4)
         self.update_audit.assert_called_once()
 
+    def test_future_source_cannot_select_v1_by_removing_both_version_markers(self):
+        self.manifest.pop('learning_evidence_version')
+        self.state['updates'][0].pop('learning_evidence_version')
+        self.flush()
+        self.invalid('learning_evidence_source_version')
+
     def test_raw_session_byte_tampering(self):
         with (self.out / self.evidence['target_sessions'][0]['session_path']).open('a') as stream:
             stream.write('\n')
@@ -338,8 +344,9 @@ class GateReconstructionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'upstream_gate_score_evidence_mismatch'):
             audit.gate_check(update)
 
-    def test_budget_exhausted_prefix_abstains_without_full_gate(self):
+    def test_v1_budget_exhausted_prefix_abstains_without_full_gate(self):
         update = self.update()
+        update.pop('learning_evidence_version')  # Historical gate-only contract.
         update.update(status='budget_exhausted', replay_evidence=update['replay_evidence'][:3],
                       gate_evidence={'accepted': False, 'gate_action': 'reject_incomplete'})
         audit.gate_check(update)

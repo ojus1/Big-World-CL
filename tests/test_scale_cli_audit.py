@@ -12,6 +12,8 @@ from lifespan.evaluation.runner import _new_state
 from lifespan.mirofish import save
 from scripts import audit_scale_cli as cli, run_scale
 
+FROZEN_SOURCE_AVAILABLE = cli.sha(cli.ROOT / 'scripts/audit_scale.py') == cli.FROZEN_AUDITOR_SHA256
+
 
 class CliAuditTests(unittest.TestCase):
     def setUp(self):
@@ -111,6 +113,7 @@ class CliAuditTests(unittest.TestCase):
             'source_breakdown': {'fixed_initial_and_benchmark': {'accepted_before_work_horizon': 240}}}
         return namespace['run_check'](self.root, self.manifest, slot)
 
+    @unittest.skipUnless(FROZEN_SOURCE_AVAILABLE, 'Historical CLI AST requires the matching frozen auditor checkout')
     def test_exact_frozen_ast_corrects_only_actor_guard_and_retains_siblings(self):
         with self.assertRaisesRegex(ValueError, 'non_native_or_wrong_cohort_execution'):
             self.stubbed_completed_run(cli.isolated_auditor(False))
@@ -126,6 +129,7 @@ class CliAuditTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'unsupported_frozen_auditor_revision'):
                 cli.isolated_auditor(True)
 
+    @unittest.skipUnless(FROZEN_SOURCE_AVAILABLE, 'Historical CLI AST requires the matching frozen auditor checkout')
     def test_multiple_matching_actor_guards_refuse_correction(self):
         tree = ast.parse((cli.ROOT / 'scripts/audit_scale.py').read_text())
         tree.body.append(ast.Expr(value=ast.Compare(
@@ -135,6 +139,11 @@ class CliAuditTests(unittest.TestCase):
         with patch.object(cli.ast, 'parse', return_value=tree):
             with self.assertRaisesRegex(ValueError, 'unsupported_actor_guard_structure'):
                 cli.isolated_auditor(True)
+
+    @unittest.skipIf(FROZEN_SOURCE_AVAILABLE, 'This checkout still has the supported historical auditor')
+    def test_future_auditor_revision_cannot_reuse_historical_cli_exception(self):
+        with self.assertRaisesRegex(ValueError, 'unsupported_frozen_auditor_revision'):
+            cli.isolated_auditor(True)
 
     def test_original_audit_is_retained_and_raw_bytes_never_rewritten(self):
         original = {'status': 'invalid', 'ok': False, 'errors': [{'code': 'non_native_or_wrong_cohort_execution'}]}
