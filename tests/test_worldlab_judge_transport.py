@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import unittest
 from lifespan.evaluation.provider import provider_contract
 from worldlab.judge_transport import StructuredJudgeBudget, digest
-from worldlab.verdict_schema import contract, schema, validate_text
+from worldlab.verdict_schema import contract, validate_text
 from worldlab.qualitative import validate_verdict
 import json
 
@@ -16,11 +16,10 @@ class Tests(unittest.TestCase):
         value = {'criterion_id': 'c', 'evidence': 'acc\u00e9nt ' * 400,
                  'reasoning': '"' * 2000, 'passed': False}
         self.assertEqual(validate_verdict(value, {'id': 'c'}), value)
-        expected = schema('c')['json']
+        expected = contract('c')['json']
         self.assertEqual(expected['properties']['criterion_id']['enum'], ['c'])
         self.assertEqual(expected['properties']['evidence'], {'type': 'string'})
         self.assertFalse(expected['additionalProperties'])
-        self.assertEqual(len(contract('c')['grammar'].splitlines()), 6)
         for invalid in [dict(value, criterion_id='other'), dict(value, extra='unexpected'),
                         dict(value, passed=1), dict(value, evidence=None)]:
             with self.assertRaises(ValueError): validate_verdict(invalid, {'id': 'c'})

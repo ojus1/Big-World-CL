@@ -74,12 +74,12 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 10, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 11, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
-                'structured_output_transport': 'compact_unicode_json_grammar',
+                'structured_output_transport': 'json_schema_text_guidance',
                 'format_recovery': {'max_per_grade': 1, 'trigger': 'unusable_returned_verdict_with_known_usage',
                                     'valid_verdicts_never_retried': True, 'within_original_budgets': True},
                 'schema_sha256': sha(Path(__file__).with_name('verdict_schema.py')),

@@ -1214,3 +1214,22 @@ from a stopped development study at concurrency 64, including failed and
 interrupted grades. It audits complete grades under the new implementation and
 preserves every qualification outcome. These are dependent development contexts
 for completion and accounting checks, not an accuracy or learning estimate.
+
+The live version-10 grammar failed its 64-request qualification: all requests
+timed out at approximately 121 seconds with unknown usage, despite passing
+CPU grammar acceptance checks. The retained artifact is
+`judge-v10-semantic64-v1`; no study launched on that source. The full offline
+suite recorded 1,102 passing tests, seven skips and one failure caused by stale
+profile-length constraints in the canonical MiroFish installation.
+
+Version 11 returns to native JSON Schema with Boolean-first property order,
+keeping the metered format recovery and concise prompts. The pinned server's
+installed `XgrammarBackend.compile_grammar` passes its global
+`disable_any_whitespace` setting to `compile_json_schema`. The replacement
+container therefore adds `--structured-outputs-config
+'{"backend":"xgrammar","disable_any_whitespace":true}'`; all other pinned
+no-MTP flags remain unchanged. This is a serving change after the study stopped
+and the unsuccessful qualification ended, with an idle gateway. The old
+container is stopped and retained. Startup and old-server evidence are in
+`throughput-compact-json-server-v1`. Live qualification remains required before
+launch; grammar validity alone was insufficient performance evidence.

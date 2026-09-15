@@ -9,7 +9,7 @@
 * Branch: `codex/h200-flash-next`; frozen study revisions are recorded in
   [the execution ledger](H200_WORLD_STUDIES.md).
 * Dedicated Hermes: `/home/inference-testing/apps/Big-World-Hermes`.
-* Current model container: `bigworld-qwen38flashnext-throughput-v1` on GPUs 4–7.
+* Current model container: `bigworld-qwen38flashnext-throughput-v2` on GPUs 4–7.
 * Shared model API, concurrency **64**: `http://127.0.0.1:8011/v1` on H200.
 * Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
@@ -40,8 +40,9 @@ Actor/profile/optimizer JSON uses supported structured constraints. Text verbosi
 is prompt guidance, with API output-token budgets and no separate character
 limits. The native optimizer edit array uses vLLM's
 [structured-output JSON interface](https://docs.vllm.ai/en/latest/features/structured_outputs/).
-The latest source uses a six-rule Unicode JSON grammar for judge verdicts, without
-character limits. It enforces field types and compact JSON syntax. One returned
+The latest source uses JSON Schema for judge verdicts, without character limits.
+Compact JSON syntax uses the server's structured-output configuration, recorded
+alongside the model flags. One returned
 incomplete or invalid verdict may be regenerated within the original call,
 token and time budgets. Both calls are charged and retained; valid verdicts
 (including failures) are final. Timeouts and unknown usage are not retried.
@@ -56,7 +57,7 @@ decisions, two concurrent Hermes work cases and the optimizer transport also
 passed before the fresh study launched at 04:05:17 UTC September 15. This is
 development qualification, not a completed study or a learning-effect result.
 That replacement study subsequently encountered truncated judge responses and
-was operator-stopped; it is not a completed six-pair result. Judge version 10
+was operator-stopped; it is not a completed six-pair result. Judge version 11
 is undergoing qualification on all of its saved evidence snapshots before a
 separate experiment can launch. See the execution ledger for current receipts.
 
