@@ -5,6 +5,44 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## First learning replay audit: September 15, 08:34 UTC
+
+At **08:34:20 UTC**, the unchanged version-5 study had **637 fully graded work
+attempts**, **657 employee decisions** and **58 fully graded learning replays**.
+Two learner arms (seeds 421 and 433) had 24 employee learning epochs in progress;
+seed 409 was completing day-6 work. No learning update or adoption was finalized.
+MainPID **2364472** remained present and active. Pair and whole-study status
+showed no observed failure. Frozen source remained clean at
+`b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`; study SHA remained
+`6267cf6a2b8c4fb9cfd8c1cf3299b1f14d66a7291c035e96c92b755777cf0869`.
+Progress SHA `c52cee61b4cbec1bab467532934d29ee72f569e0e18f469e89c67b57fe54907c`
+is retained at `lifespan/artifacts/compact-v5-first-learning-progress-v1.json`.
+
+A read-only audit, completed at **08:33:25 UTC** using the frozen study source,
+passed for **all 23 completed initial replay receipts observed at capture**.
+The remaining initial replay was explicitly pending. The plan and captured arm
+states were saved before auditing; selection did not depend on replay scores.
+These 23 replays were isolated validation tasks selected by the frozen
+controller, with no employee delegation attached. The audit verified task and
+skill bindings, native skill reads, artifact inventories, saved judge responses
+and combined usage: **405 physical model calls** and **6,154,483 tokens** already
+spent on replay execution and judging. It made **zero new model calls**.
+
+The audited employees comprise **2 with direct examples**, **4 with role-transfer
+assumptions** and **17 using defaults**. This verifies execution for employees
+without direct calibration examples; it does not establish simulator realism.
+The audit covers the captured initial replays, not pending or later replays,
+complete learning epochs, proposal quality, adoption, later deployment or a
+learning effect. The full causal study audit remains outstanding.
+
+Plan SHA `b64084ca0fb531379753cc7344ec44e1eb55dc759e2e9f408ebfe66d9f93eb48`;
+report SHA `63c64530c8bb15f7c749cb90b9b8cd4f3a5d6244e3552ddd014970b31d51f41c`;
+export SHA `4defc6ab4fe49b729625b283795cd920da0f4a0b900fe349c0cc5c0ab412fa15`.
+The four payload files plus export manifest were copied and hash-verified
+locally at `lifespan/artifacts/compact-v5-first-learning-replay-audit-v1-h200`.
+Native replay evidence remains on H200. The progress snapshot has a local
+hash-verified copy at `lifespan/artifacts/compact-v5-first-learning-progress-v1-h200.json`.
+
 ## Native chat budget qualification: September 15, 08:23 UTC
 
 At **08:23:19 UTC**, the unchanged version-5 study had **600 fully graded work
