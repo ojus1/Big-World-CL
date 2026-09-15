@@ -27,13 +27,15 @@ class Hermes:
         self.provider = provider_contract(model, base_url)
 
     def identity(self):
-        return {'name': 'native_hermes_task_package', 'version': 5, 'revision': PIN,
+        return {'name': 'native_hermes_task_package', 'version': 6, 'revision': PIN,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
                 'nonstreaming_timeouts': 'request and stale windows are min(600 seconds, whole attempt budget)',
                 'nonstreaming_watchdog': 'native no-first-SSE-event watchdog disabled by HERMES_CODEX_TTFB_TIMEOUT_SECONDS=0',
                 'task_deadline': 'stop sandbox and admissions at active deadline; settle accepted inference for min(600, active_seconds)+15 seconds',
                 'meter_persistence': 'atomic checkpoint before every dispatch and after every nonstreaming receipt',
+                'tool_cleanup': 'pinned session and descendant PIDs; bounded pipe drain; lost sandbox execution is ungraded',
+                'tool_resource_limits': 'external prlimit before bash; no Python preexec callback in threaded server',
                 'tools': ['terminal', 'file', 'skills_list', 'skill_view']}
 
     def unsupported(self, public_task):

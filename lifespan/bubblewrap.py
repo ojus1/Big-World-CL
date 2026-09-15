@@ -105,10 +105,20 @@ def install_hermes_backend(root, *, deadline_monotonic=None):
             self.init_session()
         def _run_bash(self,cmd_string,*,login=False,timeout=120,stdin_data=None):
             def execute():
+                if getattr(self,'execution_error',None):
+                    return 'Task sandbox unavailable after an execution failure.',125
                 remaining = deadline_monotonic - time.monotonic() if deadline_monotonic is not None else timeout
                 if remaining <= 0:
                     return 'Declared task deadline exhausted; no command was dispatched.', 124
-                r=self.sandbox.execute(cmd_string,min(timeout,remaining),stdin_data,login)
+                try:
+                    r=self.sandbox.execute(cmd_string,min(timeout,remaining),stdin_data,login)
+                except Exception as exc:
+                    # Expected closure at the whole-task deadline is handled by
+                    # the task clock. Earlier transport/cleanup loss is an error,
+                    # never a successful empty tool result or usable task grade.
+                    if deadline_monotonic is None or time.monotonic()<deadline_monotonic:
+                        self.execution_error=type(exc).__name__
+                    return 'Task sandbox execution failed; no host fallback is available.',125
                 return r['output'],r['returncode']
             return _ThreadedProcessHandle(execute)
         def cleanup(self):

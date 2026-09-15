@@ -737,6 +737,22 @@ all crash/provider-failure forms or demonstrate learning. Older stopped runs
 retain their original source and classifications; exact qualification and
 launch evidence is in [the execution ledger](H200_WORLD_STUDIES.md).
 
+Hermes adapter version 6 changes command cleanup for future executions. An inner
+`timeout` may create another process group while retaining the shell's session;
+killing only the shell group can leave its output pipe open. Cleanup now pins
+the command session and visible descendant PIDs, then allows at most one second
+for pipe drainage. If an escaped orphan still holds the pipe, the namespace
+supervisor exits and the attempt remains ungraded. A lost sandbox is recorded
+as an execution error, so later model prose cannot establish task completion.
+Other command sessions in the same task keep their normal background lifetime.
+
+The sandbox applies the same memory, file-size and core limits through `prlimit`
+before bash starts. This removes Python's `preexec_fn` from the threaded server;
+[Python documents a pre-exec deadlock risk with threads](https://docs.python.org/3/library/subprocess.html#subprocess.Popen).
+Linux `prlimit` and pidfd signaling are required at startup. Version 6 needs
+fresh native qualification before any new study; the running version-7 study
+keeps adapter version 5 and its original source.
+
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.
 Parallel modes require adapters that can be serialized into spawned processes,

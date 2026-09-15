@@ -101,6 +101,9 @@ def main():
     finally:
         deadline.finish()
         meter.checkpoint()
+        if getattr(sandbox,'execution_error',None):
+            result['worker_error']='SandboxExecutionError'
+            result['sandbox_execution_error']=sandbox.execution_error
         result.update(evaluation_budget=meter.report(), provider_contract=request['provider'],
                       execution_clock=clock,
                       native_timeouts=timeout_readback,

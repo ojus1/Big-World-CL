@@ -23,7 +23,7 @@ class Tests(unittest.TestCase):
     def test_old_and_normalized_native_request_receipts_are_explicitly_versioned(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            for version, filename in [(1, 'REQUEST.json'), (2, 'PUBLIC_REQUEST.json'), (3, 'PUBLIC_REQUEST.json'), (4, 'PUBLIC_REQUEST.json'), (5, 'PUBLIC_REQUEST.json')]:
+            for version, filename in [(1, 'REQUEST.json'), (2, 'PUBLIC_REQUEST.json'), (3, 'PUBLIC_REQUEST.json'), (4, 'PUBLIC_REQUEST.json'), (5, 'PUBLIC_REQUEST.json'), (6, 'PUBLIC_REQUEST.json')]:
                 value = {'instruction': 'original brief', 'skill': 'seed'}
                 save(root / filename, value)
                 study = {'harness': {'name': 'native_hermes_task_package', 'version': version}}
