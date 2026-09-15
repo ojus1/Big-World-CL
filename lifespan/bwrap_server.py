@@ -103,7 +103,9 @@ def main():
     path='/run/control/command.sock'
     if Path(path).exists():Path(path).unlink()
     with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as server:
-        server.bind(path);os.chmod(path,0o600);server.listen(16)
+        # Admit a full 64-client tool burst plus control/inspection connections.
+        # A full Unix-domain queue can fail connect with EAGAIN before dispatch.
+        server.bind(path);os.chmod(path,0o600);server.listen(128)
         print('BWRAP_READY',flush=True)
         while True:
             conn,_=server.accept()
