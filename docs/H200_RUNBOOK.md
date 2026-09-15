@@ -57,7 +57,7 @@ decisions, two concurrent Hermes work cases and the optimizer transport also
 passed before the fresh study launched at 04:05:17 UTC September 15. This is
 development qualification, not a completed study or a learning-effect result.
 That replacement study subsequently encountered truncated judge responses and
-was operator-stopped; it is not a completed six-pair result. Judge version 12
+was operator-stopped; it is not a completed six-pair result. Judge version 13
 is undergoing qualification on all of its saved evidence snapshots before a
 separate experiment can launch. See the execution ledger for current receipts.
 

@@ -75,10 +75,11 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 12, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 13, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
+                'request_timeout_seconds': 300,
                 'structured_output_schema': VERDICT_SCHEMA,
                 'structured_output_transport': 'json_schema_text_guidance',
                 'format_recovery': {'max_per_grade': 1, 'trigger': 'unusable_returned_verdict_with_known_usage',
@@ -144,7 +145,7 @@ class FrozenRubricJudge:
         else:
             from openai import OpenAI
             client = OpenAI(base_url=self.provider['base_url'], api_key=os.environ.get('WORLDLAB_API_KEY', 'EMPTY'),
-                            max_retries=0, timeout=120)
+                            max_retries=0, timeout=300)
         meter.wrap_client(client)
         verdicts = []
         recoveries = []
@@ -156,7 +157,7 @@ class FrozenRubricJudge:
                 payload = {'criterion': criterion, 'ambiguities': rubric.get('ambiguities', []),
                            'evaluation_guidance': rubric.get('evaluation_guidance', []), 'evidence': evidence}
                 save(out / f'REQUEST-{index:02d}.json', payload)
-                response = request_verdict(client, self.provider, payload, min(120, remaining))
+                response = request_verdict(client, self.provider, payload, min(300, remaining))
                 text = response.output_text
                 save(out / f'RESPONSE-{index:02d}.json', {'text': text, 'status': response.status,
                      'evaluation_method': getattr(response, 'evaluation_method', 'model')})
@@ -177,7 +178,7 @@ class FrozenRubricJudge:
                     remaining = deadline - time.monotonic()
                     if remaining <= 0: raise TimeoutError('Judge deadline reached before format recovery')
                     save(out / f'REPAIR-REQUEST-{index:02d}.json', payload)
-                    response = request_verdict(client, self.provider, payload, min(120, remaining), repair=True)
+                    response = request_verdict(client, self.provider, payload, min(300, remaining), repair=True)
                     record = {'text': response.output_text, 'status': response.status, 'evaluation_method': 'model'}
                     save(out / f'REPAIR-RESPONSE-{index:02d}.json', record)
                     verdict = parsed_response(record, criterion)

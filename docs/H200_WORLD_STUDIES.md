@@ -1248,3 +1248,20 @@ requires agreement with the stated finding. It keeps native compact JSON Schema,
 prompt-only verbosity and metered format recovery. The version-11 contradictory
 verdict remains a failure; it is never rewritten or retried as a valid verdict.
 New version-12 qualification must retain all newly planned outcomes.
+
+At 04:36:35 UTC, version 12 passed all 64 semantic controls with known usage in
+13.240 seconds: 172,854 input and 14,388 output tokens, or 1,086.75 output tokens
+per wall second. Median latency was 10.940 seconds and p95 12.339 seconds.
+The saved-evidence run nevertheless encountered a 120.145-second API timeout
+on `grade-0008`, retaining a 26,960-token reservation and unknown actual usage.
+Version 13 keeps the exact rules and schema but permits up to 300 seconds for
+each request, clipped to the existing overall grade deadline. It does not add
+calls, tokens, time to the overall job allocation, or retries for unknown usage.
+
+Both version-12 native Hermes controls passed their source audits (16 calls,
+86,844 tokens); the structured optimizer check passed (one call, 555 tokens).
+The employee qualifier failed before opening the native runtime because its
+operator command omitted the explicit provider environment used by study
+services. This zero-dispatch setup error is retained; a correctly configured
+fresh qualifier is required. Source profile generation already passed the new
+installation check and targeted tests without character-length constraints.
