@@ -16,7 +16,7 @@ from .bank import Bank
 from .campaign import source_identity
 from .judge_transport import StructuredJudgeBudget
 from .qualitative import FrozenRubricJudge, request_verdict, validate_verdict, RULES
-from .verdict_grammar import contract
+from .verdict_schema import contract
 
 TASK = 'internal/euw_fr_003_en_bridge'
 PROSE = '''## Fiscal

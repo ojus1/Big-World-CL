@@ -10,7 +10,7 @@ from pathlib import Path
 from scripts.source_world_calibration import child, read, save, sha
 from lifespan.evaluation.provider import provider_contract
 from .judge_transport import StructuredJudgeBudget
-from .verdict_grammar import contract as verdict_contract, validate_text, EVIDENCE_LIMIT, REASONING_LIMIT
+from .verdict_schema import contract as verdict_contract, validate_text, SCHEMA
 from .mechanical_criteria import evaluate as mechanical_verdict
 from .public_requirements import evaluate as public_requirements, aggregate, REGISTRY
 
@@ -22,20 +22,18 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Return only JSON with criterion_id, evidence, reasoning, and finally passed (boolean). '
          'Evidence must name concrete source/output files and verifiable details. Give a short factual '
          'justification, then choose the final Boolean consistent with that evidence and conclusion. '
-         'Write concise ASCII English: evidence at most 600 characters and reasoning at most 900 characters. '
-         'Use plain transliterations when discussing non-English wording. Do not repeat whitespace or pad fields.')
+         'Keep the evidence and reasoning concise and specific. Use the original wording when citing '
+         'non-English source material. Do not repeat whitespace or pad fields.')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
-VERDICT_SCHEMA = {'type': 'object', 'properties': {
-    'criterion_id': {'type': 'string'}, 'evidence': {'type': 'string', 'pattern': '^[!-~][ -~]{0,599}$'},
-    'reasoning': {'type': 'string', 'pattern': '^[!-~][ -~]{0,899}$'}, 'passed': {'type': 'boolean'}},
-    'required': ['criterion_id', 'evidence', 'reasoning', 'passed'], 'additionalProperties': False}
+VERDICT_SCHEMA = SCHEMA
 
 
 def validate_verdict(value, criterion):
-    if (not isinstance(value, dict) or value.get('criterion_id') != criterion['id'] or
+    if (not isinstance(value, dict) or set(value) != set(SCHEMA['required']) or
+            value.get('criterion_id') != criterion['id'] or
             type(value.get('passed')) is not bool or
-            not validate_text(value.get('evidence'), EVIDENCE_LIMIT) or
-            not validate_text(value.get('reasoning'), REASONING_LIMIT)):
+            not validate_text(value.get('evidence')) or
+            not validate_text(value.get('reasoning'))):
         raise ValueError('Malformed criterion judgment')
     return {k: value[k] for k in ('criterion_id', 'passed', 'reasoning', 'evidence')}
 
@@ -63,13 +61,13 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 8, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 9, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
-                'structured_output_transport': 'finite_ascii_json_grammar',
-                'grammar_sha256': sha(Path(__file__).with_name('verdict_grammar.py')),
+                'structured_output_transport': 'json_schema_text_guidance',
+                'schema_sha256': sha(Path(__file__).with_name('verdict_schema.py')),
                 'budget_transport_sha256': sha(Path(__file__).with_name('judge_transport.py')),
                 'mechanical_criteria_sha256': sha(Path(__file__).with_name('mechanical_criteria.py')),
                 'public_requirements_sha256': sha(Path(__file__).with_name('public_requirements.py')),

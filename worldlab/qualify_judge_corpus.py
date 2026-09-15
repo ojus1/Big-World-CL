@@ -13,7 +13,7 @@ from lifespan.evaluation.provider import provider_contract
 from .campaign import source_identity
 from .judge_transport import StructuredJudgeBudget, digest
 from .qualitative import request_verdict, validate_verdict, RULES
-from .verdict_grammar import contract
+from .verdict_schema import contract
 
 
 def qualify(studies, out, model, base_url):

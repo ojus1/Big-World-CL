@@ -142,7 +142,7 @@ class Tests(unittest.TestCase):
 
     def test_grader_refuses_boolean_strings_and_missing_evidence(self):
         for result in [{'criterion_id': 'c', 'passed': 'true', 'reasoning': 'yes', 'evidence': 'a'},
-                       {'criterion_id': 'c', 'passed': True, 'reasoning': 'yes', 'evidence': ''}]:
+                       {'criterion_id': 'c', 'passed': True, 'reasoning': 'yes'}]:
             with self.assertRaises(ValueError): validate_verdict(result, {'id': 'c'})
         self.assertTrue(validate_verdict({'criterion_id': 'c', 'passed': True,
                          'reasoning': 'supported', 'evidence': 'output/a.md'}, {'id': 'c'})['passed'])

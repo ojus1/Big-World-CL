@@ -88,7 +88,10 @@ class ProviderTests(unittest.TestCase):
         self.assertIs(request['stream'], False)
         self.assertIs(request['store'], False)
         self.assertNotIn('reasoning', request)
-        self.assertEqual(request['extra_body'], {'chat_template_kwargs': {'enable_thinking': False}})
+        from lifespan.evaluation.optimizer import optimizer_structured_output
+        self.assertEqual(request['extra_body'], {'chat_template_kwargs': {'enable_thinking': False},
+                                               'structured_outputs': optimizer_structured_output()})
+        self.assertEqual(result['request_structured_outputs'], optimizer_structured_output())
         self.assertEqual(result['provider_contract'], provider.contract(CREDS))
         self.assertEqual(result['request_model'], CREDS['model'])
         self.assertEqual(result['request_base_url'], CREDS['base_url'])

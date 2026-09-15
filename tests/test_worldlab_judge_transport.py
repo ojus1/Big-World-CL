@@ -3,7 +3,8 @@ from types import SimpleNamespace
 import unittest
 from lifespan.evaluation.provider import provider_contract
 from worldlab.judge_transport import StructuredJudgeBudget, digest
-from worldlab.verdict_grammar import contract, validate_text, EVIDENCE_LIMIT, REASONING_LIMIT
+from worldlab.verdict_schema import contract, validate_text
+from worldlab.qualitative import validate_verdict
 import json
 
 
@@ -11,14 +12,19 @@ CONSTRAINT = {'json': {'type': 'object'}, 'disable_any_whitespace': True}
 
 
 class Tests(unittest.TestCase):
-    def test_legal_verdicts_fit_output_budget_even_when_every_character_needs_escaping(self):
-        value = {'criterion_id': 'x' * 128, 'evidence': '\\' * EVIDENCE_LIMIT,
-                 'reasoning': '"' * REASONING_LIMIT, 'passed': False}
-        self.assertLess(len(json.dumps(value, separators=(',', ':')).encode()), 4096)
-        self.assertTrue(validate_text(value['reasoning'], REASONING_LIMIT))
-        for text in [' ', '\t', 'acc\u00e9nt', 'x' * (EVIDENCE_LIMIT + 1)]:
-            self.assertFalse(validate_text(text, EVIDENCE_LIMIT))
-        with self.assertRaises(ValueError): contract('unsafe"criterion')
+    def test_verdict_unicode_and_verbosity_are_not_rejected(self):
+        value = {'criterion_id': 'c', 'evidence': 'acc\u00e9nt ' * 400,
+                 'reasoning': '"' * 2000, 'passed': False}
+        self.assertEqual(validate_verdict(value, {'id': 'c'}), value)
+        schema = contract('c')['json']
+        self.assertEqual(schema['properties']['criterion_id']['enum'], ['c'])
+        self.assertEqual(schema['properties']['evidence'], {'type': 'string'})
+        self.assertFalse(schema['additionalProperties'])
+        for invalid in [dict(value, criterion_id='other'), dict(value, extra='unexpected'),
+                        dict(value, passed=1), dict(value, evidence=None)]:
+            with self.assertRaises(ValueError): validate_verdict(invalid, {'id': 'c'})
+        for invalid in [None, 3, True, []]:
+            self.assertFalse(validate_text(invalid))
 
     def test_declared_constraint_is_sent_unchanged_and_bound_to_usage(self):
         calls = []

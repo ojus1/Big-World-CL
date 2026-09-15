@@ -6,17 +6,47 @@
   `01a08fbe-18ee-7922-86e3-3c68299b98c9`.
 * Local repository: `/Users/surya/Documents/ChatGPT/bigworld-fluso/Big-World-CL`.
 * Remote repository: `/home/inference-testing/apps/Big-World-CL`.
-* Branch: `codex/h200-flash-next`; execution fixes through `8bfcdb4`.
+* Branch: `codex/h200-flash-next`; frozen study revisions are recorded in
+  [the execution ledger](H200_WORLD_STUDIES.md).
 * Dedicated Hermes: `/home/inference-testing/apps/Big-World-Hermes`.
 * Model container: `bigworld-qwen38flashnext`.
-* Model API: `http://127.0.0.1:8000/v1` on H200.
-* Active integration output: `lifespan/artifacts/h200-pilot-v2` on H200.
+* Shared model API, concurrency **64**: `http://127.0.0.1:8010/v1` on H200.
+* Original vLLM API: `http://127.0.0.1:8000/v1`.
+* Latest scale output (failed world retained; full analysis cannot pass):
+  `/home/inference-testing/apps/Big-World-CL-concurrency64-v2/lifespan/artifacts/native-workplace-concurrency64-v1`.
+* Scale service: `bigworld-native-workplace-concurrency64-v1`.
+* Native employee backend: `http://127.0.0.1:5003`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
 * Calibration bank: `lifespan/artifacts/final-world-calibration-v1` on both machines.
 
 The inference container and experiment service survive SSH disconnects. The
 experiment is a transient systemd user service, not a reboot/resume scheduler.
 No automatic source updates or model replacement occur during the run.
+
+The gateway service `bigworld-inference-gateway-v1` applies one shared limit
+across employee, Hermes, judge and SkillOpt requests. `GET /status` on port 8010
+reports active/peak requests, queue depth and errors. It forwards JSON and SSE
+without retries. All new scale adapters use this endpoint. Existing frozen
+studies that call port 8000 directly retain their original configuration.
+
+The scale spec sets `max_parallel_employees`, `max_parallel_worlds` and
+`max_parallel_updates` to 64. Pools use only as many workers as there are jobs;
+this study has six world pairs and 12 employees per world. Independent worlds
+and employee epochs have separate processes, while each employee's gate/replay
+sequence and each pair's arm order remain fixed.
+
+Actor/profile/optimizer JSON uses supported structured constraints. Text verbosity
+is prompt guidance, with API output-token budgets and no separate character
+limits. The native optimizer edit array uses vLLM's
+[structured-output JSON interface](https://docs.vllm.ai/en/latest/features/structured_outputs/).
+The latest source also uses a compact JSON schema for judge verdicts, without
+character or ASCII limits. Existing frozen studies keep their original judge.
+
+The 64-call short canary passed, but the first sustained six-world load produced
+an employee timeout and incomplete grading. Do not treat that run as qualified
+high-load success. A separate qualification-only container,
+`bigworld-qwen38flashnext-throughput-v1`, uses GPUs 4–7 and loopback port 8002 with
+the same pinned settings except MTP disabled. It is not yet an experiment endpoint.
 
 ## Serving configuration
 
@@ -45,8 +75,9 @@ Qwen/Qwen3.8-Flash-Next-FP8
 ```
 
 Docker binds port 8000 only on loopback, mounts the existing Hugging Face cache,
-uses host IPC and sets `VLLM_ENABLE_CUDA_COMPATIBILITY=0`. The container receives
-all GPUs; TP=4 currently uses GPUs 0–3. GPUs 4–7 are free. No CPU KV offload is
+uses host IPC and sets `VLLM_ENABLE_CUDA_COMPATIBILITY=0`. The original container
+receives all GPUs; TP=4 uses GPUs 0–3. The new qualification container is restricted
+to GPUs 4–7. No CPU KV offload is
 configured. The API reports a 262,144-token context limit.
 
 Requests use the explicit `responses-no-thinking-v1` profile: nonstreaming

@@ -15,7 +15,7 @@ from lifespan.evaluation.provider import provider_contract
 from .campaign import source_identity
 from .qualitative import request_verdict, validate_verdict, VERDICT_SCHEMA, RULES
 from .judge_transport import StructuredJudgeBudget
-from .verdict_grammar import contract as verdict_contract
+from .verdict_schema import contract as verdict_contract
 
 PATTERN = r'(?i)fig(?:ure|\.)?\s*5\.4'
 OUTPUT = 'output/texte_restructure_v3.md'

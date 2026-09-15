@@ -23,8 +23,9 @@ establishes statistically significant skill learning.
 | Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Complete; both concurrent task receipts audited |
 | Public arithmetic v7 | `Big-World-CL-judge-v7`, `6f93d99` | `lifespan/artifacts/native-public-judge-v7` | Two native executions audited; one evaluator false negative preserved and corrected separately |
 | Public arithmetic v8 | `Big-World-CL-judge-v8`, `31a59a7` | `lifespan/artifacts/native-public-regrade-v8` | Both unchanged native outputs accepted under fresh v8 grading |
-| Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Active at 21:52 UTC September 14; two completed work sessions |
-| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Launched 21:59 UTC September 14; 12 employee decisions and first work wave dispatched by 22:03 UTC |
+| Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Completed; full original-source audit passed, 52 work attempts, 24 replays, zero adoptions |
+| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Failed September 15 at 00:23 UTC after 71 graded work attempts; no completed pair |
+| Isolated validation pilot | `Big-World-CL-isolated-validation-v1`, `c833481` | `lifespan/artifacts/native-workplace-isolated-validation-v1` | Launched September 15 at 03:16 UTC, with separately prepared gate cases |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
@@ -918,3 +919,180 @@ adoption or validation independence. Artifact
 SHA-256 `4d46cac8825c5ace3db1a614074bd20cdfa50db5d1ff7f9d59761cea03c0ab1d`.
 Its local `-h200` copy has three verified files, 15,863 bytes; archive SHA-256 is
 `5b038d288e706f51cfc5655e09436a2487ef8fde9924a6139bdd80ed41b58d68`.
+
+## Completed native pilot and preserved scale failure
+
+By **03:14 UTC September 15**, the original pilot service was inactive with
+`Result=success`. Its full audit ran under the original `31a59a7` source and
+passed **52 work attempts, 24 learning replays, 52 employee decisions and one
+world pair**. The study-file inventory was unchanged and the audit made zero
+model calls. Neither employee adopted a skill.
+
+| Arm | Work attempts | Rework | On-time probes | Work/judge tokens | Learning/replay tokens |
+|---|---:|---:|---:|---:|---:|
+| No learning | 27 | 7 | 2/4 | 6,119,480 | 0 |
+| SkillOpt | 25 | 5 | 3/4 | 4,773,084 | 5,107,024 |
+
+Employee interviews added 379,694 measured tokens; original bootstrap/social
+usage remains unknown. The +0.25 probe fraction difference cannot demonstrate
+skill learning because both arms deployed the seed skill throughout. The one
+dependent world pair and documented validation-context exposure are additional
+limitations.
+
+Both day-six updates completed within their original budgets. The French
+editor used 213 target calls and 3,200,659 tokens over 2,272.90 seconds. Its
+candidate's mixed gate score fell from 0.5833 to 0.5, including a validation case
+that fell from 0.1667 to zero. The analyst used 168 target calls and 1,906,365
+tokens over 1,421.58 seconds; its candidate fell from 1.0 to 0.7083, with one case
+falling to 0.4167. Each epoch made one optimizer call and 12 replays. Both
+candidate edits were rejected; the subsequent final replays used the unchanged
+seed skill. The finalized train/validation IDs matched the selection captured
+before any learning replay at 23:27:44 UTC September 14.
+
+Artifact `Big-World-CL-lab/lifespan/artifacts/native-workplace-paired-audit-v1`
+has `AUDIT.json` SHA-256
+`46f4bdfb5b664a07064febf396aa241819d45f4ff4480ad7a65def456fafb6a5`.
+Its eight-file local `-h200` copy is hash-verified (649,513 bytes); archive SHA
+is `4d5bd9fe498d4950789c51b20718ddbf680f66dcbee9f2bd08508f5125de432d`.
+
+The original six-world scale service failed at **00:23:21 UTC September 15**,
+with exit code 1 and no completed arm. Its first control world had 71 graded
+attempts, 1,067 work/judge calls and 14,930,114 work/judge tokens. Both returned
+responses for `d005-operations-fr-002-000` were complete, metered and within the
+API token/time budgets, but their `working_notes` contained 1,900 characters
+against the then-enforced 1,800-character acceptance limit. Every other field
+passed the original schema. The permitted repair repeated the same overlong
+notes; its generic error did not identify the field or limit. These two requests
+consumed 14,770 measured tokens.
+
+That failed study is preserved and cannot fulfill its original six-pair analysis.
+The original-source diagnostic is
+`Big-World-CL-lab/lifespan/artifacts/native-scale-wire-failure-v2`, with report SHA
+`9a62b67e375060f1d43982978fcc67005397b7dcd5f2b8ce1a4d936ac5e27252`.
+Its five-file local copy is verified (611,356 bytes); archive SHA is
+`23edac2629704a60c18f2dddf411f4b5f4d39fc6b5961d9dc00d44840271d935`.
+The first diagnostic collector stopped before source reads because it imported
+a newer progress helper from the older checkout; that separate collector failure
+is recorded and did not change the experiment.
+
+The isolated pilot launched at **03:16:17 UTC September 15** under
+`bigworld-native-workplace-isolated-validation-v1`, invocation
+`f4fd3393ba9147fb97e5cfac824d2cb8`, PID 1981529. It uses the previously frozen
+`c833481` study and port-5002 backend. Launch records are retained in
+`native-isolated-pilot-launch-v1`; the three-file local copy is verified
+(7,350 bytes), with archive SHA
+`c5565b4cefe3524ead943222f43e327cb9426b161e8d797f8d857ac7e6fa4871`.
+
+## Shared inference concurrency 64
+
+The new gateway runs under `bigworld-inference-gateway-v1`, invocation
+`34fb717a3e7246f4872518d4c321492a`, from frozen source
+`Big-World-CL-concurrency64-v1` at `df3548e`. It serves
+`http://127.0.0.1:8010/v1`, forwarding unchanged requests to the existing Qwen
+server on port 8000. Port 8001 was already occupied and was not changed.
+Its dedicated Python environment uses aiohttp 3.14.3. It admits at most **64
+requests**, holds slots through streaming EOF and reports queue/concurrency/error
+counters without logging prompts or retrying requests. Existing direct port-8000
+clients are outside this new limit.
+
+At **03:35:10 UTC September 15**, all **64 concurrent structured Qwen Responses
+requests** completed with the expected IDs and JSON shape. The measured peak
+was exactly 64, with no gateway or model response errors, and the batch took
+**3.725 seconds**, consuming 2,870 input and 9,603 output tokens. This is a
+constructed concurrency canary, not full-workplace throughput or learning evidence.
+H200 artifact: `Big-World-CL-lab/lifespan/artifacts/inference64-native-v1`.
+
+New source `c9d9fe3` removes unenforceable character limits from actor schemas,
+employee notes/messages, generated profiles and learned skill documents. Prompt
+guidance requests concise text; API output-token budgets remain. The generation
+and acceptance schemas now agree. Native optimizer edit arrays also use a
+registered JSON schema; its request/receipt audit passed a real one-call Qwen
+qualification (113 tokens) in `concurrency64-optimizer-format-v1`.
+
+The new scale configuration sets work, world-pair and employee-update concurrency
+ceilings to 64 and uses isolated validation cases. Independent pairs and employee
+epochs run in spawned processes; each employee's native SkillOpt replay/gate
+sequence is preserved. A complete offline fixture audited two overlapping world
+pairs, 80 work attempts and four replays, including separate employee update
+processes. A failure fixture retained its failed pair and joined its successful
+peer. These are execution tests, not measured model improvements.
+
+The H200 source suite at `c9d9fe3` passed **1,094 tests**, with seven skips and
+one stale test expecting the optimizer's old unstructured request. After updating
+that expectation, all **nine provider-contract tests** passed against the same
+frozen production code. The original and corrected test outputs are retained in
+`concurrency64-qualification-v1`. The gateway's three real HTTP concurrency and
+streaming tests passed separately in its dedicated environment. Initial broad
+pytest collection encountered unrelated upstream `scripts` namespace collisions;
+the source suite uses the established `tests lifespan/tests` scope.
+
+The updated port-5003 backend passed installation/capability checks and **12/12
+native employee decisions** across the declared roles and languages. Interviews
+used 35,558 measured tokens; 12 initial social calls used 30,871 tokens, with no
+failed or unknown-usage receipts in either category. Other bootstrap usage is
+still outside that meter. The qualifier is
+`Big-World-CL-concurrency64-v2/lifespan/artifacts/native-concurrency64-employees-v1`.
+
+The fresh six-world study launched at **03:46:41 UTC September 15**, under
+`bigworld-native-workplace-concurrency64-v1`, PID **1998836**, invocation
+`f4139a9cc92d4f65b770f542f353ad08`. It has a 64-GiB controller-group ceiling and
+the original seven-day maximum runtime. Frozen source is `c9d9fe3`; study SHA is
+`0b59f2cf49d456965720ec2033a1f1b80b2b127579601a344b10e3ec4496efb6`.
+Its separate analysis was frozen before dispatch, with plan SHA
+`1629d82724d519f2506d87ba905ad80bef59366e471e2a7ecf5d857c1aa0e8eb`.
+
+The study retains six seeds, 12 employees per world, three departments, three
+languages and 20 simulated days. Only one employee has supplied examples per
+world; two use explicit role/language transfer and nine retain defaults. There
+are 2,880 planned obligations, at most 5,760 work attempts and 216 possible
+learning epochs. The 7.776-billion-token reservation is a ceiling, not measured
+consumption or a prediction. Work and learning budgets retain their prior values;
+throughput comes from concurrent independent execution and the shared endpoint.
+The study remains development-only and must finish all pairs and original-source
+audits before its planned analysis can run.
+
+### Sustained-load failure and throughput qualification
+
+The short concurrency canary did not establish sustained workplace performance.
+World 433 failed on its twelfth employee decision: native receipt
+`5bc7e16e249bb2666b8adfec171ed3f9a4f883dd63f74842f2c11f7ca7c5aeb0`
+records one dispatched request, `APITimeoutError` after 120.103 seconds and
+unknown usage. The backend returned HTTP 504 at 03:50:41 UTC. Its failed pair and
+inflight marker remain intact. By 03:56:57, 11 work attempts had finalized across
+the other worlds: two fully graded and nine with incomplete grading. The
+six-pair analysis cannot pass with this failed pair.
+
+Original-server logs during this load show approximately 130–220 generated
+tokens/second with roughly 48–62 running requests. The optional Hermes
+`/v1/props` discovery probes returned 404; observed inference POSTs returned 200.
+HTTP 200 does not establish complete inference or valid grading. A vLLM grammar
+decoder error at 03:49:56 is retained, but cannot be causally bound to the timed
+out actor from the available request IDs. Gateway cancellations include client
+disconnects and cannot all be labeled inference failures from its aggregate
+counters.
+
+The completed qualifications, source test logs, immutable study/analysis plans,
+launch record, native failure receipt and partial operational snapshot are copied
+to `concurrency64-operational-evidence-v1-h200` locally. All **219 files** are
+hash-verified (8,721,771 bytes). Archive SHA-256 is
+`12a32b48f2eac5666eedad650856132292410781ac73a98bf86c9465724fecc9`;
+provenance SHA-256 is
+`f5e54939a2c97e0bd31f682b77eb973a5727b6492205d1f0eab5c267265346c8`.
+The canary's response files are normalized JSON; its raw-wire hashes are distinct
+from the stored-file hashes and raw response bytes were not retained.
+
+A separate qualification-only container started at **03:55:14 UTC September 15**
+on previously idle GPUs 4–7, exposing loopback port 8002. It keeps the same pinned
+model, image and original flags except that MTP speculative decoding is disabled.
+The original inference container and active studies are unchanged. This tests a
+throughput configuration; no speedup is established yet. vLLM describes
+[speculative decoding](https://docs.vllm.ai/en/latest/features/speculative_decoding/)
+primarily as a latency optimization for medium-to-low request rates.
+
+New source also replaces the judge's 900-rule character-bounding grammar with a
+compact JSON schema. Criterion identity, exact keys and field types remain
+enforced; explanation verbosity and quoting source language are prompt guidance.
+The judge identity advances to version 9, so existing experiments continue to
+audit against their frozen implementation. Nineteen targeted transport, provider
+and world tests pass. Native sustained-load and semantic qualification of this
+new judge/server combination remain pending.
