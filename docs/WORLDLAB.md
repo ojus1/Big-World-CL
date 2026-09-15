@@ -596,6 +596,15 @@ trajectory normalization, the production Harness contract and task capability
 qualification remain separate requirements. No benchmark score or learning
 effect follows from this control.
 
+`worldlab.fluso_evidence.audit_skill_and_responses` checks primary assistant
+responses and their usage against retained provider bytes, reconstructs a common
+trajectory, and links an exact native skill read to consumption in a subsequent
+inference request. It reports auxiliary calls separately from primary turns.
+Use it alongside the matching meter audit; it does not verify other tool effects,
+the complete runtime event history, isolation or benchmark scoring. The relay
+drains accepted requests after Fluso exits, and the controller finishes that
+drain before auditing usage, including background working-memory calls.
+
 The new `development_workplace_concurrency64_v1.json` configuration sets work,
 world-pair and employee-update concurrency ceilings to 64 and keeps validation
 cases outside the live workplace. World pairs use separate processes, preserving
