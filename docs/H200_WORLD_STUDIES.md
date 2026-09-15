@@ -21,6 +21,35 @@ global inference concurrency **64**. The pause receipt is
 `Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
 Do not resume Fluso work as part of the continuing Hermes baseline goal.
 
+## Version 7 stopped after empty-file evidence rejection: September 15, 12:27 UTC
+
+Version 7 is **stopped and incomplete**. Its seed-409 learning arm recorded a
+terminal `ValueError` while grading `d003-research-en-002-001`. At **12:25:54 UTC**
+both `PAIR_STATUS.json` and the study `STATUS.json` showed that failure while the
+original controller PID **3314046** was still running. The exact user service
+was stopped with before/intent/after receipts; at **12:27:12 UTC** it was inactive
+and the original PID was absent. The Qwen container and shared gateway were
+unchanged. The stopped study and its prospective analysis will not be resumed
+or relabeled as a complete comparison.
+
+The native solver returned a skill-loaded completion with complete accounting:
+**9 calls / 73,142 tokens**, **43.750 seconds**. It left the requested text outputs
+and an additional **zero-byte regular file named `f`**. The frozen grader rejected
+that filename as an unsupported binary format before writing `EVIDENCE.json` or
+making a grading call. No `ATTEMPT.json` or grade was produced for this case.
+A read-only reproduction against the original source confirmed the exception.
+This is an evidence-reading failure, not a negative task score or a learning
+result. Other work interrupted by the service stop retains its partial evidence.
+
+The next grader version retains empty regular files as exact empty text with
+their original filename and SHA, including extensionless files. Empty files
+remain visible to the rubric and to audit; they are not silently excluded.
+Nonempty unsupported payloads remain unqualified. All **29 local grading and
+evidence tests passed**, including file-change audit rejection and the original
+archive controls. Native qualification of this correction remains pending.
+Stop receipts and the source-level diagnosis are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v7-stop-evidence-v1`.
+
 ## Native tool cleanup qualified: September 15, 12:21 UTC
 
 Frozen `Big-World-CL-tool-cleanup-v2` at

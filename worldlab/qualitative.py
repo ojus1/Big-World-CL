@@ -95,6 +95,11 @@ def workspace_evidence(workspace):
                 continue
             if not path.is_file():
                 continue
+            # Empty regular files contain no binary/document payload to decode.
+            # Keep them visible to the rubric even when their name has no suffix.
+            if path.stat().st_size == 0:
+                files[relative] = {'text': '', 'sha256': sha(path)}
+                continue
             if relative.startswith('output/') and path.name.endswith('.tar.gz'):
                 archives.append(path)
                 continue
@@ -114,7 +119,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 16, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 17, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -122,6 +127,7 @@ class FrozenRubricJudge:
                 'request_timeout_seconds': 300,
                 'evidence_scope': {'excluded_workspace_root': 'scratch',
                                    'excluded_metadata': '.employee_identity',
+                                   'empty_regular_files': 'retain_exact_empty_text_regardless_of_filename',
                                    'other_symlinks': 'reject_without_following',
                                    'extra_tar_gz': 'only_verified_byte_identical_copies_of_visible_text_files'},
                 'archive_projection_sha256': sha(Path(__file__).with_name('evidence_archive.py')),

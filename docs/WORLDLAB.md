@@ -758,6 +758,11 @@ model-driven interruption control did not trigger the failure and is preserved
 as inconclusive. These bounded results and every control's costs are recorded in
 [the execution ledger](H200_WORLD_STUDIES.md). The running version-7 study keeps
 adapter version 5 and its original source; broader failure forms remain untested.
+That study subsequently stopped after its original grader rejected an empty
+extensionless file. Grader version 17 retains every empty regular file as exact
+empty text with its filename and hash, keeping it available to the rubric and
+audit. This adds no decoder for nonempty binary/document evidence. Native
+qualification of that separate correction remains pending in the execution ledger.
 
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.

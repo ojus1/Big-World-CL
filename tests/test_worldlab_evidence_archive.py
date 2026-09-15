@@ -84,5 +84,36 @@ class Tests(unittest.TestCase):
         path.write_bytes(b'not gzip')
         with self.assertRaises(ValueError): workspace_evidence(workspace)
 
+    def test_empty_extensionless_file_is_visible_and_grade_remains_auditable(self):
+        root, workspace = self.workspace()
+        empty = workspace / 'f'
+        empty.write_bytes(b'')
+        files = workspace_evidence(workspace)
+        self.assertEqual(files['f'], {'text': '', 'sha256': sha(empty)})
+        bank = Bank(root / 'bank')
+        judge = FrozenRubricJudge(bank, 'fixture', Client.base_url,
+                                 client_factory=lambda: Client([response(False)]))
+        baseline = {'source.md': sha(workspace / 'source.md')}
+        grade = judge.grade('fixture', workspace, baseline, root / 'judge')
+        self.assertTrue(grade['grading_complete'])
+        self.assertFalse(grade['success'])
+        judge.audit_grade(bank, 'fixture', workspace, baseline, root / 'judge', grade)
+        # Empty files are evidence, not excluded metadata: changing one invalidates
+        # the original grade instead of silently keeping its result.
+        empty.write_bytes(b'\x00\xff')
+        with self.assertRaises(ValueError):
+            judge.audit_grade(bank, 'fixture', workspace, baseline, root / 'judge', grade)
+
+    def test_empty_file_names_do_not_qualify_nonempty_binary_payloads(self):
+        _, workspace = self.workspace()
+        for name in ['f', 'output/empty.pdf', 'output/empty.tar.gz']:
+            with self.subTest(name=name):
+                path = workspace / name
+                path.write_bytes(b'')
+                self.assertEqual(workspace_evidence(workspace)[name]['text'], '')
+                path.write_bytes(b'\x00\xff')
+                with self.assertRaises(ValueError): workspace_evidence(workspace)
+                path.unlink()
+
 
 if __name__ == '__main__': unittest.main()
