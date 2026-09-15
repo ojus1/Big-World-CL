@@ -61,12 +61,23 @@ class Handler(http.server.BaseHTTPRequestHandler):
             upstream.request(method, self.path, body=body,
                              headers={'Content-Type': 'application/json', 'Accept-Encoding': 'identity'})
             response = upstream.getresponse()
-            self.send_response(response.status)
-            self.send_header('Content-Type', response.getheader('Content-Type', 'application/json'))
-            self.send_header('Connection', 'close')
-            self.end_headers(); sent = True
+            sent, connected = True, True
+            try:
+                self.send_response(response.status)
+                self.send_header('Content-Type', response.getheader('Content-Type', 'application/json'))
+                self.send_header('Connection', 'close')
+                self.end_headers()
+            except OSError:
+                connected = False
             while chunk := response.read1(65536):
-                self.wfile.write(chunk); self.wfile.flush()
+                if connected:
+                    try:
+                        self.wfile.write(chunk); self.wfile.flush()
+                    except OSError:
+                        connected = False
+                # Fluso can exit with an accepted background request in flight.
+                # Drain its already-dispatched response so the controller can
+                # retain usage; never turn client exit into uncharged work.
         except (OSError, http.client.HTTPException):
             if not sent:
                 self.send_error(502)

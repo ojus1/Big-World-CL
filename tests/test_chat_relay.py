@@ -15,6 +15,7 @@ class ChatRelayTests(unittest.IsolatedAsyncioTestCase):
         self.tmp = tempfile.TemporaryDirectory(prefix='relay-test-')
         self.seen = []
         self.release = asyncio.Event()
+        self.upstream_finished = asyncio.Event()
         app = web.Application()
 
         async def models(request):
@@ -29,7 +30,11 @@ class ChatRelayTests(unittest.IsolatedAsyncioTestCase):
                 await response.prepare(request)
                 await response.write(b'data: {"value":"first"}\n\n')
                 await self.release.wait()
+                if json.loads(body).get('disconnect'):
+                    for _ in range(10):
+                        await response.write(b'data: ' + b'x' * 65536 + b'\n\n')
                 await response.write(b'data: [DONE]\n\n')
+                self.upstream_finished.set()
                 return response
             return web.Response(body=body, content_type='application/json', status=201)
 
@@ -81,6 +86,23 @@ class ChatRelayTests(unittest.IsolatedAsyncioTestCase):
         async with self.client.get(self.base + '/v1/models') as r:
             self.assertEqual((await r.json())['data'][0]['id'], 'test')
         self.assertEqual(len(self.seen), 1)
+
+    async def test_client_exit_still_drains_upstream(self):
+        r = await self.client.post(self.base + '/v1/chat/completions', json={'stream': True, 'disconnect': True})
+        await r.content.readuntil(b'\n\n')
+        r.close()
+        self.release.set()
+        await asyncio.wait_for(self.upstream_finished.wait(), 2)
+
+    async def test_shutdown_waits_for_accepted_background_request(self):
+        r = await self.client.post(self.base + '/v1/chat/completions', json={'stream': True})
+        await r.content.readuntil(b'\n\n')
+        cleanup = asyncio.create_task(self.runner.cleanup())
+        await asyncio.sleep(.05)
+        self.assertFalse(cleanup.done())
+        self.release.set()
+        self.assertEqual(await r.read(), b'data: [DONE]\n\n')
+        await cleanup
 
     async def test_concurrent_attempt_requests_preserve_bodies(self):
         async def one(i):

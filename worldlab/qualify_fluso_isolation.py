@@ -27,8 +27,8 @@ SKILL = ('---\nname: work-process\ndescription: Employee work process. Read befo
          'compatibility: fluso-native\n---\n\n'
          'Read the provided input files and verify the arithmetic. When writing a JSON result, '
          'include a process_marker field with the exact value WORK_PROCESS_CONTROL_V1.\n')
-PROMPT = ('Read the work-process skill before doing this task. In your workspace, read numbers.csv '
-          'and write result.json containing the total of its value column under the key sum. '
+PROMPT = ('Read the work-process skill before doing this task. In your current project, read numbers.csv '
+          'and write files/result.json containing the total of its value column under the key sum. '
           'Keep the final reply short.')
 
 
@@ -94,13 +94,16 @@ async def qualify(out, model, upstream, tokenizer):
                      'Not a benchmark outcome, full Harness adapter, independent grader or learning-effect claim.'}
     (out / 'PLAN.json').write_bytes(encoded(plan))
     (out / 'models.json').write_bytes(encoded(plan['catalog']))
-    workspace = out / 'data' / WORKSPACE.removeprefix(DATA + '/')
-    skill = workspace / 'skills/work-process/SKILL.md'
+    user_workspace = out / 'data' / WORKSPACE.removeprefix(DATA + '/')
+    workspace = user_workspace / 'projects/Home'
+    workspace.mkdir(parents=True)
+    skill = user_workspace / 'skills/work-process/SKILL.md'
     skill.parent.mkdir(parents=True); skill.write_text(SKILL)
     (workspace / 'numbers.csv').write_text('value\n10\n13\n19\n')
     (out / 'private-sentinel').write_text('This controller file must not enter the solver mount.')
     app = create_app(upstream, tokenizer, model, budget, out / 'meter')
-    runner = web.AppRunner(app, handler_cancellation=True)
+    runner = web.AppRunner(app, handler_cancellation=True, shutdown_timeout=budget.seconds)
+    runner_cleaned = False
     created, process = [], None
     started = time.monotonic()
     report = None
@@ -184,8 +187,14 @@ print(json.dumps({{"ok":True,"model":models["data"][0]["id"],"blocked_tcp":block
                 await process.wait()
             terminal = json.loads((await command(['docker', 'inspect', created[-1]]))['stdout'])[0]
             (out / 'TERMINAL_INSPECT.json').write_bytes(encoded(terminal))
+            # Native Fluso exits while background memory requests can still be
+            # in flight. Stop admitting connections and drain accepted handlers
+            # through their existing deadlines before inspecting final usage.
+            # Keep the relay alive until this completes; killing it loses usage.
+            await runner.cleanup()
+            runner_cleaned = True
             meter = app[METER].snapshot()
-            result_path = workspace / 'result.json'
+            result_path = workspace / 'files/result.json'
             result = json.loads(result_path.read_text()) if result_path.is_file() else None
             traces = sorted((out / 'data').glob('tenants/dev/users/dev-user/sessions/*/.fluso-agent-core/session/*.jsonl'))
             audit = audit_meter(out / 'meter', budget=budget, model=model, upstream=upstream, tokenizer=tokenizer)
@@ -209,7 +218,8 @@ print(json.dumps({{"ok":True,"model":models["data"][0]["id"],"blocked_tcp":block
         if process is not None and process.returncode is None:
             await process.wait()
         (out / 'CLEANUP.json').write_bytes(encoded(cleanup))
-        await runner.cleanup()
+        if not runner_cleaned:
+            await runner.cleanup()
     (out / 'REPORT.json').write_bytes(encoded(report))
     return report
 
