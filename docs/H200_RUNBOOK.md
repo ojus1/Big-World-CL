@@ -14,8 +14,8 @@
 * Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
-  `/home/inference-testing/apps/Big-World-CL-judge-v15/lifespan/artifacts/native-workplace-compact-v4`.
-* Latest scale service: `bigworld-native-workplace-compact-v4` **failed and stopped** September 15, 06:31 UTC; no replacement study is running.
+  `/home/inference-testing/apps/Big-World-CL-judge-v16/lifespan/artifacts/native-workplace-compact-v5`.
+* Current scale service: `bigworld-native-workplace-compact-v5`, launched September 15, 07:03 UTC after fresh qualification. The failed version-4 study remains preserved.
 * Native employee backend: `http://127.0.0.1:5005`, installed under
   `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
@@ -41,7 +41,9 @@ Actor/profile/optimizer JSON uses supported structured constraints. Text verbosi
 is prompt guidance, with API output-token budgets and no separate character
 limits. The native optimizer edit array uses vLLM's
 [structured-output JSON interface](https://docs.vllm.ai/en/latest/features/structured_outputs/).
-The latest source uses JSON Schema for judge verdicts, without character limits.
+The latest source uses JSON Schema for judge verdicts: citations select actual
+evidence filenames, while explanation length is guided by the prompt. There are
+no character limits. Reviewed source-defined file counts use direct checks.
 Compact JSON syntax uses the server's structured-output configuration, recorded
 alongside the model flags. One returned
 incomplete or invalid verdict may be regenerated within the original call,

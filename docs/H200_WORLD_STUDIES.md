@@ -5,7 +5,60 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
-## Current state: September 15, 06:52 UTC
+## Latest launch: September 15, 07:03 UTC
+
+`native-workplace-compact-v5` launched at **07:03:20 UTC** from source
+`Big-World-CL-judge-v16` at `b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`.
+The initial observation showed MainPID **2364472**, invocation
+`c460a05e634341faaff8ab73a073a4e4`, 12 native employee decisions and no finalized
+work or observed pair failure. These are initial progress observations, not
+completed-work or learning evidence. The shared gateway remains at **64** and
+GPUs 4–7 were at 100% utilization; no inference settings were changed.
+
+The fresh semantic gate matched **76/76** labels in **5.997 seconds**, using
+72 model calls and four registered source checks. Usage was 180,836 reported
+tokens with no unknown accounting; plan SHA
+`5e8294945f566558cf09e0097d3161905c525df12ad17627fba08386d2f2ab99`.
+All **153** retained contexts from the stopped version-4 study passed fresh
+grading and offline audits: **754 calls**, **5,415,871 tokens**, zero format
+recoveries and zero unknown accounting. This includes both diagnosed failures
+and one context with no original evidence projection. Fifteen interrupted
+attempts without gradeable receipts were retained as exclusions without scores.
+Saved-context plan SHA:
+`8b061a0af7db503b22c42c387cc64749cdf4ec69cbd5f35df6282e6b50355280`.
+Two fresh native harness controls passed with **17 calls** and **94,492 tokens**;
+plan SHA `a09c23485b0cad6971747fa1c1031191054468f63d13d7ab7d22f99170c7e33b`.
+All 121 local WorldLab tests passed; H200 ran 121 with one dependency-specific
+skip. A fresh installed-backend check passed. Unchanged employee and optimizer
+component qualifications were reused after source and identity comparison.
+
+The six seeds, employees, schedules, sparse calibration overlay, isolated gates,
+work budgets and analysis policy are identical to the preceding study. The new
+study SHA is
+`6267cf6a2b8c4fb9cfd8c1cf3299b1f14d66a7291c035e96c92b755777cf0869`.
+Its analysis was frozen before dispatch under
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-compact-analysis-v5`, plan
+SHA `baac2e174b944312d888567f52f55465f507b3665a0830145a89c07411d9149d`.
+Launch and serving evidence is in `native-compact-launch-v5` under the lab's
+artifact directory. This remains a development study requiring every planned
+pair; no adoption, later deployment or statistically supported gain is claimed.
+
+The stopped version-4 checkpoint has 146 fully graded work attempts, 147 finalized
+work receipts, 168 employee decisions and zero completed pairs. Its selected
+failure contexts, both rejected format diagnostics, archive reproduction and stop
+receipts were copied locally and verified: 631 files, 22,109,605 bytes, archive SHA
+`c0fa6cada74ee5b6db8cc605d4c76406ffb572f546e51103a8a9ce12e1d585b2`.
+They remain under `lifespan/artifacts/compact-v4-failure-evidence-v1-h200` in the
+local lab checkout. This is selected failure evidence, not a full-study export.
+
+The completed version-16 qualifications and initial launch records are also
+copied locally under `lifespan/artifacts/filename-grading-launch-evidence-v1-h200`:
+4,652 verified regular files, 47,939,329 bytes, with two socket entries retained
+as metadata only. Archive SHA:
+`2142634584e63fa468b29485133f2dae747b1f31ca3e18caf1833366214ab033`.
+This package contains initial launch evidence, not the evolving study outputs.
+
+## Preserved stopped state: September 15, 06:52 UTC
 
 The version-4 scale study **failed and was stopped**. Two pair failures were
 observed at 06:29:34 UTC despite its supervisor still being alive. Pair 401's
@@ -20,8 +73,8 @@ UTC MainPID was zero, its old process was absent, and gateway active/queued
 counts were zero. Stop evidence is in
 `Big-World-CL-lab/lifespan/artifacts/compact-v4-stop-after-pair-failure-v1`;
 intent SHA `add2efc7046731e9e57d946d3a537825461cd0809437e76270582f1b1c30e34d`.
-The original study, source, outputs and failed grades remain unchanged. No new
-scale study has launched. Serving remains on the same concurrency-64 gateway.
+The original study, source, outputs and failed grades remain unchanged. At that checkpoint no new
+scale study had launched. Serving remained on the same concurrency-64 gateway.
 
 Two prospective structured-output diagnostics are retained under the lab's
 artifact directory. `decision-json-qualification-v1` completed 78/78 requests in
