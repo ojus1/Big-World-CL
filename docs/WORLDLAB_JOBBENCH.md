@@ -82,6 +82,31 @@ allocation is the original rubric count plus one bounded format repair, within
 the declared maximum of 13. Local snapshots and source review do not by themselves
 constitute native inference qualification.
 
+## Native reference qualification on September 15, 2026
+
+Frozen source `64b00ac40c917fb142393d01836895d9ebe7b463` passed all three
+technical-writer adapter checks with complete accounting and offline audit.
+The two tasks requiring named references actually consulted those sources.
+Task 3 optionally consulted the available guides. All three native work
+executions ended as `budget_exhausted`; grading then completed normally.
+
+| Training task | Work calls / tokens | Work + grading calls / tokens | Rubric score | Missing-output calls / tokens |
+| --- | --- | --- | --- | --- |
+| Technical writer 1 | 17 / 383,932 | 27 / 514,979 | 0.4545 | 10 / 4,367 |
+| Technical writer 2 | 10 / 295,016 | 18 / 429,686 | 0.5667 | 8 / 4,930 |
+| Technical writer 3 | 13 / 362,589 | 25 / 451,112 | 0.3333 | 12 / 5,890 |
+
+All missing-output subcriteria failed, giving score zero in each control. The
+six cases used 100 physical calls and 1,410,964 tokens. No unfavorable task score
+was retried. This proves the tested source consultation, execution, original
+rubric aggregation, missing-output rejection and receipt audit paths. It does
+not establish complete public-contract compliance, an official benchmark score,
+independent judgment accuracy or a learning effect.
+
+Plans, native trajectories, complete source snapshots and audits are in the
+locally verified evidence archive documented in `WORLDLAB_CURRENT_STATUS.md`.
+General live web research and binary/visual task capabilities remain pending.
+
 ## Native qualification on September 15, 2026
 
 Frozen `Big-World-CL-jobbench-text-v1` at

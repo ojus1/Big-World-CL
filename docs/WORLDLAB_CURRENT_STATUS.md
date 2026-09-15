@@ -1,4 +1,4 @@
-# Current development state — September 15, 2026, 19:40 UTC
+# Current development state — September 15, 2026
 
 Fluso remains paused. The H200 Qwen inference service and shared gateway retain
 the global LLM concurrency limit of 64.
@@ -42,22 +42,49 @@ inventory but do not enter text judging. The same names under `input/` or
 ordinary file exactly duplicates a visible text file; links, new content,
 changed bytes, unsafe paths and unsupported payloads remain rejected.
 
-Local validation passed 99 relevant tests, including real pinned SkillOpt
-integration and spawned world/employee processes. Native qualification of the
-new source is still required before another workplace study.
+The initial change passed 99 local tests. The final full-window policy passed
+28 local tests, and frozen source `64b00ac40c917fb142393d01836895d9ebe7b463`
+passed 45 H200 checks with no skips, including native reference registration,
+real pinned SkillOpt integration and spawned world/employee processes.
+
+A real SkillOpt admission control ended as `budget_exhausted`, with unchanged
+skill and zero model calls/tokens; its independent gate and admission audits
+passed. Two fresh default-Hermes controls passed with 27 calls / 221,219 tokens.
+New judgments of the exact previously rejected ZIP and virtual-environment
+workspaces passed completion/accounting/audit checks with 7 calls / 71,021
+tokens. Their scores were 1.0 and 0.0 respectively; the original workspaces and
+old study results were not changed. No new workplace study has launched yet.
 
 Public reference consultation is now an optional Hermes adapter. It exposes
 complete, hash-verified named source snapshots through native tools, with an
-audited access ledger. Three technical-writer tasks have source reviews; two
-require the named sources. Static review and local tests do not yet establish
-native task qualification. General web research and binary/visual task support
-remain unfinished. See `WORLDLAB_JOBBENCH.md`.
+audited access ledger. All three technical-writer tasks passed native adapter
+qualification, including actual consultation of task-required references and
+missing-output rejection. Their work executions exhausted their declared token
+budgets; their graded rubric scores are 0.4545, 0.5667 and 0.3333. This is not full
+task success or semantic-judge calibration. General web research and binary/visual
+task support remain unfinished. See `WORLDLAB_JOBBENCH.md`.
 
 Evidence on H200 under mutable lab `lifespan/artifacts/`:
 
 * `compact-v9-stop-evidence-v1/`: before/after service state, stop intent and costs.
 * `compact-v9-partial-adoption-audit-v1/`: exact-source update, replay and deployment checks.
 
+The complete new qualification receipts, source snapshots, tests, operators and
+partial v9 reports are copied locally in
+`lifespan/artifacts/reference-admission-and-v9-evidence-v1-h200.tar.gz`.
+All 1,605 payload hashes passed local verification after safe extraction.
+Archive size: 7,904,200 bytes. Archive SHA:
+`b6f528211aa226dc43d2cc060009f49cfaefb044ace7afa580c1e0b82a184952`.
+Export manifest SHA:
+`83ab059c17b948f448a3d396ce97f15a2c05e89fb00fb9c461427d5f0aa04e4d`.
+The snapshot also lists 27 unfinished attempt directories and their available
+receipts/reservations separately from finalized costs. No source worker remains
+present. Runtime symlink targets are recorded without following or recreating them.
+
 The full stopped study stays in the immutable version-9 checkout. The original
 goal still requires broad realistic worlds, extensible harnesses and learners,
 sparse representative-prompt calibration, and statistically supported effects.
+Next work must complete fresh world comparisons under the qualified protocol,
+broaden task/role coverage, qualify independent final evaluation, and freeze the
+statistical design before observing final outcomes. Partial adoption counts do
+not substitute for those requirements.
