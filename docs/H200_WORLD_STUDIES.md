@@ -5,6 +5,38 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Latest verified checkpoint: September 15, 04:58 UTC
+
+The current six-pair study is `native-workplace-compact-v3`, running from
+`Big-World-CL-judge-v13` at `e2fe6b7f36bdd465c9bd70fc91a4c16945171e16`.
+At 04:58:28 UTC its service was active/running with MainPID **2112546** and
+invocation `ea7d4fdc001545d3882020e187b796d0`. The six first arms had reached
+day 1, with 75 completed work attempts and no updates or adoptions. Updates are
+scheduled on days 6, 10 and 14; probe work begins on day 16.
+
+A separate snapshot taken at 04:58:12 UTC passed the frozen offline auditors
+for **68 completed work attempts and 116 native employee decisions**. All
+checkpointed attempts were included. Their work/judging accounting totals
+960 calls and 11,807,943 tokens; the decisions account for another 116 calls
+and 351,055 tokens. This audit checks individual native execution, deployed
+skill bytes, original task requirements, retained verdicts and cost accounting.
+It does not certify complete-world causal replay, all actor/bootstrap costs,
+judge accuracy or a learning effect.
+
+The receipt and six checkpoint copies are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-checkpoint-audit-v1`, copied locally
+as `compact-v3-checkpoint-audit-v1-h200` (eight files, 3,949,410 bytes). The plan
+hash and every state-copy hash were checked locally. Report SHA:
+`8f4beab66c49fa425e290b102eb7604cf5c69d43ca53b5cf9c0610b3fc318ed8`.
+Full native attempt evidence remains in the frozen study on H200.
+
+The shared gateway reported concurrency **64** and a measured peak of **64**.
+At the live observation it had 31 active requests and none queued; vLLM reported
+30 running and none waiting, with GPUs 4–7 at 100% utilization. These are
+sequential point-in-time readings, not a sustained throughput benchmark.
+Aggregate gateway error counters include metadata routes and earlier cancelled
+qualifications; they are not this study's inference-failure count.
+
 ## Frozen execution checkouts
 
 | Study | Checkout / revision | Artifact directory inside checkout | State |
@@ -26,6 +58,7 @@ establishes statistically significant skill learning.
 | Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Completed; full original-source audit passed, 52 work attempts, 24 replays, zero adoptions |
 | Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Failed September 15 at 00:23 UTC after 71 graded work attempts; no completed pair |
 | Isolated validation pilot | `Big-World-CL-isolated-validation-v1`, `c833481` | `lifespan/artifacts/native-workplace-isolated-validation-v1` | Launched September 15 at 03:16 UTC, with separately prepared gate cases |
+| Compact JSON six-world study | `Big-World-CL-judge-v13`, `e2fe6b7` | `lifespan/artifacts/native-workplace-compact-v3` | Active at September 15, 04:58 UTC; individual checkpoint audit passed, no completed pair or learning result |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740

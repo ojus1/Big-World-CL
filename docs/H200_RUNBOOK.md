@@ -92,15 +92,23 @@ Qwen/Qwen3.8-Flash-Next-FP8
 --revision 236dfdf285828023ca3bcd3f37366c58a3469b13
 ```
 
-The current throughput container uses these same flags with `--speculative-config`
-and its value omitted. Its exact launch command and parent container identity are
-in `Big-World-CL-lab/lifespan/artifacts/throughput-server-no-mtp-v1/INTENT.json`.
-The experiment launch receipt also binds its container ID, start time and flags.
+The current container, `bigworld-qwen38flashnext-throughput-v2`, omits
+`--speculative-config` and its value, and adds:
 
-Docker binds port 8000 only on loopback, mounts the existing Hugging Face cache,
-uses host IPC and sets `VLLM_ENABLE_CUDA_COMPATIBILITY=0`. The original container
-receives all GPUs; TP=4 uses GPUs 0–3. The new qualification container is restricted
-to GPUs 4–7. No CPU KV offload is
+```text
+--structured-outputs-config {"backend":"xgrammar","disable_any_whitespace":true}
+```
+
+Its exact Docker argument array and predecessor identity are in
+`Big-World-CL-lab/lifespan/artifacts/throughput-compact-json-server-v1/INTENT.json`.
+Use that receipt to reproduce the current configuration; the preceding
+`throughput-server-no-mtp-v1` receipt predates compact JSON. The experiment launch
+receipt also binds the current container ID, start time and complete flags.
+
+The current Docker container binds host port 8002 to container port 8000 only on
+loopback, mounts the existing Hugging Face cache, uses host IPC and sets
+`VLLM_ENABLE_CUDA_COMPATIBILITY=0`. It is restricted to GPUs 4–7. The original
+container still serves host port 8000 using GPUs 0–3. No CPU KV offload is
 configured. The API reports a 262,144-token context limit.
 
 Requests use the explicit `responses-no-thinking-v1` profile: nonstreaming
