@@ -5,6 +5,45 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Native chat budget qualification: September 15, 08:23 UTC
+
+At **08:23:19 UTC**, the unchanged version-5 study had **600 fully graded work
+attempts**, **611 employee decisions**, and zero finalized learning updates or
+adoptions. Two learner arms were completing day-6 work, before that day's
+scheduled learning dispatch; the third was on day 5. MainPID **2364472** was
+present and active, with no failure in pair or whole-study status. Progress SHA
+`d894bf924554bb55ba320094b3c153cf849a1ce45ae488837f6c5cdb19dcf0a2` is retained at
+`Big-World-CL-lab/lifespan/artifacts/compact-v5-chat-budget-progress-v1.json`.
+
+The new per-attempt chat meter was qualified separately from frozen source
+`Big-World-CL-chat-budget-v1` at `a97298d3ae46ae21accc68590a01ebe2cbd77a12`.
+Two synthetic Qwen requests through its Unix socket passed: structured JSON
+and a streamed native tool call. Both client requests asked for 500 output
+tokens; the meter placed the declared **128-token cap** on the actual wire.
+Tokenizer input counts **20** and **288** exactly matched reported prompt
+usage. The calls used **27** and **314** tokens, **341 total**, and both controls
+completed in **0.704 seconds**. This two-request check is not a throughput
+benchmark. The original serving container remained running with ID
+`7f685cb6867a93d983bf6a0f1cd5c0cc12c5bde0ddfb28917f243df9e9b71571`.
+
+Plan SHA `3da515781d7613cb3893a3f602ef8b328a3fd934eb59a887ae48ae477582ff5c`;
+report SHA `a07937e57494991d65da63b29a9bf1228e29fb8f62b720dffeaec0b103839933`;
+export SHA `1717e21309e396112aae662435ca8fec907bb4c209c988108fe2afbf7e36756b`.
+All 15 payload files plus the export manifest were copied and hash-verified
+locally under `lifespan/artifacts/native-chat-budget-qualification-v1-h200`.
+The offline audit of the copied native request/tokenizer/response bytes passed
+and reconstructed the same two calls and 341 tokens.
+
+Eighteen targeted tests passed locally and on H200 after the additional
+composition test at `7ec455d`. They cover reservations, actual output caps,
+usage loss, provider overrun, HTTP errors, interrupted streams, cancellation,
+time/call limits, unsupported inputs and receipt tampering. Eighty independent
+attempt meters behind the shared gateway reached exactly **64** simultaneous
+fake upstream calls and never exceeded it. No benchmark outcomes or extra model
+calls were used for those tests. These checks qualify a budget component; the
+Fluso container adapter, isolation and native skill-loading proof remain to be
+integrated. The running Hermes study and its analysis remain frozen.
+
 ## Power planning and live progress: September 15, 07:52 UTC
 
 At **07:52:18 UTC**, the unchanged version-5 study had **377 fully graded work
