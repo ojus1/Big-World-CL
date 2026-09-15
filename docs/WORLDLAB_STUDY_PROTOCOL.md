@@ -52,8 +52,8 @@ combining its outcomes with historical runs using different grading contracts.
 6. Audit the complete paired execution before interpreting its effect. A
    successful audit establishes provenance and arithmetic, not judge truth.
 
-The current frozen native workplace does not establish the context isolation
-required by item 3. A source-bound audit of the pilot's first update found that
+The historical native pilot using `workplace_history` did not establish the
+context isolation required by item 3. A source-bound audit of its first update found that
 all four selected training requests were produced from employee views containing
 released validation feedback. Nine exposures to prior validation outcomes
 occurred across those views, all from families used by the current gate. The
@@ -63,10 +63,11 @@ affected a skill. Task-family separation and delayed-feedback checks alone canno
 certify an independent gate. Treat the current native gates as development
 selection; a future confirmatory protocol needs an evaluation context with no
 path into training employee memory, requests, colleague messages or reflection.
-The running studies retain their original source and budgets. Their original
+Those historical studies retain their original source and budgets. Their original
 auditors do not test this semantic separation.
 
-New configurations can use `validation_context: isolated_public_tasks_v1`. This
+The current development scale configuration uses
+`validation_context: isolated_public_tasks_v1`. This
 selects a prospective gate catalog from the validation partition and removes
 validation tasks from live arrivals. The employee adapter sees no gate catalog;
 the learner replays original public gate instructions in separate workspaces
@@ -78,6 +79,39 @@ and native-algorithm canary tests cover this routing; a fresh native study and
 complete audit are still required before claiming it works in live experiments.
 
 ## Statistical boundary
+
+Before interpreting a large session count, inspect the prepared workload with
+`scripts/report_worldlab_design.py --study STUDY --bank BANK`. This read-only
+report binds the prepared study and bank, counts distinct tasks and connected
+lineages, separates arriving obligations from isolated gate descriptors, and
+checks whether scheduled feedback could supply each learning round. It never
+loads execution outcomes. Scheduled supply assumes immediate successful work;
+it does not establish actual eligibility, adoptions, completed sessions or power.
+
+The frozen `native-workplace-compact-v4` design has 1,152 training arrivals and
+288 probe arrivals per arm across its six worlds. Those probe arrivals reuse
+12 tasks from nine connected lineages. All 18 English research employee/world
+instances have only one probe lineage each. Training uses 20 tasks from 17
+lineages, and the isolated gate catalogs contain 144 descriptors drawn from
+12 tasks and nine lineages. All 216 planned updates have sufficient hypothetical
+scheduled supply. These are corpus-conditional development observations; neither
+repetition nor additional world seeds broadens the task-family coverage itself.
+The running study remains unchanged. A final protocol needs enough probe
+coverage within each intended role to support its declared transfer claim.
+
+A September 15 catalog-only review of the reserved Internal EuroBench candidates
+found 216 instances in 120 connected groups, with no recorded development
+overlap after joining family, lineage and translation links. The catalog matches
+the development bank's source metadata and repository commit
+`331d85b67b4e990abc2f7d52c8498dd3b2d8ddf2`. It lists 48 instances each in German,
+Spanish, French and Italian, and 24 in English. All 216 are marked uncertified
+with independent vetting pending; their source mechanical-pass flags are not
+independent validation. All are model-authored originals or bridge translations.
+No reserved task bodies, rubrics, answers or historical outcomes were loaded for
+this review, and no test inference was dispatched. Metadata separation alone
+does not prove semantic independence or evaluator validity. The review artifact
+is `lifespan/artifacts/final-source-metadata-v1/REPORT.json` in the local lab;
+catalog SHA `52adb5793c7d3f9c137baa87866d2df8cd944161b45fe23a4a8125359d4202a3`.
 
 The primary workplace metric is the paired difference in the fraction of
 planned post-learning probe obligations accepted on time. Sessions and
