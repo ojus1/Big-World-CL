@@ -55,3 +55,36 @@ particular, the technical-writer tasks requiring external references cannot be
 admitted by merely adding their file extensions. Broad task coverage, independent
 grader calibration, successful skill adoption and statistically supported
 learning effects remain outstanding.
+
+## Native qualification on September 15, 2026
+
+Frozen `Big-World-CL-jobbench-text-v1` at
+`2daa70a454128df465ee6246a2d08eda95969894` passed native qualification and the
+complete frozen-source offline audit. All **33 relevant tests** passed locally
+and on H200. The web-administrator task contains eight original rubrics,
+34 subcriteria and a total rubric weight of 50.
+
+The real task reached its work-token budget after **13 calls / 392,273 tokens**.
+The remaining budget could not fit the next conservative request reservation.
+Its eight grading calls used **108,280 tokens**, producing a weighted score of
+**0.12**. Execution plus grading took **170.333 seconds** and used **21 calls /
+500,553 tokens**. The combined attempt is completely graded and audited; its
+underlying native execution remains `budget_exhausted`, not ordinary successful
+task completion. This low score is retained without retrying for a better one.
+
+A separate predeclared control supplied the original inputs with no candidate
+outputs. All 34 subcriteria failed, yielding score zero in **8 calls / 5,188
+tokens**. Both cases together used **29 calls / 505,741 tokens** with complete
+accounting. Plan SHA:
+`4dae5a282eed00ea019a2a21534be2c7385f312f1ed71c2e3441523b0569c4d0`.
+This validates the tested adapter path and missing-output rejection; it does
+not establish broad JobBench performance or semantic judge accuracy.
+
+The complete qualification and version-8 study failure evidence are preserved
+in `lifespan/artifacts/jobbench-v1-and-v8-stop-evidence-h200.tar.gz`, SHA
+`d01bfc05ab470b88cb3bd91f000dcaedaa27407dfd637e0d08ef6a218ea3b858`.
+The archive is **4,317,975 bytes**; all **178 payload hashes** passed local
+verification after safe extraction. Export manifest SHA:
+`1d5aaf612c432b52149b8dc49522213eeb2374f75c40b3ee1d707f36890a3f1b`.
+The full original stopped study remains on H200. Its failure and unknown
+pending costs are separate from this completed qualification.

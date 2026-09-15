@@ -21,6 +21,82 @@ global inference concurrency **64**. The pause receipt is
 `Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
 Do not resume Fluso work as part of the continuing Hermes baseline goal.
 
+## UTF-8 terminal repair qualified; fresh version 9 launched: September 15, 13:37 UTC
+
+Version 9 is a fresh full six-world development study, frozen at
+`46c09c6c6c2fc402bb7852d79a3a9efac2712d57` in
+`Big-World-CL-workplace-v9`. It uses Hermes adapter **7**, whose terminal display
+escapes undecodable UTF-8 bytes. Workspace bytes and grading evidence remain
+unchanged. Its worlds, employee identities, seeds **401/409/419/421/431/433**,
+schedules, sparse calibration, learner, social driver and internal grader 18
+are identical to version 8. The added JobBench adapters are unused in this run.
+The global LLM concurrency remains **64**.
+
+An exact OS-only reproduction used a separate copy of the failed version-8
+French artifact and the same `grep | cut` command. The original server raised
+`UnicodeDecodeError`; the updated server displayed escaped bytes and completed
+a subsequent command. All original study hashes remained unchanged. The
+730-byte raw preview is retained. Reproduction plan SHA:
+`1f61a8289b524894cfcdf4853b6c0712c0cb199fcd99a8cf5807c1b792605ef9`.
+
+All **12 Linux tests passed without skips**, covering malformed bytes, split
+UTF-8 previews, timeout cleanup, resource limits, namespace isolation and 128
+RPCs from 64 concurrent clients. Two fresh native attempts of
+`internal/euw_v1_fr_025` completed with complete execution and grading audits:
+**37 calls / 374,513 tokens**, taking **56.011** and **52.049 seconds**. These
+are component checks, not independent learning observations. Qualification plan
+SHA `29c566ca9756ae4c8aa93690b35c38441f085205749d6e3f30c7c34e5e281bec`.
+
+Service `bigworld-native-workplace-compact-v9` started at **13:37:10 UTC**, PID
+**3761104**, invocation **2abc34ad741e421293b1774cb8399bef**. The original Qwen
+container identity, image, command, GPU assignment and start time were verified
+unchanged before dispatch; gateway PID **2974574** remained active. Version 8
+and Fluso remained stopped. The fresh prospective analysis requires all six
+pairs to complete and pass audit and remains exploratory.
+
+Study SHA `a03d1fca969e2b4b1a43a427f252ad4ef9317bcd4e77c92f4380c7b04d1cf8ab`;
+analysis plan SHA `b3150cb384ad8922418fa1d43b6d83bd2e49cd2a21d699e492b2993635f0fd12`;
+compatibility SHA `f13d3381135a2324609a21ff7505829b1bd825b35599323e3ae5042853dc6857`.
+The packet `lifespan/artifacts/native-compact-v9-start-evidence-h200.tar.gz`
+contains the exact reproduction, native controls, Linux tests, source, analysis,
+launch and **13:39:38 UTC** initial observation: **1,648,663 bytes**, SHA
+`208f18ea72ecb4ca9bedda71955f2364942c8524b3721846a61c85d6798a9623`.
+All **243 payload hashes** passed local verification after safe extraction;
+export SHA `20a6d74fd20de695c13b36abd491bb9fe180969f58677aca0a2d0bcd968efeef`.
+That snapshot verified the live PID with no terminal study failure and no
+finalized attempts yet. It is an initial observation, not the eventual outcome.
+No successful skill adoption, later deployment effect or statistical significance
+has yet been established.
+
+## Version 8 stopped after terminal decoding failure: September 15, 13:25 UTC
+
+Version 8 is stopped and incomplete. Seed 409's learning arm failed on
+`d002-communications-fr-001-001`, task `internal/euw_v1_fr_025`. A normal
+`grep -n ... | cut -c1-90` preview split a multibyte character. Strict stdout
+decoding raised `UnicodeDecodeError` in the sandbox server; the native backend
+then rejected subsequent tool calls as unavailable. The attempt retained
+**25 model calls / 417,265 tokens**, complete accounting and an ungraded
+`infrastructure_error` receipt. It was not a model API availability failure.
+
+Both pair and study status were terminal while PID **3602809** was still live.
+Only the exact owned study service was stopped, with before/intent/result/after
+receipts. At **13:25:35 UTC**, the service was inactive and its original PID was
+absent. The final snapshot at **13:34:06 UTC** contained **247 completely graded
+attempts**, one infrastructure failure, no completed pair and no learning update.
+Finalized receipts recorded **3,801 model calls / 49,069,127 tokens**. Six
+additional unfinished attempts retained **87 dispatched calls / 1,542,790
+charged-or-reserved tokens** in incomplete checkpoints, with all their workers
+absent. These categories exclude social costs and are not a complete study bill.
+No pending reservation is relabeled as measured usage or a completed score.
+
+The stopped-study evidence accompanies the completed JobBench qualification in
+`lifespan/artifacts/jobbench-v1-and-v8-stop-evidence-h200.tar.gz`, SHA
+`d01bfc05ab470b88cb3bd91f000dcaedaa27407dfd637e0d08ef6a218ea3b858`.
+All **178 payload hashes** passed safe local extraction and verification. The
+full original version-8 study remains on H200 and will not be resumed or used
+as a complete paired comparison. See [JobBench qualification](WORLDLAB_JOBBENCH.md)
+for the separate task score, accounting and coverage limits.
+
 ## Qualified grader allocation; fresh version 8 launched: September 15, 12:51 UTC
 
 Frozen `Big-World-CL-workplace-v8` at
