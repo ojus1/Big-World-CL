@@ -1,7 +1,25 @@
-# Current development state — September 15, 2026
+# Current development state — September 16, 2026 (India)
 
-Fluso remains paused. The H200 Qwen inference service and shared gateway retain
-the global LLM concurrency limit of 64.
+Fluso remains paused. At September 15 20:22 UTC, its experiment and both guardian
+services were inactive with MainPID 0, and its former process was absent. The
+shared gateway retains its global LLM concurrency limit of 64.
+
+The pinned `bigworld-qwen38flashnext-throughput-v2` model container stopped at
+20:18:20 UTC. Another workload, `fluso-meta-next-replica2-20260915`, now occupies
+its GPUs 4–7 and port 8002. No new baseline was launched and neither runtime was
+modified by this task. Resolve this resource conflict and verify the intended
+inference identity before launching a fresh study.
+
+Shared controller commit `4114679e6b9f29d30c4f8e5cbbc8157c4720103a` adds
+coordinated cancellation after terminal failures. New work stops at admission
+boundaries while already admitted operations retain their original budgets and
+receipts. Low scores and accounted budget exhaustion do not trigger cancellation.
+All 25 focused checks passed locally and in the frozen H200 checkout
+`Big-World-CL-cancellation-v1`, including real spawned process cancellation,
+serial cancellation, normal complete study audit, employee cleanup and replay
+accounting. The H200 test log and runtime snapshot are copied locally under
+`lifespan/artifacts/cancellation-h200-v1/`. Test log SHA:
+`f0409d77e13f4d297fec1e41ae25208ed5e07171d02d1509f466cded9a1de8fc`.
 
 The frozen version-9 workplace study at `46c09c6` was stopped after terminal
 world-pair failures were verified. Its service is inactive with MainPID 0; the
