@@ -317,7 +317,7 @@ class SkillOptLearner:
 
     def __init__(self, *, source: str | Path = DEFAULT_SOURCE, edit_budget: int = 4,
                  gate_metric: str = "mixed", gate_no_regression: bool = True,
-                 gate_mixed_weight: float = 0.5, max_skill_chars: int = 32_000,
+                 gate_mixed_weight: float = 0.5,
                  rollouts_k: int = 1):
         if not isinstance(edit_budget, int) or isinstance(edit_budget, bool) or edit_budget < 1:
             raise ValueError("edit_budget must be a positive integer")
@@ -325,21 +325,19 @@ class SkillOptLearner:
             raise ValueError("gate_metric must be hard, soft or mixed")
         if not math.isfinite(gate_mixed_weight) or not 0 <= gate_mixed_weight <= 1:
             raise ValueError("gate_mixed_weight must be in [0, 1]")
-        if not isinstance(max_skill_chars, int) or max_skill_chars < 1:
-            raise ValueError("max_skill_chars must be positive")
         if type(rollouts_k) is not int or rollouts_k < 1:
             raise ValueError("rollouts_k must be a positive integer")
         self.source, self.edit_budget = Path(source), edit_budget
         self.gate_metric, self.gate_no_regression = gate_metric, gate_no_regression
-        self.gate_mixed_weight, self.max_skill_chars = gate_mixed_weight, max_skill_chars
+        self.gate_mixed_weight = gate_mixed_weight
         self.rollouts_k = rollouts_k
 
     def update(self, skill: str, experiences: list[dict], replay: Callable, reflect: Callable,
                *, current_day: int, budget: LearningBudget | dict | None = None,
                night: int = 1) -> dict:
         safe = _safe_experiences(experiences, current_day)
-        if not isinstance(skill, str) or len(skill) > self.max_skill_chars:
-            raise ValueError("Initial skill must be a string within max_skill_chars")
+        if not isinstance(skill, str):
+            raise ValueError("Initial skill must be a string")
         budget = LearningBudget(**budget) if isinstance(budget, dict) else budget or LearningBudget()
         ledger = _Ledger(budget)
         attempts, optimizer_inputs = [], []
@@ -361,7 +359,6 @@ class SkillOptLearner:
                                 context_excerpt=x["context"], split=x["split"],
                                 reference_kind="none", source_sessions=[x["source_session"]] if x["source_session"] else [])
                      for x in safe]
-            max_chars = self.max_skill_chars
 
             class NativeBridge(CliBackend):
                 name = "big-world-native-hermes"
@@ -371,7 +368,7 @@ class SkillOptLearner:
                     self.pending = {}
 
                 def attempt(self, task, candidate, memory, sample_id=0):
-                    if memory or len(candidate) > max_chars:
+                    if memory or not isinstance(candidate, str):
                         raise ReplayFailure("Candidate violated the skill-only document boundary")
                     public = dict(descriptors[task.id])
                     receipt = ledger.invoke("target", replay, {

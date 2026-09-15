@@ -247,6 +247,7 @@ def provider_check(record, manifest=None):
 def optimizer_provider_check(receipt, policy):
     """A zero-call receipt retains policy without claiming a physical request."""
     from lifespan.evaluation.provider import validate_contract
+    from lifespan.evaluation.optimizer import optimizer_structured_output
     if policy is None:
         require(not any(key in receipt for key in ('provider_contract',) + PROVIDER_REQUEST_MARKERS),
                 'optimizer_provider_marker_downgrade')
@@ -261,9 +262,12 @@ def optimizer_provider_check(receipt, policy):
     provider_request_check(receipt, policy)
     require(type(receipt.get('max_output_tokens')) is int and receipt['max_output_tokens'] > 0
             and isinstance(receipt.get('optimizer_prompt'), str), 'optimizer_provider_request_fields')
+    require(receipt.get('request_structured_outputs') == optimizer_structured_output(),
+            'optimizer_structured_output_contract')
     request = {'model': policy['model'], 'input': receipt['optimizer_prompt'], 'store': False,
         'max_output_tokens': receipt['max_output_tokens'], 'stream': False,
-        'extra_body': {'chat_template_kwargs': policy['chat_template_kwargs']}}
+        'extra_body': {'chat_template_kwargs': policy['chat_template_kwargs'],
+                       'structured_outputs': optimizer_structured_output()}}
     raw = json.dumps(request, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()
     require(receipt.get('provider_request_sha256') == sha(raw), 'optimizer_provider_request_hash')
 

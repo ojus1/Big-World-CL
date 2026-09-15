@@ -19,6 +19,18 @@ CONTEXT_ADAPTER = "skillopt_sleep_bigworld_trajectory_context_v1"
 EXACT_ADAPTER = "skillopt_sleep_exact_prompt_v1"
 INPUT_FRAMING_RESERVE = 256
 MAX_CONTEXT_BYTES = 16_000
+
+
+def optimizer_structured_output():
+    """Native vLLM JSON constraint matching upstream's edit-array interface."""
+    properties = {'target': {'type': 'string', 'enum': ['skill', 'memory']},
+                  'op': {'type': 'string', 'enum': ['add', 'delete', 'replace']},
+                  'content': {'type': 'string'}, 'anchor': {'type': 'string'},
+                  'rationale': {'type': 'string'}}
+    return {'json': {'type': 'array', 'items': {'type': 'object', 'properties': properties,
+                    'required': list(properties), 'additionalProperties': False}}}
+
+
 _SENSITIVE_KEY = re.compile(
     r"(?i)(api.?key|authorization|bearer|access.?token|refresh.?token|password|secret|"
     r"credential|encrypted|reasoning|signature|request.?id|response.?id|headers|"
@@ -239,7 +251,8 @@ def _sdk_transport(credentials):
             if policy is not None and (str(client.base_url).rstrip('/') != policy['base_url']
                     or request.get('model') != policy['model'] or api_mode != policy['api_mode']
                     or request.get('stream') is not False or request.get('store') is not False
-                    or request.get('extra_body') != {'chat_template_kwargs': policy['chat_template_kwargs']}
+                    or request.get('extra_body') != {'chat_template_kwargs': policy['chat_template_kwargs'],
+                                                    'structured_outputs': optimizer_structured_output()}
                     or request['extra_body']['chat_template_kwargs']['enable_thinking'] is not False):
                 raise OptimizerInputError('Optimizer request differs from configured provider policy')
             if api_mode == "responses":
@@ -386,10 +399,12 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
             request = {"model": creds["model"], "messages": [{"role": "user", "content": prompt}]}
             request["max_completion_tokens" if creds["model"].startswith("gpt-5") else "max_tokens"] = output_limit
         if provider is not None:
-            request.update(stream=False, extra_body={'chat_template_kwargs': deepcopy(provider['chat_template_kwargs'])})
+            request.update(stream=False, extra_body={'chat_template_kwargs': deepcopy(provider['chat_template_kwargs']),
+                                                    'structured_outputs': optimizer_structured_output()})
             record.update(request_api_mode=api_mode, request_model=request['model'],
                           request_base_url=provider['base_url'], request_stream=request['stream'],
                           request_store=request['store'], request_chat_template_kwargs=deepcopy(provider['chat_template_kwargs']),
+                          request_structured_outputs=optimizer_structured_output(),
                           provider_request_sha256=hashlib.sha256(json.dumps(request, sort_keys=True,
                               separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest())
         record["model_calls"] = 1

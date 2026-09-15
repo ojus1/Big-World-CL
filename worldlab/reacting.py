@@ -90,19 +90,41 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
 
                 dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1))
             if day not in spec.get('update_days', []): continue
-            for employee in sorted(skills):
-                selected = select_experiences(world, state['sessions'], employee, day)
-                if not selected: continue
-                save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
-                                            'budget': learner.identity().get('budget')})
-                update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
-                    skill=skills[employee], update_root=out / 'learning' / f'd{day:03d}-{employee}')
-                state['updates'].append({'day': day, 'employee_id': employee, 'result': update})
-                checkpoint()
-                if update['status'] not in ('completed', 'budget_exhausted'):
-                    raise RuntimeError('Learning failed; evidence preserved without automatic replay')
-                if update.get('accepted'): skills[employee] = update['skill']
-                checkpoint(); (out / 'INFLIGHT.json').unlink()
+            if spec.get('max_parallel_updates', 1) > 1:
+                from .experience_update import dispatch_updates
+                selections = [(employee, select_experiences(world, state['sessions'], employee, day))
+                              for employee in sorted(skills)]
+                selections = [(employee, selected) for employee, selected in selections if selected]
+
+                def record_update(employee, update):
+                    state['updates'].append({'day': day, 'employee_id': employee, 'result': update})
+                    if update.get('accepted'):
+                        skills[employee] = update['skill']
+                    checkpoint()
+
+                def journal_updates(employees):
+                    if employees:
+                        save(out / 'INFLIGHT.json', {'kind': 'learning_wave', 'day': day,
+                            'employee_ids': employees, 'budget_per_employee': learner.identity().get('budget')})
+                    else:
+                        (out / 'INFLIGHT.json').unlink()
+
+                dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
+                    record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'])
+            else:
+                for employee in sorted(skills):
+                    selected = select_experiences(world, state['sessions'], employee, day)
+                    if not selected: continue
+                    save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
+                                                'budget': learner.identity().get('budget')})
+                    update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
+                        skill=skills[employee], update_root=out / 'learning' / f'd{day:03d}-{employee}')
+                    state['updates'].append({'day': day, 'employee_id': employee, 'result': update})
+                    checkpoint()
+                    if update['status'] not in ('completed', 'budget_exhausted'):
+                        raise RuntimeError('Learning failed; evidence preserved without automatic replay')
+                    if update.get('accepted'): skills[employee] = update['skill']
+                    checkpoint(); (out / 'INFLIGHT.json').unlink()
         # Close the observation window without extra work opportunities. Delayed
         # reviews and payments settle; outstanding obligations remain failures.
         drain = max(place.delay + place.settlement_delay,

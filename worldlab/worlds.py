@@ -46,9 +46,10 @@ def compile_world(bank, specification, seed, harness, judge):
     if type(delay) is not int or delay < 1:
         raise ValueError('Feedback must be delayed by at least one day')
     work_budget = Budget(**specification.get('work_budget', {}))
-    parallel = specification.get('max_parallel_employees', 1)
-    if type(parallel) is not int or not 1 <= parallel <= 64:
-        raise ValueError('max_parallel_employees must be an integer from 1 to 64')
+    for field in ('max_parallel_employees', 'max_parallel_worlds', 'max_parallel_updates'):
+        parallel = specification.get(field, 1)
+        if type(parallel) is not int or not 1 <= parallel <= 64:
+            raise ValueError(field + ' must be an integer from 1 to 64')
     workforce = []
     schedule = []
     issues = []
@@ -164,6 +165,12 @@ def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_fact
     if out.exists() or len(seeds) != len(set(seeds)) or not seeds:
         raise ValueError('Fresh output and unique world seeds required')
     worlds = [compile_world(bank, spec, seed, harness, judge) for seed in seeds]
+    if max(spec.get('max_parallel_worlds', 1), spec.get('max_parallel_updates', 1)) > 1:
+        import pickle
+        try:
+            pickle.loads(pickle.dumps((bank, harness, judge, learner, employee_factory)))
+        except Exception as exc:
+            raise ValueError('Parallel execution requires process-serializable adapters: ' + type(exc).__name__) from None
     if employee_factory is None and any(e.get('arrivals_per_day', e.get('sessions_per_day', 1)) !=
             e.get('sessions_per_day', 1) for e in spec['employees']):
         raise ValueError('Independent arrivals and capacity require a workplace employee driver')
@@ -256,27 +263,55 @@ def run_world(bank, world, harness, judge, learner, out):
         dispatch_day([s for s in world['schedule'] if s['day'] == day], work, record_work, journal_work,
                      max_parallel=spec.get('max_parallel_employees', 1))
         if day not in spec.get('update_days', []): continue
-        for employee in sorted(skills):
-            selected = select_experiences(world, sessions, employee, day)
-            if not selected:
-                events.append({'day': day, 'employee_id': employee, 'kind': 'insufficient_released_learning_cases'})
-                continue
-            update_root = out / 'learning' / f'd{day:03d}-{employee}'
-            save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
-                                        'budget': learner.identity().get('budget')})
-            from .experience_update import update_employee
-            update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
-                                     skill=skills[employee], update_root=update_root, executor=execute_task)
-            updates.append({'day': day, 'employee_id': employee, 'result': update})
-            if update['status'] not in ('completed', 'budget_exhausted'):
+        if spec.get('max_parallel_updates', 1) > 1:
+            from .experience_update import dispatch_updates
+            selections = []
+            for employee in sorted(skills):
+                selected = select_experiences(world, sessions, employee, day)
+                if selected:
+                    selections.append((employee, selected))
+                else:
+                    events.append({'day': day, 'employee_id': employee, 'kind': 'insufficient_released_learning_cases'})
+
+            def record_update(employee, update):
+                updates.append({'day': day, 'employee_id': employee, 'result': update})
+                if update.get('accepted'):
+                    skills[employee] = update['skill']
+                    events.append({'day': day + 1, 'employee_id': employee, 'kind': 'skill_deployed',
+                                   'content_sha256': hashlib.sha256(update['skill'].encode()).hexdigest()})
                 save(out / 'STATE.json', state)
-                raise RuntimeError('Learning attempt failed; no automatic replay')
-            if update.get('accepted'):
-                skills[employee] = update['skill']
-                events.append({'day': day + 1, 'employee_id': employee, 'kind': 'skill_deployed',
-                               'content_sha256': hashlib.sha256(update['skill'].encode()).hexdigest()})
-            save(out / 'STATE.json', state)
-            (out / 'INFLIGHT.json').unlink()
+
+            def journal_updates(employees):
+                if employees:
+                    save(out / 'INFLIGHT.json', {'kind': 'learning_wave', 'day': day,
+                        'employee_ids': employees, 'budget_per_employee': learner.identity().get('budget')})
+                else:
+                    (out / 'INFLIGHT.json').unlink()
+
+            dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
+                record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'])
+        else:
+            for employee in sorted(skills):
+                selected = select_experiences(world, sessions, employee, day)
+                if not selected:
+                    events.append({'day': day, 'employee_id': employee, 'kind': 'insufficient_released_learning_cases'})
+                    continue
+                update_root = out / 'learning' / f'd{day:03d}-{employee}'
+                save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
+                                            'budget': learner.identity().get('budget')})
+                from .experience_update import update_employee
+                update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
+                                         skill=skills[employee], update_root=update_root, executor=execute_task)
+                updates.append({'day': day, 'employee_id': employee, 'result': update})
+                if update['status'] not in ('completed', 'budget_exhausted'):
+                    save(out / 'STATE.json', state)
+                    raise RuntimeError('Learning attempt failed; no automatic replay')
+                if update.get('accepted'):
+                    skills[employee] = update['skill']
+                    events.append({'day': day + 1, 'employee_id': employee, 'kind': 'skill_deployed',
+                                   'content_sha256': hashlib.sha256(update['skill'].encode()).hexdigest()})
+                save(out / 'STATE.json', state)
+                (out / 'INFLIGHT.json').unlink()
     probes = [s for s in sessions if s['split'] == 'probe']
     report = {'status': 'completed', 'world_seed': world['seed'], 'arm': learner.identity()['name'],
               'work_sessions': len(sessions), 'probe_sessions': len(probes),
@@ -302,26 +337,31 @@ def execute_study(bank, harness, judge, learner, out, employee_factory=None):
     if study.get('employee_driver') != (employee_factory.identity() if employee_factory is not None else None):
         raise ValueError('Employee driver differs from frozen preparation')
     with (out / 'EXECUTION.json').open('x') as f: json.dump({'started_unix': time.time()}, f)
-    reports = []
-    for index, world in enumerate(study['worlds']):
-        arms = [NoLearning(), learner]
-        if index % 2: arms.reverse()
-        for arm in arms:
-            root = out / 'worlds' / f'seed-{world["seed"]}' / arm.identity()['name']
-            try:
-                if employee_factory is None:
-                    report = run_world(bank, world, harness, judge, arm, root)
-                else:
-                    from .reacting import run_world as run_reacting
-                    report = run_reacting(bank, world, harness, judge, arm, root, employee_factory)
-                reports.append(report)
-            except BaseException as exc:
-                save(out / 'STATUS.json', {'status': 'incomplete', 'completed_arms': len(reports),
-                                           'planned_arms': 2 * len(study['worlds']), 'error_type': type(exc).__name__,
-                                           'failed_world': world['seed'], 'failed_arm': arm.identity()['name'],
-                                           'reports': reports})
-                raise
-            save(out / 'STATUS.json', {'completed_arms': len(reports), 'planned_arms': 2 * len(study['worlds']), 'reports': reports})
+    workers = study['worlds'][0]['specification'].get('max_parallel_worlds', 1)
+    if workers > 1:
+        from .parallel import execute_pairs
+        reports = execute_pairs(bank, study, harness, judge, learner, out, employee_factory, workers)
+    else:
+        reports = []
+        for index, world in enumerate(study['worlds']):
+            arms = [NoLearning(), learner]
+            if index % 2: arms.reverse()
+            for arm in arms:
+                root = out / 'worlds' / f'seed-{world["seed"]}' / arm.identity()['name']
+                try:
+                    if employee_factory is None:
+                        report = run_world(bank, world, harness, judge, arm, root)
+                    else:
+                        from .reacting import run_world as run_reacting
+                        report = run_reacting(bank, world, harness, judge, arm, root, employee_factory)
+                    reports.append(report)
+                except BaseException as exc:
+                    save(out / 'STATUS.json', {'status': 'incomplete', 'completed_arms': len(reports),
+                                               'planned_arms': 2 * len(study['worlds']), 'error_type': type(exc).__name__,
+                                               'failed_world': world['seed'], 'failed_arm': arm.identity()['name'],
+                                               'reports': reports})
+                    raise
+                save(out / 'STATUS.json', {'completed_arms': len(reports), 'planned_arms': 2 * len(study['worlds']), 'reports': reports})
     pairs = []
     for world in study['worlds']:
         rows = {r['arm']: r for r in reports if r['world_seed'] == world['seed']}

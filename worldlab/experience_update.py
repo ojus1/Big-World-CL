@@ -1,8 +1,41 @@
 """One learning operation shared by fixed schedules and reacting workplaces."""
 import json
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 from .attempts import execute_task, task_instruction
 from .contracts import Budget
 from .validation_context import observed_feedback
+
+
+def dispatch_updates(bank, harness, judge, learner, selections, *, day, skills, out,
+                     record, journal, max_parallel):
+    """Parallel employee epochs with independent upstream settings and ledgers.
+
+    SkillOpt mutates process-global prompt/worker settings, so epochs use spawned
+    processes rather than sharing that state between threads. Each employee's
+    replay/gate sequence remains unchanged; results are recorded in planned order.
+    """
+    if not selections:
+        return
+    journal([employee for employee, _ in selections])
+    errors = []
+    with ProcessPoolExecutor(max_workers=min(max_parallel, len(selections)),
+                             mp_context=multiprocessing.get_context('spawn')) as pool:
+        futures = [(employee, pool.submit(update_employee, bank, harness, judge, learner, selected,
+                    employee=employee, day=day, skill=skills[employee],
+                    update_root=out / 'learning' / f'd{day:03d}-{employee}'))
+                   for employee, selected in selections]
+        for employee, future in futures:
+            try:
+                update = future.result()
+                record(employee, update)
+                if update['status'] not in ('completed', 'budget_exhausted'):
+                    errors.append(RuntimeError('Learning failed; evidence preserved without automatic replay'))
+            except Exception as exc:
+                errors.append(exc)
+    if errors:
+        raise errors[0]
+    journal([])
 
 
 def update_employee(bank, harness, judge, learner, selected, *, employee, day, skill, update_root, executor=None):

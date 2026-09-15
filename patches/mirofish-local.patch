@@ -174,10 +174,10 @@ diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/servi
                  try:
                      result = json.loads(content)
 +                    if local and not (
-+                        isinstance(result.get('bio'), str) and 1 <= len(result['bio']) <= 360
++                        isinstance(result.get('bio'), str) and bool(result['bio'].strip())
 +                        and isinstance(result.get('persona'), str) and bool(result['persona'].strip())
 +                    ):
-+                        raise ValueError('Local profile has an empty, trivial, or oversized bio/persona')
++                        raise ValueError('Local profile needs nonempty bio and persona text')
                      
                      # 验证必需字段
                      if "bio" not in result or not result["bio"]:

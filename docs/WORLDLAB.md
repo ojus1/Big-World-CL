@@ -505,14 +505,32 @@ array/numeric constraints remain structured. Business checks still enforce
 visible evidence, permitted recipients and available work.
 
 `python -m worldlab.inference_gateway --concurrency 64` serves a shared loopback
-OpenAI-compatible endpoint on port 8001, forwarding to the existing vLLM server
+OpenAI-compatible endpoint on port 8010, forwarding to the existing vLLM server
 on port 8000. Install `requirements-inference-gateway.txt` in its own environment.
 Point all participating solver, employee, judge and learner providers at
-`http://127.0.0.1:8001/v1`. The gateway holds a slot through the complete response,
+`http://127.0.0.1:8010/v1`. The gateway holds a slot through the complete response,
 including streamed output, and queues excess calls. It does not change request
 or response bytes, retry calls, or log prompts. `/status` reports the configured
 limit, live and peak concurrency, queue depth and failures. Calls made directly
 to port 8000 are outside this shared limit.
+
+The new `development_workplace_concurrency64_v1.json` configuration sets work,
+world-pair and employee-update concurrency ceilings to 64 and keeps validation
+cases outside the live workplace. World pairs use separate processes, preserving
+their counterbalanced arm order. Independent employee epochs also use separate
+processes, so upstream SkillOpt's global lock and temporary settings cannot
+serialize or contaminate other employees. Within an employee's epoch the native
+replay and validation sequence is preserved. The shared inference gateway caps
+aggregate model requests, even when more work processes are ready.
+
+The original `max_parallel_employees` controls concurrent work attempts;
+`max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.
+Parallel modes require adapters that can be serialized into spawned processes,
+which preparation checks before dispatch. All started work is joined, failures
+are retained, and the final report still requires every planned pair. Native
+optimizer edit arrays now use a registered JSON schema in the inference request,
+with request hashes checked by the offline auditor. Text fields have no hard
+character limits; required structure and original business/gate checks remain.
 
 The offline audit reconstructs every causal command, regenerates visible views,
 checks native interview receipts and binds outcomes to actual task artifacts.

@@ -24,7 +24,7 @@ class ConfiguredAdapter:
         return {**deepcopy(original), 'operator_factory': deepcopy(self.descriptor)}
 
     def __getattr__(self, name):
-        return getattr(self.delegate, name)
+        return getattr(object.__getattribute__(self, 'delegate'), name)
 
 
 def load_adapter(path, kind):

@@ -58,7 +58,8 @@ class OptimizerPreflightTests(unittest.TestCase):
         self.assertIs(report['native_learning_or_adoption'], False)
         self.assertEqual(len(self.calls), 1)
         self.assertIs(self.calls[0]['stream'], False)
-        self.assertEqual(self.calls[0]['extra_body'], {'chat_template_kwargs': {'enable_thinking': False}})
+        from lifespan.evaluation.optimizer import optimizer_structured_output
+        self.assertEqual(self.calls[0]['extra_body'], {'chat_template_kwargs': {'enable_thinking': False}, 'structured_outputs': optimizer_structured_output()})
         self.assertNotIn(CREDS['api_key'], (self.root / 'request.json').read_text())
 
     def test_valid_edit_uses_actual_upstream_parser(self):

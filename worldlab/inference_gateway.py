@@ -107,7 +107,7 @@ def create_app(upstream='http://127.0.0.1:8000', concurrency=64):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--upstream', default='http://127.0.0.1:8000')
-    parser.add_argument('--port', type=int, default=8001)
+    parser.add_argument('--port', type=int, default=8010)
     parser.add_argument('--concurrency', type=int, default=64)
     args = parser.parse_args()
     web.run_app(create_app(args.upstream, args.concurrency), host='127.0.0.1', port=args.port,
