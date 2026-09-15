@@ -19,11 +19,14 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Independently check facts, calculations, units, omissions and unsupported assertions. '
          'Apply the frozen acceptable alternatives, ambiguity policy and evaluation guidance. '
          'Do not invent additional requirements or infer hidden agent reasoning. '
-         'Return only JSON with criterion_id, evidence, reasoning, and finally passed (boolean). '
-         'Evidence must name concrete source/output files and verifiable details. Give a short factual '
-         'justification, then choose the final Boolean consistent with that evidence and conclusion. '
-         'Keep the evidence and reasoning concise and specific. Use the original wording when citing '
-         'non-English source material. Do not repeat whitespace or pad fields.')
+         'Return only JSON with criterion_id, passed (boolean), evidence and reasoning. '
+         'Choose the final Boolean from the supplied evidence and criterion. Evidence should cite only '
+         'the decisive source/output files and details; reasoning should give a brief final justification. '
+         'Do not narrate deliberation, repeatedly reconsider your decision, or reproduce an entire checklist. '
+         'Use the original wording when citing non-English source material. Do not repeat whitespace or pad fields.')
+REPAIR_RULES = (' A prior response did not produce a usable complete JSON verdict. '
+                'Return a concise final verdict now. Keep evidence and reasoning brief; '
+                'do not discuss the prior response. Apply exactly the same criterion and source evidence.')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
 VERDICT_SCHEMA = SCHEMA
 
@@ -38,7 +41,18 @@ def validate_verdict(value, criterion):
     return {k: value[k] for k in ('criterion_id', 'passed', 'reasoning', 'evidence')}
 
 
-def request_verdict(client, provider, payload, timeout):
+def verdict_input(payload, *, repair=False):
+    return [{'role': 'system', 'content': RULES + (REPAIR_RULES if repair else '')},
+            {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False, sort_keys=True)}]
+
+
+def parsed_response(response, criterion):
+    if response['status'] != 'completed':
+        raise ValueError('Incomplete judge response')
+    return validate_verdict(json.loads(response['text']), criterion)
+
+
+def request_verdict(client, provider, payload, timeout, *, repair=False):
     mechanical = mechanical_verdict(payload)
     if mechanical is not None:
         from types import SimpleNamespace
@@ -46,8 +60,7 @@ def request_verdict(client, provider, payload, timeout):
                                status='completed', evaluation_method='registered_literal_count')
     """Shared transport contract for production judging and calibration controls."""
     return client.responses.create(model=provider['model'],
-        input=[{'role': 'system', 'content': RULES},
-               {'role': 'user', 'content': json.dumps(payload, ensure_ascii=False)}],
+        input=verdict_input(payload, repair=repair),
         max_output_tokens=4096, stream=False, store=False, timeout=timeout,
         extra_body={'chat_template_kwargs': {'enable_thinking': False},
                     'structured_outputs': verdict_contract(payload['criterion']['id'])})
@@ -61,12 +74,14 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 9, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 10, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'structured_output_schema': VERDICT_SCHEMA,
-                'structured_output_transport': 'json_schema_text_guidance',
+                'structured_output_transport': 'compact_unicode_json_grammar',
+                'format_recovery': {'max_per_grade': 1, 'trigger': 'unusable_returned_verdict_with_known_usage',
+                                    'valid_verdicts_never_retried': True, 'within_original_budgets': True},
                 'schema_sha256': sha(Path(__file__).with_name('verdict_schema.py')),
                 'budget_transport_sha256': sha(Path(__file__).with_name('judge_transport.py')),
                 'mechanical_criteria_sha256': sha(Path(__file__).with_name('mechanical_criteria.py')),
@@ -120,7 +135,7 @@ class FrozenRubricJudge:
         criteria = rubric['criteria']
         maximum = min(token_limit or self.max_tokens, self.max_tokens)
         meter = StructuredJudgeBudget(structured_contracts=[verdict_contract(c['id']) for c in criteria],
-                                max_model_calls=min(call_limit or len(criteria), len(criteria)),
+                                max_model_calls=min(call_limit or len(criteria) + 1, len(criteria) + 1),
                                 max_output_tokens=4096, max_total_tokens=maximum,
                                 provider_contract=self.provider)
         if self.client_factory:
@@ -131,6 +146,7 @@ class FrozenRubricJudge:
                             max_retries=0, timeout=120)
         meter.wrap_client(client)
         verdicts = []
+        recoveries = []
         error = None
         try:
             for index, criterion in enumerate(criteria):
@@ -143,8 +159,28 @@ class FrozenRubricJudge:
                 text = response.output_text
                 save(out / f'RESPONSE-{index:02d}.json', {'text': text, 'status': response.status,
                      'evaluation_method': getattr(response, 'evaluation_method', 'model')})
-                if response.status != 'completed': raise ValueError('Incomplete judge response')
-                verdicts.append(validate_verdict(json.loads(text), criterion))
+                record = read(out / f'RESPONSE-{index:02d}.json')
+                try:
+                    verdict = parsed_response(record, criterion)
+                except (ValueError, TypeError):
+                    # Only returned, metered format failures qualify. Timeouts,
+                    # missing usage and API errors propagate before this point.
+                    last = meter.report()['operations'][-1:] if mechanical_verdict(payload) is None else []
+                    if (recoveries or not last or last[0]['accounting'] != 'reported' or
+                            last[0]['status'] != 'completed' or
+                            record['status'] not in ('completed', 'incomplete')):
+                        raise
+                    reason = 'incomplete' if record['status'] == 'incomplete' else 'invalid_verdict'
+                    recoveries.append({'criterion_index': index, 'criterion_id': criterion['id'], 'reason': reason})
+                    save(out / 'FORMAT_RECOVERIES.json', recoveries)
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0: raise TimeoutError('Judge deadline reached before format recovery')
+                    save(out / f'REPAIR-REQUEST-{index:02d}.json', payload)
+                    response = request_verdict(client, self.provider, payload, min(120, remaining), repair=True)
+                    record = {'text': response.output_text, 'status': response.status, 'evaluation_method': 'model'}
+                    save(out / f'REPAIR-RESPONSE-{index:02d}.json', record)
+                    verdict = parsed_response(record, criterion)
+                verdicts.append(verdict)
                 save(out / 'PROGRESS.json', {'verdicts': verdicts, 'usage': meter.report()})
         except Exception as exc:
             error = type(exc).__name__
@@ -160,6 +196,7 @@ class FrozenRubricJudge:
                   'quality_score': score if not changed and not unauthorized else (0.0 if valid else None),
                   'success': bool(valid and passed and not changed and not unauthorized),
                   'criteria': verdicts, 'error_type': error, 'usage': usage,
+                  'format_recoveries': recoveries,
                   'public_requirements': supplement,
                   'rubric_sha256': sha(rubric_path), 'evidence_sha256': sha(out / 'EVIDENCE.json'),
                   'input_changes': changed, 'unauthorized_files': unauthorized,
@@ -182,7 +219,8 @@ class FrozenRubricJudge:
         rubric = read(child(bank.root, bank.by_id[task_id]['private_directory']) / 'rubric.json')
         require(grade == read(artifact_root / 'GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
         verdicts = []
-        model_criteria = []
+        model_operations = []
+        recoveries = []
         evidence = read(artifact_root / 'EVIDENCE.json')
         expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
                           for p in workspace.rglob('*') if p.is_file() and
@@ -200,15 +238,39 @@ class FrozenRubricJudge:
             response = read(artifact_root / f'RESPONSE-{i:02d}.json')
             require(payload['criterion'] == criterion and payload['evidence'] == read(artifact_root / 'EVIDENCE.json'),
                     'Frozen criterion/evidence mismatch')
-            require(response['status'] == 'completed', 'Judge response incomplete')
             mechanical = mechanical_verdict(payload)
             require(response['evaluation_method'] == ('registered_literal_count' if mechanical is not None else 'model'),
                     'Criterion execution method changed')
             if mechanical is None:
-                model_criteria.append(criterion)
+                model_operations.append((criterion, payload, response, False))
             else:
                 require(json.loads(response['text']) == mechanical, 'Literal count differs from source/output bytes')
-            verdicts.append(validate_verdict(json.loads(response['text']), criterion))
+            repair_path = artifact_root / f'REPAIR-RESPONSE-{i:02d}.json'
+            if repair_path.exists():
+                require(mechanical is None and not recoveries and response['status'] in ('completed', 'incomplete'),
+                        'Unregistered or excessive judge format recovery')
+                try:
+                    parsed_response(response, criterion)
+                except (ValueError, TypeError):
+                    pass
+                else:
+                    raise ValueError('A valid verdict was retried; outcome selection is forbidden')
+                reason = 'incomplete' if response['status'] == 'incomplete' else 'invalid_verdict'
+                recoveries.append({'criterion_index': i, 'criterion_id': criterion['id'], 'reason': reason})
+                require(read(artifact_root / f'REPAIR-REQUEST-{i:02d}.json') == payload,
+                        'Repair changed the criterion or source evidence')
+                response = read(repair_path)
+                require(response['evaluation_method'] == 'model', 'Repair method changed')
+                model_operations.append((criterion, payload, response, True))
+            verdicts.append(parsed_response(response, criterion))
+        require(grade.get('format_recoveries') == recoveries and
+                (artifact_root / 'FORMAT_RECOVERIES.json').exists() == bool(recoveries) and
+                (read(artifact_root / 'FORMAT_RECOVERIES.json') if recoveries else []) == recoveries,
+                'Format recovery ledger differs from retained responses')
+        expected_repairs = {f'REPAIR-{kind}-{r["criterion_index"]:02d}.json'
+                            for r in recoveries for kind in ('REQUEST', 'RESPONSE')}
+        require({p.name for p in artifact_root.glob('REPAIR-*.json')} == expected_repairs,
+                'Unregistered judge repair artifacts')
         require(verdicts == grade['criteria'], 'Criterion verdicts changed')
         supplement = public_requirements(bank, task_id, expected_files)
         require(grade.get('public_requirements') == supplement and
@@ -219,13 +281,18 @@ class FrozenRubricJudge:
         require(grade['quality_score'] == (score if valid_files else 0.) and
                 grade['success'] == (passed and valid_files), 'Quality aggregation mismatch')
         jm = grade['usage']
-        require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_criteria) and
+        require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_operations) and
                 jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
         contracts = [transport_digest(verdict_contract(c['id'])) for c in rubric['criteria']]
         require(jm['registered_structured_output_sha256'] == contracts and
                 [r['request_structured_outputs_sha256'] for r in jm['operations']] ==
-                [transport_digest(verdict_contract(c['id'])) for c in model_criteria],
-                'Physical judge constraints differ from the declared bounded grammar')
+                [transport_digest(verdict_contract(c['id'])) for c, _, _, _ in model_operations],
+                'Physical judge constraints differ from the declared structured contract')
+        for operation, (criterion, payload, response, repair) in zip(jm['operations'], model_operations):
+            require(operation['accounting'] == 'reported' and operation['status'] == 'completed' and
+                    operation['provider_response_status'] == response['status'] and
+                    operation['request_input_sha256'] == transport_digest(verdict_input(payload, repair=repair)),
+                    'Judge response, prompt or metered status changed')
 
 
 def configured_judge(bank_root, model, base_url, *, max_tokens=400_000):

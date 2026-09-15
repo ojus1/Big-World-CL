@@ -1179,3 +1179,38 @@ live workload observations, not a matched speedup measurement. No server engine
 errors were present in the launch-to-observation log. Gateway aggregate counters
 also include optional metadata probes and client cancellations; they must not
 be interpreted as inference-failure counts without path-level evidence.
+
+### Truncated verdicts and judge version 10 qualification
+
+The throughput study subsequently produced incomplete judge responses at the
+4,096-output-token API cap. At least two had long runs of whitespace outside
+JSON string values; others continued deliberating through the token budget.
+Five failed grades were copied before an operator SIGINT stopped the remaining
+workers, with before/intent/dispatch/after observations retained in
+`throughput-format-failures-v1`. The after snapshot records 112 finalized work
+attempts, 106 fully graded, and eight attempts without a final receipt. Its
+systemd unit is absent and MainPID is zero. The missing unit's default success
+field is not evidence of successful experimental completion. Frozen source and
+study receipts remain unchanged; all six originally planned pairs remain in the
+denominator. No learning effect has been established.
+
+Judge version 10 uses a six-rule compact Unicode JSON grammar, eliminating
+inter-field whitespace without limiting explanation length. The installed
+XGrammar parser accepted Unicode, escapes, empty strings and a 12,000-character
+string, and rejected extra fields, wrong types and inter-field padding. Prompts
+request concise final evidence and rationale without narrated deliberation.
+
+One format-only regeneration per grade is permitted for a returned incomplete
+or invalid verdict with known usage. It receives the same evidence and criterion
+and stronger brevity guidance, with no prior answer content. Both physical calls
+are retained and charged within the original eight-call, token and deadline
+allocations. Valid failing judgments are never regenerated. API errors, timeouts
+and unknown usage are never retried. The auditor binds each original/repair
+input and response to its metered operation and rejects changed evidence or
+outcome selection. Existing frozen studies continue using their original judge.
+
+`worldlab.qualify_saved_judges` copies and regrades every saved evidence snapshot
+from a stopped development study at concurrency 64, including failed and
+interrupted grades. It audits complete grades under the new implementation and
+preserves every qualification outcome. These are dependent development contexts
+for completion and accounting checks, not an accuracy or learning estimate.

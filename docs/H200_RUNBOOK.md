@@ -40,8 +40,12 @@ Actor/profile/optimizer JSON uses supported structured constraints. Text verbosi
 is prompt guidance, with API output-token budgets and no separate character
 limits. The native optimizer edit array uses vLLM's
 [structured-output JSON interface](https://docs.vllm.ai/en/latest/features/structured_outputs/).
-The latest source also uses a compact JSON schema for judge verdicts, without
-character or ASCII limits. Existing frozen studies keep their original judge.
+The latest source uses a six-rule Unicode JSON grammar for judge verdicts, without
+character limits. It enforces field types and compact JSON syntax. One returned
+incomplete or invalid verdict may be regenerated within the original call,
+token and time budgets. Both calls are charged and retained; valid verdicts
+(including failures) are final. Timeouts and unknown usage are not retried.
+Existing frozen studies keep their original judge.
 
 The 64-call short canary passed, but the first sustained six-world load produced
 an employee timeout and incomplete grading. Do not treat that run as qualified
@@ -51,6 +55,10 @@ all expected labels matching, with no timeouts or unknown usage. Native employee
 decisions, two concurrent Hermes work cases and the optimizer transport also
 passed before the fresh study launched at 04:05:17 UTC September 15. This is
 development qualification, not a completed study or a learning-effect result.
+That replacement study subsequently encountered truncated judge responses and
+was operator-stopped; it is not a completed six-pair result. Judge version 10
+is undergoing qualification on all of its saved evidence snapshots before a
+separate experiment can launch. See the execution ledger for current receipts.
 
 ## Serving configuration
 

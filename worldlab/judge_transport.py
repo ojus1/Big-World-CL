@@ -26,7 +26,8 @@ class StructuredJudgeBudget(ResponsesBudget):
         # validation copy; the physical dispatch receives the original request.
         policy_request = {**request, 'extra_body': {'chat_template_kwargs': extra['chat_template_kwargs']}}
         result = super()._provider_readbacks(client, policy_request)
-        return {**result, 'request_structured_outputs_sha256': digest(extra['structured_outputs'])}
+        return {**result, 'request_structured_outputs_sha256': digest(extra['structured_outputs']),
+                'request_input_sha256': digest(request.get('input'))}
 
     def report(self):
         return {**super().report(), 'registered_structured_output_sha256': [digest(c) for c in self.structured_contracts]}
