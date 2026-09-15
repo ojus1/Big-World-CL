@@ -16,6 +16,8 @@ import subprocess
 import sys
 import time
 
+DEFAULT_EXACT_STATES = 100_000
+
 
 def read(path):
     return json.loads(Path(path).read_text())
@@ -51,7 +53,16 @@ def verified_study(root):
     return study
 
 
-def prepare(study_root, out, frozen_source, python=sys.executable, harness_config=None, learner_config=None, judge_config=None):
+def exact_state_bound(probe_counts):
+    """Conservative outcome-independent bound on the paired integer lattice."""
+    require(probe_counts and all(type(n) is int and n > 0 for n in probe_counts),
+            'Every world needs positive planned probe counts')
+    denominator = math.lcm(*probe_counts)
+    return min(2 ** len(probe_counts), len(probe_counts) * denominator + 1)
+
+
+def prepare(study_root, out, frozen_source, python=sys.executable, harness_config=None, learner_config=None,
+            judge_config=None, max_exact_states=DEFAULT_EXACT_STATES):
     root, out, frozen_source = map(lambda p: Path(p).resolve(), (study_root, out, frozen_source))
     study = verified_study(root)
     require(not (root / 'EXECUTION.json').exists() and not (root / 'worlds').exists(),
@@ -71,6 +82,10 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
                 'Freeze the exact configured judge before study execution')
     else:
         require(judge is None, 'Judge configuration does not match the prepared built-in judge')
+    require(type(max_exact_states) is int and max_exact_states > 0, 'Positive exact-state budget required')
+    bound = exact_state_bound([sum(s['split'] == 'probe' for s in w['schedule']) for w in study['worlds']])
+    require(bound <= max_exact_states,
+            'Prepared probe denominators exceed the exact-state budget; choose a feasible budget before execution')
     plan = {'schema_version': 1, 'kind': 'prospective_development_workplace_analysis',
             'prepared_unix': time.time(), 'study_root': str(root),
             'study_sha256': digest(root / 'STUDY.json'),
@@ -80,7 +95,8 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
             'denominator': 'all planned probe obligations, including deferred and unattempted work',
             'missing_pair_policy': 'No inference unless every planned pair completes and passes the frozen audit',
             'test': {'method': 'exact_two_sided_paired_sign_flip_of_mean',
-                     'max_pairs': 20, 'alpha': 0.05,
+                     'computation': 'integer_lattice_dynamic_programming_v1',
+                     'max_exact_states': max_exact_states, 'prepared_state_bound': bound, 'alpha': 0.05,
                      'assumption': 'Independent world differences whose signs are exchangeable under the null; counterbalanced order alone does not establish this',
                      'interpretation': 'Exploratory sensitivity diagnostic; not a design-justified randomization test'},
             'interval': {'method': 'two_sided_Hoeffding_bounded_mean', 'level': 0.95,
@@ -96,8 +112,6 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
             'learner_config_sha256': digest(learner) if learner else None,
             'judge_config': str(judge) if judge else None,
             'judge_config_sha256': digest(judge) if judge else None}
-    require(len(plan['seeds']) <= plan['test']['max_pairs'],
-            'This exact small-study analysis supports at most 20 pairs; choose another prospective protocol for larger studies')
     out.mkdir(parents=True)
     write_new(out / 'PLAN.json', plan)
     write_new(out / 'PREPARED.json', {'plan_sha256': digest(out / 'PLAN.json')})
@@ -107,21 +121,38 @@ def prepare(study_root, out, frozen_source, python=sys.executable, harness_confi
             'model_calls': 0, 'confirmatory_significance_claim': False}
 
 
-def paired_statistics(differences):
+def paired_statistics(differences, *, max_exact_states=DEFAULT_EXACT_STATES):
     """Use exact rational arithmetic so ties in the permutation tail stay ties."""
-    require(1 <= len(differences) <= 20 and all(isinstance(d, Fraction) and -1 <= d <= 1 for d in differences),
-            'Expected 1 to 20 bounded rational world-pair differences')
+    require(differences and all(isinstance(d, Fraction) and -1 <= d <= 1 for d in differences),
+            'Expected nonempty bounded rational world-pair differences')
+    require(type(max_exact_states) is int and max_exact_states > 0, 'Positive exact-state budget required')
     n = len(differences)
     total = sum(differences, Fraction())
-    null = Counter({Fraction(): 1})
-    for d in differences:
-        next_null = Counter()
+    denominator = math.lcm(*(d.denominator for d in differences))
+    signed = [d.numerator * (denominator // d.denominator) for d in differences]
+    divisor = math.gcd(*signed) or 1
+    weights = sorted(abs(v) // divisor for v in signed if v)
+    observed = abs(sum(signed)) // divisor
+    # Merge equal subset sums with integer multiplicities. Every one of the
+    # 2**n sign assignments is still counted exactly, including zero pairs.
+    null = {0: 1}
+    for weight in weights:
+        next_null = {}
         for value, count in null.items():
-            next_null[value + d] += count
-            next_null[value - d] += count
+            for target in (value, value + weight):
+                if target not in next_null:
+                    require(len(next_null) < max_exact_states,
+                            'Exact-state budget exceeded; no approximate p-value is substituted')
+                    next_null[target] = 0
+                next_null[target] += count
         null = next_null
-    extreme = sum(count for value, count in null.items() if abs(value) >= abs(total))
+    weight_sum = sum(weights)
+    extreme = sum(count for value, count in null.items() if abs(2 * value - weight_sum) >= observed)
+    extreme *= 2 ** (n - len(weights))
     permutations = 2 ** n
+    require(sum(null.values()) == 2 ** len(weights) and 0 < extreme <= permutations,
+            'Exact null distribution lost assignment multiplicity')
+    p_value = extreme / permutations
     mean = float(total / n)
     sd = statistics.stdev(float(d) for d in differences) if n > 1 else None
     # Hoeffding: P(|mean - E(mean)| >= e) <= 2 exp(-n e^2/2),
@@ -132,8 +163,12 @@ def paired_statistics(differences):
             'standard_error_world_mean': sd / math.sqrt(n) if sd is not None else None,
             'positive_pairs': sum(d > 0 for d in differences),
             'zero_pairs': sum(d == 0 for d in differences), 'negative_pairs': sum(d < 0 for d in differences),
-            'exact_sign_flip': {'two_sided_p': extreme / permutations,
+            'exact_sign_flip': {'two_sided_p': p_value if p_value > 0 else None,
                                 'extreme_assignments': extreme, 'all_assignments': permutations},
+            'computation': {'method': 'integer_lattice_dynamic_programming_v1',
+                            'reachable_subset_sums': len(null), 'max_exact_states': max_exact_states,
+                            'p_float_underflow': p_value == 0,
+                            'exact_p_at_most_0_05': extreme * 20 <= permutations},
             'hoeffding_95_interval': {'low': max(-1., mean - radius), 'high': min(1., mean + radius),
                                       'unclipped_radius': radius}}
 
@@ -226,7 +261,9 @@ def analyze(out, bank):
     require(before == after, 'Study evidence changed during audit/analysis')
     report = {'status': 'completed', 'plan_sha256': digest(out / 'PLAN.json'),
               'study_sha256': plan['study_sha256'], 'analyzed_unix': time.time(),
-              'world_pairs': rows, 'primary': paired_statistics(differences), 'learning': learning,
+              'world_pairs': rows,
+              'primary': paired_statistics(differences, max_exact_states=plan['test']['max_exact_states']),
+              'learning': learning,
               'analysis_contract': {k: plan[k] for k in ('unit', 'effect', 'denominator', 'missing_pair_policy', 'test', 'interval')},
               'confirmatory_significance_claim': False, 'whole_model_accounting_complete': False,
               'scope': 'Development outcomes conditional on this simulator, bank and grader. Partial scoring coverage, same-model judgments and unknown bootstrap/social usage remain limitations.'}
@@ -248,11 +285,14 @@ def main():
     p.add_argument('--learner-config', type=Path)
     p.add_argument('--judge-config', type=Path)
     p.add_argument('--bank', type=Path)
+    p.add_argument('--max-exact-states', type=int, help='Preparation only: maximum distinct subset sums in exact analysis')
     a = p.parse_args()
     if a.command == 'prepare':
         if not a.study or not a.frozen_source: p.error('Preparation needs --study and --frozen-source')
-        value = prepare(a.study, a.out, a.frozen_source, a.python, a.harness_config, a.learner_config, a.judge_config)
+        value = prepare(a.study, a.out, a.frozen_source, a.python, a.harness_config, a.learner_config, a.judge_config,
+                        DEFAULT_EXACT_STATES if a.max_exact_states is None else a.max_exact_states)
     else:
+        if a.max_exact_states is not None: p.error('The exact-state budget is frozen at preparation')
         if not a.bank: p.error('Analysis needs --bank')
         value = analyze(a.out, a.bank)
     print(json.dumps(value, indent=2, allow_nan=False))

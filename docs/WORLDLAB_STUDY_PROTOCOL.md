@@ -179,9 +179,23 @@ difference range `[-1, 1]`: radius `sqrt(2 log(40) / n)`, clipped to that range.
 This follows [Hoeffding's bounded independent-sum inequality](https://www.tandfonline.com/doi/abs/10.1080/01621459.1963.10500830).
 It needs independent world differences and is conditional on this simulator,
 bank and evaluator. At six pairs it is necessarily wide; a small sign-flip
-p-value does not erase that uncertainty. The exact implementation supports at
-most 20 pairs. A larger confirmatory run requires a separately frozen analysis
-and power calculation, not silently switching methods after observing results.
+p-value does not erase that uncertainty. The frozen version-5 study retains its original analysis implementation and
+20-pair limit. New analysis preparations use integer-lattice dynamic programming
+with exact multiplicities, avoiding repeated rational arithmetic and allowing
+larger planned pair counts. The test statistic, two-sided tail including ties,
+equal world weights and assumptions are unchanged.
+
+`--max-exact-states` sets a preparation-time computational budget (default
+100,000 reachable subset sums). Preparation checks a conservative bound from
+the planned probe denominators before any outcomes exist. With 128 world pairs
+and 48 probes per arm, the bound is 6,145 states. If the bound or runtime budget
+is exceeded, analysis stops without substituting a random approximation or
+selecting fewer pairs. Integer tail and total assignment counts remain exact;
+an unrepresentably small floating-point p-value is reported as null with an
+underflow flag, never as zero probability. These are computational capabilities,
+not sample-size recommendations or evidence of power. A confirmatory run still
+requires a separately frozen analysis, justified assignment/independence,
+qualified final scoring and a prospective power calculation.
 
 ## Remaining requirements
 

@@ -3,6 +3,9 @@ from fractions import Fraction
 import importlib.util
 import hashlib
 import json
+import itertools
+import math
+import random
 from pathlib import Path
 import tempfile
 import unittest
@@ -55,6 +58,60 @@ class Tests(unittest.TestCase):
             (out / 'PLAN.json').write_text('{}')
             with self.assertRaisesRegex(ValueError, 'Analysis plan or source changed'):
                 analysis.analyze(out, Path(tmp))
+
+    def test_integer_lattice_matches_independent_exhaustive_sign_assignments(self):
+        rng = random.Random(71591)
+        for count in range(1, 11):
+            differences = [Fraction(rng.randint(-6, 6), rng.choice([6, 12, 15])) for _ in range(count)]
+            observed = abs(sum(differences))
+            extreme = sum(abs(sum(s * d for s, d in zip(signs, differences))) >= observed
+                          for signs in itertools.product([-1, 1], repeat=count))
+            got = analysis.paired_statistics(differences)['exact_sign_flip']
+            self.assertEqual(got, {'two_sided_p': extreme / 2 ** count,
+                                   'extreme_assignments': extreme, 'all_assignments': 2 ** count})
+            reversed_signs = analysis.paired_statistics([-d for d in reversed(differences)])
+            self.assertEqual(reversed_signs['exact_sign_flip'], got)
+
+    def test_large_pair_count_matches_closed_form_binomial_tail(self):
+        # With equal magnitudes, the mean's exact null tail is a binomial count.
+        differences = [Fraction(1, 48)] * 130 + [Fraction(-1, 48)] * 70 + [Fraction()] * 20
+        result = analysis.paired_statistics(differences)
+        extreme = 2 * sum(math.comb(200, k) for k in range(71)) * 2 ** 20
+        self.assertEqual(result['exact_sign_flip'], {'two_sided_p': extreme / 2 ** 220,
+                         'extreme_assignments': extreme, 'all_assignments': 2 ** 220})
+        self.assertEqual(result['computation']['reachable_subset_sums'], 201)
+        self.assertEqual(result['world_pairs'], 220)
+
+    def test_underflow_keeps_exact_counts_instead_of_claiming_zero_probability(self):
+        result = analysis.paired_statistics([Fraction(1, 48)] * 1200)
+        self.assertEqual(result['exact_sign_flip'], {'two_sided_p': None,
+                         'extreme_assignments': 2, 'all_assignments': 2 ** 1200})
+        self.assertTrue(result['computation']['p_float_underflow'])
+        self.assertTrue(result['computation']['exact_p_at_most_0_05'])
+
+    def test_computation_budget_never_switches_to_an_approximate_test(self):
+        with self.assertRaisesRegex(ValueError, 'no approximate p-value'):
+            analysis.paired_statistics([Fraction(1, 2 ** k) for k in range(1, 8)], max_exact_states=16)
+        for invalid in [0, -1, True, 10.0]:
+            with self.assertRaises(ValueError): analysis.paired_statistics([Fraction()], max_exact_states=invalid)
+
+    def test_larger_plan_freezes_outcome_independent_state_budget(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root, out = Path(tmp) / 'study', Path(tmp) / 'analysis'
+            study = fixture(root)
+            study['worlds'] = [{'seed': i, 'schedule': [{'split': 'probe'}] * 48} for i in range(128)]
+            save(root / 'STUDY.json', study)
+            save(root / 'PREPARED.json', {'study_sha256': analysis.digest(root / 'STUDY.json')})
+            with self.assertRaisesRegex(ValueError, 'before execution'):
+                analysis.prepare(root, out, Path(tmp), max_exact_states=16)
+            self.assertFalse(out.exists())
+            result = analysis.prepare(root, out, Path(tmp), max_exact_states=10_000)
+            self.assertEqual(result['world_pairs'], 128)
+            plan = analysis.read(out / 'PLAN.json')
+            self.assertEqual(plan['test']['max_exact_states'], 10_000)
+            self.assertEqual(plan['test']['prepared_state_bound'], 128 * 48 + 1)
+            self.assertNotIn('max_pairs', plan['test'])
+            self.assertEqual(analysis.digest(out / 'REPRODUCE.py'), plan['analysis_source_sha256'])
 
     def test_partial_study_never_runs_audit_or_computes_inference(self):
         with tempfile.TemporaryDirectory() as tmp:
