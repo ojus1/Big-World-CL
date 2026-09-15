@@ -86,8 +86,13 @@ def snapshot(root, unit=None):
             errors.append({'path': str(path.relative_to(root)), 'error_type': type(exc).__name__})
             return None
 
-    arms = []
+    arms, pairs = [], []
     for world in study['worlds']:
+        if type(world['seed']) is not int:
+            raise ValueError('Unsafe world identity')
+        pair = optional(root / 'worlds' / f'seed-{world["seed"]}' / 'PAIR_STATUS.json') or {}
+        pairs.append({'seed': world['seed'], **{k: pair[k] for k in
+                      ('status', 'index', 'error_type', 'failed_world', 'failed_arm') if k in pair}})
         for name in ('no_learning', study['learner']['name']):
             if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', name) or type(world['seed']) is not int:
                 raise ValueError('Unsafe world or arm identity')
@@ -127,15 +132,23 @@ def snapshot(root, unit=None):
                 'saved_social_model_usage': report.get('actor_usage', state.get('actor_usage', {})).get('social_model_usage')})
     saved_status = optional(root / 'STATUS.json') or {}
     saved_report = optional(root / 'REPORT.json') or {}
+    failure_observed = (saved_status.get('status') in ('incomplete', 'failed')
+                        or bool(saved_status.get('failures'))
+                        or any(p.get('status') in ('incomplete', 'failed') for p in pairs))
+    service = service_state(unit) if unit else None
     value = {'observed_utc': datetime.now(timezone.utc).isoformat(), 'study_root': str(root),
-        'study_sha256': expected, 'service': service_state(unit) if unit else None,
+        'study_sha256': expected, 'service': service,
+        'experiment_failure_observed': bool(failure_observed),
+        'live_supervisor_with_observed_failure': bool(service and service.get('main_process_present') and failure_observed),
+        'pair_statuses': pairs,
+        'successfully_completed_pairs': sum(p.get('status') == 'completed' for p in pairs),
         'execution_marker_exists': (root / 'EXECUTION.json').exists(),
-        'saved_study_status': {k: saved_status[k] for k in ('status', 'completed_arms', 'planned_arms', 'error_type', 'failed_world', 'failed_arm') if k in saved_status},
+        'saved_study_status': {k: saved_status[k] for k in ('status', 'completed_arms', 'planned_arms', 'completed_pairs', 'failures', 'error_type', 'failed_world', 'failed_arm') if k in saved_status},
         'saved_study_report_status': saved_report.get('status'),
         'planned_world_pairs': len(study['worlds']),
         'completed_arm_reports': sum(a['saved_report_status'] == 'completed' for a in arms),
         'arms': arms, 'read_errors': errors, 'whole_study_accounting_complete': False,
-        'scope': 'Read-only nontransactional progress snapshot. Finalized receipts omit pending work. Learning ledger tokens already include replays: do not add those categories. Service success is not an experiment audit or learning-effect result. Inflight markers alone do not prove liveness.'}
+        'scope': 'Read-only nontransactional progress snapshot. Finalized receipts omit pending work. Learning ledger tokens already include replays: do not add those categories. Service liveness can coexist with failed pairs. The controller saved completed_pairs counter includes returned failures; successfully_completed_pairs counts only completed paired reports. No complete execution audit or learning-effect claim. Inflight markers alone do not prove liveness.'}
     if (root / 'STUDY.json').read_bytes() != raw:
         raise ValueError('Study changed during observation')
     return value

@@ -1,4 +1,4 @@
-"""Grade every saved evidence snapshot from a stopped development study.
+"""Grade saved contexts and pre-grading failures from a stopped development study.
 
 Copies preserve original outputs, including incomplete and failed judgments.
 Only the new judge runs. This qualifies completion, metering and audit behavior;
@@ -14,49 +14,80 @@ import time
 from scripts.source_world_calibration import read, save, sha
 from .bank import Bank
 from .campaign import source_identity
-from .qualitative import FrozenRubricJudge
+from .qualitative import FrozenRubricJudge, workspace_evidence
+from .artifact_inventory import inventory, verify as verify_inventory
 
 
 def qualify(bank, judge, study, out, *, concurrency=64, timeout_seconds=1200):
     if not 1 <= concurrency <= 64 or timeout_seconds <= 0:
         raise ValueError('Invalid qualification concurrency or deadline')
     study, out = Path(study).resolve(), Path(out).resolve()
+    if out == study or out.is_relative_to(study):
+        raise ValueError('Qualification output must be outside the original study')
     out.mkdir(parents=True, exist_ok=False)
     instructions = {}
     for task in bank.rows:
         instructions.setdefault(bank.public(task['id'])['instruction'], []).append(task['id'])
-    slots = []
-    for evidence_path in sorted(study.glob('worlds/*/*/sessions/*/judging/EVIDENCE.json')):
-        original = evidence_path.parent.parent
-        evidence = read(evidence_path)
+    slots, excluded = [], []
+    originals = {p.parent.parent for p in study.glob('worlds/*/*/sessions/*/judging/EVIDENCE.json')}
+    for path in study.glob('worlds/*/*/sessions/*/PUBLIC_REQUEST.json'):
+        original = path.parent
+        if original in originals:
+            continue
+        receipt_path = original / 'EXECUTION_RECEIPT.json'
+        receipt = read(receipt_path) if receipt_path.exists() else {}
+        if receipt.get('status') in ('completed', 'budget_exhausted'):
+            originals.add(original)
+        else:
+            excluded.append({'original_attempt': str(original), 'execution_status': receipt.get('status'),
+                             'reason': 'No saved judge evidence or gradeable solver receipt; not assigned a score.'})
+    for original in sorted(originals):
+        evidence_path = original / 'judging/EVIDENCE.json'
+        request = read(original / 'PUBLIC_REQUEST.json')
+        workspace = Path(request['workspace']).resolve()
+        if not workspace.is_relative_to(original):
+            raise ValueError('Original workspace escaped its attempt')
+        evidence = read(evidence_path) if evidence_path.exists() else None
+        if evidence is None:
+            instruction = (read(original / 'EMPLOYEE_REQUEST.json')['original_instruction']
+                           if (original / 'EMPLOYEE_REQUEST.json').exists() else request['instruction'])
+            evidence = {'instruction': instruction, 'files': workspace_evidence(workspace)}
         ids = instructions[evidence['instruction']]
         task_id = read(original / 'ATTEMPT.json')['task_id'] if (original / 'ATTEMPT.json').exists() else None
         if task_id is None and len(ids) == 1:
             task_id = ids[0]
         if task_id not in ids:
             raise ValueError('Cannot bind saved evidence to its original task')
-        request = read(original / 'PUBLIC_REQUEST.json')
-        workspace = Path(request['workspace']).resolve()
-        if not workspace.is_relative_to(original):
-            raise ValueError('Original workspace escaped its attempt')
-        source_files = list(workspace.rglob('*'))
-        if any(p.is_symlink() for p in source_files):
-            raise ValueError('Symlink in saved workspace')
-        inventory = {str(p.relative_to(workspace)): sha(p) for p in source_files if p.is_file()}
+        if not evidence_path.exists():
+            evidence['frozen_clock'] = bank.public(task_id).get('frozen_clock')
+        files, links = inventory(workspace)
         slot = {'id': f'grade-{len(slots):04d}', 'task_id': task_id,
-                'original_attempt': str(original), 'evidence_sha256': sha(evidence_path),
-                'baseline_sha256': sha(original / 'BASELINE.json'), 'workspace_files': inventory,
+                'original_attempt': str(original),
+                'original_evidence_available': evidence_path.exists(),
+                'original_evidence_sha256': sha(evidence_path) if evidence_path.exists() else None,
+                'public_request_sha256': sha(original / 'PUBLIC_REQUEST.json'),
+                'baseline_sha256': sha(original / 'BASELINE.json'),
+                'workspace_files': files, 'workspace_symlinks': links,
                 'original_grade_complete': read(original / 'judging/GRADE.json')['grading_complete']
                     if (original / 'judging/GRADE.json').exists() else None}
         dest = out / slot['id']
         dest.mkdir()
-        shutil.copytree(workspace, dest / 'workspace')
-        for name in ('BASELINE.json', 'judging/EVIDENCE.json'):
-            shutil.copyfile(original / name, dest / Path(name).name)
-        for name, digest in inventory.items():
-            if sha(workspace / name) != digest or sha(dest / 'workspace' / name) != digest:
-                raise ValueError('Saved workspace changed while copying')
-        if sha(dest / 'EVIDENCE.json') != slot['evidence_sha256'] or sha(dest / 'BASELINE.json') != slot['baseline_sha256']:
+        shutil.copytree(workspace, dest / 'workspace', symlinks=True)
+        for name in ('BASELINE.json', 'PUBLIC_REQUEST.json', 'EMPLOYEE_REQUEST.json', 'EXECUTION_RECEIPT.json'):
+            if (original / name).exists():
+                shutil.copyfile(original / name, dest / name)
+        if evidence_path.exists():
+            shutil.copyfile(evidence_path, dest / 'EVIDENCE.json')
+        else:
+            # No original verdict is invented: freeze only the new projection
+            # of a completed solver's retained output, before the first call.
+            save(dest / 'EVIDENCE.json', evidence)
+        slot['evidence_sha256'] = sha(dest / 'EVIDENCE.json')
+        verify_inventory(workspace, files, links)
+        verify_inventory(dest / 'workspace', files, links)
+        if ((slot['original_evidence_available'] and slot['evidence_sha256'] != slot['original_evidence_sha256'])
+                or sha(dest / 'BASELINE.json') != slot['baseline_sha256']
+                or sha(dest / 'PUBLIC_REQUEST.json') != slot['public_request_sha256']):
             raise ValueError('Saved context changed while copying')
         slots.append(slot)
     if not slots:
@@ -65,7 +96,8 @@ def qualify(bank, judge, study, out, *, concurrency=64, timeout_seconds=1200):
             'study_sha256': sha(study / 'STUDY.json'), 'judge': judge.identity(),
             'concurrency': concurrency, 'max_calls_per_grade': 8,
             'max_tokens_per_grade': 400_000, 'timeout_seconds_per_grade': timeout_seconds,
-            'max_reserved_tokens': len(slots) * 400_000, 'slots': slots, 'scope': __doc__}
+            'max_reserved_tokens': len(slots) * 400_000, 'slots': slots,
+            'excluded_source_attempts': excluded, 'scope': __doc__}
     save(out / 'PLAN.json', plan)
     rows = []
 
@@ -103,6 +135,8 @@ def qualify(bank, judge, study, out, *, concurrency=64, timeout_seconds=1200):
               'tokens': sum(r.get('usage', {}).get('charged_tokens', 0) for r in rows),
               'recovery_attempts': sum(len(r.get('recoveries', [])) for r in rows),
               'unknown_accounting': sum(not r.get('usage', {}).get('accounting_complete', False) for r in rows),
+              'contexts_without_original_evidence': sum(not s['original_evidence_available'] for s in slots),
+              'excluded_source_attempts': len(excluded),
               'plan_sha256': sha(out / 'PLAN.json'), 'scope': __doc__}
     save(out / 'QUALIFICATION.json', result)
     return result

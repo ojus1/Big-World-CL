@@ -285,7 +285,7 @@ strict mixed-score improvement, per-case nonregression and fresh final validatio
 gate. It does not substitute a locally invented learning algorithm.
 
 The qualitative judge uses each original frozen r3 criterion and complete text
-files, with one metered schema-constrained verdict per criterion. Private rubrics
+files, with a metered schema-constrained verdict or a registered source check per criterion. Private rubrics
 remain outside the worker sandbox. Judge-derived feedback is a constructed
 training signal, not feedback from a natural user. The current judge shares the
 solver model; offline audits verify evidence and arithmetic, not judgment truth.
@@ -599,7 +599,9 @@ differences, cancelled receivables, contradictory deliverables, source precedenc
 exact schema types/order, stale subjects and unsupported commercial commitments.
 
 Prepare from a source checkout that will remain frozen through execution and
-audit. The default two repetitions produce 76 requests with concurrency 64:
+audit. Two repetitions produce 76 evaluations with model concurrency 64. In the
+latest source, 74 evaluations require model calls and two use the registered
+missing-heading veto without a model call:
 
 ```bash
 python -m worldlab.qualify_semantic_suite prepare \
@@ -611,8 +613,9 @@ python -m worldlab.qualify_semantic_suite run --out /path/to/new-semantic-qualif
 python -m worldlab.qualify_semantic_suite audit --out /path/to/new-semantic-qualification
 ```
 
-Preparation dispatches nothing. Execution retains every planned response and
-charges one metered request per slot; valid failures, format failures and unknown
+Preparation dispatches nothing. Execution freezes each slot's model/source-rule
+method and retains every planned response. Model slots charge one metered request;
+source-rule slots make no API call. Valid failures, format failures and unknown
 usage are never retried. Failed setup with no dispatch is reported separately
 from unknown provider usage. A failed or interrupted output directory cannot be
 resumed. The offline audit checks original case/request bytes, structured-output
@@ -620,9 +623,31 @@ and prompt hashes, label agreement, accounting and the complete planned roster.
 Only payload evidence and criteria reach the model; expected labels and label
 rationales stay in the qualification controller.
 
-This suite's fixtures pass a real 64-thread overlap test and failure/tampering
-checks. Source preparation succeeds for all 38 controls. Those checks do not
-establish a live model pass: the broader model qualification remains pending.
-Its traffic is kept out of the running frozen workplace study. Repeated variants
-within three families are dependent development controls, not independent samples
-for a general accuracy estimate or a learning-effect claim.
+The original 76-call suite completed with known usage but matched 75 labels.
+One model response invented the required `## Network` heading in a candidate
+where it was absent. That failed qualification remains preserved. The new
+source-bound veto checks the exact reviewed criterion, public instruction and
+input text hashes, and returns failure only when required heading text is absent.
+Presence falls through to model judgment; it does not establish coherent prose,
+correct factual organization or a fully compliant artifact. Text hashes follow
+the same newline normalization as the judge's evidence reader.
+
+The suite's fixtures exercise 64 overlapping calls, failures, tampering and the
+separate zero-call source-rule path. A new live qualification is required for the
+changed source. Repeated variants within three families are dependent development
+controls, not independent samples for a general accuracy estimate or a learning
+effect. Qualification traffic is kept out of active frozen workplace studies.
+
+The grader excludes the root `scratch` area before traversing its contents.
+Temporary virtual-environment links and binaries therefore do not enter judging.
+Symlinks elsewhere in graded evidence are still rejected. Attempt receipts hash
+regular artifact files and separately record symbolic-link targets without
+following them; changes to those targets fail the artifact audit. Saved-context
+qualification now includes completed solver attempts whose original grading
+failed before an evidence file was written, and lists interrupted/ungradeable
+solver attempts separately instead of silently omitting them.
+
+`scripts/report_worldlab_progress.py` reports pair failures even while a supervisor
+remains live joining other workers. Inspect `experiment_failure_observed`,
+`pair_statuses` and `successfully_completed_pairs` alongside service state. The
+controller's historical `completed_pairs` counter includes returned failed pairs.

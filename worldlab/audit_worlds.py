@@ -13,6 +13,7 @@ from .contracts import Budget, validate_execution, validate_grade
 from .worlds import stable_hash
 from .validation_context import select_experiences, validate_world
 from .attempts import task_instruction
+from .artifact_inventory import verify as verify_inventory
 
 
 def require(condition, message):
@@ -20,12 +21,10 @@ def require(condition, message):
 
 
 def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employee_message=None, judge=None):
+    require(not (root / 'ATTEMPT.json').is_symlink(), 'Attempt receipt cannot be a symlink')
     record = read(root / 'ATTEMPT.json')
-    actual = {str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()} - {'ATTEMPT.json'}
-    require(actual == set(record['artifact_inventory']), 'Attempt artifact inventory changed')
-    for name, digest in record['artifact_inventory'].items():
-        p = child(root, name)
-        require(not p.is_symlink() and sha(p) == digest, 'Attempt file changed: ' + name)
+    verify_inventory(root, record['artifact_inventory'], record.get('artifact_symlinks', {}),
+                     exclude=('ATTEMPT.json',))
     request = read(root / 'PUBLIC_REQUEST.json')
     original = bank.public(task_id)['instruction']
     require(request['instruction'] == task_instruction(original, employee_message), 'Public task instruction mismatch')

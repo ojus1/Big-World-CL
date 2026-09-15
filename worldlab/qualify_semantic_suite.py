@@ -2,7 +2,8 @@
 
 Every planned response is retained, including wrong labels and unknown usage.
 These are dependent development controls, not a general accuracy estimate or
-employee performance. No response is retried and no study outcome is rewritten.
+employee performance. Registered source-rule evaluations are frozen separately
+from model calls. No response is retried and no study outcome is rewritten.
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -18,13 +19,17 @@ from lifespan.evaluation.provider import provider_contract, validate_contract
 from .bank import Bank
 from .campaign import source_identity
 from .judge_transport import StructuredJudgeBudget, digest
-from .qualitative import parsed_response, request_verdict, verdict_input
+from .qualitative import parsed_response, request_verdict, verdict_input, mechanical_verdict, mechanical_method
 from .semantic_cases import controls
 from .verdict_schema import contract
 
 
 def now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def execution_method(case):
+    return mechanical_method(case['payload']) if mechanical_verdict(case['payload']) is not None else 'model'
 
 
 def prepare(bank, out, model, base_url, *, repeats=2, concurrency=64):
@@ -41,7 +46,7 @@ def prepare(bank, out, model, base_url, *, repeats=2, concurrency=64):
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     for case in cases:
         save(out / 'cases' / (case['id'] + '.json'), case)
-    slots = [{'id': f'r{r:03d}-{c["id"]}', 'case_id': c['id'],
+    slots = [{'id': f'r{r:03d}-{c["id"]}', 'case_id': c['id'], 'evaluation_method': execution_method(c),
               'max_reserved_tokens': 2 * len(json.dumps(verdict_input(c['payload']), ensure_ascii=False).encode()) + 16384}
              for r in range(repeats) for c in cases]
     plan = {'prepared_at': now(), 'scope': __doc__,
@@ -52,10 +57,11 @@ def prepare(bank, out, model, base_url, *, repeats=2, concurrency=64):
             'max_output_tokens': 4096, 'slots': slots,
             'cases': {c['id']: sha(out / 'cases' / (c['id'] + '.json')) for c in cases},
             'pass_rule': 'Every planned case must return a valid verdict matching its predeclared label with known usage. '
-                         'One request per slot, no retries or outcome selection.'}
+                         'One request per model slot; predeclared source-rule slots make no model call. No retries or outcome selection.'}
     save(out / 'PLAN.json', plan)
     save(out / 'PREPARED.json', {'plan_sha256': sha(out / 'PLAN.json')})
-    return {'cases': len(cases), 'planned_calls': len(slots), 'concurrency': concurrency,
+    return {'cases': len(cases), 'planned_evaluations': len(slots),
+            'planned_calls': sum(s['evaluation_method'] == 'model' for s in slots), 'concurrency': concurrency,
             'plan_sha256': sha(out / 'PLAN.json')}
 
 
@@ -76,6 +82,8 @@ def load_plan(out):
         if case['id'] != case_id:
             raise ValueError('Semantic case identity changed')
         cases[case_id] = case
+    if any(slot['evaluation_method'] != execution_method(cases[slot['case_id']]) for slot in plan['slots']):
+        raise ValueError('Prepared semantic execution method changed')
     return out, plan, cases
 
 
@@ -99,13 +107,16 @@ def run(out, *, client_factory=None):
             max_total_tokens=slot['max_reserved_tokens'], provider_contract=provider)
         client = None; started = time.monotonic(); error = None; verdict = None
         try:
-            if client_factory is None:
+            if slot['evaluation_method'] != 'model':
+                client = None
+            elif client_factory is None:
                 from openai import OpenAI
                 client = OpenAI(base_url=provider['base_url'], api_key=os.environ.get('WORLDLAB_API_KEY', 'EMPTY'),
                                 max_retries=0, timeout=plan['request_timeout_seconds'])
             else:
                 client = client_factory()
-            meter.wrap_client(client)
+            if client is not None:
+                meter.wrap_client(client)
             response = request_verdict(client, provider, payload, plan['request_timeout_seconds'])
             record = {'text': response.output_text, 'status': response.status,
                       'evaluation_method': getattr(response, 'evaluation_method', 'model')}
@@ -125,6 +136,7 @@ def run(out, *, client_factory=None):
                     error = error or type(exc).__name__
         usage = meter.report()
         row = {'id': slot['id'], 'case_id': slot['case_id'], 'expected': case['expected'],
+               'evaluation_method': slot['evaluation_method'],
                'valid': verdict is not None, 'actual': verdict['passed'] if verdict else None,
                'correct': verdict is not None and verdict['passed'] == case['expected'],
                'error_type': error, 'seconds': time.monotonic() - started, 'usage': usage}
@@ -160,6 +172,7 @@ def audit(out):
             raise ValueError('Semantic request differs from the prepared evidence')
         row = read(root / 'RESULT.json'); usage = row['usage']; ops = usage['operations']
         if (row['id'] != slot['id'] or row['case_id'] != case['id'] or row['expected'] != case['expected']
+                or row['evaluation_method'] != slot['evaluation_method']
                 or any(type(row[k]) is not bool for k in ('expected', 'valid', 'correct'))
                 or usage['provider_contract'] != plan['provider']
                 or usage['physical_model_calls'] != len(ops) or len(ops) > 1
@@ -170,6 +183,8 @@ def audit(out):
         verdict = None; response = None
         if (root / 'RESPONSE.json').exists():
             response = read(root / 'RESPONSE.json')
+            if response['evaluation_method'] != slot['evaluation_method']:
+                raise ValueError('Semantic response execution method changed')
             try:
                 verdict = parsed_response(response, case['payload']['criterion'])
             except (ValueError, TypeError):
@@ -191,10 +206,18 @@ def audit(out):
                     or op['input_tokens'] + op['output_tokens'] != op['total_tokens']
                     or op['charged_tokens'] != op['total_tokens']):
                 raise ValueError('Reported semantic token accounting is inconsistent')
-        complete = (len(ops) == 1 and usage['accounting_complete'] and not usage['stopped']
-                    and ops[0]['accounting'] == 'reported' and ops[0]['status'] == 'completed'
-                    and response is not None and ops[0]['provider_response_status'] == response['status'])
+        if slot['evaluation_method'] == 'model':
+            complete = (len(ops) == 1 and usage['accounting_complete'] and not usage['stopped']
+                        and ops[0]['accounting'] == 'reported' and ops[0]['status'] == 'completed'
+                        and response is not None and ops[0]['provider_response_status'] == response['status'])
+        else:
+            expected_verdict = mechanical_verdict(case['payload'])
+            if response is not None and json.loads(response['text']) != expected_verdict:
+                raise ValueError('Source-rule verdict differs from the prepared evidence')
+            complete = (not ops and usage['accounting_complete'] and not usage['stopped']
+                        and response is not None and response['status'] == 'completed')
         rows.append({'id': slot['id'], 'case_id': case['id'], 'family': case['family'],
+                     'evaluation_method': slot['evaluation_method'],
                      'correct': row['correct'], 'valid': valid,
                      'accounting_complete': usage['accounting_complete'], 'request_completed': bool(complete),
                      'error_type': row['error_type'], 'seconds': row['seconds'],
@@ -202,9 +225,11 @@ def audit(out):
                      'charged_tokens': usage['charged_tokens'], 'reported_tokens': usage['reported_tokens']})
     report = {'ok': all(r['correct'] and r['request_completed'] and r['error_type'] is None for r in rows),
             'planned': len(plan['slots']), 'completed': len(rows),
+            'planned_model_calls': sum(s['evaluation_method'] == 'model' for s in plan['slots']),
             'valid': sum(r['valid'] for r in rows), 'matching_labels': sum(r['correct'] for r in rows),
             'unknown_accounting': sum(not r['accounting_complete'] for r in rows),
-            'undispatched': sum(r['model_calls'] == 0 for r in rows),
+            'undispatched': sum(r['evaluation_method'] == 'model' and r['model_calls'] == 0 for r in rows),
+            'source_rule_evaluations': sum(r['evaluation_method'] != 'model' for r in rows),
             'model_calls': sum(r['model_calls'] for r in rows),
             'charged_tokens': sum(r['charged_tokens'] for r in rows),
             'reported_tokens': sum(r['reported_tokens'] for r in rows),

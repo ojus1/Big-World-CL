@@ -11,7 +11,7 @@ from scripts.source_world_calibration import child, read, save, sha
 from lifespan.evaluation.provider import provider_contract
 from .judge_transport import StructuredJudgeBudget
 from .verdict_schema import contract as verdict_contract, validate_text, SCHEMA
-from .mechanical_criteria import evaluate as mechanical_verdict
+from .mechanical_criteria import evaluate as mechanical_verdict, evaluation_method as mechanical_method
 from .public_requirements import evaluate as public_requirements, aggregate, REGISTRY
 
 RULES = ('Evaluate only the supplied criterion against the original public task and source files. '
@@ -58,13 +58,39 @@ def request_verdict(client, provider, payload, timeout, *, repair=False):
     if mechanical is not None:
         from types import SimpleNamespace
         return SimpleNamespace(output_text=json.dumps(mechanical, separators=(',', ':')),
-                               status='completed', evaluation_method='registered_literal_count')
+                               status='completed', evaluation_method=mechanical_method(payload))
     """Shared transport contract for production judging and calibration controls."""
     return client.responses.create(model=provider['model'],
         input=verdict_input(payload, repair=repair),
         max_output_tokens=4096, stream=False, store=False, timeout=timeout,
         extra_body={'chat_template_kwargs': {'enable_thinking': False},
                     'structured_outputs': verdict_contract(payload['criterion']['id'])})
+
+
+def workspace_evidence(workspace):
+    """Exclude scratch before traversal; never follow a link into graded evidence."""
+    workspace = Path(workspace)
+    files = {}
+    pending = [workspace]
+    while pending:
+        directory = pending.pop()
+        for path in sorted(directory.iterdir()):
+            if directory == workspace and path.name == 'scratch':
+                continue
+            if path.is_symlink():
+                raise ValueError('Symlink in candidate workspace')
+            if path.is_dir():
+                pending.append(path)
+                continue
+            relative = str(path.relative_to(workspace))
+            if relative == '.employee_identity':
+                continue
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in TEXT_FORMATS:
+                raise ValueError('Unqualified binary evidence; no silent text-only fallback')
+            files[relative] = {'text': path.read_text(), 'sha256': sha(path)}
+    return files
 
 
 class FrozenRubricJudge:
@@ -75,11 +101,14 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 13, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 14, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'request_timeout_seconds': 300,
+                'evidence_scope': {'excluded_workspace_root': 'scratch',
+                                   'excluded_metadata': '.employee_identity',
+                                   'other_symlinks': 'reject_without_following'},
                 'structured_output_schema': VERDICT_SCHEMA,
                 'structured_output_transport': 'json_schema_text_guidance',
                 'format_recovery': {'max_per_grade': 1, 'trigger': 'unusable_returned_verdict_with_known_usage',
@@ -120,15 +149,7 @@ class FrozenRubricJudge:
             raise ValueError('Frozen rubric changed')
         public = self.bank.public(task_id)
         if self.unsupported(public): raise ValueError('Unsupported judge evidence')
-        files = {}
-        for path in sorted(Path(workspace).rglob('*')):
-            if path.is_symlink(): raise ValueError('Symlink in candidate workspace')
-            relative = str(path.relative_to(workspace))
-            if not path.is_file() or relative == '.employee_identity' or relative.startswith('scratch/'):
-                continue
-            if path.suffix.lower() not in TEXT_FORMATS:
-                raise ValueError('Unqualified binary evidence; no silent text-only fallback')
-            files[relative] = {'text': path.read_text(), 'sha256': sha(path)}
+        files = workspace_evidence(workspace)
         evidence = {'instruction': public['instruction'], 'files': files,
                     'frozen_clock': public.get('frozen_clock')}
         save(out / 'EVIDENCE.json', evidence)
@@ -224,10 +245,7 @@ class FrozenRubricJudge:
         model_operations = []
         recoveries = []
         evidence = read(artifact_root / 'EVIDENCE.json')
-        expected_files = {str(p.relative_to(workspace)): {'text': p.read_text(), 'sha256': sha(p)}
-                          for p in workspace.rglob('*') if p.is_file() and
-                          str(p.relative_to(workspace)) != '.employee_identity' and
-                          not str(p.relative_to(workspace)).startswith('scratch/')}
+        expected_files = workspace_evidence(workspace)
         require(evidence['files'] == expected_files and evidence['instruction'] == original,
                 'Judge evidence differs from original input and actual deliverables')
         changed = [name for name, digest in baseline.items()
@@ -241,7 +259,7 @@ class FrozenRubricJudge:
             require(payload['criterion'] == criterion and payload['evidence'] == read(artifact_root / 'EVIDENCE.json'),
                     'Frozen criterion/evidence mismatch')
             mechanical = mechanical_verdict(payload)
-            require(response['evaluation_method'] == ('registered_literal_count' if mechanical is not None else 'model'),
+            require(response['evaluation_method'] == (mechanical_method(payload) if mechanical is not None else 'model'),
                     'Criterion execution method changed')
             if mechanical is None:
                 model_operations.append((criterion, payload, response, False))

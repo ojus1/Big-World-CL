@@ -15,7 +15,7 @@
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
   `/home/inference-testing/apps/Big-World-CL-judge-v13/lifespan/artifacts/native-workplace-compact-v3`.
-* Scale service: `bigworld-native-workplace-compact-v3`.
+* Most recent scale service: `bigworld-native-workplace-compact-v3` (stopped after a pair failure).
 * Native employee backend: `http://127.0.0.1:5005`, installed under
   `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
@@ -63,8 +63,14 @@ passed all 113 saved-evidence grades with complete accounting. Its unchanged
 semantic prompts/schema passed 64 concurrent controls in 13.240 seconds.
 Twelve native employee decisions, two Hermes controls and the explicitly
 profiled optimizer call also passed. The fresh six-world experiment launched
-at 04:48:17 UTC September 15. These qualifications and the running study do
-not establish successful learning. See the execution ledger for exact receipts.
+at 04:48:17 UTC September 15, but later failed in pair 409 before grading a
+solver's output: the old evidence reader rejected virtual-environment symlinks
+under the otherwise excluded `scratch/` directory. The remaining study workers
+were stopped, with MainPID zero and gateway idle verified at 05:22:19 UTC.
+The inference server remains available. The broader 76-call semantic check then
+completed with known usage but matched only 75 labels. Fresh-source qualification
+is required before another scale launch. No successful-learning result exists.
+See the execution ledger for the original receipts and prospective corrections.
 
 ## Serving configuration
 

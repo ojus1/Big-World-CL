@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 from scripts.source_world_calibration import save, sha
 from .contracts import TaskRequest, validate_execution, validate_grade
+from .artifact_inventory import inventory
 
 
 def task_instruction(original, employee_message=None):
@@ -56,7 +57,6 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
     result['tool_calls'] = sum(len(m.get('tool_calls') or []) for m in messages)
     result['seconds'] = time.monotonic() - started
     result['skill_sha256'] = execution.get('skill_sha256')
-    result['artifact_inventory'] = {str(p.relative_to(out)): sha(p) for p in sorted(out.rglob('*'))
-                                    if p.is_file() and not p.is_symlink()}
+    result['artifact_inventory'], result['artifact_symlinks'] = inventory(out)
     save(out / 'ATTEMPT.json', result)
     return result

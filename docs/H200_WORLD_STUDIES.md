@@ -5,9 +5,49 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
-## Latest verified checkpoint: September 15, 04:58 UTC
+## Latest failure and qualification state: September 15, 05:23 UTC
 
-The current six-pair study is `native-workplace-compact-v3`, running from
+`native-workplace-compact-v3` is incomplete. Pair 409/`skillopt_sleep` raised a
+`ValueError` before grading `d001-operations-fr-001-000`, task
+`internal/euw_v1_es_018_fr_bridge`. The native solver returned a known-accounting
+`budget_exhausted` receipt: 21 calls and 411,551 tokens. Its scratch virtual
+environment contained Python and `lib64` links. The original evidence reader
+checked symlinks before excluding scratch, and therefore crashed without writing
+`EVIDENCE.json`. The error was reproduced against the frozen original source and
+retained workspace with **zero model calls**. Reproduction receipt SHA:
+`f24d4fe706790b48d3705f43ace9ea7fc4dbfd60e230c3547279b6f36a61cc4b`.
+
+The supervisor remained alive while other pairs continued. Earlier service-only
+progress observations missed the pair failure; they do not prove every arm was
+progressing. The failed study cannot satisfy its six-pair analysis plan. Its
+remaining work was stopped and preserved; by 05:22:19 UTC the original MainPID
+2112546 was absent, the transient unit was inactive/missing, and gateway active
+and queued counts were zero. The inference container remained running unchanged.
+Stop intent, before/after observations and checkpoint copies are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-stop-after-pair-failure-v1`.
+No source, receipt, failed pair or planned probe was rewritten or dropped.
+
+The separately frozen multilingual suite at `5172a76` then ran all 76 calls in
+13.967 seconds, using 197,332 reported tokens with no unknown usage. It matched
+**75/76 labels** and failed its declared all-labels gate. One repetition of
+`association-missing-network-heading` claimed the absent literal heading was
+present; the other repetition correctly rejected it. The French and German
+controls matched all their labels. Evidence remains under
+`Big-World-CL-semantic-suite-v1/lifespan/artifacts/multilingual-semantic-v1`, plan
+SHA `7ecb7e4ad840543f05fd8451009e527d526bc3c4b5c438f37447ad0a37b3d222`.
+This is a failed, dependent development qualification, not a general accuracy or
+learning-effect estimate.
+
+Prospective judge version 14 excludes scratch before traversal, retains link
+targets in artifact inventories, and registers a source-bound missing-heading
+veto. Presence still requires semantic judgment. Saved-context qualification
+includes completed solver outputs that failed before evidence creation. Progress
+reporting exposes pair failures independently of supervisor liveness. The earlier
+checkouts and qualifications remain frozen; new live qualification is required.
+
+## Historical checkpoint: September 15, 04:58 UTC
+
+The six-pair study `native-workplace-compact-v3` ran from
 `Big-World-CL-judge-v13` at `e2fe6b7f36bdd465c9bd70fc91a4c16945171e16`.
 At 04:58:28 UTC its service was active/running with MainPID **2112546** and
 invocation `ea7d4fdc001545d3882020e187b796d0`. The six first arms had reached
@@ -58,7 +98,7 @@ qualifications; they are not this study's inference-failure count.
 | Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Completed; full original-source audit passed, 52 work attempts, 24 replays, zero adoptions |
 | Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Failed September 15 at 00:23 UTC after 71 graded work attempts; no completed pair |
 | Isolated validation pilot | `Big-World-CL-isolated-validation-v1`, `c833481` | `lifespan/artifacts/native-workplace-isolated-validation-v1` | Launched September 15 at 03:16 UTC, with separately prepared gate cases |
-| Compact JSON six-world study | `Big-World-CL-judge-v13`, `e2fe6b7` | `lifespan/artifacts/native-workplace-compact-v3` | Active at September 15, 04:58 UTC; individual checkpoint audit passed, no completed pair or learning result |
+| Compact JSON six-world study | `Big-World-CL-judge-v13`, `e2fe6b7` | `lifespan/artifacts/native-workplace-compact-v3` | Incomplete after a scratch-symlink grading error in pair 409; remaining work stopped by September 15, 05:22 UTC; no completed pair or learning result |
 
 The stopped pair services are `bigworld-development-world-v2.service` and
 `bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740

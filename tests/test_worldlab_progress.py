@@ -71,6 +71,27 @@ class Tests(unittest.TestCase):
             self.assertEqual((arm / 'STATE.json').read_text(), '{')
             self.assertTrue((arm / 'INFLIGHT.json').exists())
 
+    def test_live_supervisor_does_not_hide_pair_failure_before_global_status_arrives(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            save(root / 'STUDY.json', {'worlds': [{'seed': 409, 'schedule': []}],
+                                      'learner': {'name': 'learner'}})
+            save(root / 'PREPARED.json', {'study_sha256': hashlib.sha256((root / 'STUDY.json').read_bytes()).hexdigest()})
+            save(root / 'worlds/seed-409/PAIR_STATUS.json', {'status': 'incomplete', 'index': 0,
+                 'failed_world': 409, 'failed_arm': 'learner', 'error_type': 'ValueError', 'reports': []})
+            with patch.object(progress, 'service_state', return_value={'main_process_present': True}):
+                value = progress.snapshot(root, 'example.service')
+            self.assertTrue(value['experiment_failure_observed'])
+            self.assertTrue(value['live_supervisor_with_observed_failure'])
+            self.assertEqual(value['successfully_completed_pairs'], 0)
+            self.assertEqual(value['pair_statuses'][0]['failed_arm'], 'learner')
+            save(root / 'STATUS.json', {'status': 'incomplete', 'completed_pairs': 1,
+                                      'failures': [{'failed_world': 409, 'error_type': 'ValueError'}]})
+            value = progress.snapshot(root)
+            self.assertEqual(value['saved_study_status']['completed_pairs'], 1)
+            self.assertEqual(value['successfully_completed_pairs'], 0)
+            self.assertEqual(value['saved_study_status']['failures'][0]['failed_world'], 409)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,8 +1,10 @@
 """Narrow executable predicates for exactly registered frozen rubric criteria.
 
 Unknown or changed criteria always return None and retain ordinary judging.
-This is a literal-count check, not a model judgment or general semantic oracle.
+These are narrow source checks, not a model judgment or general semantic oracle.
 """
+import hashlib
+import html
 import re
 
 SOURCE = 'input/manual_v23_section4.md'
@@ -16,12 +18,68 @@ CRITERION = {
     'weight': 2,
 }
 
+HEADING_OUTPUT = 'output/synthese_avantages.md'
+HEADING_INSTRUCTION_SHA256 = '29c6acfd0cf8514d9fb44e86649088b2888c41cf32393c954dae00e286f5f14f'
+# Text hashes use the same universal-newline projection as Path.read_text.
+# The calibration bank separately binds the original file bytes.
+HEADING_SOURCES = {
+    'input/fiche_avantages.csv': 'a64445de81aab8c6de2519d8314cfa998199c040e87bef14b77912bdbafdf05d',
+    'input/notes_reunion.md': 'a21318a63d10eaca3cf3e46b9f4d170d04ffc9797c9d85e7602d7eedcfe34e70',
+    'input/reglement_interne.md': 'e7b3eb19d6124852be5b1c60c9bcfefe37aef5660937baa1c9a73a47189ecfe1',
+}
+HEADING_CRITERION = {
+    'acceptable_alternatives': ['Source-faithful paraphrasing is acceptable; the required headings remain literal even where they differ from the prose language.'],
+    'evidence_anchors': [*HEADING_SOURCES, HEADING_OUTPUT, 'output/annexe_faits.json'],
+    'failure_examples': ['A bullet dump without explanatory synthesis, missing a topical section, or replacing the explicitly instructed headings ## Fiscal, ## Administrative, ## Network.'],
+    'id': 'Q01',
+    'requirement': 'The two required deliverables are output/synthese_avantages.md and output/annexe_faits.json. The synthesis is coherent English prose with three exact section headings ## Fiscal, ## Administrative, ## Network, organizing the source benefits appropriately into fiscal, administrative and network topics.',
+    'weight': 1,
+}
+
+
+def missing_heading_veto(payload):
+    evidence = payload.get('evidence', {})
+    instruction = evidence.get('instruction')
+    if (payload.get('criterion') != HEADING_CRITERION or not isinstance(instruction, str)
+            or hashlib.sha256(instruction.encode()).hexdigest() != HEADING_INSTRUCTION_SHA256):
+        return None
+    files = evidence.get('files', {})
+    for name, expected in HEADING_SOURCES.items():
+        source = files.get(name, {}).get('text')
+        if not isinstance(source, str):
+            return None
+        source = source.replace('\r\n', '\n').replace('\r', '\n')
+        if hashlib.sha256(source.encode()).hexdigest() != expected:
+            return None
+    text = files.get(HEADING_OUTPUT, {}).get('text', '')
+    if not isinstance(text, str):
+        return None
+    text = html.unescape(text)
+    # A permissive presence test supplies only a necessary condition. It is
+    # deliberately not a Markdown parser or an automatic positive verdict:
+    # quoted headings, extra sections and prose quality still need judgment.
+    missing = [title for title in ('Fiscal', 'Administrative', 'Network')
+               if re.search(r'##[ \t]+' + title + r'(?=$|[ \t#\r\n])', text) is None]
+    if not missing:
+        return None
+    return {'criterion_id': 'Q01', 'passed': False,
+            'evidence': HEADING_OUTPUT + ': absent required heading text: ' + ', '.join('## ' + t for t in missing) + '.',
+            'reasoning': 'The reviewed public instruction and Q01 explicitly require these exact section headings. '
+                         'Their absence violates a binding requirement; other quality conditions are not waived.'}
+
+
+def evaluation_method(payload):
+    """Call only after evaluate returns a registered verdict."""
+    return 'registered_missing_heading_veto' if payload.get('criterion') == HEADING_CRITERION else 'registered_literal_count'
+
 
 def matches(text, number):
     return list(re.finditer(r'\b(?:fig\.|figure)\s*' + re.escape(number) + r'(?!\d)', text, re.IGNORECASE))
 
 
 def evaluate(payload):
+    if payload.get('criterion') == HEADING_CRITERION:
+        return missing_heading_veto(payload)
     if payload.get('criterion') != CRITERION:
         return None
     files = payload['evidence']['files']

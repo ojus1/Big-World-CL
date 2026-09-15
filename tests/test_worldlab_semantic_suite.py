@@ -146,6 +146,26 @@ class Tests(unittest.TestCase):
         self.assertEqual((result['model_calls'], result['unknown_accounting'], result['undispatched']), (0, 0, 2))
         self.assertEqual(result['charged_tokens'], 0)
 
+    def test_registered_source_rule_has_zero_calls_and_is_audited_separately(self):
+        from worldlab.mechanical_criteria import CRITERION, SOURCE, OUTPUT
+        case = {'id': 'registered-count', 'family': 'fixture', 'task_id': 'fixture/count',
+                'expected': False, 'label_rationale': 'The output has no required references.',
+                'payload': {'criterion': deepcopy(CRITERION), 'evidence': {'instruction': 'Use the sources.',
+                            'files': {SOURCE: {'text': 'Fig. 4.7\nFig. 4.7\nFig. 4.7'},
+                                      OUTPUT: {'text': 'No references.'}}}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'suite'
+            with patch.object(suite, 'controls', return_value=[case]):
+                prepared = suite.prepare(SimpleNamespace(verification={'manifest_sha256': 'fixture'}), out,
+                                         'fixture', Client.base_url, repeats=1)
+            self.assertEqual((prepared['planned_calls'], prepared['planned_evaluations']), (0, 1))
+            def forbidden():
+                raise AssertionError('Registered source rule must not construct an API client')
+            result = suite.run(out, client_factory=forbidden)
+            self.assertTrue(result['ok']); self.assertEqual(result['source_rule_evaluations'], 1)
+            self.assertEqual((result['model_calls'], result['charged_tokens'], result['undispatched']), (0, 0, 0))
+            self.assertTrue(suite.audit(out)['ok'])
+
 
 if __name__ == '__main__':
     unittest.main()
