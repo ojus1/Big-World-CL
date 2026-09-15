@@ -86,7 +86,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
         require(update['train_ids'] == [s['id'] for s in selected if s['split'] == 'train'] and
                 update['validation_ids'] == [s['id'] for s in selected if s['split'] == 'val'], 'Learning leaked future or wrong cases')
         from .experience_update import audit_replay_admissions
-        audit_replay_admissions(update_root, update)
+        audit_replay_admissions(update_root, update, selected)
         for replay in update['replay_evidence']:
             r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness,
                                       employee_message=by_id[replay['id']].get('employee_message'), judge=judge)

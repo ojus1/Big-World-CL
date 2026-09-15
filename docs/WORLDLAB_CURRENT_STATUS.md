@@ -33,7 +33,8 @@ The reproduced failures were:
   and binary files as candidate deliverables and raised an error.
 
 The next source version records an auditable, zero-dispatch budget stop when
-the work-plus-grading allocation cannot fit. The skill remains unchanged and no
+the complete configured work window plus 300 seconds of grading cannot fit.
+It never launches a shortened replay from the remainder. The skill remains unchanged and no
 score is sent to SkillOpt. Root `scratch`, `.venv` and `__pycache__` directories
 are runtime areas: their files and symlink targets remain in the artifact
 inventory but do not enter text judging. The same names under `input/` or

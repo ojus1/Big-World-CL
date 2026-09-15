@@ -8,22 +8,24 @@ from .contracts import Budget, judge_call_allocation
 from .validation_context import observed_feedback
 
 
-def replay_admission(limits):
-    """Reserve grading before starting a native task; never invent a one-second remainder."""
-    for dimension, minimum in [('timeout_seconds', 301), ('max_model_calls', 2), ('max_tokens', 2)]:
+def replay_admission(limits, work_budget):
+    """Admit a full work window plus grading, rather than starting a shortened replay."""
+    for dimension, minimum in [('timeout_seconds', work_budget['seconds'] + 300), ('max_model_calls', 2), ('max_tokens', 2)]:
         if limits[dimension] < minimum:
             return {'admitted': False, 'dimension': dimension, 'available': limits[dimension],
-                    'minimum': minimum, 'policy': 'reserve_300_seconds_for_judging_v1'}
+                    'minimum': minimum, 'policy': 'reserve_full_work_and_300_second_judging_v1'}
     return None
 
 
-def audit_replay_admissions(update_root, update):
+def audit_replay_admissions(update_root, update, selected):
+    by_id = {s['id']: s for s in selected}
     for row in update['costs']['operations']:
         if row.get('callback_status') != 'not_admitted': continue
         root = update_root / f'replay-{row["attempt_index"]:03d}'
-        expected = replay_admission(row['limits'])
+        budget = by_id[row['task_id']]['work_budget']
+        expected = replay_admission(row['limits'], budget)
         if (row['kind'] != 'target' or expected is None or row.get('admission') != expected
-                or read(root / 'REPLAY_ADMISSION.json') != {'limits': row['limits'], 'admission': expected}
+                or read(root / 'REPLAY_ADMISSION.json') != {'limits': row['limits'], 'work_budget': budget, 'admission': expected}
                 or {p.name for p in root.iterdir()} != {'REPLAY_ADMISSION.json'}):
             raise ValueError('Replay admission stop differs from the allocated budget')
 
@@ -71,9 +73,9 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
     def replay(payload, limits):
         slot = by_id[payload['task']['id']]
         replay_root = update_root / f'replay-{payload["attempt_index"]:03d}'
-        admission = replay_admission(limits)
+        admission = replay_admission(limits, slot['work_budget'])
         if admission is not None:
-            save(replay_root / 'REPLAY_ADMISSION.json', {'limits': limits, 'admission': admission})
+            save(replay_root / 'REPLAY_ADMISSION.json', {'limits': limits, 'work_budget': slot['work_budget'], 'admission': admission})
             return {'status': 'not_admitted', 'admission': admission,
                     'tokens': 0, 'model_calls': 0, 'tool_calls': 0, 'latency_ms': 0.}
         # Target ledger includes BOTH work and its judge. Reserve judging

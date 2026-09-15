@@ -16,7 +16,7 @@ class Tests(unittest.TestCase):
         selected = [{'id': 'observed', 'split': 'val', 'day': 0, 'feedback_day': 1,
             'lineage_group': 'family', 'task_id': 'source-task', 'grade': {'feedback': 'Observed feedback'},
             'work_budget': {'seconds': 900, 'model_calls': 32, 'output_tokens': 8192, 'total_tokens': 500000}}]
-        for seconds in (1, 271.2613402288407, 285.2769024595618, 300.99):
+        for seconds in (1, 271.2613402288407, 285.2769024595618, 300.99, 301, 900, 1199.99):
             with self.subTest(seconds=seconds), tempfile.TemporaryDirectory() as tmp:
                 budget = LearningBudget(max_seconds=3600, replay_seconds=seconds)
                 class Learner:
@@ -43,9 +43,9 @@ class Tests(unittest.TestCase):
                         'attempt_index': 0, 'skill_sha256': digest, 'score_consumed': False,
                         'reason': 'not_delivered_to_upstream'}]}
                 reconcile(update)
-                audit_replay_admissions(Path(tmp), update)
+                audit_replay_admissions(Path(tmp), update, selected)
                 costs['operations'][0]['admission']['minimum'] = 999
-                with self.assertRaises(ValueError): audit_replay_admissions(Path(tmp), update)
+                with self.assertRaises(ValueError): audit_replay_admissions(Path(tmp), update, selected)
 
     def test_declared_judging_allocation_is_reserved_inside_the_replay_call_budget(self):
         selected = [{'id': 'observed', 'split': 'train', 'day': 0, 'feedback_day': 1,
