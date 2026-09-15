@@ -1,0 +1,8 @@
+{
+  "factory": "worldlab.jobbench_capabilities:ReviewedOfflineHermes",
+  "kwargs": {
+    "model": "Qwen/Qwen3.8-Flash-Next-FP8",
+    "base_url": "http://127.0.0.1:8011/v1",
+    "hermes_root": "/home/inference-testing/apps/Big-World-Hermes"
+  }
+}
