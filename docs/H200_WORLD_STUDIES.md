@@ -2520,3 +2520,50 @@ No model calls were made during preparation. Fluso remains paused. The prepared
 development study is not a completed comparison or a statistically supported
 learning result. Local preparation receipts and hash verification are in
 `lifespan/artifacts/native-compact-v10-local/`.
+
+### User-selected shared model qualification and version-10 launch
+
+The user subsequently requested using the model already served on the GPUs.
+The existing `fluso-meta-next-replica2-20260915` runtime was qualified unchanged:
+container `09bc5f45eecded401560b4dd0d95bd84c9e7a8821d33eadbab201840621d396c`,
+started `2026-09-15T20:18:20.809526703Z`, on GPUs 4–7 and loopback port 8002.
+It serves the same pinned Qwen Flash Next revision and image with MTP enabled
+(three speculative tokens), prefix caching and 256 maximum sequences. The
+shared gateway at port 8011 keeps the experiment's LLM concurrency at 64.
+
+All 64 concurrent structured controls returned valid verdicts matching their
+declared labels, with known usage: 174,198 input and 9,899 output tokens in
+39.501 seconds; median latency 23.558 seconds, nearest-rank p95 34.684 seconds.
+These repeated controls ran under shared load and do not establish a causal
+speed comparison. Two native Hermes controls passed full audits (25 calls,
+195,210 tokens), all 12 native employee decisions passed, and the structured
+optimizer check passed with one call / 111 tokens. The initial semantic launcher
+failed before dispatch because its Python environment lacked `aiohttp`; the
+preserved correction used the existing gateway environment, with no server
+package or setting changes.
+
+The unchanged version-10 study and prospective analysis launched at
+**21:47:58 UTC September 15**. Service `bigworld-native-workplace-compact-v10`
+has PID **1573076**, invocation **d9cc6a3038594ec5a3efc61c831e098b**. At 21:49:25
+its actual process was present, all six initial arms had started, 29 employee
+decisions were saved and no work attempt had finalized. There was no stop marker.
+Fluso work remains paused. The pipeline runs the frozen audit and analysis
+after full successful execution; a failed study ends it without retries or
+partial-pair inference. Native qualification receipts are under the frozen
+checkout's `lifespan/artifacts/shared-model-qualification-v1`; launch and runtime
+observations are under lab `lifespan/artifacts/native-compact-launch-v10`.
+This is a running development study, not a completed learning-effect result.
+
+The 21:59:49 UTC follow-up verified the same live process and model container,
+68 finalized work attempts with completed execution and grading statuses,
+no grading errors, and no stop marker. The six initial arms were on days 0–1;
+no learner update had run. The Fluso experiment and both guardian services were
+inactive with MainPID 0. This observation is retained separately as
+`native-compact-launch-v10/RUNNING_CHECK-20260915T215949Z.json`.
+
+A compact local evidence copy contains 29 verified qualification, launch and
+operator files. Archive `shared-runtime-v10-evidence-20260915T215949Z.tar.gz`
+is 203,521 bytes, SHA-256
+`231ed4ba2812cfd9aa4e1e1c6e743e8a7471577484e0601545e9ac68a6ca9bc7`.
+Safe local extraction and every payload hash passed verification. Full native
+traces and running study artifacts remain on H200 and are outside this copy.

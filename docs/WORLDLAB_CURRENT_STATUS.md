@@ -1,18 +1,36 @@
 # Current development state — September 16, 2026 (India)
 
-Fluso remains paused. At September 15 20:22 UTC, its experiment and both guardian
-services were inactive with MainPID 0, and its former process was absent. The
-shared gateway retains its global LLM concurrency limit of 64.
+Version 10 launched on September 15 at 21:47:58 UTC, after the user selected
+the model already served on the GPUs. It uses `Qwen/Qwen3.8-Flash-Next-FP8`,
+revision `236dfdf285828023ca3bcd3f37366c58a3469b13`, in the existing
+`fluso-meta-next-replica2-20260915` container on GPUs 4–7, port 8002. Its current
+MTP configuration and model service were left unchanged. The study's shared
+gateway remains at port 8011 with LLM concurrency 64; unrelated clients can also
+use the model server. Fluso experiment and guardian services remain paused.
 
-The pinned `bigworld-qwen38flashnext-throughput-v2` model container stopped at
-20:18:20 UTC. Another workload, `fluso-meta-next-replica2-20260915`, now occupies
-its GPUs 4–7 and port 8002. No new baseline was launched and neither runtime was
-modified by this task. Resolve this resource conflict and verify the intended
-inference identity before launching a fresh study.
+The fresh serving checks passed: all 64 concurrent structured controls were
+valid and matched their declared labels, with no unknown usage, in 39.501 seconds.
+They used 174,198 input and 9,899 output tokens. Two native Hermes controls passed
+full audits with 25 calls / 195,210 tokens. All 12 native employee decisions and
+the structured optimizer transport check passed; the optimizer used one call
+and 111 tokens. These are operational qualifications under shared load, not
+workplace speedup or learning-effect estimates. The first semantic launcher used
+a Python environment missing `aiohttp` and failed before any requests; that
+startup failure is preserved, and the existing gateway Python environment ran
+the successful check. No server package or configuration was changed.
 
-Version 10 is now prepared offline at frozen source
-`d936482b3f641fa670be774887e7e547fae23b00`, with no study execution or inference
-calls during preparation. It retains six world pairs, 12 employees per arm,
+Service `bigworld-native-workplace-compact-v10` has main PID `1573076` and
+invocation `d9cc6a3038594ec5a3efc61c831e098b`. At 21:59:49 UTC its process was
+present and 68 work attempts had finalized, all with completed execution and
+grading statuses and no grading error. The six initial arms were on days 0–1;
+no learning update had run yet and no stop marker existed. The gateway had seven
+active calls and no transport errors. The execution pipeline runs the frozen audit and analysis
+only after the entire study succeeds. A failure ends the pipeline and preserves
+all evidence; no failed world or judgment is retried automatically.
+
+Version 10 was prepared offline at frozen source
+`d936482b3f641fa670be774887e7e547fae23b00`, with no inference calls during
+preparation. It retains six world pairs, 12 employees per arm,
 20 days, 2,880 planned obligations and capacity for 5,760 work sessions. Each
 world uses direct examples for one employee, role transfer for two and defaults
 for nine; examples for every employee are not required. The native learner's
@@ -34,10 +52,20 @@ all 13 payload hashes and their cross-file bindings verified. Its operator is
 `lifespan/artifacts/prepare-launch-native-compact-v10.py`: `prepare` performs no
 inference; the separate `launch` checks the original model container, image,
 arguments, GPUs and shared gateway before creating an execution service. The
-replacement enables MTP and omits the qualified structured-output configuration,
-so the runtime check correctly refuses it. No launch directory or study
-`EXECUTION.json` exists. This remains a development comparison with narrow source
-families and same-model grading, not a final significance study.
+replacement enables MTP and omits the former server's compact-JSON setting, so
+the original runtime check refused it. That historical refusal is retained.
+The user then selected the currently served model; fresh qualification and
+`launch-current-served-model-v10.py` bind the new serving identity to the
+unchanged study and analysis. Launch receipts are in H200 lab artifacts
+`native-compact-launch-v10/`, and native qualification receipts are in the frozen
+study checkout under `shared-model-qualification-v1/`. This remains a development
+comparison with narrow source families and same-model grading. A statistically
+supported learning effect is not yet established.
+
+The local lab copy of compact qualification and launch evidence is
+`lifespan/artifacts/shared-runtime-v10-evidence-20260915T215949Z/`.
+All 29 payload hashes and the archive hash verified; full native traces and the
+running study remain on H200.
 
 Shared controller commit `4114679e6b9f29d30c4f8e5cbbc8157c4720103a` adds
 coordinated cancellation after terminal failures. New work stops at admission

@@ -9,23 +9,26 @@
 * Branch: `codex/h200-flash-next`; frozen study revisions are recorded in
   [the execution ledger](H200_WORLD_STUDIES.md).
 * Dedicated Hermes: `/home/inference-testing/apps/Big-World-Hermes`.
-* Current model container: `bigworld-qwen38flashnext-throughput-v2` on GPUs 4–7.
+* Current model container: `fluso-meta-next-replica2-20260915` on GPUs 4–7,
+  reused unchanged at the user's request after fresh qualification.
 * Shared model API, concurrency **64**: `http://127.0.0.1:8011/v1` on H200.
 * Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
-  `/home/inference-testing/apps/Big-World-CL-judge-v16/lifespan/artifacts/native-workplace-compact-v5`.
-* Current scale service: `bigworld-native-workplace-compact-v5`, launched September 15, 07:03 UTC after fresh qualification. The failed version-4 study remains preserved.
+  `/home/inference-testing/apps/Big-World-CL-workplace-v10/lifespan/artifacts/native-workplace-compact-v10`.
+* Current scale service: `bigworld-native-workplace-compact-v10`, launched
+  September 15, 21:47:58 UTC. Earlier failed studies remain preserved.
 * Native employee backend: `http://127.0.0.1:5005`, installed under
   `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
-* Native qualification: `lifespan/artifacts/h200-q3` on H200.
+* Current native qualification: `Big-World-CL-workplace-v10/lifespan/artifacts/shared-model-qualification-v1` on H200.
 * Calibration bank: `lifespan/artifacts/final-world-calibration-v1` on both machines.
 
 The inference container and experiment service survive SSH disconnects. The
 experiment is a transient systemd user service, not a reboot/resume scheduler.
-No automatic source updates or model replacement occur during the run.
+The experiment does not update source or replace the shared model server. Its
+frozen audit and analysis run only after the complete experiment succeeds.
 
-The gateway service `bigworld-throughput-inference-gateway-v1` applies one shared limit
+The gateway service `bigworld-throughput-inference-gateway-v2` applies one shared limit
 across employee, Hermes, judge and SkillOpt requests. `GET /status` on port 8011
 reports active/peak requests, queue depth and errors. It forwards JSON and SSE
 without retries. All new scale adapters use this endpoint. Existing frozen
@@ -44,14 +47,17 @@ limits. The native optimizer edit array uses vLLM's
 The latest source uses JSON Schema for judge verdicts: citations select actual
 evidence filenames, while explanation length is guided by the prompt. There are
 no character limits. Reviewed source-defined file counts use direct checks.
-Compact JSON syntax uses the server's structured-output configuration, recorded
-alongside the model flags. One returned
+The active model's complete serving configuration is recorded in the launch
+receipt. It passed request-level structured-output checks without changing its
+server settings. One returned
 incomplete or invalid verdict may be regenerated within the original call,
 token and time budgets. Both calls are charged and retained; valid verdicts
 (including failures) are final. Timeouts and unknown usage are not retried.
 Existing frozen studies keep their original judge.
 
-The 64-call short canary passed, but the first sustained six-world load produced
+### Historical qualification on the earlier dedicated server
+
+The earlier 64-call short canary passed, but the first sustained six-world load produced
 an employee timeout and incomplete grading. Do not treat that run as qualified
 high-load success. The replacement uses the same pinned settings except MTP
 disabled. It passed 64 concurrent semantic grading controls in 19.550 seconds,
@@ -87,10 +93,11 @@ Model `Qwen/Qwen3.8-Flash-Next-FP8` is pinned to revision
 `236dfdf285828023ca3bcd3f37366c58a3469b13`.
 The image is
 `vllm/vllm-openai@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8`.
-The running container reports vLLM `0.1.dev20073+g8e685d198`.
+The pinned image's recorded vLLM version is `0.1.dev20073+g8e685d198`.
 
-The original host-side serving receipt is `run/h200-20260914/serving.json`.
-Its flags came from the referenced task's Flash Next serving configuration:
+The active shared runtime retains the following Flash Next flags, including
+MTP with three speculative tokens. Its exact argument array, container ID,
+start time and GPU assignment are in `native-compact-launch-v10/DISPATCH.json`:
 
 ```text
 Qwen/Qwen3.8-Flash-Next-FP8
@@ -107,8 +114,8 @@ Qwen/Qwen3.8-Flash-Next-FP8
 --revision 236dfdf285828023ca3bcd3f37366c58a3469b13
 ```
 
-The current container, `bigworld-qwen38flashnext-throughput-v2`, omits
-`--speculative-config` and its value, and adds:
+The earlier dedicated container, `bigworld-qwen38flashnext-throughput-v2`, is
+stopped. It omitted `--speculative-config` and its value and added:
 
 ```text
 --structured-outputs-config {"backend":"xgrammar","disable_any_whitespace":true}
@@ -116,15 +123,14 @@ The current container, `bigworld-qwen38flashnext-throughput-v2`, omits
 
 Its exact Docker argument array and predecessor identity are in
 `Big-World-CL-lab/lifespan/artifacts/throughput-compact-json-server-v1/INTENT.json`.
-Use that receipt to reproduce the current configuration; the preceding
-`throughput-server-no-mtp-v1` receipt predates compact JSON. The experiment launch
-receipt also binds the current container ID, start time and complete flags.
+That receipt reproduces the historical dedicated configuration; the preceding
+`throughput-server-no-mtp-v1` receipt predates compact JSON. The current shared
+runtime was separately qualified before version 10 launched.
 
-The current Docker container binds host port 8002 to container port 8000 only on
-loopback, mounts the existing Hugging Face cache, uses host IPC and sets
-`VLLM_ENABLE_CUDA_COMPATIBILITY=0`. It is restricted to GPUs 4–7. The original
-container still serves host port 8000 using GPUs 0–3. No CPU KV offload is
-configured. The API reports a 262,144-token context limit.
+The current shared container binds host port 8002 to container port 8000 only on
+loopback and is restricted to GPUs 4–7. The original container still serves
+host port 8000 using GPUs 0–3. The current argument array has no CPU KV offload
+flag. The API reports a 262,144-token context limit.
 
 Requests use the explicit `responses-no-thinking-v1` profile: nonstreaming
 Responses, storage disabled and thinking disabled. The same endpoint supplies
@@ -164,7 +170,7 @@ inherit the real provider contract and fail before their intended assertions.
 
 ## Native qualification evidence
 
-The current `h200-q3` artifacts use the execution source containing the mailbox
+The historical `h200-q3` artifacts use the execution source containing the mailbox
 fix. Read-only auditors were run against raw manifests, native receipts,
 submissions, file readbacks, SQLite traces and cleanup observations.
 
