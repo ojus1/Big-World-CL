@@ -497,6 +497,14 @@ employee's private files. Original task requirements remain in each solver
 request; the actor's request is recorded separately and reused unchanged during
 learning replays. The grader still uses the original task's rubric and brief.
 
+For future runs, the existing single repair names overlong fields and their
+character limits. For example, 1,900-character notes receive
+`working_notes: 1900 characters; maximum 1800`. The provider's schema projection
+omits string-length bounds, while authoritative acceptance still enforces them.
+This diagnostic does not truncate a response, accept invalid JSON, add retries,
+or change model budgets. A second invalid response still stops the run. The
+failed scale study and already-frozen isolated pilot retain their original code.
+
 The offline audit reconstructs every causal command, regenerates visible views,
 checks native interview receipts and binds outcomes to actual task artifacts.
 All planned probes remain in the denominator. The primary workplace metric is

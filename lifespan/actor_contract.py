@@ -21,6 +21,45 @@ if _NAME not in sys.modules:
 wire = sys.modules[_NAME]
 
 
+def wire_shape_error(raw, role):
+    """Explain omitted generation string bounds without changing acceptance.
+
+    The provider projection cannot enforce maxLength. A bounded repair must
+    therefore name an overlong field and its limit, not just say JSON is invalid.
+    Only server-owned field names and lengths enter the diagnostic; response
+    values and unexpected keys are never interpolated.
+    """
+    import json
+    message = 'Actor output violates the requested wire shape; business validation is still required'
+    try:
+        value = json.loads(raw)
+    except (ValueError, TypeError, OverflowError, RecursionError):
+        return message
+    violations = []
+
+    def visit(item, schema, path):
+        if len(violations) >= 8:
+            return
+        if type(item) is str and schema.get('type') == 'string':
+            maximum = schema.get('maxLength')
+            if maximum is not None and len(item) > maximum:
+                violations.append(f'{path}: {len(item)} characters; maximum {maximum}')
+        elif type(item) is dict and schema.get('type') == 'object':
+            for key, child in schema['properties'].items():
+                if key in item:
+                    visit(item[key], child, f'{path}.{key}' if path else key)
+        elif type(item) is list and schema.get('type') == 'array':
+            for index, child in enumerate(item[:schema['maxItems']]):
+                visit(child, schema['items'], f'{path}[{index}]')
+        for branch in schema.get('anyOf', []):
+            visit(item, branch, path)
+
+    visit(value, wire.role_schema(role), '')
+    if violations:
+        message += '. Shorten these fields while preserving required content: ' + '; '.join(violations)
+    return message
+
+
 def options(value):
     wire.require(type(value) is dict and set(value) == {'version', 'max_output_tokens', 'timeout_seconds'},
                  'invalid_actor_contract_options')
