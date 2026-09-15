@@ -185,8 +185,8 @@ class Ecosystem:
         return v
 
     def apply_decision(self, aid, action, view):
-        if not isinstance(action.get('notes'), str) or len(action['notes']) > 1800:
-            raise ValueError('Provide working notes under 1800 characters')
+        if not isinstance(action.get('notes'), str):
+            raise ValueError('Provide working notes as text')
         if not isinstance(action.get('reason'), str):
             raise ValueError('Decision needs an evidence-based reason')
         evidence = action.get('evidence_ids', [])

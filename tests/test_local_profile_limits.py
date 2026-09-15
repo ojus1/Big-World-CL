@@ -39,4 +39,4 @@ def test_local_profile_retries_truncation_without_repairing_partial_content(monk
     assert profile['bio']=='complete'
     assert len(calls)==2
     assert all(c['max_tokens']==4096 for c in calls)
-    assert calls[0]['response_format']['json_schema']['schema']['properties']['persona']['maxLength']==2400
+    assert calls[0]['response_format']['json_schema']['schema']['properties']['persona']=={'type':'string'}

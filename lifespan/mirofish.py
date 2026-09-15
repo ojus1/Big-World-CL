@@ -292,9 +292,9 @@ class MiroFishRuntime:
 
     def validate_output_contract(self, raw, actor):
         if self.actor_output_contract is not None:
-            from .actor_contract import wire, wire_shape_error
+            from .actor_contract import wire
             if not wire.shape_valid(raw, self.actor_roles[actor]):
-                raise ValueError(wire_shape_error(raw, self.actor_roles[actor]))
+                raise ValueError('Actor output violates the requested wire shape; business validation is still required')
 
     def interview(self, employee_id, prompt, cache_key):
         request_key = hashlib.sha256(cache_key.encode()).hexdigest()

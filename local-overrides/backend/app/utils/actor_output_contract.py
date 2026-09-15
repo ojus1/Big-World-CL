@@ -19,7 +19,7 @@ import time
 from urllib.parse import urlsplit
 
 VERSION = 'actor-json-v1'
-GENERATION_PROJECTION_ID = 'actor-string-maxlength-omission-v1'
+GENERATION_PROJECTION_ID = 'actor-structured-text-guidance-v2'
 ROLE_TYPES = {'Employee': 'employee', 'Enterprise': 'enterprise',
               'GovernmentAgency': 'government', 'Consumer': 'consumer'}
 CURRENT = ContextVar('mirofish_actor_output_contract', default=None)
@@ -47,8 +47,8 @@ def _object(properties):
     return {'type': 'object', 'properties': properties, 'required': list(properties), 'additionalProperties': False}
 
 
-def _text(maximum=1800):
-    return {'type': 'string', 'maxLength': maximum}
+def _text():
+    return {'type': 'string'}
 
 
 def _enum(values):
@@ -63,13 +63,13 @@ def role_schema(role):
     """Return a fresh server-owned schema. Caller schemas are never accepted."""
     require(role in ROLE_TYPES.values(), 'unsupported_actor_role')
     if role == 'employee':
-        return _object({'delegate': {'type': 'boolean'}, 'request': _text(12000), 'working_notes': _text(),
-            'share_document_ids': _array(_text(256)),
-            'colleague_messages': _array(_object({'recipient': _text(256), 'text': _text(4000),
-                                               'document_ids': _array(_text(256))}), 1),
+        return _object({'delegate': {'type': 'boolean'}, 'request': _text(), 'working_notes': _text(),
+            'share_document_ids': _array(_text()),
+            'colleague_messages': _array(_object({'recipient': _text(), 'text': _text(),
+                                               'document_ids': _array(_text())}), 1),
             'process_proposal': {'anyOf': [{'type': 'null'}, _object({
                 'action': _enum(['require_peer_review']), 'reason': _text()})]}})
-    common = {'notes': _text(), 'reason': _text(4000), 'evidence_ids': _array(_text(256))}
+    common = {'notes': _text(), 'reason': _text(), 'evidence_ids': _array(_text())}
     if role == 'enterprise':
         return _object({**common, 'objective': _enum(['growth', 'reliability', 'resilience', 'cost_control']),
             'price': {'type': 'number', 'minimum': 6, 'maximum': 20},
@@ -80,7 +80,7 @@ def role_schema(role):
         return _object({**common, 'policy': _enum(['keep', 'baseline', 'enhanced_review']),
                         'duration': {'type': 'integer', 'minimum': 2, 'maximum': 10}})
     return _object({**common, 'action': _enum(['wait', 'purchase', 'switch', 'complain']),
-                    'firm': {'anyOf': [{'type': 'null'}, _text(256)]}})
+                    'firm': {'anyOf': [{'type': 'null'}, _text()]}})
 
 
 def normalize_contract(raw):
@@ -92,28 +92,14 @@ def normalize_contract(raw):
 
 
 def generation_schema(role, provider):
-    """Provider-only projection; the authoritative acceptance schema is intact.
+    """Generation and acceptance use the same supported structural constraints.
 
-    Visit schema nodes, never arbitrary object keys: a property named
-    ``maxLength`` is data describing a field, not this schema keyword.
+    String verbosity is prompt guidance. No post-generation character cap is
+    imposed when the inference request cannot enforce it.
     """
-    schema = role_schema(role)
-    if provider is None:
-        return schema
-    validate_provider_contract(provider)
-
-    def project(node):
-        if node.get('type') == 'string':
-            node.pop('maxLength', None)
-        for child in node.get('properties', {}).values():
-            project(child)
-        if isinstance(node.get('items'), dict):
-            project(node['items'])
-        for child in node.get('anyOf', []):
-            project(child)
-
-    project(schema)
-    return schema
+    if provider is not None:
+        validate_provider_contract(provider)
+    return role_schema(role)
 
 
 def generation_contract(role, provider):
@@ -138,7 +124,7 @@ def _valid(value, schema):
     if kind == 'boolean':
         return type(value) is bool
     if kind == 'string':
-        return type(value) is str and len(value) <= schema.get('maxLength', 10**9) and ('enum' not in schema or value in schema['enum'])
+        return type(value) is str and ('enum' not in schema or value in schema['enum'])
     return (type(value) is int if kind == 'integer' else type(value) in (int, float)) and schema['minimum'] <= value <= schema['maximum'] and math.isfinite(value)
 
 

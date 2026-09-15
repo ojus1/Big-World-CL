@@ -100,18 +100,18 @@ diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/servi
 +        local = is_local_llama_client(self.client)
 +        response_format = {"type": "json_object"}
 +        if local:
-+            # Bound strings in the grammar so repetitive profiles terminate as
-+            # complete JSON instead of occupying a slot until context exhaustion.
++            # Constrain JSON structure; use prompt guidance for text verbosity.
++            # Output-token budgets remain enforced by the inference request.
 +            properties = {
-+                'bio': {'type': 'string', 'minLength': 1, 'maxLength': 360},
-+                'persona': {'type': 'string', 'minLength': 80, 'maxLength': 2400},
++                'bio': {'type': 'string'},
++                'persona': {'type': 'string'},
 +                'age': {'type': ['integer', 'null'], 'minimum': 0, 'maximum': 120},
-+                'gender': {'type': 'string', 'maxLength': 40},
-+                'mbti': {'type': 'string', 'maxLength': 8},
-+                'country': {'type': 'string', 'maxLength': 80},
-+                'profession': {'type': 'string', 'maxLength': 120},
++                'gender': {'type': 'string'},
++                'mbti': {'type': 'string'},
++                'country': {'type': 'string'},
++                'profession': {'type': 'string'},
 +                'interested_topics': {'type': 'array', 'maxItems': 8,
-+                                      'items': {'type': 'string', 'maxLength': 80}},
++                                      'items': {'type': 'string'}},
 +            }
 +            response_format = {
 +                'type': 'json_schema',
@@ -136,7 +136,7 @@ diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/servi
 +                'hypothetical behavior proposed for this fictional simulation. '
 +                'Do not invent historical facts, affiliations, or outcomes. Do not repeat sentences. '
 +                'Use null for an unknown age and unknown for other unknown personal attributes. '
-+                'Keep the persona below 2400 characters and the bio below 360 characters. '
++                'Keep the persona focused and the bio brief. '
 +                + get_language_instruction()
 +            )
          
@@ -175,7 +175,7 @@ diff --git a/backend/app/services/oasis_profile_generator.py b/backend/app/servi
                      result = json.loads(content)
 +                    if local and not (
 +                        isinstance(result.get('bio'), str) and 1 <= len(result['bio']) <= 360
-+                        and isinstance(result.get('persona'), str) and 80 <= len(result['persona']) <= 2400
++                        and isinstance(result.get('persona'), str) and bool(result['persona'].strip())
 +                    ):
 +                        raise ValueError('Local profile has an empty, trivial, or oversized bio/persona')
                      

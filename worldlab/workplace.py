@@ -143,7 +143,7 @@ class Workplace:
         require(obligation_id in self.available(employee_id), 'Decision exceeds available work or capacity')
         require(type(decision.get('delegate')) is bool and isinstance(decision.get('request'), str)
                 and (not decision['delegate'] or bool(decision['request'].strip())), 'Invalid delegation')
-        require(isinstance(decision.get('working_notes'), str) and len(decision['working_notes']) <= 1800,
+        require(isinstance(decision.get('working_notes'), str),
                 'Invalid employee notes')
         require(decision.get('share_document_ids') == [] and decision.get('process_proposal') is None,
                 'This workplace does not grant document-sharing or process-change authority')
@@ -155,7 +155,7 @@ class Workplace:
             recipient = self.profiles.get(message.get('recipient'))
             require(recipient is not None and recipient['id'] != employee_id and
                     recipient.get('department', recipient['role']) == department and
-                    isinstance(message.get('text'), str) and 0 < len(message['text']) <= 1600 and
+                    isinstance(message.get('text'), str) and bool(message['text'].strip()) and
                     message.get('document_ids', []) == [], 'Invalid or cross-department message')
         self._command('decide', {'employee_id': employee_id, 'obligation_id': obligation_id, 'decision': decision})
         employee = self.state['employees'][employee_id]

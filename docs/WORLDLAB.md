@@ -497,13 +497,22 @@ employee's private files. Original task requirements remain in each solver
 request; the actor's request is recorded separately and reused unchanged during
 learning replays. The grader still uses the original task's rubric and brief.
 
-For future runs, the existing single repair names overlong fields and their
-character limits. For example, 1,900-character notes receive
-`working_notes: 1900 characters; maximum 1800`. The provider's schema projection
-omits string-length bounds, while authoritative acceptance still enforces them.
-This diagnostic does not truncate a response, accept invalid JSON, add retries,
-or change model budgets. A second invalid response still stops the run. The
-failed scale study and already-frozen isolated pilot retain their original code.
+Actor JSON uses the same supported schema for generation and acceptance. Text
+length is controlled with prompt guidance (brief notes, short messages, a useful
+request), not post-generation character limits. The inference request still
+enforces its output-token budget. JSON types, required keys, enums and supported
+array/numeric constraints remain structured. Business checks still enforce
+visible evidence, permitted recipients and available work.
+
+`python -m worldlab.inference_gateway --concurrency 64` serves a shared loopback
+OpenAI-compatible endpoint on port 8001, forwarding to the existing vLLM server
+on port 8000. Install `requirements-inference-gateway.txt` in its own environment.
+Point all participating solver, employee, judge and learner providers at
+`http://127.0.0.1:8001/v1`. The gateway holds a slot through the complete response,
+including streamed output, and queues excess calls. It does not change request
+or response bytes, retry calls, or log prompts. `/status` reports the configured
+limit, live and peak concurrency, queue depth and failures. Calls made directly
+to port 8000 are outside this shared limit.
 
 The offline audit reconstructs every causal command, regenerates visible views,
 checks native interview receipts and binds outcomes to actual task artifacts.

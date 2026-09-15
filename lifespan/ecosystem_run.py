@@ -20,7 +20,7 @@ Make a consequential decision to pursue your goals in response to competitors, c
 government policy or geopolitical conditions. You can retain a good decision; do not change for novelty.
 Do not invent hidden competitor costs, future shocks or unobserved incidents. All dates are simulated days.
 Only PUBLIC prices, markets and announcements of competitors are visible. Cash and employee feedback are private.
-Return ONLY one JSON object, in English, with notes (updated working notes <=1800 chars), reason,
+Return ONLY one JSON object, in English, with notes (brief updated working notes), reason,
 and evidence_ids (IDs of supplied evidence events supporting the decision, may be empty at initialization), plus:
 Enterprise role: objective (growth|reliability|resilience|cost_control), price (number 6..20),
 target_market (domestic|cross_border), priority_workflow (onboarding|renewal|incident),

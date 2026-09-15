@@ -28,7 +28,7 @@ only supplied visible document IDs can be attached. Messages arrive next day. Do
 After a real observed failure, you may propose adding peer_review to your own scoped working procedure.
 You cannot change corporate approval ownership, disclosure rules or tools by personal preference.
 Return ONLY a JSON object with these keys:
-{"delegate":true,"request":"actual request", "working_notes":"updated notes, max 1800 chars",
+{"delegate":true,"request":"actual request", "working_notes":"brief updated notes",
  "share_document_ids":["visible IDs"], "colleague_messages":[{"recipient":"employee ID","text":"message","document_ids":[]}],
  "process_proposal":null}
 process_proposal can be {"action":"require_peer_review","reason":"reason tied to observed failure"}.
@@ -54,7 +54,7 @@ def employee_view(world, task, notes, feedback, mailbox):
 def validate_decision(decision, view):
     if not isinstance(decision.get("delegate"), bool) or not isinstance(decision.get("request"), str):
         raise ValueError("Employee must supply a delegation decision and request")
-    if not isinstance(decision.get("working_notes"), str) or len(decision["working_notes"]) > 1800:
+    if not isinstance(decision.get("working_notes"), str):
         raise ValueError("Invalid employee working notes")
     docs = {r["id"] for r in view["visible_documents"]}
     shared = decision.get("share_document_ids")

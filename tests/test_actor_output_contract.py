@@ -510,7 +510,7 @@ def test_provider_descriptor_matches_public_contract(monkeypatch):
 
 
 @pytest.mark.parametrize('role', tuple(wire.ROLE_TYPES.values()))
-def test_generation_projection_only_removes_string_length_keywords(role):
+def test_generation_and_acceptance_share_supported_structural_constraints(role):
     provider = wire.provider_contract(PROFILE_MODEL, PROFILE_BASE)
     authoritative = wire.role_schema(role)
     projected = wire.generation_schema(role, provider)
@@ -533,7 +533,9 @@ def test_generation_projection_only_removes_string_length_keywords(role):
             assert type(original) is type(generated) and original == generated
 
     compare(authoritative, projected)
-    assert removed
+    assert not removed
+    assert projected == authoritative
+    assert "maxLength" not in json.dumps(authoritative)
     assert authoritative == wire.role_schema(role) == wire.generation_schema(role, None)
     projected['properties'].clear()
     assert authoritative == wire.role_schema(role)
@@ -554,11 +556,11 @@ def test_generation_projection_preserves_property_names_and_annotation_data(monk
         'required': ['maxLength'], 'additionalProperties': False, 'examples': [{'maxLength': 9}]}
     monkeypatch.setattr(wire, 'role_schema', lambda role: deepcopy(schema))
     projected = wire.generation_schema('employee', wire.provider_contract(PROFILE_MODEL, PROFILE_BASE))
-    assert projected == {**schema, 'properties': {'maxLength': {'type': 'string'}}}
+    assert projected == schema
     assert schema['properties']['maxLength']['maxLength'] == 8
 
 
-@pytest.mark.parametrize('change', ['absent', 'strict_false', 'strict_integer', 'acceptance_schema',
+@pytest.mark.parametrize('change', ['absent', 'strict_false', 'strict_integer', 'unsupported_string_cap',
                                   'range', 'array_bound', 'extra_property', 'wrong_name'])
 def test_profile_generation_format_tamper_refuses_before_dispatch(tmp_path, monkeypatch, change):
     instance = profile_model(lambda _: pytest.fail('Invalid format reached provider'), monkeypatch)
@@ -570,7 +572,7 @@ def test_profile_generation_format_tamper_refuses_before_dispatch(tmp_path, monk
         if change == 'absent': request.pop('text')
         elif change == 'strict_false': fmt['strict'] = False
         elif change == 'strict_integer': fmt['strict'] = 1
-        elif change == 'acceptance_schema': fmt['schema'] = wire.role_schema('employee')
+        elif change == 'unsupported_string_cap': fmt['schema']['properties']['working_notes']['maxLength'] = 1800
         elif change == 'range': fmt['schema']['properties']['delegate'] = {'type': 'integer', 'minimum': 0, 'maximum': 1}
         elif change == 'array_bound': fmt['schema']['properties']['colleague_messages']['maxItems'] = 99
         elif change == 'extra_property': fmt['schema']['additionalProperties'] = True
@@ -582,15 +584,15 @@ def test_profile_generation_format_tamper_refuses_before_dispatch(tmp_path, monk
 
 
 @pytest.mark.parametrize('field', ['working_notes', 'request', 'document_id', 'recipient'])
-def test_profile_overlength_generation_is_rejected_with_only_one_repair(tmp_path, monkeypatch, field):
+def test_profile_long_text_is_accepted_without_a_character_repair(tmp_path, monkeypatch, field):
     from lifespan.ecosystem_run import native_decision
     value = deepcopy(EXAMPLE)
-    if field == 'working_notes': value['working_notes'] = 'x' * 1801
+    if field == 'working_notes': value['working_notes'] = 'é' * 1900
     elif field == 'request': value['request'] = 'x' * 12001
     elif field == 'document_id': value['share_document_ids'] = ['x' * 257]
     else: value['colleague_messages'] = [{'recipient': 'x' * 257, 'text': '', 'document_ids': []}]
     raw = json.dumps(value)
-    assert not wire.shape_valid(raw, 'employee')
+    assert wire.shape_valid(raw, 'employee')
     instance = profile_model(lambda _: httpx.Response(200, json=profile_response(raw)), monkeypatch)
     directory = actor_dir(tmp_path); receipts = []; calls = []
 
@@ -606,12 +608,13 @@ def test_profile_overlength_generation_is_rejected_with_only_one_repair(tmp_path
             receipts.append(verify(record))
             return record['response']
 
-    with pytest.raises(ValueError, match='wire shape'):
-        native_decision(Runtime(), 'employee', 'fixture', 'length-case', lambda _: pytest.fail('Accepted overlength output'))
-    assert calls == ['length-case', 'length-case-repair']
-    assert all(r['output_schema_valid'] is False and r['accounting_complete'] is True for r in receipts)
-    assert sum(r['physical_requests_dispatched'] for r in receipts) == 2
-    assert sum(r['total_tokens'] for r in receipts) == 120
+    validated = []
+    result = native_decision(Runtime(), 'employee', 'fixture', 'length-case', validated.append)
+    assert result == value and validated == [value]
+    assert calls == ['length-case']
+    assert all(r['output_schema_valid'] is True and r['accounting_complete'] is True for r in receipts)
+    assert sum(r['physical_requests_dispatched'] for r in receipts) == 1
+    assert sum(r['total_tokens'] for r in receipts) == 60
 
 
 @pytest.mark.parametrize('change', ['missing', 'id', 'acceptance_hash', 'generation_hash', 'extra'])
