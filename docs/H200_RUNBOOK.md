@@ -70,7 +70,10 @@ were stopped, with MainPID zero and gateway idle verified at 05:22:19 UTC.
 The inference server remains available. The broader 76-call semantic check then
 completed with known usage but matched only 75 labels. Fresh-source qualification
 is required before another scale launch. No successful-learning result exists.
-See the execution ledger for the original receipts and prospective corrections.
+The version-14 suite also matched 75/76 labels and failed qualification. The
+prospective version-15 judge explicitly requests temperature zero and top-p one,
+with dispatch enforcement and audited sampling metadata. This still requires
+fresh qualification. See the execution ledger for receipts and corrections.
 
 ## Serving configuration
 

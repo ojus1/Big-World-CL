@@ -284,6 +284,10 @@ SkillOpt adapter uses the existing pinned upstream implementation, including its
 strict mixed-score improvement, per-case nonregression and fresh final validation
 gate. It does not substitute a locally invented learning algorithm.
 
+The qualitative judge explicitly uses temperature zero and top-p one; these
+sampling parameters are enforced at dispatch and retained in metering for audit.
+Actor and solver sampling are configured independently. Greedy decoding does not
+guarantee semantic accuracy or identical results across different GPU batches.
 The qualitative judge uses each original frozen r3 criterion and complete text
 files, with a metered schema-constrained verdict or a registered source check per criterion. Private rubrics
 remain outside the worker sandbox. Judge-derived feedback is a constructed

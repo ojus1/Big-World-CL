@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from scripts.source_world_calibration import child, read, save, sha
 from lifespan.evaluation.provider import provider_contract
-from .judge_transport import StructuredJudgeBudget
+from .judge_transport import StructuredJudgeBudget, JUDGE_SAMPLING
 from .verdict_schema import contract as verdict_contract, validate_text, SCHEMA
 from .mechanical_criteria import evaluate as mechanical_verdict, evaluation_method as mechanical_method
 from .public_requirements import evaluate as public_requirements, aggregate, REGISTRY
@@ -63,6 +63,7 @@ def request_verdict(client, provider, payload, timeout, *, repair=False):
     return client.responses.create(model=provider['model'],
         input=verdict_input(payload, repair=repair),
         max_output_tokens=4096, stream=False, store=False, timeout=timeout,
+        **JUDGE_SAMPLING,
         extra_body={'chat_template_kwargs': {'enable_thinking': False},
                     'structured_outputs': verdict_contract(payload['criterion']['id'])})
 
@@ -101,7 +102,8 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 14, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 15, 'provider': self.provider,
+                'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
@@ -310,6 +312,7 @@ class FrozenRubricJudge:
                 'Physical judge constraints differ from the declared structured contract')
         for operation, (criterion, payload, response, repair) in zip(jm['operations'], model_operations):
             require(operation['accounting'] == 'reported' and operation['status'] == 'completed' and
+                    operation['request_sampling'] == JUDGE_SAMPLING and
                     operation['provider_response_status'] == response['status'] and
                     operation['request_input_sha256'] == transport_digest(verdict_input(payload, repair=repair)),
                     'Judge response, prompt or metered status changed')

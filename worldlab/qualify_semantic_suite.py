@@ -18,7 +18,7 @@ from scripts.source_world_calibration import child, read, save, sha
 from lifespan.evaluation.provider import provider_contract, validate_contract
 from .bank import Bank
 from .campaign import source_identity
-from .judge_transport import StructuredJudgeBudget, digest
+from .judge_transport import StructuredJudgeBudget, digest, JUDGE_SAMPLING
 from .qualitative import parsed_response, request_verdict, verdict_input, mechanical_verdict, mechanical_method
 from .semantic_cases import controls
 from .verdict_schema import contract
@@ -54,7 +54,7 @@ def prepare(bank, out, model, base_url, *, repeats=2, concurrency=64):
             'bank_manifest_sha256': bank.verification['manifest_sha256'],
             'provider': provider_contract(model, base_url),
             'concurrency': concurrency, 'request_timeout_seconds': 300,
-            'max_output_tokens': 4096, 'slots': slots,
+            'max_output_tokens': 4096, 'sampling': dict(JUDGE_SAMPLING), 'slots': slots,
             'cases': {c['id']: sha(out / 'cases' / (c['id'] + '.json')) for c in cases},
             'pass_rule': 'Every planned case must return a valid verdict matching its predeclared label with known usage. '
                          'One request per model slot; predeclared source-rule slots make no model call. No retries or outcome selection.'}
@@ -82,6 +82,8 @@ def load_plan(out):
         if case['id'] != case_id:
             raise ValueError('Semantic case identity changed')
         cases[case_id] = case
+    if plan['sampling'] != JUDGE_SAMPLING:
+        raise ValueError('Prepared semantic sampling changed')
     if any(slot['evaluation_method'] != execution_method(cases[slot['case_id']]) for slot in plan['slots']):
         raise ValueError('Prepared semantic execution method changed')
     return out, plan, cases
@@ -198,6 +200,7 @@ def audit(out):
             raise ValueError('Semantic schema differs from the prepared criterion')
         for op in ops:
             if (op['request_structured_outputs_sha256'] != structure
+                    or op['request_sampling'] != plan['sampling']
                     or op['request_input_sha256'] != digest(verdict_input(case['payload']))
                     or op['output_cap'] != plan['max_output_tokens']):
                 raise ValueError('Physical semantic request differs from the prepared contract')

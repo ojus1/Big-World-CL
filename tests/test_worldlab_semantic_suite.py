@@ -62,6 +62,8 @@ class Tests(unittest.TestCase):
                 self.assertNotIn('DO_NOT_SEND_THIS_LABEL', json.dumps(request))
                 self.assertFalse(request['stream']); self.assertFalse(request['store'])
                 self.assertEqual(request['max_output_tokens'], 4096)
+                self.assertEqual(request['temperature'], 0.0)
+                self.assertEqual(request['top_p'], 1.0)
                 self.assertEqual(request['extra_body']['structured_outputs']['json']['properties']['evidence'],
                                  {'type': 'string'})
                 if ordinal <= 64:

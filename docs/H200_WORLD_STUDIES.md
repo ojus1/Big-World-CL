@@ -5,7 +5,36 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
-## Latest failure and qualification state: September 15, 05:23 UTC
+## Latest qualification: September 15, 05:58 UTC
+
+The fresh version-14 source `336934a` passed 111 local WorldLab tests and the
+same H200 suite (one dependency-specific skip). Its semantic qualification
+completed 76 evaluations in 10.690 seconds: 74 model calls and two registered
+source checks, 190,565 reported tokens, no unknown usage. It matched **75/76**
+labels and failed the declared gate. The remaining error was
+`r000-reconciliation-missing-currency`: the grader claimed absent EUR labels
+were present. The request used the model default temperature 1 and top-p 0.95.
+The original response, label, plan and failed report remain under
+`Big-World-CL-judge-v14/lifespan/artifacts/judge-v14-multilingual-semantic-v1`;
+plan SHA `208aac89cf7dfac9395b90ea7229b6985d476f44c21292a2374c96dce5597515`.
+No version-14 scale study was launched.
+
+Prospective version 15 explicitly sends temperature zero and top-p one for
+grading, freezes these values in the judge and semantic plan, validates them
+before physical dispatch and audits their usage readbacks. Source criteria,
+control labels, prompt, schema and actor/solver sampling remain unchanged.
+Greedy decoding does not establish semantic correctness or cross-batch
+reproducibility. A fresh qualification is required; failed qualifications are
+not discarded and their labels are not relaxed.
+
+The corrected stopped-study snapshot at 05:58:12 UTC confirms pair 409 failed,
+no completed pair or arm, and no supervisor process. There are 223 finalized
+work attempts; pending attempts and actor costs are separate. The saved
+controller counter `completed_pairs: 1` means one returned worker (the failed
+pair), not a successfully completed pair. Snapshot:
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-final-stopped-progress-v1.json`.
+
+## Preserved failure and qualification: September 15, 05:23 UTC
 
 `native-workplace-compact-v3` is incomplete. Pair 409/`skillopt_sleep` raised a
 `ValueError` before grading `d001-operations-fr-001-000`, task

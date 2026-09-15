@@ -4,6 +4,8 @@ import hashlib
 import json
 from lifespan.evaluation.budget import ResponsesBudget
 
+JUDGE_SAMPLING = {'temperature': 0.0, 'top_p': 1.0}
+
 
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
@@ -17,6 +19,8 @@ class StructuredJudgeBudget(ResponsesBudget):
         super().__init__(**kwargs)
 
     def _provider_readbacks(self, client, request):
+        if any(type(request.get(k)) not in (int, float) or request[k] != v for k, v in JUDGE_SAMPLING.items()):
+            raise ValueError('Judge sampling differs from its declared greedy decoding contract')
         extra = request.get('extra_body')
         if (type(extra) is not dict or set(extra) != {'chat_template_kwargs', 'structured_outputs'} or
                 extra['structured_outputs'] not in self.structured_contracts or request.get('text') is not None):
@@ -27,6 +31,7 @@ class StructuredJudgeBudget(ResponsesBudget):
         policy_request = {**request, 'extra_body': {'chat_template_kwargs': extra['chat_template_kwargs']}}
         result = super()._provider_readbacks(client, policy_request)
         return {**result, 'request_structured_outputs_sha256': digest(extra['structured_outputs']),
+                'request_sampling': {k: request[k] for k in JUDGE_SAMPLING},
                 'request_input_sha256': digest(request.get('input'))}
 
     def report(self):

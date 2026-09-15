@@ -2,7 +2,7 @@ from copy import deepcopy
 from types import SimpleNamespace
 import unittest
 from lifespan.evaluation.provider import provider_contract
-from worldlab.judge_transport import StructuredJudgeBudget, digest
+from worldlab.judge_transport import StructuredJudgeBudget, digest, JUDGE_SAMPLING
 from worldlab.verdict_schema import contract, validate_text
 from worldlab.qualitative import validate_verdict
 import json
@@ -36,17 +36,22 @@ class Tests(unittest.TestCase):
             provider_contract=provider_contract('fixture', str(client.base_url)))
         meter.wrap_client(client)
         request = {'model': 'fixture', 'input': 'judge', 'max_output_tokens': 64, 'stream': False, 'store': False,
+                   **JUDGE_SAMPLING,
                    'extra_body': {'chat_template_kwargs': {'enable_thinking': False}, 'structured_outputs': deepcopy(CONSTRAINT)}}
         client.responses.create(**request)
         self.assertEqual(calls[0]['extra_body'], request['extra_body'])
+        self.assertEqual(meter.report()['operations'][0]['request_sampling'], JUDGE_SAMPLING)
         self.assertEqual(meter.report()['operations'][0]['request_structured_outputs_sha256'], digest(CONSTRAINT))
-        for change in ['schema', 'thinking', 'endpoint', 'extra', 'text']:
+        for change in ['schema', 'thinking', 'endpoint', 'extra', 'text', 'temperature', 'top_p', 'missing_sampling']:
             bad = deepcopy(request)
             if change == 'schema': bad['extra_body']['structured_outputs']['disable_any_whitespace'] = False
             if change == 'thinking': bad['extra_body']['chat_template_kwargs']['enable_thinking'] = True
             if change == 'endpoint': bad['model'] = 'different-model'
             if change == 'extra': bad['extra_body']['unregistered'] = True
             if change == 'text': bad['text'] = {'format': {'type': 'text'}}
+            if change == 'temperature': bad['temperature'] = 1.0
+            if change == 'top_p': bad['top_p'] = 0.95
+            if change == 'missing_sampling': bad.pop('temperature')
             with self.assertRaises(ValueError): client.responses.create(**bad)
         self.assertEqual(len(calls), 1)
         self.assertEqual(meter.report()['physical_model_calls'], 1)
