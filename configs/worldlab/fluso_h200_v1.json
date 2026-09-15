@@ -1,0 +1,8 @@
+{
+  "factory": "worldlab.fluso:Fluso",
+  "kwargs": {
+    "model": "Qwen/Qwen3.8-Flash-Next-FP8",
+    "upstream": "http://127.0.0.1:8011",
+    "tokenizer": "http://127.0.0.1:8002"
+  }
+}

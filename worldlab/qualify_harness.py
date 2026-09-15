@@ -12,6 +12,7 @@ from .contracts import Budget
 from .dispatch import dispatch_day
 from .hermes import Hermes
 from .qualitative import FrozenRubricJudge
+from .adapters import load_adapter
 
 
 def qualify(bank, harness, judge, task_id, out, parallel=2):
@@ -57,12 +58,16 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--bank', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
-    p.add_argument('--hermes-root', type=Path, required=True)
+    p.add_argument('--hermes-root', type=Path)
+    p.add_argument('--harness-config', type=Path)
     p.add_argument('--task-id', required=True)
     p.add_argument('--parallel', type=int, default=2)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
     p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
     a = p.parse_args()
+    if bool(a.hermes_root) == bool(a.harness_config):
+        p.error('Supply exactly one of --hermes-root and --harness-config')
     b = Bank(a.bank)
-    print(json.dumps(qualify(b, Hermes(a.hermes_root, a.model, a.base_url),
+    harness = load_adapter(a.harness_config, 'harness') if a.harness_config else Hermes(a.hermes_root, a.model, a.base_url)
+    print(json.dumps(qualify(b, harness,
         FrozenRubricJudge(b, a.model, a.base_url), a.task_id, a.out, a.parallel), indent=2))

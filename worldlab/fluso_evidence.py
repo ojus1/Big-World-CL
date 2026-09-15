@@ -62,7 +62,7 @@ def assistant_parts(message):
             'tools': [{k: p[k] for k in ('id', 'name', 'arguments')} for p in parts if p['type'] == 'toolCall']}
 
 
-def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_text):
+def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_text, expected_prompt=None):
     """Verify all primary assistant responses plus read-and-consume skill proof.
 
     Auxiliary requests are included in the meter but need not have a primary
@@ -82,6 +82,7 @@ def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_tex
         require(response_id not in replies, 'Repeated provider response identity')
         replies[response_id] = (value, finish, operation, wire)
     primary, normalized, reads, consumed = [], [], {}, []
+    pending_results, user_messages = {}, []
     known_calls, pending = {}, set()
     for index, message in enumerate(messages):
         role = message['role']
@@ -93,6 +94,17 @@ def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_tex
             require(response_id in replies and response_id not in primary, 'Unmetered or repeated native assistant response')
             value, finish, operation, wire = replies[response_id]
             require(value == assistant_parts(message), 'Native assistant differs from provider bytes')
+            for call_id, content in pending_results.items():
+                matches = [m for m in wire['messages'] if m.get('role') == 'tool'
+                           and m.get('tool_call_id') == call_id]
+                require(len(matches) == 1 and text_parts(matches[0]['content']) == content,
+                        'Native tool result differs from its consuming inference request')
+            pending_results.clear()
+            if not primary and expected_prompt is not None:
+                require(len(user_messages) == 1 and expected_prompt in user_messages[0],
+                        'Native initial message lacks the public task prompt')
+                require(any(m.get('role') == 'user' and text_parts(m['content']) == user_messages[0]
+                            for m in wire['messages']), 'Initial task message differs from inference input')
             require(message['stopReason'] == {'stop': 'stop', 'tool_calls': 'toolUse'}.get(finish),
                     'Native assistant has no qualified terminal reason')
             usage, observed = message['usage'], operation['usage']
@@ -119,6 +131,7 @@ def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_tex
                     'Unlinked or repeated native tool result')
             pending.remove(message['toolCallId'])
             content = text_parts(message['content'])
+            pending_results[message['toolCallId']] = content
             if call['name'] == 'read' and call['arguments'].get('path') == skill_path:
                 require(message.get('isError') is False and content == skill_text, 'Native skill read did not return installed bytes')
                 require(not call['arguments'].get('offset') and not call['arguments'].get('limit'), 'Partial skill read is unqualified')
@@ -126,10 +139,12 @@ def audit_skill_and_responses(trace, meter_root, *, model, skill_path, skill_tex
             normalized.append({'role': 'tool', 'tool_call_id': message['toolCallId'],
                                'name': message['toolName'], 'content': content})
         elif role == 'user':
-            normalized.append({'role': 'user', 'content': text_parts(message['content'])})
+            content = text_parts(message['content'])
+            user_messages.append(content)
+            normalized.append({'role': 'user', 'content': content})
         else:
             raise ValueError('Unqualified native message role')
-    require(primary and consumed and messages[-1]['role'] == 'assistant'
+    require(primary and consumed and not pending_results and messages[-1]['role'] == 'assistant'
             and messages[-1]['stopReason'] == 'stop', 'Missing consumed skill or completed native assistant turn')
     return {'ok': True, 'trace_sha256': hashlib.sha256(trace.read_bytes()).hexdigest(),
             'skill_sha256': hashlib.sha256(skill_text.encode()).hexdigest(),

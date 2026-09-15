@@ -39,9 +39,10 @@ class FlusoEvidenceTests(unittest.TestCase):
                                'usage': {'prompt_tokens': 2, 'completion_tokens': 3, 'total_tokens': 5}})
         (self.root / 'METER.json').write_text(json.dumps({'operations': operations, 'physical_model_calls': 3}))
 
-    def audit(self):
+    def audit(self, expected_prompt=None):
         self.trace.write_text('\n'.join(json.dumps({'type': 'message', 'message': m}) for m in self.messages) + '\n')
-        return audit_skill_and_responses(self.trace, self.root, model='test', skill_path=self.skill_path, skill_text=self.skill)
+        return audit_skill_and_responses(self.trace, self.root, model='test', skill_path=self.skill_path,
+                                        skill_text=self.skill, expected_prompt=expected_prompt)
 
     def test_primary_and_auxiliary_calls_are_separate(self):
         result = self.audit()
@@ -64,7 +65,46 @@ class FlusoEvidenceTests(unittest.TestCase):
         path = self.root / 'call-0001/WIRE_REQUEST.json'
         wire = json.loads(path.read_text()); wire['messages'] = []
         path.write_text(json.dumps(wire))
-        with self.assertRaisesRegex(ValueError, 'consumed skill'):
+        with self.assertRaisesRegex(ValueError, 'consuming inference'):
+            self.audit()
+
+    def test_initial_prompt_must_reach_inference_unchanged(self):
+        path = self.root / 'call-0000/WIRE_REQUEST.json'
+        wire = json.loads(path.read_text())
+        wire['messages'] = [{'role': 'user', 'content': 'Do the task.'}]
+        path.write_text(json.dumps(wire))
+        self.assertTrue(self.audit(expected_prompt='Do the task.')['ok'])
+        wire['messages'][0]['content'] = 'Do a different task.'
+        path.write_text(json.dumps(wire))
+        with self.assertRaisesRegex(ValueError, 'Initial task message differs'):
+            self.audit(expected_prompt='Do the task.')
+
+    def test_wrong_public_prompt_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, 'public task prompt'):
+            self.audit(expected_prompt='A different task.')
+
+    def test_duplicate_consuming_tool_results_rejected(self):
+        path = self.root / 'call-0001/WIRE_REQUEST.json'
+        wire = json.loads(path.read_text()); wire['messages'] *= 2
+        path.write_text(json.dumps(wire))
+        with self.assertRaisesRegex(ValueError, 'consuming inference'):
+            self.audit()
+
+    def test_other_tool_output_must_match_consuming_request(self):
+        native = {'type': 'toolCall', 'id': 'other', 'name': 'read', 'arguments': {'path': '/input.txt'}}
+        self.messages[1]['content'].append(native)
+        response = self.root / 'call-0000/RESPONSE.bin'
+        value = json.loads(response.read_text())
+        value['choices'][0]['message']['tool_calls'].append({'id': 'other', 'type': 'function',
+            'function': {'name': 'read', 'arguments': json.dumps(native['arguments'])}})
+        response.write_text(json.dumps(value))
+        self.messages.insert(3, {'role': 'toolResult', 'toolCallId': 'other', 'toolName': 'read', 'isError': False,
+                                'content': [{'type': 'text', 'text': 'Changed after execution.'}]})
+        path = self.root / 'call-0001/WIRE_REQUEST.json'
+        wire = json.loads(path.read_text())
+        wire['messages'].append({'role': 'tool', 'tool_call_id': 'other', 'content': 'Original observed content.'})
+        path.write_text(json.dumps(wire))
+        with self.assertRaisesRegex(ValueError, 'consuming inference'):
             self.audit()
 
     def test_unmetered_response_rejected(self):

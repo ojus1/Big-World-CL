@@ -583,7 +583,7 @@ the harness when its budget or transport stops.
 retained tokenizer, request and response bytes. It can validate the accounting
 of a failed attempt; a passing meter audit does not imply task success. The
 module does not itself isolate a harness, install/read its skill, normalize its
-native trajectory, or provide a complete Fluso adapter. A future adapter must
+native trajectory, or provide a complete Fluso adapter. An adapter must
 supply those parts and expose only its own fixed relay to the solver. The
 ongoing Hermes study continues to use its original native budget meter.
 
@@ -619,10 +619,46 @@ effect follows from this control.
 responses and their usage against retained provider bytes, reconstructs a common
 trajectory, and links an exact native skill read to consumption in a subsequent
 inference request. It reports auxiliary calls separately from primary turns.
+For new adapter receipts it also checks the original task prompt in the first
+inference input and matches each native tool result to its consuming request.
 Use it alongside the matching meter audit; it does not verify other tool effects,
 the complete runtime event history, isolation or benchmark scoring. The relay
 drains accepted requests after Fluso exits, and the controller finishes that
 drain before auditing usage, including background working-memory calls.
+
+The `worldlab.fluso:Fluso` adapter implements the same `Harness` interface as
+Hermes. Select `configs/worldlab/fluso_h200_v1.json` with `--harness-config` in
+world preparation/execution or native harness qualification. Install
+`requirements-worldlab-fluso.txt` in a separate controller environment; the
+immutable native Docker image remains the execution runtime. No employee,
+learner or judge implementation changes are needed to select the adapter.
+
+Each attempt mounts its public workspace at the native project's `task/`
+directory. Fluso project metadata and background memory stay outside the files
+that the task grader examines. The requested skill is a separate read-only
+mount. The adapter verifies actual Docker image, network, mount, privilege and
+resource configuration before starting the native solver, then retains its
+exit state and removal receipts. All primary and auxiliary inference shares
+the attempt meter and global concurrency limit. Native task and terminal-case
+qualification is required before including this adapter in a study.
+
+Completed receipts require a full skill read and subsequent consumption, a
+completed primary assistant turn, validated provider usage and clean container
+shutdown. Unknown usage keeps its reservation and withholds grading. A budget
+stop without a qualified final native trace is explicitly recorded as
+`budget_exhausted_unverified`; it cannot supply a learning trajectory or be
+silently counted as a scored task. JobBench, document formats, external apps,
+interactive user turns and additional native terminal forms still need their
+own capability checks. The initial adapter does not imply those are qualified.
+
+For example, qualify two fresh development tasks before preparing a new study:
+
+```bash
+python -m worldlab.qualify_harness \
+  --bank /path/to/final-world-calibration-v1 \
+  --harness-config configs/worldlab/fluso_h200_v1.json \
+  --task-id internal/euw_fr_003_en_bridge --parallel 2 --out /path/to/fresh-qualification
+```
 
 The new `development_workplace_concurrency64_v1.json` configuration sets work,
 world-pair and employee-update concurrency ceilings to 64 and keeps validation
