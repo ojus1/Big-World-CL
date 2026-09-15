@@ -93,7 +93,7 @@ if __name__ == '__main__':
     p.add_argument('--employee', required=True)
     p.add_argument('--day', type=int, required=True)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
-    p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
+    p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
     a = p.parse_args()
     bank = Bank(a.bank)
     result = qualify(bank, Hermes(a.hermes_root, a.model, a.base_url), FrozenRubricJudge(bank, a.model, a.base_url),

@@ -80,6 +80,6 @@ if __name__ == '__main__':
     p.add_argument('--source-request', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
-    p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
+    p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
     a = p.parse_args()
     print(json.dumps(qualify(a.source_request, a.out, a.model, a.base_url), indent=2))

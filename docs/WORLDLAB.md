@@ -504,15 +504,16 @@ enforces its output-token budget. JSON types, required keys, enums and supported
 array/numeric constraints remain structured. Business checks still enforce
 visible evidence, permitted recipients and available work.
 
-`python -m worldlab.inference_gateway --concurrency 64` serves a shared loopback
-OpenAI-compatible endpoint on port 8010, forwarding to the existing vLLM server
-on port 8000. Install `requirements-inference-gateway.txt` in its own environment.
+`python -m worldlab.inference_gateway --concurrency 64 --port 8011 --upstream http://127.0.0.1:8002`
+serves the current H200 model through a shared loopback OpenAI-compatible endpoint.
+Install `requirements-inference-gateway.txt` in its own environment.
 Point all participating solver, employee, judge and learner providers at
-`http://127.0.0.1:8010/v1`. The gateway holds a slot through the complete response,
+`http://127.0.0.1:8011/v1`, the default for WorldLab commands. The gateway holds a slot through the complete response,
 including streamed output, and queues excess calls. It does not change request
 or response bytes, retry calls, or log prompts. `/status` reports the configured
 limit, live and peak concurrency, queue depth and failures. Calls made directly
-to port 8000 are outside this shared limit.
+to the underlying model server are outside this shared limit. Existing frozen
+experiments retain their original providers; use `--base-url` for other deployments.
 
 The new `development_workplace_concurrency64_v1.json` configuration sets work,
 world-pair and employee-update concurrency ceilings to 64 and keeps validation
@@ -545,7 +546,7 @@ The judge keeps original r3 criterion bytes. Its registered exact-reference-coun
 predicate checks the full criterion definition and original source count before
 handling that criterion without a model call. It records match offsets and is
 recomputed by the offline auditor. Other criteria remain model judged, using a
-finite ASCII response grammar; these judgments still need independent semantic
+compact JSON schema with concise-text prompt guidance; these judgments still need independent semantic
 calibration. Deterministic control passes are never reported as model accuracy.
 
 

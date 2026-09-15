@@ -61,7 +61,7 @@ if __name__ == '__main__':
     p.add_argument('--task-id', required=True)
     p.add_argument('--parallel', type=int, default=2)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
-    p.add_argument('--base-url', default='http://127.0.0.1:8000/v1')
+    p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
     a = p.parse_args()
     b = Bank(a.bank)
     print(json.dumps(qualify(b, Hermes(a.hermes_root, a.model, a.base_url),

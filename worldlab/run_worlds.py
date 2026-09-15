@@ -27,7 +27,7 @@ def main():
     p.add_argument('--learner-config', type=Path)
     p.add_argument('--judge-config', type=Path)
     p.add_argument('--model', default='Qwen/Qwen3.8-Flash-Next-FP8')
-    p.add_argument('--base-url', default='http://127.0.0.1:8010/v1')
+    p.add_argument('--base-url', default='http://127.0.0.1:8011/v1')
     p.add_argument('--mirofish-backend', type=Path)
     p.add_argument('--persona-cache', type=Path)
     p.add_argument('--mirofish-service-url')

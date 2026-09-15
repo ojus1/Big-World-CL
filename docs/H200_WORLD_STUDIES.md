@@ -1096,3 +1096,86 @@ The judge identity advances to version 9, so existing experiments continue to
 audit against their frozen implementation. Nineteen targeted transport, provider
 and world tests pass. Native sustained-load and semantic qualification of this
 new judge/server combination remain pending.
+
+### Qualified throughput endpoint and fresh six-world execution
+
+At **04:00:42 UTC September 15**, the new no-MTP server and compact judge schema
+completed all **64 concurrent semantic controls**, matching every known label.
+The batch used 171,062 input and 17,747 output tokens in **19.550 seconds**
+(907.76 output tokens/second over batch wall time). Median latency was 17.135
+seconds, nearest-rank p95 19.144 seconds and maximum 19.542 seconds. Gateway peak
+was exactly 64; there were no response errors, timeouts, cancellations or unknown
+usage. These repeat 11 source-grounded development controls from one family,
+with distinct request prefixes. They are not independent outcomes, a general
+judge-accuracy estimate, or a measured workplace speedup over the previous run.
+All raw response bodies are retained and checked against receipts and labels.
+
+The new model container is `bigworld-qwen38flashnext-throughput-v1`, ID
+`4c8b66ae53cf375ae7df068dbdafd06ac0ef5e94a2e5393b5c1ab6791f0782b8`,
+started at `2026-09-15T03:55:14.893638712Z` on GPUs 4–7. Its gateway is
+`bigworld-throughput-inference-gateway-v1`, invocation
+`dae9ce4a2ad3459987e94a053820dee6`, serving `http://127.0.0.1:8011/v1`.
+The native backend uses port 5004 under `bigworld-throughput-backend-v1`,
+invocation `e27fd378875d46d7a01a3de1af629009`.
+
+Both concurrent Hermes work controls completed and passed original-source
+receipt audits: **19 calls and 110,101 tokens**. The optimizer's structured
+edit-array call passed its request audit, consuming **111 tokens** in 1.054
+seconds. All **12 native employee decisions** passed: interviews used 36,057
+tokens and the 12 initial social calls used 30,810 tokens, with no unknown usage
+in either measured category. Other bootstrap usage remains excluded. The native
+qualifier's plan SHA is
+`3e40e7660af341613efb03d9892a312d3ac5d818c1858980be7195732a0ecf84`;
+the harness plan SHA is
+`578d9e17d52c389fbc07eb9b1737fca51855c82d1ad474dbeb814242ecabbcb9`.
+An additional 14 judge-adapter, parallel-execution and learner-audit tests passed,
+bringing this source change's targeted verification to 33 passing tests.
+
+Two operator setup errors were caught before model dispatch and preserved:
+the new installation initially lacked the tracked `actor_contract_transport.json`
+file, and the standalone optimizer qualifier initially omitted `current_day`.
+The missing file was installed, the installation checker passed, and both
+qualifiers were rerun in fresh output directories. Their failed destinations
+remain visible; neither is a model-quality failure or a discarded experiment.
+
+The fresh study launched at **04:05:17 UTC September 15**, from frozen
+`2c65a2c735ef9c8bf0e556f86f8da06ba824b033`, under
+`bigworld-native-workplace-throughput-v1`, PID **2032157**, invocation
+`131820fd4ad14bcdaaee1517d0b79597`. It uses the qualified gateway, native backend
+and judge v9, with the same six seeds, 12 employees, 20 days, sparse calibration,
+isolated validation and original budgets. Its study SHA is
+`e123fbef42107320a5e4a5b5e45e19da626dc873402431db594aff64f42be65c`;
+its analysis was prepared before dispatch with plan SHA
+`2e5ba605cb72f28947434e314bc841cd6d07dff0a5a7c868eb14c9676e95e3e4`.
+At **04:08:04 UTC**, all 72 initial employee decisions were recorded and all
+six work waves were active, with no finalized work receipts yet. No learning
+effect or completed-pair result exists at that observation.
+
+The preceding concurrency run was deliberately interrupted at **04:07:13 UTC**
+after one pair had failed and 55 work attempts had finalized with widespread
+incomplete/ambiguous accounting. SIGINT targeted only its controller service's
+processes. Before/after snapshots and the stop intent are preserved in
+`native-concurrency64-stop-v1`; by 04:08:04 its MainPID was zero and its transient
+unit was absent. This is an operator-stopped failed run, not successful completion.
+The separate isolated-validation pilot had already failed at **04:02:06 UTC**
+with `Unscored or invalid work attempt`, preserving its day-seven work marker.
+It was not stopped by that SIGINT. Both original inference-container flags and
+start time remain unchanged; their frozen study artifacts were not rewritten.
+
+The completed qualifications, raw 64-call benchmark, fixed study/analysis plans,
+launch receipt and partial operational observation are in
+`throughput-operational-evidence-v1`. It contains **423 files, 11,484,996 bytes**;
+archive SHA is
+`f59d511ec666a3d60e236a083c0add6862f9909fb92c3810c03acd6ddd2787b5`,
+and provenance SHA is
+`aa970ef0c74f08e477068104d00c6dfe13c2739795e1eefef84ec7c005a42eaf`.
+The local `throughput-operational-evidence-v1-h200` copy is fully hash-verified.
+
+At **04:10:06 UTC**, the replacement study had **23 finalized work attempts**,
+all fully graded with complete recorded accounting: 219 work/judge calls and
+1,337,722 charged tokens. All six worlds remained on their first work wave.
+Recent server intervals reported 1,492–1,744 generated tokens/second. Those are
+live workload observations, not a matched speedup measurement. No server engine
+errors were present in the launch-to-observation log. Gateway aggregate counters
+also include optional metadata probes and client cancellations; they must not
+be interpreted as inference-failure counts without path-level evidence.

@@ -9,13 +9,14 @@
 * Branch: `codex/h200-flash-next`; frozen study revisions are recorded in
   [the execution ledger](H200_WORLD_STUDIES.md).
 * Dedicated Hermes: `/home/inference-testing/apps/Big-World-Hermes`.
-* Model container: `bigworld-qwen38flashnext`.
-* Shared model API, concurrency **64**: `http://127.0.0.1:8010/v1` on H200.
-* Original vLLM API: `http://127.0.0.1:8000/v1`.
-* Latest scale output (failed world retained; full analysis cannot pass):
-  `/home/inference-testing/apps/Big-World-CL-concurrency64-v2/lifespan/artifacts/native-workplace-concurrency64-v1`.
-* Scale service: `bigworld-native-workplace-concurrency64-v1`.
-* Native employee backend: `http://127.0.0.1:5003`.
+* Current model container: `bigworld-qwen38flashnext-throughput-v1` on GPUs 4–7.
+* Shared model API, concurrency **64**: `http://127.0.0.1:8011/v1` on H200.
+* Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
+* Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
+* Latest scale output:
+  `/home/inference-testing/apps/Big-World-CL-throughput-v1/lifespan/artifacts/native-workplace-throughput-v1`.
+* Scale service: `bigworld-native-workplace-throughput-v1`.
+* Native employee backend: `http://127.0.0.1:5004`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
 * Calibration bank: `lifespan/artifacts/final-world-calibration-v1` on both machines.
 
@@ -23,11 +24,11 @@ The inference container and experiment service survive SSH disconnects. The
 experiment is a transient systemd user service, not a reboot/resume scheduler.
 No automatic source updates or model replacement occur during the run.
 
-The gateway service `bigworld-inference-gateway-v1` applies one shared limit
-across employee, Hermes, judge and SkillOpt requests. `GET /status` on port 8010
+The gateway service `bigworld-throughput-inference-gateway-v1` applies one shared limit
+across employee, Hermes, judge and SkillOpt requests. `GET /status` on port 8011
 reports active/peak requests, queue depth and errors. It forwards JSON and SSE
 without retries. All new scale adapters use this endpoint. Existing frozen
-studies that call port 8000 directly retain their original configuration.
+studies using ports 8000/8010 retain their original configuration.
 
 The scale spec sets `max_parallel_employees`, `max_parallel_worlds` and
 `max_parallel_updates` to 64. Pools use only as many workers as there are jobs;
@@ -44,9 +45,12 @@ character or ASCII limits. Existing frozen studies keep their original judge.
 
 The 64-call short canary passed, but the first sustained six-world load produced
 an employee timeout and incomplete grading. Do not treat that run as qualified
-high-load success. A separate qualification-only container,
-`bigworld-qwen38flashnext-throughput-v1`, uses GPUs 4–7 and loopback port 8002 with
-the same pinned settings except MTP disabled. It is not yet an experiment endpoint.
+high-load success. The replacement uses the same pinned settings except MTP
+disabled. It passed 64 concurrent semantic grading controls in 19.550 seconds,
+all expected labels matching, with no timeouts or unknown usage. Native employee
+decisions, two concurrent Hermes work cases and the optimizer transport also
+passed before the fresh study launched at 04:05:17 UTC September 15. This is
+development qualification, not a completed study or a learning-effect result.
 
 ## Serving configuration
 
@@ -56,8 +60,8 @@ The image is
 `vllm/vllm-openai@sha256:fc120ece0a388cc0aa1caad4a9f1cd92113484ab7ec2fd0efadd62585be05bf8`.
 The running container reports vLLM `0.1.dev20073+g8e685d198`.
 
-The host-side serving receipt is `run/h200-20260914/serving.json`. Its flags came
-from the referenced task's Flash Next serving configuration:
+The original host-side serving receipt is `run/h200-20260914/serving.json`.
+Its flags came from the referenced task's Flash Next serving configuration:
 
 ```text
 Qwen/Qwen3.8-Flash-Next-FP8
@@ -73,6 +77,11 @@ Qwen/Qwen3.8-Flash-Next-FP8
 --speculative-config {"method":"mtp","num_speculative_tokens":3}
 --revision 236dfdf285828023ca3bcd3f37366c58a3469b13
 ```
+
+The current throughput container uses these same flags with `--speculative-config`
+and its value omitted. Its exact launch command and parent container identity are
+in `Big-World-CL-lab/lifespan/artifacts/throughput-server-no-mtp-v1/INTENT.json`.
+The experiment launch receipt also binds its container ID, start time and flags.
 
 Docker binds port 8000 only on loopback, mounts the existing Hugging Face cache,
 uses host IPC and sets `VLLM_ENABLE_CUDA_COMPATIBILITY=0`. The original container
