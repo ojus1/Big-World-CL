@@ -14,9 +14,10 @@
 * Current underlying vLLM API: `http://127.0.0.1:8002/v1`.
 * Original vLLM API on GPUs 0–3: `http://127.0.0.1:8000/v1`.
 * Latest scale output:
-  `/home/inference-testing/apps/Big-World-CL-throughput-v1/lifespan/artifacts/native-workplace-throughput-v1`.
-* Scale service: `bigworld-native-workplace-throughput-v1`.
-* Native employee backend: `http://127.0.0.1:5004`.
+  `/home/inference-testing/apps/Big-World-CL-judge-v13/lifespan/artifacts/native-workplace-compact-v3`.
+* Scale service: `bigworld-native-workplace-compact-v3`.
+* Native employee backend: `http://127.0.0.1:5005`, installed under
+  `/home/inference-testing/apps/Big-World-CL-judge-v11/MiroFish/backend`.
 * Native qualification: `lifespan/artifacts/h200-q3` on H200.
 * Calibration bank: `lifespan/artifacts/final-world-calibration-v1` on both machines.
 
@@ -58,8 +59,12 @@ passed before the fresh study launched at 04:05:17 UTC September 15. This is
 development qualification, not a completed study or a learning-effect result.
 That replacement study subsequently encountered truncated judge responses and
 was operator-stopped; it is not a completed six-pair result. Judge version 13
-is undergoing qualification on all of its saved evidence snapshots before a
-separate experiment can launch. See the execution ledger for current receipts.
+passed all 113 saved-evidence grades with complete accounting. Its unchanged
+semantic prompts/schema passed 64 concurrent controls in 13.240 seconds.
+Twelve native employee decisions, two Hermes controls and the explicitly
+profiled optimizer call also passed. The fresh six-world experiment launched
+at 04:48:17 UTC September 15. These qualifications and the running study do
+not establish successful learning. See the execution ledger for exact receipts.
 
 ## Serving configuration
 

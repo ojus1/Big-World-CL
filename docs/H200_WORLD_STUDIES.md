@@ -1259,9 +1259,64 @@ each request, clipped to the existing overall grade deadline. It does not add
 calls, tokens, time to the overall job allocation, or retries for unknown usage.
 
 Both version-12 native Hermes controls passed their source audits (16 calls,
-86,844 tokens); the structured optimizer check passed (one call, 555 tokens).
+86,844 tokens). Its standalone optimizer request returned with known usage
+(one call, 555 tokens), but did not pass the required provider audit.
 The employee qualifier failed before opening the native runtime because its
 operator command omitted the explicit provider environment used by study
 services. This zero-dispatch setup error is retained; a correctly configured
 fresh qualifier is required. Source profile generation already passed the new
 installation check and targeted tests without character-length constraints.
+
+The version-13 full evidence qualification passed all **113 grades**, with
+557 calls, 4,153,565 reported tokens, zero unknown accounting and no format
+regenerations. This is completion and audit qualification, not judgment truth.
+The previous timeout context completed in this fresh run; the result does not
+establish a causal speedup or prove the longer timeout caused that completion.
+Seventeen targeted local tests pass for the final judge change.
+
+The version-13 native employee qualification passed all 12 decisions: 34,869
+interview tokens, and separately 30,801 observed social-call tokens across 12
+calls with no unknown usage. Other bootstrap providers remain outside those
+measured categories. The standalone version-12 and version-13 optimizer drivers
+omitted `provider_profile` in their explicit credentials. Their calls returned,
+but their provider audits failed and no passing qualification report exists.
+Production `worldlab.learning.SkillOpt.update` already supplies that profile.
+The corrected standalone check uses the production profile and a fresh output
+directory. The launch guard correctly rejected the missing optimizer report;
+that guard failure made no study calls. An attempted evidence export before
+dispatch is likewise an incomplete copy, not a delivered evidence archive.
+
+The corrected, explicitly profiled optimizer check passed in a fresh directory,
+`judge-v13-native-optimizer-v2`: one structured call, 111 tokens, 1.502 seconds.
+The complete 64-control report and its 64 raw responses are copied locally and
+hash-verified in `judge-v12-semantic64-v1-h200` (259 manifest entries plus the
+manifest). Its archive SHA is
+`6b475aa06f078f7a8a10120ab03581fc923e737c8bd7d28b445ffe077aec322c`.
+`SEMANTIC_COMPATIBILITY.json` records reuse of those controls under version 13:
+rules, repair rules, validation, input construction, request helper and schema
+bytes are unchanged, and the server container is unchanged. No extra 64-call
+measurement is claimed.
+
+The fresh study launched at **04:48:17 UTC September 15** from frozen source
+`e2fe6b7f36bdd465c9bd70fc91a4c16945171e16`. Service
+`bigworld-native-workplace-compact-v3` has PID **2112546** and invocation
+`ea7d4fdc001545d3882020e187b796d0`; it was active/running with its main process
+present at 04:48:44 UTC. The study SHA is
+`4488deb56597bca60be3084625b96498c496537dbfaaa728877415e0ef1ff30f`,
+and its prospectively prepared analysis plan SHA is
+`5c204af6cfa6251b7d11aef3c2a0c0f9daea4d348aeddcdc1af77c0880adda5c`.
+It keeps six seeds, 12 employees, 20 days, sparse example coverage, isolated
+validation and shared LLM concurrency 64. At that observation eight employee
+decisions were recorded, no work attempts had finalized, and no skills were
+adopted. No learning result or statistical claim exists yet.
+
+The final two Hermes controls passed with 19 calls and 110,485 tokens. The
+completed qualifications, retained failed attempts, serving configuration,
+study/analysis plans and initial running-state observation are copied to
+`compact-json-operational-evidence-v2-h200` locally. All **6,619 files,
+66,745,962 bytes** are hash-verified. Archive SHA is
+`626805f37c05839f33f5e74c0b105ea99c204ea2cf23f27af7b90c16623c718f`;
+provenance SHA is
+`5f16e94e5b89374b163eabdb427241d8d9d5590e9e667817c9ddbd87f408f7fd`.
+This package includes dependent development qualifications and partial study
+progress; it is not a completed experiment or a successful-learning result.
