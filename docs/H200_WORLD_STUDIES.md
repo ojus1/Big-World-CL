@@ -5,6 +5,86 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Version 6 stopped after a whole-task deadline: September 15, 10:47 UTC
+
+Version 6 is **stopped and incomplete**. Seed 401's control task
+`d004-operations-fr-003-000` (`internal/euw_v1_es_018_fr_bridge`) reached its
+**900-second** worker deadline without returning `NATIVE.json`. The adapter
+retained the full **500,000-token reservation**, unknown call count and
+`infrastructure_ambiguous` status. This is ungraded and is not a valid negative
+task score under the frozen study policy. Its original receipt remains unchanged.
+
+The native logs show active task work: **15 primary API-call records**, reporting
+**269,655 tokens** and **394.7 seconds** of model latency, alongside a
+**300.10-second terminal timeout** and a later **94.21-second terminal execution**.
+The model wrote scheduling scripts and a CSV artifact before the deadline.
+These partial logs explain substantial elapsed task time, but do not establish
+the complete final state or recover the missing meter, auxiliary costs or grade.
+The gateway recorded zero transport exceptions; this incident must not be
+described as a recurrence of version 5's HTTP 502.
+
+The terminal pair status was detected while the supervisor remained live. The
+exact owned service was stopped with before/intent/dispatch/after evidence.
+At **10:47:43 UTC**, `bigworld-native-workplace-compact-v6` was inactive/dead,
+MainPID was zero and original PID **2975707** was absent. The failed worker and
+sandbox PIDs were also confirmed absent. Model container ID, image and start
+time, and the gateway instance, remained unchanged. The final stable snapshot
+at **10:52:53 UTC** has **511 completed online attempts**, **one ambiguous
+attempt**, **527 employee decisions**, **zero replay attempts**, **zero finalized
+updates** and **zero adoptions**. No arm or pair completed successfully.
+`STATUS.completed_pairs=1` counts the failed pair's terminal join, not a
+successful result. No learning-effect or whole-study resource claim follows.
+
+The frozen `d92debe7` source, study and prospective analysis must not be resumed
+or retroactively changed. Before another world run, qualify durable accounting
+and a prospective deadline/failure policy so ordinary task-budget exhaustion
+does not depend on a final worker return. Do not silently score this study's
+ambiguous attempt or drop it from analysis.
+
+## Independent Fluso cleanup qualified: September 15, 10:52 UTC
+
+Frozen `Big-World-CL-fluso-guardian-v1` at
+`ffac9fa4ea426d6b3dd72d7bc0a2ce788a74d7f3` adds a user-systemd guardian outside
+each native controller's service group. A Linux pidfd watches the exact process;
+unique ownership labels, exact names and image checks confine removal to the
+attempt's containers. Normal completion requires a hashed cleanup acknowledgement.
+Guardian intervention preserves model-accounting files and forbids grading.
+
+Both native interruption controls passed: **SIGTERM and SIGKILL of the whole
+controller service group** left the independent guardian alive long enough to
+remove the two owned containers. Each interrupted attempt retained **one unknown
+488-token reservation**, zero reported tokens and no final grade or learning
+trajectory. The controls verified separate controller/guardian cgroups, exact
+PIDs before dispatch and process/container absence afterwards. This qualifies
+these interruption paths on the functioning H200 Docker/systemd host, not
+recovery from host or daemon failure or every possible cleanup deadline race.
+
+Two fresh public development-task runs also passed full source audits: **34
+model calls and 177,961 reported tokens**, including grading. Native call and
+input-token ceiling controls passed again (**one call / 462 tokens** and **zero
+calls**, respectively), and both withheld grading. All **30 Fluso tests passed
+on H200**; locally 29 passed and the Linux pidfd subprocess test was skipped.
+No full Fluso learning epoch or world comparison is established by these checks.
+The first qualification dispatch stopped at its study-status preflight, before
+tests or inference; its log is preserved. The fresh control ran after the
+version-6 study had been stopped, without restarting it.
+
+Task plan SHA `4421487c521a544fdb043fa7ebdd86438b52cccf5224f19bf6abc0a500eea267`;
+terminal plan SHA `8626f2d596483526eaeb4534568808434774532b9734f3f2310fa023b84c66c7`;
+interruption plan SHA `3ea991e8157ae10ab583d6e14a7f33bfbabb24470397da4753970e832527b423`.
+The combined qualification and stopped-study packet is
+`lifespan/artifacts/fluso-guardian-and-v6-stop-evidence-v1-h200.tar.gz`,
+**8,683,860 bytes**, SHA
+`cf95ffe1cb299770bbf254cefaeeb13acac3ecaa659eb4d49b433d1a0277e105`.
+Its **502 payload files** include native traces, the failed attempt, stop
+lifecycle, study/state snapshots, all qualification outcomes and test logs.
+The archive was copied and safely extracted locally, with every payload hash
+verified under `lifespan/artifacts/fluso-guardian-and-v6-stop-evidence-v1-h200`.
+Export SHA `8290adffc213f4b9f4658b7e2c0a09924d3d70bf0bfabdd314a4671d5a09d5e6`.
+All twelve qualification containers were confirmed absent. At export the shared
+gateway was idle, still capped at **64**, with peak 64, zero transport exceptions
+and 112 client cancellations (including the deliberate interruption controls).
+
 ## Native Fluso task adapter qualified: September 15, 10:24 UTC
 
 The interchangeable `worldlab.fluso:Fluso` harness now executes real development

@@ -660,7 +660,9 @@ interruption evidence and removes owned containers without changing retained
 model accounting. Such an attempt remains ungraded; unknown usage reservations
 cannot be converted into reported usage. Guardian source and ownership are bound
 to the harness identity and execution audit. Native interruption qualification
-is required before relying on this behavior in a study. This is bounded cleanup
+is required before relying on this behavior in a study. Native SIGTERM and
+SIGKILL controls at source `ffac9fa4` passed, as recorded in the
+[H200 execution ledger](H200_WORLD_STUDIES.md). This is bounded cleanup
 on a functioning Docker/systemd host, not recovery from host or daemon failure.
 
 Completed receipts require a full skill read and subsequent consumption, a
