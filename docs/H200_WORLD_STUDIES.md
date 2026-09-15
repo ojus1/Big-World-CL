@@ -5,6 +5,50 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Native Fluso consolidation dispatched: September 15, 11:37 UTC
+
+`worldlab.qualify_learning --harness-config` now selects the target harness for
+fresh native SkillOpt replays. It preserves the original historical source and
+audits completed optimizer transport in addition to target costs, fresh grades
+and the adoption gate. All **81 focused tests passed both locally and on H200**,
+including the pinned upstream optimizer and gate controls.
+
+Frozen `Big-World-CL-fluso-learning-v1` at
+`a5090cd3ce5cb2ca65fb3b63f9f52378a7a0e032` uses the already-qualified configured
+Fluso identity unchanged. The four source experiences are the research analyst's
+days 2–5 from the stopped, single-world `development-world-v2`, released at day 6:
+two training and two validation lineages selected by time. Their historical
+Hermes executions remain immutable. Only the new Fluso replay judgments can
+determine consolidation scores. This is one bounded component check, not a
+resumed study, a paired harness comparison or a workplace learning-effect test.
+
+The first operator launch stopped during an identity comparison, before tests,
+native attempts or model dispatch: it compared the delegate with a configured
+identity that also contained factory provenance. The complete configured
+identities match exactly. That script and failed preflight log are preserved.
+The corrected operator launched `bigworld-native-fluso-learning-v2` at
+**11:37:23 UTC**, PID **3390547**, invocation
+**5b6bdbcf7de5406fb72daaae14bd45a3**, with results going to
+`lifespan/artifacts/native-fluso-learning-qualification-v2` in the frozen checkout.
+The native learning budget remains 24 replays, 12 million reserved tokens and
+3,600 seconds; primary, auxiliary, judge and optimizer calls use the shared
+gateway cap of **64**. Completion and adoption remain pending.
+
+At **11:39:14 UTC**, both this service and the version-7 study were active with
+their original PIDs present. Version 7 had **126 completed online attempts**,
+no terminal pair/study status and no finalized learning updates. The gateway
+retained zero transport exceptions, peak 64 and 144 separately counted client
+cancellations. These are bounded progress observations, not final accounting.
+
+Launch plan SHA `20458ba9efb99d3695268bf308d7a71c1ba8e095e4d423350e09a2e92bb600b8`;
+qualification plan SHA `06fd2816499c2d12a95bcd5baa0facfc7a987a6cd5b67682984d891448d6e11e`.
+The initial packet `lifespan/artifacts/native-fluso-learning-start-evidence-v2-h200.tar.gz`
+is **31,520 bytes**, SHA
+`e7697a998b44d1a5c70c0a6073650a55f6cdc83296466a4092455517640f5bc9`.
+All **17 payload hashes** were verified after safe local extraction. Export SHA
+`610e45dfe72ab50fed8c143351ddd345111577e8a15e52cdd75aed009a0bdcc2`.
+This launch packet does not contain a completed native learning qualification.
+
 ## Native deadlines qualified; fresh version 7 launched: September 15, 11:22 UTC
 
 Frozen source `159cd0ca7ed66ee41217766670e8a6cc2cc9e728` records the task's
