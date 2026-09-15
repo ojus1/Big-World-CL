@@ -5,6 +5,68 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Native deadlines qualified; fresh version 7 launched: September 15, 11:22 UTC
+
+Frozen source `159cd0ca7ed66ee41217766670e8a6cc2cc9e728` records the task's
+monotonic deadline before starting native Hermes and atomically checkpoints the
+meter before every physical model dispatch and after each response. At the
+active deadline it closes model admissions and terminates the task sandbox.
+An already admitted response may settle within a separate bounded allowance;
+all settlement time remains in the elapsed-time receipt. Sandbox cleanup must
+be audited within ten seconds. A complete, known-usage native return is still
+required for grading. A checkpoint alone preserves costs and reservations but
+cannot establish completion or turn an interrupted attempt into a task score.
+
+Qualification at `Big-World-CL-hermes-deadline-v1` passed two ordinary public
+development tasks and two prospective deadline controls. The **45-second tool
+control** wrote its initial file, stopped before its delayed file, and retained
+complete accounting: **3 calls / 18,708 tokens**, **45.816 seconds** including
+settlement. The **8-second inference control** retained **6 calls / 39,645
+tokens**, with its sixth accepted response finishing after the active deadline,
+no later model admission and **8.966 seconds** total elapsed time. Both returned
+audited `budget_exhausted` status with worker and sandbox absent. These controls
+do not qualify all crash or provider-failure forms.
+
+The two ordinary task controls added **19 calls / 111,327 tokens**, including
+eight grader calls. All four controls passed independent read-only source
+audits, totaling **28 calls / 169,680 reported tokens** with twenty distinct
+native request IDs. The focused 83-test suite had **82 passes and one optional
+native fixture skip on H200**; locally it had **81 passes and two skips**.
+These are bounded runtime checks, not broad task performance or learning results.
+Plan SHA `8db7bcea4aa17a294f986bdc5f6847ed4bad32b41ab6c9a963429de623dbcdf8`;
+report SHA `c4fdb76835888d939336f56547b9b494db9f5c80aa80329e853b2d3011b8f423`.
+
+`Big-World-CL-workplace-v7` freezes that source and the same six development
+worlds, schedules, employees, seed skills, budgets and non-target adapters as
+version 6. A fresh prospective exploratory analysis was prepared before launch.
+The service `bigworld-native-workplace-compact-v7` started at **11:22:12 UTC**,
+PID **3314046**, invocation **25ae0080a57c4615b7e3a4013003f93c**. At the bounded
+**11:29:04 UTC** observation it was active/running with that PID present,
+**60 completed online attempts**, no terminal pair/study status, no replay
+attempts, no finalized updates and no adoptions. State files can lag completed
+attempt files while a parallel day is joined; these counts are not a transaction
+or a completed-study accounting total. Version 6 remained stopped and unchanged.
+
+The shared gateway remained capped at **64** with peak 64, **zero transport
+exceptions** and 133 client cancellations counted separately. The serving
+container, image, start time and gateway instance were unchanged. Task/world/
+update ceilings remain 64; the global gateway also covers the employee, judge
+and optimizer requests. Structured outputs and request-level token limits
+remain in place; no generated-text character cap was added.
+
+Study SHA `03c10486461609813cf8eb1e6a213d88152c879523f962b409bbe38b6c72d106`;
+analysis plan SHA `03af812603bc33cdd5fe23dd89317dc86349ef893a45cde2cd4b4f724e836c05`;
+compatibility SHA `fd2981449b886d2e603967cf986db305fb4bac652a442f3804f82843f165f522`.
+The packet `lifespan/artifacts/native-compact-v7-start-evidence-h200.tar.gz`
+contains all native qualification traces, test results, audits, preparation,
+analysis, launch lifecycle and the initial observation: **1,589,219 bytes**,
+SHA `b9073997f301c39e68a81d1259c7b60219224c0b86f8bb37b4a1277a4a8c588c`.
+It was copied and safely extracted locally with all **186 payload hashes**
+verified. Export SHA
+`adf5eb052b7fa15f5b0d9ccf330f31ed9a3bf8240b1378ce68e9a82fc5b880ad`.
+This is a fresh development run; no final-bank outcomes, successful nontrivial
+adoption, later deployment effect or statistical significance is established.
+
 ## Version 6 stopped after a whole-task deadline: September 15, 10:47 UTC
 
 Version 6 is **stopped and incomplete**. Seed 401's control task

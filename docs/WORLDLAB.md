@@ -709,9 +709,14 @@ the verified checkpoint's reported tokens and outstanding reservations, while
 remaining incomplete and ungraded. Successful budget exhaustion needs a full
 native return, known usage, skill evidence and verified sandbox termination
 before the ordinary grader can assess the files. Provider failure and unknown
-usage remain separate failure cases. Native task/deadline qualification and a
-fresh study are required before using version 5; older stopped runs retain their
-original source and classifications.
+usage remain separate failure cases. Version 5 passed two native public-task
+controls and two deadline controls on H200: a foreground tool was terminated
+before its delayed output, and an accepted model response settled after its
+deadline with complete usage and no later admissions. A fresh six-world
+development study uses this frozen version. These bounded checks do not qualify
+all crash/provider-failure forms or demonstrate learning. Older stopped runs
+retain their original source and classifications; exact qualification and
+launch evidence is in [the execution ledger](H200_WORLD_STUDIES.md).
 
 The original `max_parallel_employees` controls concurrent work attempts;
 `max_parallel_worlds` and `max_parallel_updates` default to one for existing specs.
