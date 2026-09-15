@@ -5,6 +5,35 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Observed learning supply: September 15, 07:33 UTC
+
+A source-bound readiness capture at **07:33:57 UTC** found that all **36**
+employees in the three observed learner arms had sufficient completed, released
+training experience for the controller's selection. Each had the required two
+selected training lineages and two separate prepared gate descriptors. This is
+actual captured training supply, not a projection that assumes future work
+succeeds. First updates remain scheduled for day 6; zero updates or adoptions
+had been recorded. Across both conditions six arm states were captured; the
+other six were not yet published and are reported as unobserved, not as
+zero-result employees.
+
+The 36 observed learner employees include **3 with direct examples**, **6 with
+role-transfer task-mixture assumptions**, and **27 using defaults**. This shows
+that the current selection path does not require examples for every employee;
+it does not validate the realism of default personas or inferred preferences.
+The new read-only reporter at `fa85456d4a23cb59638797f2e6d8bb13c57d3164`
+checks source, bank, lineage, chronology and receipt bindings. Fourteen targeted
+readiness/design/isolation tests passed locally; H200 ran 14 with one
+optional-dependency skip. No model call or study mutation is involved.
+
+Plan SHA `213cb0d7b1db1a6f7a18f7384146b75ab3cd20c2c435bd2062b7cc24f1cd5d0a`;
+report SHA `936a3f9dfa1e730b466e96a2fcb0f9ca773647026fab48a1cadafbe9b4b20375`.
+The eight report/plan/snapshot files were copied locally and hash-verified under
+`lifespan/artifacts/compact-v5-observed-readiness-v1-h200` in the lab checkout.
+Native attempt evidence remains on H200. The source and analysis of the running
+study remain frozen. Eligibility alone is neither a skill proposal nor a
+validated adoption, later skill deployment or learning-effect result.
+
 ## Checkpoint audit and larger-analysis controls: September 15, 07:18 UTC
 
 The version-5 pre-learning checkpoint audit completed at **07:18:39 UTC**. It
