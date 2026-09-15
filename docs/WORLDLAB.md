@@ -46,6 +46,12 @@ unobserved, not zero-result employees. This is a nontransactional supply
 observation, not a complete work or causal audit, and it does not dispatch an
 optimizer or change the scheduled learning days.
 
+For future study sizing, `scripts/plan_worldlab_power.py` reads explicit effect
+and paired-world SD scenarios without loading outcomes. It records reproducible
+paired-t and bounded-mean sensitivity calculations; it does not select a final N
+or change the running study's test. See the [power planning protocol](WORLDLAB_STUDY_PROTOCOL.md#outcome-free-power-sensitivity).
+Its optional dependencies are isolated in `requirements-worldlab-planning.txt`.
+
 Fresh native studies can opt into `--meter-social-calls` on both prepare and
 execute, or use `MiroFishEmployees(..., meter_social_calls=True)`. The native
 qualification command accepts the same flag. This requires the updated bridge,

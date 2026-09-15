@@ -205,6 +205,67 @@ not sample-size recommendations or evidence of power. A confirmatory run still
 requires a separately frozen analysis, justified assignment/independence,
 qualified final scoring and a prospective power calculation.
 
+## Outcome-free power sensitivity
+
+`scripts/plan_worldlab_power.py` supplies a separate planning step. Install
+`requirements-worldlab-planning.txt` in an isolated environment, then run:
+
+```bash
+python scripts/plan_worldlab_power.py \
+  --config configs/worldlab/power_scenarios_v1.json \
+  --out /path/to/fresh-power-scenarios
+```
+
+The configuration declares absolute useful effects, the standard deviation of
+the **paired world differences**, alpha, target power and a search limit. The
+planner reads no execution outcomes. It preserves exact configuration bytes,
+its reproduction source, numerical-library versions and checksums. None of
+these inputs supplies a final sample size or changes a study's frozen analysis.
+Assumptions have to be recorded explicitly; the example configuration contains
+constructed scenarios, not estimates from the ongoing six-pair development run.
+
+The paired-t calculation uses a two-sided alpha critical value and targets the
+probability of rejection in the positive direction. It uses `n-1` degrees of
+freedom and `sqrt(n) * effect / paired_SD` noncentrality, following the
+[paired-t power convention](https://www.statsmodels.org/stable/generated/statsmodels.stats.power.TTestPower.power.html)
+and [SciPy's noncentral t distribution](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.nct.html).
+The resulting integer N must meet the target while N-1 does not. A limit that is
+too small produces an explicit unsatisfied scenario, not a selected smaller N.
+
+At two-sided alpha 0.05 and target positive-rejection power 0.80, the constructed
+normal-theory scenarios give these counts of independent world pairs:
+
+| True improvement | Paired SD 5 points | Paired SD 10 points | Paired SD 20 points |
+| --- | ---: | ---: | ---: |
+| 2.5 percentage points | 34 | 128 | 505 |
+| 5 percentage points | 10 | 34 | 128 |
+| 10 percentage points | 5 | 10 | 34 |
+
+These calculations assume independent, identically distributed normal world
+differences. Bounded workplace fractions are not exactly normal, so this is a
+planning sensitivity model that needs validation against the eventual design.
+It does **not** calculate power for the existing sign-flip diagnostic, justify
+changing the current analysis, or prove that a bank provides broad transfer
+coverage. Detecting a positive effect against zero when the true effect is five
+points is also different from proving that the effect exceeds five points.
+
+For comparison the planner computes a distribution-free sufficient sample size
+for a positive lower endpoint of the existing two-sided Hoeffding interval. For
+independent differences in `[-1,1]`, radius `r=sqrt(2 log(2/alpha)/n)` and expected
+mean at least `delta > r`, the power lower bound is
+`1-exp(-n*(delta-r)^2/2)`. This follows the same bounded-sum inequality used above,
+with no normality or variance assumption. At five points and 80% power, the
+sufficient count is **8,138 pairs**; at ten points it is **2,035**. These are
+conservative sufficient counts, not necessary sample sizes or affordable launch
+recommendations. The 2.5-point scenario exceeds the example's 20,000-pair limit.
+
+Before selecting a final protocol, use complete, audited development evidence
+to assess variability and distributional assumptions, define a useful effect,
+and qualify the eventual test and evaluator. Then freeze the chosen method, N,
+assignment scheme, final bank and failure policy before final outcomes. Do not
+calculate observed power from a final effect or add seeds until a desired
+p-value appears. The current study, its six seeds and its analysis stay frozen.
+
 ## Remaining requirements
 
 Public numerical supplements currently cover reviewed omissions in two source
