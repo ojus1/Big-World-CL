@@ -5,6 +5,93 @@ All paths below are on `inference-testing@h200-3` under
 `/home/inference-testing/apps/`. Original evidence is preserved. No study here
 establishes statistically significant skill learning.
 
+## Fresh inference connections qualified and deployed: September 15, 09:28 UTC
+
+Frozen source `d92debe7623ba2ad33f3c9bb5453db8409f9021c` adds fresh upstream
+connections and request-correlated gateway diagnostics. All **59 targeted tests**
+passed on H200. A controlled reused-connection fixture reproduces a disconnect;
+fresh connections avoid that fixture. This does **not** identify the cause of
+the earlier study's HTTP 502.
+
+The native qualification retained and passed **all 1,088 requests**, reporting
+**825,979 tokens**, zero unknown usage, zero transport errors and zero retries.
+Its six phases cover strict JSON through Responses and Chat, plus streamed Chat.
+Every phase reached **64 active requests** and drained to zero. Fresh phases
+created exactly one upstream socket per request, with no connection reuse.
+The 512-request fresh stress phase took **8.447 seconds** (60.61 requests/second).
+These are repeated-context controls with tiny outputs, not workplace throughput
+or a statistically established speedup. Independent offline reconstruction on
+H200 and locally verified all requests, responses, usage, unique request IDs,
+phase totals and **3,284 manifest entries**.
+
+Qualification plan SHA
+`c32f94b40989fee363a2296e1f610145f4fae99f9362db1fd9396be3070afb30`;
+report SHA `8215135cfaa4cc42660cce1c920e8db486b5b52a45b5e05a65e28baf0b609eca`;
+export SHA `aa7ef95f2b4d2c1f39697ad3c2e7afaf950c145ae15de4dcc8f79577988a6817`.
+The complete **605,918-byte** archive was copied and safely extracted locally
+under `lifespan/artifacts/native-gateway-connections-v2-h200`; archive SHA
+`cf7c8db11e65ab94e51e1a4a08d98c24b2ffc98c5115e2b3c69317d33469f0c3`.
+
+At **09:28:32 UTC**, the idle owned service on port **8011** was replaced with
+`bigworld-throughput-inference-gateway-v2`, PID **2974574**, invocation
+`ad0844adaa514ac1980c099f76873216`, from `Big-World-CL-gateway-v2` at the frozen
+commit above. Its runtime reports aiohttp **3.14.3**, connection policy `fresh`,
+global LLM concurrency **64**, upstream port **8002** and zero retries. Gateway
+instance ID is `533b651bc1af`. The Qwen serving container's ID, image, arguments,
+GPU assignments and start time remained unchanged. Before/intent/stop/dispatch/
+after evidence and a metadata-only event log are retained in the lab checkout's
+`lifespan/artifacts/native-gateway-deployment-v2`.
+
+Two fresh native Hermes controls subsequently passed their source audits:
+**20 total model calls and 124,432 reported tokens**. All **12 solver calls**
+retain distinct gateway IDs matching the live instance; the remaining eight
+calls are task grading. Both attempts completed with known usage and the gateway
+recorded zero transport errors. Qualification is under the frozen
+`Big-World-CL-workplace-v6/lifespan/artifacts/native-harness-gateway-v2` directory.
+Plan SHA `6941787c97870eb49ebdf4d8ce131248d7c75b12aed2fbded6a00b3fb42978c1`;
+report SHA `d40b6495a1c2247cabb43021965fbf2f4022bda779a5063c30a8e7937c27bd1b`.
+
+The fresh version-6 study preserves the exact previous six worlds, schedules,
+personas, sparse examples, adapter identities and development learning protocol.
+Only three existing source files differ: the gateway, budget correlation fields
+and failure-receipt validation. Explicit compatibility evidence reuses the
+unchanged judge, employee and optimizer qualifications without claiming new
+measurements. Newly added Chat/Fluso modules are unused by this Hermes study.
+Study SHA `48bd20a6479a1d264f9c2b943a022986747e0f11ed4605d8db850697104b63c0`;
+prospective analysis plan SHA
+`e7928f0f612f6a43eca5f244f1f2722bab742ef4fe6c978613d83d969f7ab74b`;
+compatibility SHA
+`d484646ab3b325925a272ed9f7425e7f25fa959ef607645b36395f26e268737c`.
+Version 5 remains stopped and unchanged. No reserved final-bank outcomes were
+accessed, and no confirmatory significance claim is authorized by this study.
+
+Version 6 launched at **09:34:02 UTC**, service
+`bigworld-native-workplace-compact-v6`, PID **2975707**, invocation
+`b293451d370e4a148ba7a9d5f159420f`. At **09:36:49 UTC**, its main process was
+present, all six initial arms had recorded 12 employee decisions, and their
+first parallel task wave was running. The gateway had **64 active requests**,
+15 queued and zero transport errors. Neither a completed pair nor an adoption
+existed. The initial snapshot is nontransactional and does not establish success.
+The gateway also records client cancellations separately: the 09:37:21 read
+counted 24 queued metadata GETs, 24 Responses calls cancelled during response
+delivery after HTTP 200, and four Chat calls cancelled before response headers.
+These events must not be reported as zero client errors or silently equated
+with complete token accounting; native attempt receipts remain authoritative
+for their metered calls. No upstream HTTP error event or transport exception
+was recorded in that read. Expected `/props` 404s remain in status counters.
+
+The full two-task native qualification, prospective study and analysis plans,
+compatibility checks, deployment lifecycle, launch receipt, targeted test logs
+and initial progress are copied and hash-verified locally in
+`lifespan/artifacts/native-compact-v6-start-evidence-h200` (**116 payload files**).
+Archive size **1,158,460 bytes**, SHA
+`5bb49434ad72fcee59ceb4916d2c2d16bf5bc865afac4fa8786e3f7c0b0be754`;
+export SHA `252c1ebca59fbcdc752800234cb6d9327cf89e87128fa6e5a275627547524f66`.
+The event log in that package is a timestamped snapshot of the continuing
+gateway log, not its eventual final contents. Native study attempts remain on
+H200. Future status checks must examine pair statuses and receipts as well as
+the live service PID; a running supervisor does not exclude a failed pair.
+
 ## Version 5 stopped after a transport failure: September 15, 09:00 UTC
 
 The version-5 campaign is **stopped and incomplete**. Its seed-431 control arm
@@ -14,7 +101,7 @@ at 08:48:40 UTC. The first 22 calls reported **388,768 tokens**; the failed call
 retained its **91,954-token reservation**, for **480,722 charged/reserved tokens**.
 The attempt is ungraded, with incomplete accounting. This was a provider
 transport failure, not a valid negative task score. The retained provider-window
-log has no corresponding error stack; the gateway does not retain exception
+log has no corresponding error stack; the old gateway did not retain exception
 details, so the underlying transport cause is not established.
 
 The pair failure became terminal after its remaining parallel work joined at
