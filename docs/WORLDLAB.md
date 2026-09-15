@@ -31,6 +31,21 @@ keeps those categories separate and provides no misleading combined cost total.
 An in-flight marker does not prove that a process is alive, and service success
 does not prove a successful experiment audit or a learning effect.
 
+To inspect actual learning supply, run `scripts/report_worldlab_readiness.py`
+with `--study`, `--bank` and a fresh `--out` outside the study directory. Use the
+study's frozen execution sources on `PYTHONPATH`; the reporter checks their
+hashes before selecting experiences. It captures published states and binds
+completed sessions to their attempt receipts without invoking a model.
+
+The report distinguishes eligibility from feedback released at the recorded
+day, supply available by the next scheduled update using only already completed
+work, and updates/adoptions actually recorded. Repeated work on one connected
+lineage does not count as two training cases. Isolated validation descriptors
+remain separate from observed employee experience. Missing arm states are
+unobserved, not zero-result employees. This is a nontransactional supply
+observation, not a complete work or causal audit, and it does not dispatch an
+optimizer or change the scheduled learning days.
+
 Fresh native studies can opt into `--meter-social-calls` on both prepare and
 execute, or use `MiroFishEmployees(..., meter_social_calls=True)`. The native
 qualification command accepts the same flag. This requires the updated bridge,

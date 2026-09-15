@@ -88,6 +88,14 @@ checks whether scheduled feedback could supply each learning round. It never
 loads execution outcomes. Scheduled supply assumes immediate successful work;
 it does not establish actual eligibility, adoptions, completed sessions or power.
 
+`scripts/report_worldlab_readiness.py` inspects the separate execution side:
+captured published sessions, their receipt hashes, released feedback, distinct
+training lineages and the frozen controller's actual selection. It reports
+observed learner employees eligible at the current recorded day and those with
+sufficient already completed work for the next update after scheduled feedback
+release. It never assumes future work succeeds, counts unstarted arms as zero
+results, or turns eligibility into an adoption claim.
+
 The frozen `native-workplace-compact-v4` design has 1,152 training arrivals and
 288 probe arrivals per arm across its six worlds. Those probe arrivals reuse
 12 tasks from nine connected lineages. All 18 English research employee/world
