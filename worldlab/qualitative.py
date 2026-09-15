@@ -19,8 +19,9 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Independently check facts, calculations, units, omissions and unsupported assertions. '
          'Apply the frozen acceptable alternatives, ambiguity policy and evaluation guidance. '
          'Do not invent additional requirements or infer hidden agent reasoning. '
-         'Return only JSON with criterion_id, passed (boolean), evidence and reasoning. '
-         'Choose the final Boolean from the supplied evidence and criterion. Evidence should cite only '
+         'Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean). '
+         'Choose the final Boolean consistent with the evidence and final rationale you just wrote. '
+         'If your rationale identifies a binding requirement as violated, passed must be false. Evidence should cite only '
          'the decisive source/output files and details; reasoning should give a brief final justification. '
          'Do not narrate deliberation, repeatedly reconsider your decision, or reproduce an entire checklist. '
          'Use the original wording when citing non-English source material. Do not repeat whitespace or pad fields.')
@@ -74,7 +75,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 11, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 12, 'provider': self.provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,

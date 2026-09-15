@@ -1233,3 +1233,18 @@ and the unsuccessful qualification ended, with an idle gateway. The old
 container is stopped and retained. Startup and old-server evidence are in
 `throughput-compact-json-server-v1`. Live qualification remains required before
 launch; grammar validity alone was insufficient performance evidence.
+
+At 04:32:34 UTC, version 11 completed all 64 semantic requests with valid JSON
+and known usage in 18.867 seconds (13,876 output tokens; 735.48 output tokens per
+wall second). However, only 63 of 64 known labels matched. One missing-heading
+control explicitly identified the binding violation in its evidence/rationale
+but emitted `passed: true`. The strict semantic qualification therefore failed;
+the prepared study `60938c943e8084811d0776fe2c46a6a1799cb036389cdc78a0e0c2dfbe1d5b10`
+was not launched. A separate completion-only run of all saved work evidence
+continues, without treating that as semantic qualification.
+
+Version 12 restores the final Boolean after the evidence/rationale and explicitly
+requires agreement with the stated finding. It keeps native compact JSON Schema,
+prompt-only verbosity and metered format recovery. The version-11 contradictory
+verdict remains a failure; it is never rewritten or retried as a valid verdict.
+New version-12 qualification must retain all newly planned outcomes.

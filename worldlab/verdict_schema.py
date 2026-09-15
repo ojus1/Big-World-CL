@@ -2,9 +2,9 @@
 from copy import deepcopy
 
 SCHEMA = {'type': 'object', 'properties': {
-    'criterion_id': {'type': 'string'}, 'passed': {'type': 'boolean'},
-    'evidence': {'type': 'string'}, 'reasoning': {'type': 'string'}},
-    'required': ['criterion_id', 'passed', 'evidence', 'reasoning'],
+    'criterion_id': {'type': 'string'}, 'evidence': {'type': 'string'},
+    'reasoning': {'type': 'string'}, 'passed': {'type': 'boolean'}},
+    'required': ['criterion_id', 'evidence', 'reasoning', 'passed'],
     'additionalProperties': False}
 
 
