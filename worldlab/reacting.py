@@ -9,13 +9,15 @@ from .attempts import execute_task
 from .campaign import SEED_SKILL
 from .contracts import Budget
 from .dispatch import dispatch_day
+from .cancellation import check as check_cancellation
 from .experience_update import update_employee
 from .workplace import Workplace
 from .worlds import stable_hash
 from .validation_context import select_experiences, employee_world, validate_world
 
 
-def run_world(bank, world, harness, judge, learner, out, employee_factory):
+def run_world(bank, world, harness, judge, learner, out, employee_factory, *, cancellation=None):
+    check_cancellation(cancellation)
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     validate_world(bank, world)
     place = Workplace(world)
@@ -33,12 +35,14 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
         driver = employee_factory.open(employee_world(world), world['employee_context'], out / 'actors')
         (out / 'INFLIGHT.json').unlink()
         for day in range(spec['days']):
+            check_cancellation(cancellation)
             place.advance(day); checkpoint()
             for ordinal in range(max(e.get('sessions_per_day', 1) for e in world['workforce'])):
                 employees = sorted(skills)
                 random.Random(stable_hash([world['seed'], day, ordinal])).shuffle(employees)
                 work = []
                 for employee in employees:
+                    check_cancellation(cancellation)
                     pending = place.available(employee)
                     if not pending: continue
                     oid = pending[0]
@@ -88,8 +92,10 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
                     else:
                         (out / 'INFLIGHT.json').unlink()
 
-                dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1))
+                dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1),
+                             cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None)
             if day not in spec.get('update_days', []): continue
+            check_cancellation(cancellation)
             if spec.get('max_parallel_updates', 1) > 1:
                 from .experience_update import dispatch_updates
                 selections = [(employee, select_experiences(world, state['sessions'], employee, day))
@@ -110,9 +116,11 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory):
                         (out / 'INFLIGHT.json').unlink()
 
                 dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
-                    record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'])
+                    record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'],
+                    cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None)
             else:
                 for employee in sorted(skills):
+                    check_cancellation(cancellation)
                     selected = select_experiences(world, state['sessions'], employee, day)
                     if not selected: continue
                     save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,

@@ -786,6 +786,19 @@ optimizer edit arrays now use a registered JSON schema in the inference request,
 with request hashes checked by the offline auditor. Text fields have no hard
 character limits; required structure and original business/gate checks remain.
 
+New preparations declare `failure_policy: stop_after_current_wave`. The first
+execution or accounting failure atomically publishes `STOP_REQUESTED.json` in
+the study root. All world pairs check it before starting an arm, employee
+decision, work wave or learning wave. Already admitted work and whole learning
+epochs finish under their original budgets and retain their receipts; an epoch
+can therefore take up to its remaining 3,600-second budget to drain. This is
+cooperative cancellation, not an immediate process kill. Low scores, rejected
+updates and ordinary accounted budget exhaustion do not stop the study. Stopped
+peers are recorded as cancelled, and an incomplete study produces no final
+comparison. `drain_all_pairs` explicitly preserves the earlier parallel policy;
+frozen older checkouts keep their original behavior. No failed pair is retried
+or dropped from the planned comparison.
+
 The offline audit reconstructs every causal command, regenerates visible views,
 checks native interview receipts and binds outcomes to actual task artifacts.
 All planned probes remain in the denominator. The primary workplace metric is

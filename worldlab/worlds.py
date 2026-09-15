@@ -19,6 +19,7 @@ from .calibration import fit
 from .campaign import SEED_SKILL, source_identity
 from .contracts import Budget
 from .dispatch import dispatch_day
+from .cancellation import check as check_cancellation
 from .workforce import expand_workforce
 from .validation_context import ISOLATED, policy, compile_cases, validate_world, select_experiences, employee_world
 
@@ -33,6 +34,8 @@ def compile_world(bank, specification, seed, harness, judge):
     """Freeze all schedules before outcomes; role defaults work without examples."""
     if specification.get('study_scope') != 'development':
         raise ValueError('The calibration bank cannot authorize a final confirmatory study')
+    if specification.get('failure_policy', 'stop_after_current_wave') not in ('stop_after_current_wave', 'drain_all_pairs'):
+        raise ValueError('Unsupported study failure policy')
     employees = specification['employees']
     isolated = policy(specification) == ISOLATED
     calibrated = fit(bank, specification)
@@ -150,6 +153,7 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
+    spec = {**spec, 'failure_policy': spec.get('failure_policy', 'stop_after_current_wave')}
     replay_seconds = learner.identity().get('budget', {}).get('replay_seconds')
     if (spec.get('update_days') and replay_seconds is not None
             and replay_seconds < Budget(**spec.get('work_budget', {})).seconds + 300):
@@ -224,7 +228,8 @@ def work_opportunity_limit(world):
     return world['specification']['days'] * sum(e.get('sessions_per_day', 1) for e in world['workforce'])
 
 
-def run_world(bank, world, harness, judge, learner, out):
+def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
+    check_cancellation(cancellation)
     validate_world(bank, world)
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     spec = world['specification']
@@ -233,6 +238,7 @@ def run_world(bank, world, harness, judge, learner, out):
     state = {'day': 0, 'skills': skills, 'sessions': sessions, 'updates': updates, 'events': events}
     judge_tokens = judge.max_tokens
     for day in range(spec['days']):
+        check_cancellation(cancellation)
         state['day'] = day
 
         def work(slot):
@@ -265,8 +271,10 @@ def run_world(bank, world, harness, judge, learner, out):
                 (out / 'INFLIGHT.json').unlink()
 
         dispatch_day([s for s in world['schedule'] if s['day'] == day], work, record_work, journal_work,
-                     max_parallel=spec.get('max_parallel_employees', 1))
+                     max_parallel=spec.get('max_parallel_employees', 1),
+                     cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None)
         if day not in spec.get('update_days', []): continue
+        check_cancellation(cancellation)
         if spec.get('max_parallel_updates', 1) > 1:
             from .experience_update import dispatch_updates
             selections = []
@@ -293,9 +301,11 @@ def run_world(bank, world, harness, judge, learner, out):
                     (out / 'INFLIGHT.json').unlink()
 
             dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
-                record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'])
+                record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'],
+                cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None)
         else:
             for employee in sorted(skills):
+                check_cancellation(cancellation)
                 selected = select_experiences(world, sessions, employee, day)
                 if not selected:
                     events.append({'day': day, 'employee_id': employee, 'kind': 'insufficient_released_learning_cases'})
@@ -346,22 +356,30 @@ def execute_study(bank, harness, judge, learner, out, employee_factory=None):
         from .parallel import execute_pairs
         reports = execute_pairs(bank, study, harness, judge, learner, out, employee_factory, workers)
     else:
+        from .cancellation import Cancellation, StudyCancelled
+        failure_policy = study['worlds'][0]['specification'].get('failure_policy', 'stop_after_current_wave')
+        cancellation = Cancellation(out) if failure_policy == 'stop_after_current_wave' else None
         reports = []
         for index, world in enumerate(study['worlds']):
             arms = [NoLearning(), learner]
             if index % 2: arms.reverse()
             for arm in arms:
                 root = out / 'worlds' / f'seed-{world["seed"]}' / arm.identity()['name']
+                stop = cancellation.at(world_seed=world['seed'], arm=arm.identity()['name']) if cancellation else None
                 try:
+                    check_cancellation(stop)
                     if employee_factory is None:
-                        report = run_world(bank, world, harness, judge, arm, root)
+                        report = run_world(bank, world, harness, judge, arm, root, cancellation=stop)
                     else:
                         from .reacting import run_world as run_reacting
-                        report = run_reacting(bank, world, harness, judge, arm, root, employee_factory)
+                        report = run_reacting(bank, world, harness, judge, arm, root, employee_factory, cancellation=stop)
                     reports.append(report)
                 except BaseException as exc:
+                    if stop is not None and not isinstance(exc, StudyCancelled): stop.request(type(exc).__name__)
                     save(out / 'STATUS.json', {'status': 'incomplete', 'completed_arms': len(reports),
                                                'planned_arms': 2 * len(study['worlds']), 'error_type': type(exc).__name__,
+                                               'failure_policy': failure_policy,
+                                               'stop_requested': cancellation is not None and cancellation.path.exists(),
                                                'failed_world': world['seed'], 'failed_arm': arm.identity()['name'],
                                                'reports': reports})
                     raise

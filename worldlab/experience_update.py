@@ -6,6 +6,7 @@ from scripts.source_world_calibration import save, read
 from .attempts import execute_task, task_instruction
 from .contracts import Budget, judge_call_allocation
 from .validation_context import observed_feedback
+from .cancellation import check
 
 
 def replay_admission(limits, work_budget):
@@ -31,7 +32,7 @@ def audit_replay_admissions(update_root, update, selected):
 
 
 def dispatch_updates(bank, harness, judge, learner, selections, *, day, skills, out,
-                     record, journal, max_parallel):
+                     record, journal, max_parallel, cancellation=None):
     """Parallel employee epochs with independent upstream settings and ledgers.
 
     SkillOpt mutates process-global prompt/worker settings, so epochs use spawned
@@ -40,25 +41,32 @@ def dispatch_updates(bank, harness, judge, learner, selections, *, day, skills, 
     """
     if not selections:
         return
-    journal([employee for employee, _ in selections])
-    errors = []
-    with ProcessPoolExecutor(max_workers=min(max_parallel, len(selections)),
+    width = min(max_parallel, len(selections))
+    with ProcessPoolExecutor(max_workers=width,
                              mp_context=multiprocessing.get_context('spawn')) as pool:
-        futures = [(employee, pool.submit(update_employee, bank, harness, judge, learner, selected,
-                    employee=employee, day=day, skill=skills[employee],
-                    update_root=out / 'learning' / f'd{day:03d}-{employee}'))
-                   for employee, selected in selections]
-        for employee, future in futures:
-            try:
-                update = future.result()
-                record(employee, update)
-                if update['status'] not in ('completed', 'budget_exhausted'):
-                    errors.append(RuntimeError('Learning failed; evidence preserved without automatic replay'))
-            except Exception as exc:
-                errors.append(exc)
-    if errors:
-        raise errors[0]
-    journal([])
+        for offset in range(0, len(selections), width):
+            check(cancellation)
+            wave = selections[offset:offset + width]
+            journal([employee for employee, _ in wave])
+            errors = []
+            futures = [(employee, pool.submit(update_employee, bank, harness, judge, learner, selected,
+                        employee=employee, day=day, skill=skills[employee],
+                        update_root=out / 'learning' / f'd{day:03d}-{employee}'))
+                       for employee, selected in wave]
+            if cancellation is not None:
+                for _, future in futures:
+                    future.add_done_callback(lambda f: cancellation.observe(f, ('completed', 'budget_exhausted')))
+            for employee, future in futures:
+                try:
+                    update = future.result()
+                    record(employee, update)
+                    if update['status'] not in ('completed', 'budget_exhausted'):
+                        errors.append(RuntimeError('Learning failed; evidence preserved without automatic replay'))
+                except Exception as exc:
+                    if cancellation is not None: cancellation.request(type(exc).__name__)
+                    errors.append(exc)
+            if errors: raise errors[0]
+            journal([])
 
 
 def update_employee(bank, harness, judge, learner, selected, *, employee, day, skill, update_root, executor=None):
