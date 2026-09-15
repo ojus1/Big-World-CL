@@ -1,3 +1,47 @@
+diff --git a/backend/app/api/simulation.py b/backend/app/api/simulation.py
+index aae7678..5b241cb 100644
+--- a/backend/app/api/simulation.py
++++ b/backend/app/api/simulation.py
+@@ -2301,6 +2301,13 @@ def get_simulation_comments(simulation_id: str):
+ 
+ # ============== Interview 采访接口 ==============
+ 
++@simulation_bp.route('/actor-contract-support', methods=['GET'])
++def actor_contract_support():
++    """Opt-in handshake only; generation remains unchanged unless requested."""
++    from ..utils.actor_output_contract import capabilities, require_transport_support
++    require_transport_support(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
++    return jsonify({'success': True, 'data': capabilities()})
++
+ @simulation_bp.route('/interview', methods=['POST'])
+ def interview_agent():
+     """
+@@ -2395,13 +2402,24 @@ def interview_agent():
+         
+         # 优化prompt，添加前缀避免Agent调用工具
+         optimized_prompt = optimize_interview_prompt(prompt)
++
++        contract_binding = None
++        if data.get('output_contract') is not None:
++            from ..utils.actor_output_contract import (
++                bind_request, require, require_worker_support, require_transport_support, simulation_path)
++            require_transport_support(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
++            require(platform == 'reddit', 'contracted_interviews_require_reddit')
++            directory = simulation_path(SimulationRunner.RUN_STATE_DIR, simulation_id)
++            require_worker_support(directory)
++            contract_binding = bind_request(directory, agent_id, prompt, optimized_prompt, data['output_contract'], data.get('contract_request_key'))
+         
+         result = SimulationRunner.interview_agent(
+             simulation_id=simulation_id,
+             agent_id=agent_id,
+             prompt=optimized_prompt,
+             platform=platform,
+-            timeout=timeout
++            timeout=timeout,
++            output_contract=contract_binding,
+         )
+ 
+         return jsonify({
 diff --git a/backend/app/config.py b/backend/app/config.py
 index 02aed9a..16f8f55 100644
 --- a/backend/app/config.py
@@ -308,8 +352,31 @@ index 1bb212b..5f7eceb 100644
          
          # 清理响应
          clean_response = re.sub(r'<tool_call>.*?</tool_call>', '', final_response, flags=re.DOTALL)
+diff --git a/backend/app/services/simulation_ipc.py b/backend/app/services/simulation_ipc.py
+index 9d70d0b..c84d983 100644
+--- a/backend/app/services/simulation_ipc.py
++++ b/backend/app/services/simulation_ipc.py
+@@ -191,7 +191,8 @@ class SimulationIPCClient:
+         agent_id: int,
+         prompt: str,
+         platform: str = None,
+-        timeout: float = 60.0
++        timeout: float = 60.0,
++        output_contract: Dict[str, Any] = None,
+     ) -> IPCResponse:
+         """
+         发送单个Agent采访命令
+@@ -212,6 +213,8 @@ class SimulationIPCClient:
+             "agent_id": agent_id,
+             "prompt": prompt
+         }
++        if output_contract is not None:
++            args['output_contract'] = output_contract
+         if platform:
+             args["platform"] = platform
+             
 diff --git a/backend/app/services/simulation_runner.py b/backend/app/services/simulation_runner.py
-index b1b9989..4411542 100644
+index b1b9989..cda9ce2 100644
 --- a/backend/app/services/simulation_runner.py
 +++ b/backend/app/services/simulation_runner.py
 @@ -650,6 +650,8 @@ class SimulationRunner:
@@ -360,6 +427,26 @@ index b1b9989..4411542 100644
      @classmethod
      def _read_action_log(
          cls, 
+@@ -1697,7 +1724,8 @@ class SimulationRunner:
+         agent_id: int,
+         prompt: str,
+         platform: str = None,
+-        timeout: float = 60.0
++        timeout: float = 60.0,
++        output_contract: Dict[str, Any] = None,
+     ) -> Dict[str, Any]:
+         """
+         采访单个Agent
+@@ -1734,7 +1762,8 @@ class SimulationRunner:
+             agent_id=agent_id,
+             prompt=prompt,
+             platform=platform,
+-            timeout=timeout
++            timeout=timeout,
++            output_contract=output_contract,
+         )
+ 
+         if response.status.value == "completed":
 diff --git a/backend/app/utils/llm_client.py b/backend/app/utils/llm_client.py
 index 9d85259..651644e 100644
 --- a/backend/app/utils/llm_client.py
@@ -558,10 +645,73 @@ index 2a627ff..c3115e1 100644
  
  def get_active_agents_for_round(
 diff --git a/backend/scripts/run_reddit_simulation.py b/backend/scripts/run_reddit_simulation.py
-index 14907cb..22b2178 100644
+index 14907cb..e556d2a 100644
 --- a/backend/scripts/run_reddit_simulation.py
 +++ b/backend/scripts/run_reddit_simulation.py
-@@ -441,7 +441,7 @@ class RedditSimulationRunner:
+@@ -161,9 +161,17 @@ class IPCHandler:
+     
+     def update_status(self, status: str):
+         """更新环境状态"""
++        from app.utils.actor_output_contract import capabilities, require_transport_support, ContractError
++        support = None
++        try:
++            require_transport_support(os.path.dirname(os.path.dirname(__file__)))
++            support = capabilities()
++        except ContractError:
++            pass
+         with open(self.status_file, 'w', encoding='utf-8') as f:
+             json.dump({
+                 "status": status,
++                "actor_output_contract": support,
+                 "timestamp": datetime.now().isoformat()
+             }, f, ensure_ascii=False, indent=2)
+     
+@@ -211,7 +219,7 @@ class IPCHandler:
+         except OSError:
+             pass
+     
+-    async def handle_interview(self, command_id: str, agent_id: int, prompt: str) -> bool:
++    async def handle_interview(self, command_id: str, agent_id: int, prompt: str, output_contract=None) -> bool:
+         """
+         处理单个Agent采访命令
+         
+@@ -230,10 +238,21 @@ class IPCHandler:
+             
+             # 执行Interview
+             actions = {agent: interview_action}
+-            await self.env.step(actions)
+-            
+-            # 从数据库获取结果
+-            result = self._get_interview_result(agent_id)
++            if output_contract is None:
++                await self.env.step(actions)
++                result = self._get_interview_result(agent_id)
++            else:
++                from app.utils.actor_output_contract import (interview_scope, require, trace_cursor, contracted_trace_result, require_transport_support)
++                from app.utils.camel_responses import OpenAIResponsesModel
++                require_transport_support(os.path.dirname(os.path.dirname(__file__)))
++                with interview_scope(self.simulation_dir, agent_id, prompt, output_contract) as scope:
++                    models = getattr(agent.model_backend, 'models', None)
++                    require(bool(models) and all(isinstance(model, OpenAIResponsesModel) for model in models),
++                            'unsupported_contracted_actor_backend')
++                    before = trace_cursor(self.simulation_dir)
++                    await self.env.step(actions)
++                    result = contracted_trace_result(self.simulation_dir, agent_id, prompt, before)
++                    result['actor_output_receipt'] = scope.finish(result)
+             
+             self.send_response(command_id, "completed", result=result)
+             print(f"  Interview完成: agent_id={agent_id}")
+@@ -361,7 +380,8 @@ class IPCHandler:
+             await self.handle_interview(
+                 command_id,
+                 args.get("agent_id", 0),
+-                args.get("prompt", "")
++                args.get("prompt", ""),
++                args.get('output_contract'),
+             )
+             return True
+             
+@@ -441,7 +461,7 @@ class RedditSimulationRunner:
          - LLM_MODEL_NAME: 模型名称
          """
          # 优先从 .env 读取配置
@@ -570,7 +720,7 @@ index 14907cb..22b2178 100644
          llm_base_url = os.environ.get("LLM_BASE_URL", "")
          llm_model = os.environ.get("LLM_MODEL_NAME", "")
          
-@@ -461,10 +461,8 @@ class RedditSimulationRunner:
+@@ -461,10 +481,8 @@ class RedditSimulationRunner:
          
          print(f"LLM配置: model={llm_model}, base_url={llm_base_url[:40] if llm_base_url else '默认'}...")
          
@@ -583,6 +733,11 @@ index 14907cb..22b2178 100644
      
      def _get_active_agents_for_round(
          self, 
+@@ -766,4 +784,3 @@ if __name__ == "__main__":
+         pass
+     finally:
+         print("模拟进程已退出")
+-
 diff --git a/backend/scripts/run_twitter_simulation.py b/backend/scripts/run_twitter_simulation.py
 index caab9e9..da23009 100644
 --- a/backend/scripts/run_twitter_simulation.py

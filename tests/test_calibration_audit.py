@@ -30,6 +30,7 @@ class CalibrationAuditTests(unittest.TestCase):
     def setUp(self):
         source_fixture = fixture_module.ArtifactAuditTests()
         source_fixture.setUp()
+        source_fixture.use_modern_streaming_transport()
         self.addCleanup(source_fixture.doCleanups)
         self.source = source_fixture.root
         source_fixture.manifest['config'] = ExperimentConfig(algorithm='no_learning', days=8).public()
@@ -69,9 +70,11 @@ class CalibrationAuditTests(unittest.TestCase):
         identifier = self.bank['selections'][0]['selection_id']
         self.slots = [{'selection_id': identifier, 'repeat_index': index, 'rollout_id': identifier + '-r' + str(index)} for index in range(2)]
         names = ('lifespan/evaluation/tasks.py', 'lifespan/evaluation/runtime.py', 'lifespan/evaluation/budget.py',
+                 'lifespan/evaluation/hermes_transport.py', 'lifespan/hermes_worker.py', 'lifespan/evaluation/runner.py',
                  'lifespan/evaluation/protocol.py', 'lifespan/computers.py', 'lifespan/ecosystem.py', 'lifespan/world.py',
                  'scripts/run_calibration.py', 'scripts/calibration_bank.py', 'scripts/audit_evaluation.py')
         self.manifest = {'kind': 'native_historical_replay_calibration', 'source_directory': str(self.source),
+                         **{key: source_fixture.manifest[key] for key in ('hermes_transport', 'hermes_transport_provenance')},
                          'config': self.config, 'bank_sha256': digest(self.bank), 'slots': self.slots,
                          'source_sha256': {name: sha(ROOT / name) for name in names},
                          'target_model': source_fixture.manifest['target_model'], 'model_base_url': source_fixture.manifest['model_base_url'],
@@ -125,7 +128,7 @@ class CalibrationAuditTests(unittest.TestCase):
         self.manifest['slots'].reverse()
         self.manifest['source_sha256']['lifespan/evaluation/runtime.py'] = '0' * 64
         self.flush()
-        self.invalid('campaign_source_revision_mismatch')
+        self.invalid('hermes_transport_execution_source_binding')
 
     def test_raw_session_and_committed_object_tampering(self):
         result = self.state['results'][0]

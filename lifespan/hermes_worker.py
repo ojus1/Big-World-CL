@@ -102,6 +102,9 @@ def main():
             max_model_calls=int(execution.get('max_iterations',12)),
             max_output_tokens=int(execution.get('max_tokens',4096)),
             max_total_tokens=execution.get('max_total_tokens'))
+        from lifespan.evaluation.hermes_transport import install
+        from lifespan.computers import HERMES
+        transport=install(agent, execution.get('hermes_transport','streaming'), hermes_root=HERMES)
     # Materialize and exercise the native backend even before the first model turn.
     probe=terminal_tool(command='pwd; cat /workspace/.employee_identity; test ! -S /var/run/docker.sock',
                         task_id=computer_id)
@@ -111,6 +114,7 @@ def main():
     sandbox=_active_environments.get(computer_id,_active_environments.get('default'))
     send({'kind':'ready','employee':eid,'pid':os.getpid(),'probe':probe,
           'backend':backend,'computer_id':computer_id,
+          **({'evaluation_transport':transport} if benchmark else {}),
           **({'sandbox_pid':sandbox.sandbox.process.pid,'rpc_socket':str(sandbox.sandbox.rpc_socket)}
              if backend=='bubblewrap' else {'container_id':sandbox._container_id}),
           'tool_names':[t['function']['name'] if 'function' in t else t.get('name') for t in agent.tools]})
@@ -135,6 +139,7 @@ def main():
                                           conversation_history=history,task_id=computer_id)
             if benchmark:
                 result['evaluation_budget']=meter.report()
+                result['evaluation_transport']=transport
             if isinstance(result.get('messages'),list):
                 history=result['messages']
                 temp=history_path.with_suffix('.tmp')

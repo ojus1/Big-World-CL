@@ -158,6 +158,7 @@ def actor_check(run, cfg, cp, complete):
 
 
 def learning_progress_check(run, cfg, update, previous):
+    from scripts.audit_learning_v2 import reconcile, version
     directory = run / f"learning/d{update['day']:03d}-{update['employee']}"
     progress = read(directory / 'progress.json')
     require(all(progress[k] == update[k] for k in ('employee', 'day', 'employee_epoch_index',
@@ -178,8 +179,9 @@ def learning_progress_check(run, cfg, update, previous):
             'epoch_configured_caps_mismatch')
     targets = [op for op in update['costs']['operations'] if op['kind'] == 'target']
     evidence = update['replay_artifacts']
-    require(len(evidence) == len(targets) == len(update['replay_evidence']), 'epoch_replay_artifact_inventory')
-    for index, (row, op, replay) in enumerate(zip(evidence, targets, update['replay_evidence'])):
+    identities = reconcile(update) if version(update) == 2 else update['replay_evidence']
+    require(len(evidence) == len(targets) == len(identities), 'epoch_replay_artifact_inventory')
+    for index, (row, op, replay) in enumerate(zip(evidence, targets, identities)):
         case_name = 'private/cases/' + replay['id'] + '.json'
         relative = str((directory / f'trial-{index:03d}/session.json').relative_to(run))
         require(row['capsule_path'] == case_name and row['capsule_sha256'] == sha(child(run, case_name))

@@ -74,7 +74,8 @@ class ResponsesBudget:
                    "charged_tokens": reserve, "accounting": "reservation",
                    "status": "dispatched", "input_tokens": None, "output_tokens": None,
                    "total_tokens": None, "cache_read_tokens": None, "reasoning_tokens": None,
-                   "output_cap": request["max_output_tokens"]}
+                   "output_cap": request["max_output_tokens"],
+                   "request_stream": request.get("stream", False)}
             self.rows.append(row)
             self.charged_tokens += reserve
         return request, row
@@ -122,6 +123,10 @@ class ResponsesBudget:
                 response = original(**request)
                 if request.get("stream"):
                     return _MeteredStream(self, row, response, started)
+                provider_status = _get(response, "status")
+                row["provider_response_status"] = (provider_status if type(provider_status) is str
+                    and provider_status in ("completed", "incomplete", "failed", "cancelled", "queued", "in_progress")
+                    else None)
                 self._receipt(row, response, "completed")
                 row["wall_seconds"] = time.monotonic() - started
                 return response
@@ -164,23 +169,40 @@ class _MeteredStream:
                 self._budget._receipt(self._row, _get(event, "response"), kind)
             return event
         except StopIteration:
+            self._row["stream_ended"] = True
             self._finish("stream_ended_without_receipt")
             raise
         except Exception as exc:
             self._finish("stream_error")
-            self._row["error_type"] = type(exc).__name__
+            self._row.setdefault("error_type", type(exc).__name__)
             raise
 
     def _finish(self, status):
         self._row["wall_seconds"] = time.monotonic() - self._started
-        if self._row["accounting"] != "reported":
+        # Cleanup must not erase the first terminal receipt/error diagnosis.
+        # In particular, a read failure followed by close still has unknown
+        # usage, but its cause is stream_error rather than an ordinary close.
+        if self._row["accounting"] != "reported" and self._row["status"] == "dispatched":
             self._row["status"] = status
 
     def close(self):
+        status = "stream_closed_without_receipt"
+        self._row["stream_close_attempts"] = self._row.get("stream_close_attempts", 0) + 1
         try:
-            return self._stream.close()
+            result = self._stream.close()
+        except Exception as exc:
+            status = "stream_close_error"
+            self._row["stream_close_status"] = "failed"
+            self._row.setdefault("stream_close_error_type", type(exc).__name__)
+            if self._row["status"] == "dispatched":
+                self._row.setdefault("error_type", type(exc).__name__)
+            raise
+        else:
+            # A later successful close must not hide an earlier close failure.
+            self._row.setdefault("stream_close_status", "completed")
+            return result
         finally:
-            self._finish("stream_closed_without_receipt")
+            self._finish(status)
 
     def __enter__(self):
         return self

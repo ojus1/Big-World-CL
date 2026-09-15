@@ -14,6 +14,10 @@ from unittest.mock import patch
 
 from lifespan.mirofish import save
 from scripts import audit_transfer as audit
+from lifespan.evaluation.hermes_transport import manifest_fields
+
+TRANSPORT_SOURCES = {'lifespan/evaluation/hermes_transport.py', 'lifespan/hermes_worker.py',
+                     'lifespan/evaluation/runtime.py', 'lifespan/evaluation/runner.py'}
 
 
 def fixture_class(filename, name):
@@ -36,7 +40,7 @@ class LearningAuditTests(unittest.TestCase):
         self.manifest['execution_mode'] = self.report['execution_mode'] = 'native'
         # Deliberately fabricated local driver evidence for audit control flow.
         self.manifest['source_sha256'] = {name: audit.sha(audit.ROOT / name)
-                                         for name in audit.CORE | {'scripts/transfer_learning.py'}}
+                                         for name in audit.CORE | TRANSPORT_SOURCES | {'scripts/transfer_learning.py'}}
         for row in self.evidence['target_sessions']:
             path = self.out / row['session_path']; record = self.load(row['session_path'])
             record['result']['native']['evaluation_budget'] = {'physical_model_calls': 3,
@@ -77,6 +81,12 @@ class LearningAuditTests(unittest.TestCase):
         self.assertIsNone(result['model_quality_score'])
         self.assertEqual(self.raw_audit.call_count, 4)
         self.update_audit.assert_called_once()
+
+    def test_future_source_cannot_select_v1_by_removing_both_version_markers(self):
+        self.manifest.pop('learning_evidence_version')
+        self.state['updates'][0].pop('learning_evidence_version')
+        self.flush()
+        self.invalid('learning_evidence_source_version')
 
     def test_raw_session_byte_tampering(self):
         with (self.out / self.evidence['target_sessions'][0]['session_path']).open('a') as stream:
@@ -152,15 +162,16 @@ class TransferAuditTests(unittest.TestCase):
         for name in ('bank.json', 'state.json', 'REPORT.json'):
             save(self.calibration / name, {'fixture': 'not-native-evidence'})
         save(self.calibration / 'manifest.json', {'source_directory': str(self.source)})
-        save(self.source / 'manifest.json', {'target_model': 'offline', 'model_base_url': 'https://fixture.example.invalid'})
+        save(self.source / 'manifest.json', {'target_model': 'offline', 'model_base_url': 'https://fixture.example.invalid', 'config': {}})
         self.manifest = deepcopy(self.fixture.manifest)
         deps = {name: {'revision': 'fabricated-fixture'} for name in ('hermes', 'mirofish', 'skillopt')}
         save(self.out / 'private/experiences.json', [])
         self.manifest.update(kind='native_employee_learning_transfer_diagnostic',
+            **manifest_fields({'hermes_transport': 'streaming'}),
             config=deepcopy(runner.CONFIG), calibration_directory=str(self.calibration),
             source_manifest_sha256=audit.sha(self.source / 'manifest.json'),
             calibration_sha256={name: audit.sha(self.calibration / name) for name in ('manifest.json', 'bank.json', 'state.json', 'REPORT.json')},
-            source_sha256={name: audit.sha(audit.ROOT / name) for name in audit.CORE | set(runner.CODE_FILES)},
+            source_sha256={name: audit.sha(audit.ROOT / name) for name in audit.CORE | TRANSPORT_SOURCES | set(runner.CODE_FILES)},
             dependencies=deps, ranking=[], experience_ids=[], source_case_sha256={},
             experiences_sha256=audit.sha(self.out / 'private/experiences.json'), seed_skill_sha256=audit.skill_hash(audit.SEED_SKILL),
             learning_contract={'epochs': 1, 'rollouts_k': 2, 'train_cases': 2, 'val_cases': 2,
@@ -338,8 +349,9 @@ class GateReconstructionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'upstream_gate_score_evidence_mismatch'):
             audit.gate_check(update)
 
-    def test_budget_exhausted_prefix_abstains_without_full_gate(self):
+    def test_v1_budget_exhausted_prefix_abstains_without_full_gate(self):
         update = self.update()
+        update.pop('learning_evidence_version')  # Historical gate-only contract.
         update.update(status='budget_exhausted', replay_evidence=update['replay_evidence'][:3],
                       gate_evidence={'accepted': False, 'gate_action': 'reject_incomplete'})
         audit.gate_check(update)

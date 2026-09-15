@@ -77,11 +77,13 @@ class ScaleAuditTests(unittest.TestCase):
 
     def initial_checkpoint(self):
         from lifespan.evaluation.runner import _new_state
+        from lifespan.evaluation.hermes_transport import manifest_fields
         slot = self.manifest['slots'][0]
         cfg = ExperimentConfig(**slot['config']); spec = scenario(cfg)
         eco, state = _new_state(cfg, spec)
         run = self.out / slot['relative_path']
         save(run / 'manifest.json', {'config': cfg.public(), 'scenario': spec,
+            **manifest_fields(cfg),
             **{key: self.manifest[key] for key in ('source_sha256', 'dependencies', 'target_model', 'model_base_url')}})
         cp = {'ecosystem': eco.checkpoint(), 'runner': state}
         save(run / 'checkpoint.json', cp)

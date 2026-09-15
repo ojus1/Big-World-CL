@@ -42,6 +42,12 @@ separately from the frozen simulation code. Their tests must reject other actor
 names, incorrect executors, mismatched cohorts, altered launcher/source bytes and
 unbound launch receipts, while verifying that original artifacts are unchanged.
 
+Future revisions route the module entry point through the canonical imported
+`lifespan.evaluation.runner.main`. Native defaults then record the canonical
+actor name for new runs. The historical adapter's campaign, receipt and source
+constants remain unchanged; it requires its matching frozen checkout and refuses
+later auditor revisions. This does not rename or reinterpret historical reports.
+
 Independent review passed the exact-source correction and the publication
 helper. All 10 correction tests and 19 publication tests passed. The original
 auditor remains frozen, so the campaign supervisor is expected to retain its

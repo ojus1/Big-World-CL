@@ -13,9 +13,10 @@ def usage_response(input_tokens=10, output_tokens=5):
 
 
 class Stream:
-    def __init__(self, events):
+    def __init__(self, events, close_error=None):
         self.events = iter(events)
         self.closed = False
+        self.close_error = close_error
 
     def __iter__(self):
         return self
@@ -27,6 +28,8 @@ class Stream:
         return value
 
     def close(self):
+        if self.close_error is not None:
+            raise self.close_error
         self.closed = True
 
 
@@ -77,6 +80,11 @@ class BudgetTests(unittest.TestCase):
         self.assertEqual(result['operations'][0]['cache_read_tokens'], 3)
         self.assertEqual(result['operations'][0]['reasoning_tokens'], 2)
         self.assertTrue(result['accounting_complete'])
+        row = result['operations'][0]
+        self.assertEqual(row['status'], 'response.completed')
+        self.assertTrue(row['stream_ended'])
+        self.assertEqual(row['stream_close_status'], 'completed')
+        self.assertEqual(row['stream_close_attempts'], 1)
 
     def test_stream_retry_is_another_dispatch_and_missing_receipt_keeps_reservation(self):
         client = Client([Stream([ConnectionError('private provider detail')]),
@@ -136,6 +144,134 @@ class BudgetTests(unittest.TestCase):
             wrapped.close()
             self.assertFalse(budget.report()['accounting_complete'])
             self.assertGreater(budget.report()['charged_tokens'], 0)
+            row = budget.report()['operations'][0]
+            self.assertEqual(row['status'], 'stream_ended_without_receipt' if consume
+                             else 'stream_closed_without_receipt')
+            self.assertEqual(row.get('stream_ended', False), consume)
+            self.assertEqual(row['stream_close_status'], 'completed')
+
+    def test_read_error_survives_end_and_close_without_recovering_unknown_usage(self):
+        class ReadError(Exception):
+            pass  # Fake transport exception; this test never imports or calls a provider.
+
+        budget = self.meter()
+        wrapped = budget.wrap_client(Client([Stream([ReadError('private body')])])).responses.create(
+            input='text', stream=True)
+        reserved = budget.report()['charged_tokens']
+        with self.assertRaises(ReadError):
+            next(wrapped)
+        with self.assertRaises(StopIteration):
+            next(wrapped)
+        wrapped.close()
+        report = budget.report()
+        row = report['operations'][0]
+        self.assertEqual((row['status'], row['error_type']), ('stream_error', 'ReadError'))
+        self.assertTrue(row['stream_ended'])
+        self.assertEqual(row['stream_close_status'], 'completed')
+        self.assertEqual(report['charged_tokens'], reserved)
+        self.assertEqual(report['reported_tokens'], 0)
+        self.assertFalse(report['accounting_complete'])
+        self.assertTrue(all(row[key] is None for key in ('input_tokens', 'output_tokens', 'total_tokens')))
+        self.assertNotIn('private body', str(report))
+
+    def test_close_error_is_separate_and_cannot_erase_prior_stream_error_or_receipt(self):
+        for initial in ('unconsumed', 'read_error', 'receipt'):
+            with self.subTest(initial=initial):
+                events = [ConnectionError('private read body')] if initial == 'read_error' else (
+                    [NS(type='response.completed', response=usage_response())] if initial == 'receipt' else [])
+                raw = Stream(events, close_error=OSError('private close body'))
+                budget = self.meter()
+                wrapped = budget.wrap_client(Client([raw])).responses.create(input='text', stream=True)
+                if initial == 'read_error':
+                    with self.assertRaises(ConnectionError):
+                        next(wrapped)
+                elif initial == 'receipt':
+                    list(wrapped)
+                before = budget.report()
+                with self.assertRaises(OSError):
+                    wrapped.close()
+                # Repeated cleanup can succeed, but cannot conceal the earlier failure.
+                raw.close_error = None
+                wrapped.close()
+                report = budget.report()
+                row = report['operations'][0]
+                self.assertEqual(row['status'], {'unconsumed': 'stream_close_error',
+                    'read_error': 'stream_error', 'receipt': 'response.completed'}[initial])
+                self.assertEqual(row.get('error_type'), {'unconsumed': 'OSError',
+                    'read_error': 'ConnectionError', 'receipt': None}[initial])
+                self.assertEqual(row['stream_close_status'], 'failed')
+                self.assertEqual(row['stream_close_error_type'], 'OSError')
+                self.assertEqual(row['stream_close_attempts'], 2)
+                for key in ('charged_tokens', 'reported_tokens', 'physical_model_calls', 'accounting_complete'):
+                    self.assertEqual(report[key], before[key])
+                self.assertNotIn('private', str(report))
+
+    def test_invalid_terminal_usage_diagnosis_survives_close(self):
+        budget = self.meter()
+        wrapped = budget.wrap_client(Client([Stream([NS(type='response.completed', response=NS())])
+            ])).responses.create(input='text', stream=True)
+        list(wrapped)
+        wrapped.close()
+        report = budget.report()
+        self.assertEqual(report['operations'][0]['status'], 'missing_or_invalid_usage')
+        self.assertFalse(report['accounting_complete'])
+
+    def test_dispatch_error_keeps_unknown_reservation_and_class_only(self):
+        budget = self.meter()
+        with self.assertRaises(ConnectionError):
+            budget.wrap_client(Client([ConnectionError('private body')])).responses.create(input='text', stream=True)
+        report = budget.report()
+        row = report['operations'][0]
+        self.assertEqual((row['status'], row['error_type']), ('dispatch_error', 'ConnectionError'))
+        self.assertEqual(row['charged_tokens'], row['reserved_tokens'])
+        self.assertNotIn('stream_close_status', row)
+        self.assertNotIn('private body', str(report))
+
+    def test_additive_stream_evidence_preserves_existing_audit_eligibility(self):
+        from copy import deepcopy
+        from lifespan.evaluation.runtime import native_usage
+        from scripts.audit_evaluation import meter_check
+
+        for outcome in ('receipt', 'receipt_close_error', 'unknown', 'physical_overrun'):
+            with self.subTest(outcome=outcome):
+                event = ConnectionError('private body') if outcome == 'unknown' else NS(
+                    type='response.completed', response=usage_response(output_tokens=100 if outcome == 'physical_overrun' else 5))
+                budget = self.meter()
+                raw = Stream([event], close_error=OSError('private close body')
+                             if outcome == 'receipt_close_error' else None)
+                wrapped = budget.wrap_client(Client([raw])).responses.create(input='text', stream=True)
+                if outcome == 'unknown':
+                    with self.assertRaises(ConnectionError):
+                        list(wrapped)
+                else:
+                    list(wrapped)
+                if outcome == 'receipt_close_error':
+                    with self.assertRaises(OSError):
+                        wrapped.close()
+                else:
+                    wrapped.close()
+                native = {'evaluation_budget': budget.report()}
+                valid = outcome.startswith('receipt')
+                record = {'result': {'native': native}, 'usage': native_usage(native),
+                          'infrastructure_valid': valid}
+                for legacy in (False, True):
+                    candidate = deepcopy(record)
+                    if legacy:
+                        row = candidate['result']['native']['evaluation_budget']['operations'][0]
+                        for key in ('stream_ended', 'stream_close_status', 'stream_close_attempts',
+                                    'stream_close_error_type'):
+                            row.pop(key, None)
+                        if outcome == 'unknown':
+                            row['status'] = 'stream_closed_without_receipt'
+                    if valid:
+                        meter_check(candidate)
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'trial_infrastructure_or_accounting_invalid'
+                            if outcome == 'unknown' else 'provider_budget_overrun'):
+                            meter_check(candidate)
+                if outcome == 'unknown':
+                    self.assertIsNone(record['usage']['total_tokens'])
+                    self.assertFalse(record['usage']['complete'])
 
     def test_incomplete_response_with_real_usage_still_charges_actual_tokens(self):
         client = Client([Stream([{'type': 'response.incomplete',
