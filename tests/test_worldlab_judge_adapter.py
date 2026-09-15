@@ -10,7 +10,7 @@ from scripts.source_world_calibration import read, save, sha
 from worldlab.adapters import load_adapter
 from worldlab.attempts import execute_task
 from worldlab.audit_worlds import audit, audit_attempt, resolve_judge
-from worldlab.contracts import Budget, NoLearning, validate_grade
+from worldlab.contracts import Budget, NoLearning, validate_grade, judge_call_allocation
 from worldlab.worlds import prepare_study, execute_study
 from test_worldlab_worlds import Bank as ScheduleBank, SPEC
 from test_worldlab_adapters import Harness as ExecutionHarness
@@ -108,6 +108,22 @@ class UnauditableJudge:
 
 
 class Tests(unittest.TestCase):
+    def test_task_specific_allocation_and_explicit_override(self):
+        class Variable(Judge):
+            max_model_calls=13
+            def max_model_calls_for(self,task_id):
+                self.task_id=task_id;return 4
+        for override,expected in [(None,4),(2,2)]:
+            with tempfile.TemporaryDirectory() as tmp:
+                judge=Variable()
+                with patch.object(judge,'grade',wraps=judge.grade) as grade:
+                    execute_task(Bank(),Harness(),judge,task_id='a',employee_id='employee',skill='seed',
+                                 budget=Budget(),out=Path(tmp)/'attempt',judge_calls=override)
+                    self.assertEqual(grade.call_args.kwargs['call_limit'],expected)
+        for invalid in [0,14,True,1.5]:
+            judge=Variable();judge.max_model_calls_for=lambda _:invalid
+            with self.assertRaises(ValueError):judge_call_allocation(judge,'a')
+
     def test_online_attempt_uses_declared_judge_calls_and_respects_explicit_override(self):
         class DeclaredJudge(Judge):
             max_model_calls = 9

@@ -52,12 +52,19 @@ class Hermes:
             reasons.append('Document runtime qualification pending: ' + ','.join(sorted(formats)))
         return reasons
 
+    def worker_options(self):
+        return {}
+
     def run(self, request, artifact_root):
         artifact_root = Path(artifact_root).resolve()
         started = time.monotonic()
         clock = clock_contract(request.budget.seconds, started)
         cfg = {**asdict(request), 'workspace': str(request.workspace.resolve()),
                'provider': self.provider, 'hermes_root': str(self.root), 'execution_clock': clock}
+        options = self.worker_options()
+        if set(options) - {'public_references'}:
+            raise ValueError('Unknown native worker extension')
+        cfg.update(options)
         save(artifact_root / 'REQUEST.json', cfg)
         env = {k: os.environ[k] for k in ('PATH', 'LANG', 'USER', 'LOGNAME') if k in os.environ}
         env.update(HOME=str(artifact_root / 'home'), HERMES_HOME=str(artifact_root / 'hermes'),

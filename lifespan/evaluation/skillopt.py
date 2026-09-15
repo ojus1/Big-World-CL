@@ -279,6 +279,14 @@ class _Ledger:
             ("callback_wall_seconds", wall_seconds > limits["timeout_seconds"]),
             ("receipt_latency_ms", latency > limits["timeout_seconds"] * 1000)) if exceeded]
         row["budget_violations"] = violations
+        if result.get('status') == 'not_admitted':
+            if (any(observed.values()) or not isinstance(result.get('admission'), dict)
+                    or result['admission'].get('admitted') is not False or violations):
+                raise ReplayFailure('Invalid zero-dispatch admission receipt')
+            row['admission'] = result['admission']
+            self.stop_evidence = {'stage': 'callback_admission', 'kind': kind,
+                                 'operation_index': len(self.rows) - 1, 'admission': row['admission']}
+            raise BudgetExhausted('The next operation cannot fit its work and grading allocation')
         if violations:
             row["status"] = "budget_exceeded"
             self.stop_evidence = {"stage": "post_dispatch", "kind": kind,

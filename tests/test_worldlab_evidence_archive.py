@@ -5,6 +5,9 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import zipfile
+import stat
+import warnings
 from unittest.mock import patch
 
 from scripts.source_world_calibration import sha
@@ -13,6 +16,37 @@ from test_worldlab_judge_recovery import Bank, Client, response
 
 
 class Tests(unittest.TestCase):
+    def test_zip_duplicate_is_complete_and_changed_linked_or_new_evidence_is_rejected(self):
+        root, workspace = self.workspace()
+        path = workspace / 'output/bundle.zip'
+        data = (workspace / 'output/result.md').read_bytes()
+        def create(entries):
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', UserWarning)
+                with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+                    for name, content, mode in entries:
+                        info = zipfile.ZipInfo(name); info.create_system = 3
+                        info.external_attr = mode << 16
+                        archive.writestr(info, content)
+        create([('result.md', data, stat.S_IFREG | 0o644)])
+        files = workspace_evidence(workspace)
+        self.assertEqual(json.loads(files['output/bundle.zip']['text'])['members'][0]['sha256'], sha(workspace / 'output/result.md'))
+        bank = Bank(root / 'bank')
+        judge = FrozenRubricJudge(bank, 'fixture', Client.base_url, client_factory=lambda: Client([response(False)]))
+        baseline = {'source.md': sha(workspace / 'source.md')}
+        grade = judge.grade('fixture', workspace, baseline, root / 'judging')
+        judge.audit_grade(bank, 'fixture', workspace, baseline, root / 'judging', grade)
+        variants = [[('result.md', data.replace(b'Result', b'Faulte'), stat.S_IFREG)],
+                    [('new.md', data, stat.S_IFREG)], [('result.md', data, stat.S_IFLNK)],
+                    [('../source.md', data, stat.S_IFREG)], [('/outside.md', data, stat.S_IFREG)],
+                    [('result.md', data, stat.S_IFREG)] * 2]
+        for entries in variants:
+            create(entries)
+            with self.assertRaises(ValueError): workspace_evidence(workspace)
+        create([('result.md', b'x', stat.S_IFREG)])
+        with patch.object(zipfile.ZipFile, 'open', side_effect=AssertionError('Must check size before decompressing')):
+            with self.assertRaisesRegex(ValueError, 'size differs'): workspace_evidence(workspace)
+
     def workspace(self):
         tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
         root = Path(tmp.name); workspace = root / 'workspace'

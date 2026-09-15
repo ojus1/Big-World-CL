@@ -49,12 +49,38 @@ requires a clean frozen checkout and a fresh output directory. It runs one real
 training task plus a missing-output control, records every physical call and
 audits both cases offline. It never requires a favorable task score.
 
-Research access, binary documents, visual evidence and the remaining JobBench
-tasks still require source-specific review and native qualification. In
-particular, the technical-writer tasks requiring external references cannot be
-admitted by merely adding their file extensions. Broad task coverage, independent
-grader calibration, successful skill adoption and statistically supported
-learning effects remain outstanding.
+Binary documents, general web research, visual evidence and the remaining
+JobBench tasks still require source-specific review and native qualification.
+Broad task coverage, independent grader calibration and statistically supported
+learning effects remain outstanding. Partial skill adoption evidence is recorded
+in `WORLDLAB_CURRENT_STATUS.md`.
+
+## Optional named public references
+
+`ReferenceHermes` adds native `list_references` and `read_reference` tools. The
+library stores original fetched bytes, deterministic content projections, source
+URLs, capture times and hashes. HTML projections preserve the full declared
+article element; the Markdown gist uses its pinned revision. No model summaries
+or character caps are applied. Native tool responses are checked against both
+the library and the access ledger. References never include private rubrics or
+benchmark answer files. This is recorded-source consultation, not live search.
+
+The source-reviewed technical-writer tasks use the original training partition.
+Task 1 requires the Swagger Markdown example; task 2 requires the Google style
+highlights and Microsoft reference guidelines; task 3's GitLab reference is
+optional. Required sources must be present for execution admission. Qualification
+also verifies that the agent actually consulted them. The task-3 source's
+1,500-word minimum remains an original task requirement, not an invented output
+cap. Original JobBench rubrics do not cover every public requirement, which the
+judge identity explicitly discloses.
+
+Capture with `python -m scripts.source_world_references --help`, then use
+`configs/worldlab/h200_reference_hermes_v1.json`. The qualification command accepts
+`--reference-root` and `--task-id`. It retains the ordinary native task and the
+missing-output control with unconstrained task scores. The per-task judge-call
+allocation is the original rubric count plus one bounded format repair, within
+the declared maximum of 13. Local snapshots and source review do not by themselves
+constitute native inference qualification.
 
 ## Native qualification on September 15, 2026
 

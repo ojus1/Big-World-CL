@@ -32,6 +32,7 @@ REPAIR_RULES = (' A prior response did not produce a usable complete JSON verdic
                 'Return a concise final verdict now. Keep evidence and reasoning brief; '
                 'do not discuss the prior response. Apply exactly the same criterion and source evidence.')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
+RUNTIME_ROOTS = {'scratch', '.venv', '__pycache__'}
 VERDICT_SCHEMA = SCHEMA
 
 
@@ -83,7 +84,7 @@ def workspace_evidence(workspace):
     while pending:
         directory = pending.pop()
         for path in sorted(directory.iterdir()):
-            if directory == workspace and path.name == 'scratch':
+            if directory == workspace and path.name in RUNTIME_ROOTS:
                 continue
             if path.is_symlink():
                 raise ValueError('Symlink in candidate workspace')
@@ -100,7 +101,7 @@ def workspace_evidence(workspace):
             if path.stat().st_size == 0:
                 files[relative] = {'text': '', 'sha256': sha(path)}
                 continue
-            if relative.startswith('output/') and path.name.endswith('.tar.gz'):
+            if relative.startswith('output/') and (path.name.endswith('.tar.gz') or path.suffix.lower() == '.zip'):
                 archives.append(path)
                 continue
             if path.suffix.lower() not in TEXT_FORMATS:
@@ -122,18 +123,18 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 18, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 19, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
                 'max_output_tokens': 4096, 'max_tokens': self.max_tokens,
                 'max_model_calls': self.max_model_calls,
                 'request_timeout_seconds': 300,
-                'evidence_scope': {'excluded_workspace_root': 'scratch',
+                'evidence_scope': {'excluded_workspace_roots': sorted(RUNTIME_ROOTS),
                                    'excluded_metadata': '.employee_identity',
                                    'empty_regular_files': 'retain_exact_empty_text_regardless_of_filename',
                                    'other_symlinks': 'reject_without_following',
-                                   'extra_tar_gz': 'only_verified_byte_identical_copies_of_visible_text_files'},
+                                   'extra_tar_gz_and_zip': 'only_verified_byte_identical_copies_of_visible_text_files'},
                 'archive_projection_sha256': sha(Path(__file__).with_name('evidence_archive.py')),
                 'structured_output_schema': VERDICT_SCHEMA,
                 'evidence_field': 'enum_of_actual_evidence_filenames',

@@ -111,6 +111,16 @@ class Judge(Protocol):
                     artifact_root: Path, receipt: dict) -> None: ...
 
 
+def judge_call_allocation(judge, task_id):
+    """Optional task-specific allocation, bounded by the adapter's declared ceiling."""
+    maximum = getattr(judge, 'max_model_calls', 8)
+    selector = getattr(judge, 'max_model_calls_for', None)
+    value = selector(task_id) if callable(selector) else maximum
+    if type(maximum) is not int or maximum < 1 or type(value) is not int or not 1 <= value <= maximum:
+        raise ValueError('Invalid task-specific judge call allocation')
+    return value
+
+
 def validate_grade(receipt, *, token_limit=None, call_limit=None):
     """A malformed adapter result must not become released learning feedback."""
     if not isinstance(receipt, dict) or type(receipt.get('grading_complete')) is not bool:

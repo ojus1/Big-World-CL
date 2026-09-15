@@ -122,6 +122,18 @@ def reconcile(update):
             require(last_callback_end <= costs['decision_elapsed_seconds'] + tolerance
                     and costs['decision_elapsed_seconds'] <= costs['wall_seconds'] + tolerance,
                     'v2_decision_clock')
+        elif stop['stage'] == 'callback_admission':
+            require(rows and stop['kind'] in ('target', 'optimizer')
+                    and type(stop['operation_index']) is int and stop['operation_index'] == len(rows) - 1,
+                    'v2_admission_operation_index')
+            terminal = rows[-1]
+            require(terminal['kind'] == stop['kind']
+                    and terminal['status'] == terminal['callback_status'] == 'not_admitted'
+                    and not terminal['budget_violations']
+                    and all(terminal[k] == 0 for k in ('tokens', 'model_calls', 'tool_calls'))
+                    and isinstance(terminal.get('admission'), dict)
+                    and terminal['admission'].get('admitted') is False
+                    and stop.get('admission') == terminal['admission'], 'v2_admission_stop_evidence')
         elif stop['stage'] == 'post_dispatch':
             require(stop['kind'] in ('target', 'optimizer'), 'v2_stop_kind')
             require(rows and type(stop['operation_index']) is int and stop['operation_index'] == len(rows) - 1,

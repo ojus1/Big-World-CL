@@ -141,17 +141,18 @@ def feedback(verdicts):
 
 
 class JobBenchJudge:
-    max_model_calls = 9  # Up to eight original rubrics plus one format repair.
+    max_model_calls = 13  # Up to twelve original rubrics plus one format repair.
 
     def __init__(self, bank, model, base_url, *, max_tokens=400_000, client_factory=None):
         self.bank, self.provider = bank, provider_contract(model, base_url)
         self.max_tokens, self.client_factory = max_tokens, client_factory
 
     def identity(self):
-        return {'name': 'original_jobbench_text_rubric_judge', 'version': 1,
+        return {'name': 'original_jobbench_text_rubric_judge', 'version': 2,
                 'provider': self.provider, 'sampling': dict(JUDGE_SAMPLING), 'source': SOURCE,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'max_tokens': self.max_tokens, 'max_model_calls': self.max_model_calls,
+                'task_call_allocation': 'original rubric count plus one bounded format repair',
                 'max_output_tokens': 4096, 'request_timeout_seconds': 300,
                 'scoring': 'all subcriteria pass => full rubric weight; normalized weighted sum rounded to four decimals',
                 'success': 'all original rubrics pass', 'unit': 'one original rubric per call',
@@ -160,6 +161,7 @@ class JobBenchJudge:
                 'format_recovery': 'one known-usage invalid response per grade; valid verdicts never retried',
                 'structured_output': 'exact subcriterion object keys; Boolean verdicts; enum output filenames',
                 'official_benchmark_score': False, 'human_calibrated': False,
+                'full_public_contract_coverage_verified': False,
                 'source_sha256': sha(Path(__file__)),
                 'capability_review_sha256': sha(Path(capabilities.__file__)),
                 'checkpoint_sha256': sha(Path(__file__).with_name('hermes_deadline.py')),
@@ -171,8 +173,11 @@ class JobBenchJudge:
         if sha(path) != row['rubric_sha256']: raise ValueError('Original JobBench rubric bytes changed')
         return normalize_rubrics(read(path)), sha(path)
 
+    def max_model_calls_for(self, task_id):
+        return len(self.rubric(task_id)[0]) + 1
+
     def unsupported(self, public):
-        reasons = capabilities.unsupported(public)
+        reasons = capabilities.unsupported(public, evidence_only=True)
         if not reasons and len(self.rubric(public['id'])[0]) >= self.max_model_calls:
             reasons.append('Original rubric count exceeds the declared grade-call allocation')
         return reasons
@@ -322,7 +327,7 @@ class SourceRubricJudge:
         self.max_model_calls = max(j.max_model_calls for j in self.judges.values())
 
     def identity(self):
-        return {'name': 'source_rubric_router', 'version': 1,
+        return {'name': 'source_rubric_router', 'version': 2,
                 'provider': self.judges['jobbench'].provider,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'max_tokens': self.max_tokens, 'max_model_calls': self.max_model_calls,
@@ -334,6 +339,10 @@ class SourceRubricJudge:
 
     def grade(self, task_id, *args, **kwargs):
         return self.judges[self.bank.public(task_id)['source']].grade(task_id, *args, **kwargs)
+
+    def max_model_calls_for(self, task_id):
+        from .contracts import judge_call_allocation
+        return judge_call_allocation(self.judges[self.bank.public(task_id)['source']], task_id)
 
     def audit_grade(self, bank, task_id, *args):
         return self.judges[bank.public(task_id)['source']].audit_grade(bank, task_id, *args)

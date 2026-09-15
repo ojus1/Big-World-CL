@@ -3,7 +3,7 @@ from dataclasses import asdict
 import time
 from pathlib import Path
 from scripts.source_world_calibration import save, sha
-from .contracts import TaskRequest, validate_execution, validate_grade
+from .contracts import TaskRequest, validate_execution, validate_grade, judge_call_allocation
 from .artifact_inventory import inventory
 
 
@@ -20,7 +20,7 @@ def task_instruction(original, employee_message=None):
 def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, out,
                  judge_tokens=400_000, judge_calls=None, total_timeout_seconds=None, employee_message=None):
     if judge_calls is None:
-        judge_calls = getattr(judge, 'max_model_calls', 8)
+        judge_calls = judge_call_allocation(judge, task_id)
     started = time.monotonic()
     deadline = started + (total_timeout_seconds if total_timeout_seconds is not None else budget.seconds + 300)
     out = Path(out).resolve()

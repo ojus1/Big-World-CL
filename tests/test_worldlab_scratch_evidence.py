@@ -9,6 +9,20 @@ from test_worldlab_judge_recovery import Bank, Client, response
 
 
 class Tests(unittest.TestCase):
+    def test_root_python_runtime_trees_are_inventory_only_and_output_trees_are_not(self):
+        root, workspace = self.workspace()
+        for name in ('.venv', '__pycache__'):
+            runtime = workspace / name
+            runtime.mkdir()
+            (runtime / 'binary.pyc').write_bytes(b'\x00\xff')
+            (runtime / 'python').symlink_to('/usr/bin/python3')
+        files, links = inventory(workspace)
+        self.assertIn('.venv/binary.pyc', files)
+        self.assertIn('.venv/python', links)
+        self.assertEqual(set(workspace_evidence(workspace)), {'source.md', 'output/result.md'})
+        (workspace / 'output/.venv').symlink_to(root)
+        with self.assertRaisesRegex(ValueError, 'Symlink'): workspace_evidence(workspace)
+
     def workspace(self):
         tmp = tempfile.TemporaryDirectory(); self.addCleanup(tmp.cleanup)
         root = Path(tmp.name); workspace = root / 'workspace'

@@ -88,6 +88,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(case[-2]['usage']['charged_tokens'], 900)
         self.audit(case)
 
+    def test_twelve_rubrics_keep_their_subcriteria_and_thirteenth_repair(self):
+        replies=[response(i) for i in range(11)]+[response(11,text='{',status='incomplete'),response(11)]
+        case=self.case(replies,weights=(1,)*12)
+        self.assertTrue(case[-2]['grading_complete'])
+        self.assertEqual(case[-2]['usage']['physical_model_calls'],13)
+        self.assertEqual(case[1].max_model_calls_for(TASK),13)
+        self.audit(case)
+
     def test_known_format_failure_can_repair_but_valid_failure_is_final(self):
         case = self.case([response(0, text='bad'), response(0, (False, False)), response(1)])
         self.assertEqual(case[-2]['quality_score'], .2)
@@ -163,7 +171,8 @@ class Tests(unittest.TestCase):
             router.audit_grade(bank, TASK, workspace, baseline, out, grade)
         self.assertEqual(router.unsupported(PUBLIC), [])
         self.assertTrue(router.unsupported(dict(PUBLIC, source='unknown')))
-        self.assertEqual(router.max_model_calls, 9)
+        self.assertEqual(router.max_model_calls, 13)
+        self.assertEqual(router.max_model_calls_for(TASK),3)
 
     def test_string_criteria_supported_and_invalid_weights_rejected(self):
         rubric = {'rubric': 'Question', 'weight': 2, 'criterion': 'A'}

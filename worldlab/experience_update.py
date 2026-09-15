@@ -2,9 +2,30 @@
 import json
 from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
+from scripts.source_world_calibration import save, read
 from .attempts import execute_task, task_instruction
-from .contracts import Budget
+from .contracts import Budget, judge_call_allocation
 from .validation_context import observed_feedback
+
+
+def replay_admission(limits):
+    """Reserve grading before starting a native task; never invent a one-second remainder."""
+    for dimension, minimum in [('timeout_seconds', 301), ('max_model_calls', 2), ('max_tokens', 2)]:
+        if limits[dimension] < minimum:
+            return {'admitted': False, 'dimension': dimension, 'available': limits[dimension],
+                    'minimum': minimum, 'policy': 'reserve_300_seconds_for_judging_v1'}
+    return None
+
+
+def audit_replay_admissions(update_root, update):
+    for row in update['costs']['operations']:
+        if row.get('callback_status') != 'not_admitted': continue
+        root = update_root / f'replay-{row["attempt_index"]:03d}'
+        expected = replay_admission(row['limits'])
+        if (row['kind'] != 'target' or expected is None or row.get('admission') != expected
+                or read(root / 'REPLAY_ADMISSION.json') != {'limits': row['limits'], 'admission': expected}
+                or {p.name for p in root.iterdir()} != {'REPLAY_ADMISSION.json'}):
+            raise ValueError('Replay admission stop differs from the allocated budget')
 
 
 def dispatch_updates(bank, harness, judge, learner, selections, *, day, skills, out,
@@ -50,14 +71,19 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
     def replay(payload, limits):
         slot = by_id[payload['task']['id']]
         replay_root = update_root / f'replay-{payload["attempt_index"]:03d}'
+        admission = replay_admission(limits)
+        if admission is not None:
+            save(replay_root / 'REPLAY_ADMISSION.json', {'limits': limits, 'admission': admission})
+            return {'status': 'not_admitted', 'admission': admission,
+                    'tokens': 0, 'model_calls': 0, 'tool_calls': 0, 'latency_ms': 0.}
         # Target ledger includes BOTH work and its judge. Reserve judging
         # before giving the remaining allowance to native work.
         jt = min(judge_tokens, limits['max_tokens'] // 2)
-        jc = min(getattr(judge, 'max_model_calls', 8), limits['max_model_calls'] // 2)
+        jc = min(judge_call_allocation(judge, slot['task_id']), limits['max_model_calls'] // 2)
         wb = Budget(model_calls=min(slot['work_budget']['model_calls'], limits['max_model_calls'] - jc),
                     output_tokens=min(slot['work_budget']['output_tokens'], limits['max_tokens'] - jt),
                     total_tokens=min(slot['work_budget']['total_tokens'], limits['max_tokens'] - jt),
-                    seconds=max(1, min(slot['work_budget']['seconds'], int(limits['timeout_seconds']) - 300)))
+                    seconds=min(slot['work_budget']['seconds'], int(limits['timeout_seconds']) - 300))
         attempt = execute_task(bank, harness, judge, task_id=slot['task_id'], employee_id=employee,
                                skill=payload['skill'], budget=wb, out=replay_root, judge_tokens=jt, judge_calls=jc,
                                employee_message=slot.get('employee_message'),

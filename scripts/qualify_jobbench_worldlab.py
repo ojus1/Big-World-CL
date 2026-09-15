@@ -18,7 +18,7 @@ from worldlab.attempts import execute_task
 from worldlab.audit_worlds import audit_attempt
 from worldlab.bank import Bank
 from worldlab.campaign import SEED_SKILL, source_identity
-from worldlab.contracts import Budget, validate_grade
+from worldlab.contracts import Budget, validate_grade, judge_call_allocation
 from worldlab.jobbench import SourceRubricJudge
 from worldlab.jobbench_capabilities import ReviewedOfflineHermes
 
@@ -31,6 +31,7 @@ def main():
     p.add_argument('--model', required=True); p.add_argument('--base-url', required=True)
     p.add_argument('--gateway-status-url', default='http://127.0.0.1:8011/status')
     p.add_argument('--task-id', default='jobbench/web_administrators/task1')
+    p.add_argument('--reference-root', type=Path)
     args = p.parse_args()
     out = args.out.resolve()
     if out.exists(): raise ValueError('Use a fresh qualification destination')
@@ -40,8 +41,15 @@ def main():
     bank = Bank(args.bank)
     if bank.by_id[args.task_id]['partition'] != 'calibration_train':
         raise ValueError('This development qualification only uses training tasks')
-    harness = ReviewedOfflineHermes(args.hermes_root, args.model, args.base_url)
+    if args.reference_root:
+        from worldlab.reference_hermes import ReferenceHermes
+        harness = ReferenceHermes(args.hermes_root, args.model, args.base_url, args.reference_root)
+    else:
+        harness = ReviewedOfflineHermes(args.hermes_root, args.model, args.base_url)
     judge = SourceRubricJudge(bank, args.model, args.base_url)
+    judge_calls = judge_call_allocation(judge, args.task_id)
+    from worldlab.jobbench_capabilities import REVIEWED
+    required_references = REVIEWED[args.task_id].get('required_references', [])
     reasons = harness.unsupported(bank.public(args.task_id)) + judge.unsupported(bank.public(args.task_id))
     if reasons: raise ValueError('; '.join(reasons))
     gateway = json.load(urllib.request.urlopen(args.gateway_status_url, timeout=15))
@@ -52,7 +60,8 @@ def main():
             'source_sha256': source_identity(), 'operator_sha256': sha(Path(__file__)),
             'task_id': args.task_id, 'bank_manifest_sha256': bank.verification['manifest_sha256'],
             'harness': harness.identity(), 'judge': judge.identity(), 'budget': asdict(budget),
-            'judge_tokens_per_case': judge.max_tokens, 'judge_calls_per_case': judge.max_model_calls,
+            'judge_tokens_per_case': judge.max_tokens, 'judge_calls_per_case': judge_calls,
+            'required_references': required_references,
             'task_and_grading_timeout_seconds': 1200, 'negative_control_timeout_seconds': 300,
             'parallel_cases': 2, 'gateway_before': gateway, 'skill': SEED_SKILL,
             'reservation_tokens': budget.total_tokens + 2 * judge.max_tokens,
@@ -64,14 +73,17 @@ def main():
 
     def native():
         root = out / 'native'
-        result = execute_task(bank, harness, judge, task_id=args.task_id, employee_id='web-administrator',
+        result = execute_task(bank, harness, judge, task_id=args.task_id, employee_id='qualification-employee',
             skill=SEED_SKILL, budget=budget, out=root, total_timeout_seconds=1200)
         if result['status'] != 'completed': raise ValueError('Native JobBench task was not completely graded')
         audit_attempt(bank, root, args.task_id, SEED_SKILL, harness, judge=judge)
+        consulted = result['execution'].get('references_consulted', [])
+        if not set(required_references) <= set(consulted):
+            raise ValueError('Native agent did not consult the required public reference snapshots')
         report = {'ok': True, 'status': result['status'], 'quality_score': result['grade']['quality_score'],
                   'physical_model_calls': result['model_calls'], 'charged_tokens': result['tokens'],
                   'accounting_complete': result['accounting_complete'], 'seconds': result['seconds'],
-                  'attempt_sha256': sha(root / 'ATTEMPT.json')}
+                  'attempt_sha256': sha(root / 'ATTEMPT.json'), 'references_consulted': consulted}
         # Keep review receipts outside the already sealed attempt inventory.
         save(out / 'NATIVE_AUDIT.json', report)
         return report
@@ -81,8 +93,8 @@ def main():
         baseline = bank.stage(args.task_id, workspace)
         save(root / 'BASELINE.json', baseline)
         grade = judge.grade(args.task_id, workspace, baseline, root / 'judging', token_limit=judge.max_tokens,
-                            call_limit=judge.max_model_calls, timeout_seconds=300)
-        validate_grade(grade, token_limit=judge.max_tokens, call_limit=judge.max_model_calls)
+                            call_limit=judge_calls, timeout_seconds=300)
+        validate_grade(grade, token_limit=judge.max_tokens, call_limit=judge_calls)
         judge.audit_grade(bank, args.task_id, workspace, baseline, root / 'judging', grade)
         ok = (grade['quality_score'] == 0 and grade['success'] is False
               and all(not c['passed'] for v in grade['criteria'] for c in v['criteria_results']))

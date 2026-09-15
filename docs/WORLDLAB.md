@@ -892,7 +892,7 @@ changed source. Repeated variants within three families are dependent developmen
 controls, not independent samples for a general accuracy estimate or a learning
 effect. Qualification traffic is kept out of active frozen workplace studies.
 
-The grader excludes the root `scratch` area before traversing its contents.
+The grader excludes root `scratch`, `.venv` and `__pycache__` areas before traversing their contents.
 Temporary virtual-environment links and binaries therefore do not enter judging.
 Symlinks elsewhere in graded evidence are still rejected. Attempt receipts hash
 regular artifact files and separately record symbolic-link targets without
@@ -905,3 +905,6 @@ solver attempts separately instead of silently omitting them.
 remains live joining other workers. Inspect `experiment_failure_observed`,
 `pair_statuses` and `successfully_completed_pairs` alongside service state. The
 controller's historical `completed_pairs` counter includes returned failed pairs.
+
+See `WORLDLAB_CURRENT_STATUS.md` for the latest stopped-study evidence, verified
+partial adoptions, current fixes and work still required for the original goal.

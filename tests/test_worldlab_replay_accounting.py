@@ -2,19 +2,57 @@
 from pathlib import Path
 import tempfile
 from types import SimpleNamespace
+from dataclasses import asdict
+import hashlib
 import unittest
 
-from lifespan.evaluation.skillopt import _Ledger, LearningBudget, ReplayFailure
-from worldlab.experience_update import update_employee
+from lifespan.evaluation.skillopt import _Ledger, LearningBudget, ReplayFailure, BudgetExhausted
+from worldlab.experience_update import update_employee, audit_replay_admissions
+from scripts.audit_learning_v2 import reconcile
 
 
 class Tests(unittest.TestCase):
+    def test_insufficient_replay_time_stops_without_native_calls_or_a_score(self):
+        selected = [{'id': 'observed', 'split': 'val', 'day': 0, 'feedback_day': 1,
+            'lineage_group': 'family', 'task_id': 'source-task', 'grade': {'feedback': 'Observed feedback'},
+            'work_budget': {'seconds': 900, 'model_calls': 32, 'output_tokens': 8192, 'total_tokens': 500000}}]
+        for seconds in (1, 271.2613402288407, 285.2769024595618, 300.99):
+            with self.subTest(seconds=seconds), tempfile.TemporaryDirectory() as tmp:
+                budget = LearningBudget(max_seconds=3600, replay_seconds=seconds)
+                class Learner:
+                    def update(inner, skill, experiences, replay, **kwargs):
+                        ledger = _Ledger(budget)
+                        with self.assertRaises(BudgetExhausted):
+                            ledger.invoke('target', replay, {'task': {'id': 'observed'}, 'skill': skill,
+                                'attempt_index': 0, 'sample_id': 0, 'phase': 'baseline_val'})
+                        return ledger.report()
+                def forbidden(*args, **kwargs): raise AssertionError('Must not stage or start a native attempt')
+                costs = update_employee(SimpleNamespace(public=lambda _: {'instruction': 'Original task'}),
+                    None, SimpleNamespace(max_tokens=400000), Learner(), selected, employee='employee',
+                    day=2, skill='seed', update_root=Path(tmp), executor=forbidden)
+                self.assertEqual(costs['tokens'], 0)
+                self.assertEqual(costs['target_model_calls'], 0)
+                self.assertTrue(costs['accounting_complete'])
+                digest = hashlib.sha256(b'seed').hexdigest()
+                update = {'learning_evidence_version': 2, 'status': 'budget_exhausted', 'accepted': False,
+                    'skill': 'seed', 'skill_before_sha256': digest, 'skill_after_sha256': digest,
+                    'configuration': {'budget': asdict(budget)}, 'costs': costs,
+                    'gate_evidence': {'accepted': False, 'gate_action': 'reject_incomplete'},
+                    'train_ids': [], 'validation_ids': ['observed'], 'replay_evidence': [], 'optimizer_inputs': [],
+                    'unscored_replay_evidence': [{'id': 'observed', 'phase': 'baseline_val', 'sample_id': 0,
+                        'attempt_index': 0, 'skill_sha256': digest, 'score_consumed': False,
+                        'reason': 'not_delivered_to_upstream'}]}
+                reconcile(update)
+                audit_replay_admissions(Path(tmp), update)
+                costs['operations'][0]['admission']['minimum'] = 999
+                with self.assertRaises(ValueError): audit_replay_admissions(Path(tmp), update)
+
     def test_declared_judging_allocation_is_reserved_inside_the_replay_call_budget(self):
         selected = [{'id': 'observed', 'split': 'train', 'day': 0, 'feedback_day': 1,
             'lineage_group': 'family', 'task_id': 'source-task', 'grade': {'feedback': 'Observed feedback'},
             'work_budget': {'seconds': 900, 'model_calls': 32, 'output_tokens': 8192, 'total_tokens': 500000}}]
         with tempfile.TemporaryDirectory() as tmp:
-            for available, expected in [(40, 9), (12, 6)]:
+            for available, expected, dynamic in [(40, 9, False), (12, 6, False), (40, 11, True), (12, 6, True)]:
                 captured = {}
                 class Learner:
                     def update(self, skill, experiences, replay, **kwargs):
@@ -25,8 +63,13 @@ class Tests(unittest.TestCase):
                     return {'status': 'completed', 'grade': {'success': False, 'quality_score': 0.,
                             'grading_complete': True, 'feedback': 'Observed failure'}, 'trajectory': [],
                         'tokens': 10, 'model_calls': 1, 'tool_calls': 0, 'seconds': 1, 'accounting_complete': True}
+                judge=SimpleNamespace(max_tokens=400000,max_model_calls=13 if dynamic else 9)
+                if dynamic:
+                    def allocation(task_id):
+                        self.assertEqual(task_id,'source-task');return 11
+                    judge.max_model_calls_for=allocation
                 update_employee(SimpleNamespace(public=lambda _: {'instruction': 'Original task'}),
-                    None, SimpleNamespace(max_tokens=400000, max_model_calls=9), Learner(), selected,
+                    None, judge, Learner(), selected,
                     employee='employee', day=2, skill='seed', update_root=Path(tmp), executor=executor)
                 self.assertEqual(captured['judge_calls'], expected)
                 self.assertLessEqual(captured['judge_calls'] + captured['budget'].model_calls, available)
@@ -34,7 +77,7 @@ class Tests(unittest.TestCase):
     def test_reserved_attempt_tokens_cannot_be_reported_as_measured_learning_usage(self):
         class Learner:
             def update(self, skill, experiences, replay, **kwargs):
-                ledger = _Ledger(LearningBudget())
+                ledger = _Ledger(LearningBudget(replay_seconds=1200))
                 try:
                     ledger.invoke('target', replay, {'task': {'id': 'observed'},
                                   'skill': skill, 'attempt_index': 0})
