@@ -82,7 +82,7 @@ class ReplayLearner:
     def update(self, skill, experiences, replay, *, current_day, artifact_root):
         task = experiences[0]
         result = replay({'task': task, 'attempt_index': 0, 'skill': skill},
-                        {'max_tokens': 20000, 'max_model_calls': 40, 'timeout_seconds': 1200})
+                        {'max_tokens': 20000, 'max_model_calls': 40, 'timeout_seconds': 1500})
         update = {'status': 'completed', 'accepted': False, 'skill': skill,
                   'train_ids': [e['id'] for e in experiences if e['split'] == 'train'],
                   'validation_ids': [e['id'] for e in experiences if e['split'] == 'val'],
@@ -108,6 +108,19 @@ class UnauditableJudge:
 
 
 class Tests(unittest.TestCase):
+    def test_insufficient_configured_replay_window_is_rejected_before_preparation(self):
+        class Declared(ReplayLearner):
+            def __init__(self, seconds): self.seconds = seconds
+            def identity(self):
+                return {'name': 'declared_replay_fixture', 'budget': {'max_tokens': 20000, 'replay_seconds': self.seconds}}
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'study'
+            with self.assertRaisesRegex(ValueError, 'Replay timeout cannot fit'):
+                prepare_study(Bank(), SPEC, [211], Harness(), Judge(), Declared(1499), out)
+            self.assertFalse(out.exists())
+            prepare_study(Bank(), SPEC, [211], Harness(), Judge(), Declared(1500), out)
+            self.assertTrue((out / 'STUDY.json').exists())
+
     def test_task_specific_allocation_and_explicit_override(self):
         class Variable(Judge):
             max_model_calls=13

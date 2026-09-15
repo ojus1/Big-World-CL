@@ -17,7 +17,7 @@ class SkillOpt:
         self.budget = LearningBudget(**budget) if budget else LearningBudget(
             max_replays=24, max_target_model_calls=960, max_optimizer_model_calls=2,
             max_tokens=12_000_000, max_seconds=3600, replay_model_calls=40,
-            replay_tokens=900_000, replay_seconds=1200, optimizer_tokens=32000)
+            replay_tokens=900_000, replay_seconds=1500, optimizer_tokens=32000)
         self.edit_budget, self.rollouts_k = edit_budget, rollouts_k
 
     def identity(self):

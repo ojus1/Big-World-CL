@@ -150,6 +150,10 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
+    replay_seconds = learner.identity().get('budget', {}).get('replay_seconds')
+    if (spec.get('update_days') and replay_seconds is not None
+            and replay_seconds < Budget(**spec.get('work_budget', {})).seconds + 300):
+        raise ValueError('Replay timeout cannot fit the configured work window and 300 seconds of judging')
     if not callable(getattr(learner, 'audit_update', None)):
         raise ValueError('Learner must provide an offline audit_update method before preparation')
     if not callable(getattr(judge, 'audit_grade', None)):
