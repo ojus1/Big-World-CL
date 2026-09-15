@@ -540,6 +540,42 @@ limit, live and peak concurrency, queue depth and failures. Calls made directly
 to the underlying model server are outside this shared limit. Existing frozen
 experiments retain their original providers; use `--base-url` for other deployments.
 
+Future Chat Completions harnesses can use `worldlab.chat_budget_gateway` for a
+separate **per-attempt** budget ahead of that shared gateway. Each instance owns
+a fresh private Unix socket and receipt directory. It tokenizes the actual
+text/tool prompt on the configured vLLM server, reserves input plus the allowed
+completion tokens, and writes the completion cap into the inference request.
+It preserves requested structured-output fields. It neither truncates prompts
+nor imposes a character limit. The qualified profile pins one model, one choice,
+automatic tool selection and disabled thinking; unqualified prompt-rendering or
+multimodal options are rejected before generation.
+
+JSON and SSE response bytes are retained outside the harness workspace. The
+meter waits through provider EOF, validates usage, and refunds unused reserved
+tokens. A failed request or missing usage stops further inference and preserves
+its reservation; an observed overrun preserves actual usage and stops the
+attempt. Model-list requests and recorded tokenizer preflights are separate
+from physical generation calls. Native auxiliary calls must use the same
+attempt endpoint. Requests within one attempt are serialized; independent
+attempts still share the global 64-call limit. The controller must terminate
+the harness when its budget or transport stops.
+
+`worldlab.chat_budget_gateway.audit_meter` recomputes bounds and charges from
+retained tokenizer, request and response bytes. It can validate the accounting
+of a failed attempt; a passing meter audit does not imply task success. The
+module does not itself isolate a harness, install/read its skill, normalize its
+native trajectory, or provide a complete Fluso adapter. A future adapter must
+supply those parts and expose only its own fixed relay to the solver. The
+ongoing Hermes study continues to use its original native budget meter.
+
+Run `python -m worldlab.qualify_chat_budget --out FRESH_OUT` from the source to
+check two synthetic requests through a Unix socket against Qwen: structured
+JSON and a streamed tool call. Its defaults use the shared gateway on 8011 and
+the model's tokenizer on 8002. This is a bounded component qualification, not
+a Fluso benchmark or learning run. Dependencies are the same optional
+`requirements-inference-gateway.txt`. Reproduce older receipt audits using their
+frozen source version.
+
 The new `development_workplace_concurrency64_v1.json` configuration sets work,
 world-pair and employee-update concurrency ceilings to 64 and keeps validation
 cases outside the live workplace. World pairs use separate processes, preserving

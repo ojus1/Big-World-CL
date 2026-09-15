@@ -1,5 +1,5 @@
 import asyncio
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, AsyncExitStack
 import json
 from pathlib import Path
 import tempfile
@@ -12,6 +12,7 @@ except ImportError:
     raise unittest.SkipTest('Install requirements-inference-gateway.txt')
 from worldlab.contracts import Budget
 from test_inference_gateway import serve
+from worldlab.inference_gateway import create_app as shared_app, GATEWAY
 
 MODEL = 'fixture-model'
 
@@ -84,6 +85,44 @@ class Tests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(len(seen), 1)
             self.assertTrue(meter.exhausted)
             self.assertEqual(self.audit(root, budget, origin)['physical_model_calls'], 1)
+
+    async def test_eighty_attempts_keep_shared_global_concurrency_at_sixty_four(self):
+        reached, release = asyncio.Event(), asyncio.Event()
+        observed = {'active': 0, 'peak': 0}
+        async def complete(request):
+            await request.read()
+            observed['active'] += 1; observed['peak'] = max(observed['peak'], observed['active'])
+            if observed['active'] == 64: reached.set()
+            try:
+                await release.wait()
+                return web.json_response(reply())
+            finally: observed['active'] -= 1
+        async def tokenize(request): return web.json_response({'count': 13})
+        app = web.Application(); app.router.add_post('/v1/chat/completions', complete)
+        app.router.add_post('/tokenize', tokenize)
+        with tempfile.TemporaryDirectory() as tmp:
+            async with AsyncExitStack() as stack:
+                upstream = await stack.enter_async_context(serve(app))
+                shared = shared_app(upstream, 64)
+                global_url = await stack.enter_async_context(serve(shared))
+                meters, urls = [], []
+                budget = Budget(model_calls=1, output_tokens=20, total_tokens=1000, seconds=30)
+                for i in range(80):
+                    meter = create_app(global_url, upstream, MODEL, budget, Path(tmp) / str(i))
+                    urls.append(await stack.enter_async_context(serve(meter)))
+                    meters.append(meter[METER])
+                client = await stack.enter_async_context(ClientSession())
+                tasks = [asyncio.create_task(self.call(client, url)) for url in urls]
+                try:
+                    await asyncio.wait_for(reached.wait(), 10)
+                    self.assertEqual(observed['active'], 64)
+                    self.assertEqual(shared[GATEWAY].counts['active'], 64)
+                finally: release.set()
+                for response in await asyncio.gather(*tasks):
+                    self.assertEqual(response.status, 200); await response.read()
+                self.assertEqual(observed['peak'], 64)
+                self.assertTrue(all(m.snapshot()['physical_model_calls'] == 1 and
+                                    m.snapshot()['charged_tokens'] == 15 and not m.stopped for m in meters))
 
     async def test_token_budget_shrinks_wire_cap_then_blocks_before_generation(self):
         budget = Budget(model_calls=5, output_tokens=20, total_tokens=30, seconds=30)
