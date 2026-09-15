@@ -59,6 +59,7 @@ class Fluso:
             'exit_code': result['exit_code'], 'native_sha256': sha((root / 'RESULT.json').read_bytes()),
             'skill_content_sha256': hashlib.sha256(request.skill.encode()).hexdigest(),
             'skill_sha256': sha(skill_file(request.skill).encode()), 'skill_loaded': False, 'trajectory': []}
+        stage = 'meter'
         try:
             audit_meter(root / 'meter', budget=request.budget, model=self.model,
                         upstream=self.upstream, tokenizer=self.tokenizer)
@@ -66,7 +67,9 @@ class Fluso:
             require(meter['accounting_complete'] and not (meter['stopped'] and not meter['exhausted']),
                     'Native inference or accounting failed')
             require(len(result['trace_files']) == 1, 'Expected one primary native session')
+            stage = 'container_configuration'
             audit_runtime_configuration(root, native_request, self.identity())
+            stage = 'native_evidence'
             proof = audit_skill_and_responses(root / result['trace_files'][0], root / 'meter', model=self.model,
                 skill_path=SKILL_PATH, skill_text=skill_file(request.skill), expected_prompt=task_prompt(request.instruction))
             require(result['exit_code'] == 0 or meter['exhausted'], 'Native Fluso process failed')
@@ -78,7 +81,9 @@ class Fluso:
             if meter['exhausted'] and meter['accounting_complete']:
                 receipt['status'] = 'budget_exhausted_unverified'
             receipt['evidence_error_type'] = type(exc).__name__
+            receipt['evidence_error_stage'] = stage
             (root / 'EVIDENCE_ERROR.json').write_bytes(encoded({'error_type': type(exc).__name__,
+                'stage': stage,
                 'scope': 'Native evidence failed qualification. No grading or usable learning trajectory is authorized.'}))
         return receipt
 

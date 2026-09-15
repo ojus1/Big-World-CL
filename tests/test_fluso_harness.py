@@ -27,7 +27,7 @@ def container(image, name, network, mounts, *, entrypoint, cmd, env=()):
         'HostConfig': {'NetworkMode': network, 'CapDrop': ['ALL'], 'CapAdd': [], 'Privileged': False,
             'ReadonlyRootfs': True, 'SecurityOpt': ['no-new-privileges'], 'IpcMode': 'private', 'PidMode': '',
             'Tmpfs': {'/tmp': 'rw,nosuid,size=512m'}, 'PidsLimit': 256, 'Memory': 4 * 1024**3, 'NanoCpus': 2 * 10**9},
-        'Config': {'User': '1000:1000', 'Entrypoint': entrypoint, 'Cmd': cmd,
+        'Config': {'User': '1000:1000', 'Hostname': (name + '-id')[:12], 'Entrypoint': entrypoint, 'Cmd': cmd,
             'WorkingDir': '/opt/fluso/agents/dev-harness', 'Env': list(env)},
         'Mounts': [{'Type': 'bind', 'Destination': d, 'Source': s, 'RW': rw} for d, (s, rw) in mounts.items()],
         'State': {'Running': False, 'ExitCode': 0}}
@@ -118,7 +118,9 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
             WORKSPACE + '/skills/work-process': (str(root / 'skill'), False), TASK_DIRECTORY: (str(request.workspace), True)},
             entrypoint=['/usr/local/bin/bun'], cmd=['harness.ts', 'send', '--thread', THREAD, plan['prompt']],
             env=[k + '=' + v for k, v in plan['environment'].items()])
-        write('RELAY_INSPECT.json', relay); write('SOLVER_INSPECT.json', solver); write('TERMINAL_INSPECT.json', solver)
+        terminal = copy.deepcopy(solver)
+        terminal['Config']['Hostname'] = relay['Config']['Hostname']
+        write('RELAY_INSPECT.json', relay); write('SOLVER_INSPECT.json', solver); write('TERMINAL_INSPECT.json', terminal)
         messages = [{'role': 'user', 'content': [{'type': 'text', 'text': user}]}]
         wire_messages = [{'role': 'user', 'content': user}]
         proxy = create_app(self.origin, self.origin, self.harness.model, request.budget, root / 'meter')
@@ -191,6 +193,21 @@ class HarnessTests(unittest.IsolatedAsyncioTestCase):
         path = self.root / 'fluso/CLEANUP.json'
         value = json.loads(path.read_bytes()); value[0]['returncode'] = 1; path.write_bytes(encoded(value))
         with self.assertRaisesRegex(ValueError, 'containers were not removed'): self.audit(receipt)
+
+    async def test_only_relay_hostname_transition_is_allowed(self):
+        receipt = await self.run_fixture()
+        self.audit(receipt)
+        path = self.root / 'fluso/TERMINAL_INSPECT.json'
+        value = json.loads(path.read_bytes()); value['Config']['Hostname'] = 'unrelated-host'
+        path.write_bytes(encoded(value))
+        with self.assertRaisesRegex(ValueError, 'configuration changed'): self.audit(receipt)
+
+    async def test_oom_exit_is_not_accepted_as_completed(self):
+        receipt = await self.run_fixture()
+        path = self.root / 'fluso/TERMINAL_INSPECT.json'
+        value = json.loads(path.read_bytes()); value['State']['OOMKilled'] = True
+        path.write_bytes(encoded(value))
+        with self.assertRaisesRegex(ValueError, 'terminated abnormally'): self.audit(receipt)
 
     async def test_provider_failure_retains_reservation_and_stops_dispatch(self):
         self.fail_on_call = 2

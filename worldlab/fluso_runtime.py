@@ -91,8 +91,15 @@ def audit_runtime_configuration(root, request, identity):
     if (root / 'TERMINAL_INSPECT.json').exists():
         terminal = read(root / 'TERMINAL_INSPECT.json')
         audit_container(terminal, image=image, network='container:' + relay['Id'], mounts=solver_mounts, user=plan['user'])
-        require(terminal['Id'] == solver['Id'] and terminal['Config'] == solver['Config'], 'Native container configuration changed during execution')
-        require(not terminal['State']['Running'], 'Native process is still running')
+        # Docker adopts the relay's hostname when joining its network namespace
+        # at start. Only that exact daemon transition is permitted.
+        require(solver['Config']['Hostname'] in (solver['Id'][:12], relay['Config']['Hostname']),
+                'Unexpected native hostname before network join')
+        expected = {**solver['Config'], 'Hostname': relay['Config']['Hostname']}
+        require(terminal['Id'] == solver['Id'] and terminal['Config'] == expected,
+                'Native container configuration changed during execution')
+        require(not terminal['State']['Running'] and not terminal['State'].get('OOMKilled')
+                and not terminal['State'].get('Error'), 'Native process is running or terminated abnormally')
     return plan
 
 
