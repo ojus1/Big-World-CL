@@ -321,3 +321,33 @@ prose assessment; an actual CSV violation vetoes that broad criterion, while a
 correct CSV cannot auto-pass Markdown or fabricated conflict explanations. The
 full local suite passes 228 tests; the targeted positive/negative/source-change
 checks also verify that valid arithmetic does not bypass semantic review.
+
+
+### Native QA iteration 7: conflict claims and optimizer output capacity
+
+The v22 panel passed 20/20 controls and 14 artifact/accounting regrade audits,
+but manual review found two false full passes: valid exam CSVs accompanied by
+fabricated Paragraph-14 conflicts. A source-bound section-level structured check
+now classifies affirmative priority-resolution claims independently in every
+Markdown section. A checked constructive schedule demonstrates that the source
+§14.3 trigger (no legal plan without priority) is absent. The host rejects the
+conjunction if any section asserts an actual priority resolution, even if a later
+section denies it. The remaining criterion conditions still require judgment.
+These are development qualification changes, not new solver instructions.
+
+The isolated v21 learning epoch completed eight native replays but its optimizer
+response exhausted the upstream 1,024-token output request. All 2,972,001 tokens
+(147 target calls plus one optimizer call) are accounted; no candidate was adopted.
+The strict completed-epoch audit correctly did not pass this failed update.
+The native worldlab adapter now explicitly registers a 4,096-token optimizer
+output allowance, bounded by the existing input/total-token reservation. Partial
+responses are preserved after redaction and never compiled or adopted. There is
+no new character limit, silent retry, or change to pinned upstream SkillOpt.
+A fresh epoch and native conflict-claim controls are required before the pilot.
+
+The resource diagnostic finalized all five attempts with one time exhaustion,
+zero artifact rejection and complete accounting (260 calls, 9,224,562 tokens).
+The worker stopped at its 1,800-second active deadline with 1.5 seconds of
+cleanup, then the retained output was graded. All six expanded employee context
+checks preserved the current topic and deliverables; residual imperfect wording
+remains a model behavior outcome. The large study remains gated and unlaunched.

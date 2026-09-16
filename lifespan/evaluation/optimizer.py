@@ -282,9 +282,9 @@ def _usage(response, api_mode):
     return {"input_tokens": input_tokens, "output_tokens": output_tokens, "tokens": total}
 
 
-def _answer(response, api_mode):
+def _answer(response, api_mode, *, allow_incomplete=False):
     if api_mode == "responses":
-        if response.get("status") != "completed":
+        if response.get("status") != "completed" and not allow_incomplete:
             return None
         texts = []
         for item in response.get("output", []):
@@ -295,13 +295,13 @@ def _answer(response, api_mode):
                     texts.append(part["text"])
         return "\n".join(texts) or None
     choices = response.get("choices", [])
-    if not choices or choices[0].get("finish_reason") != "stop":
+    if not choices or (choices[0].get("finish_reason") != "stop" and not allow_incomplete):
         return None
     text = choices[0].get("message", {}).get("content")
     return text if isinstance(text, str) and text else None
 
 
-def make_reflector(credentials, *, augment_training_context=True, transport=None, edit_policy=None):
+def make_reflector(credentials, *, augment_training_context=True, transport=None, edit_policy=None, output_tokens=None):
     """Return a real-model callback compatible with ``SkillOptLearner.update``.
 
     credentials: {api_key, base_url, model, api_mode?='responses', reasoning_effort?}.
@@ -324,6 +324,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         raise OptimizerInputError("api_mode must be responses or chat_completions")
     if type(augment_training_context) is not bool:
         raise OptimizerInputError("augment_training_context must be boolean")
+    if output_tokens is not None and (type(output_tokens) is not int or output_tokens < 1):
+        raise OptimizerInputError('Configured optimizer output_tokens must be a positive integer')
     structured_contract = optimizer_structured_output(edit_policy)
     send = transport or _sdk_transport(creds, edit_policy)
     secrets = [creds["api_key"]]
@@ -354,6 +356,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         cap = payload.get("max_output_tokens", 1024)
         if type(cap) is not int or cap < 1:
             raise OptimizerInputError("max_output_tokens must be a positive integer")
+        upstream_cap = cap
+        if output_tokens is not None:cap = output_tokens
         prompt = _redact(payload.get("prompt"), secrets)
         if edit_policy is not None:
             from .scoped_edits import RULES
@@ -366,6 +370,7 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         record = {"context_adapter": adapter, "status": "not_dispatched", "model_calls": 0,
                   "tool_calls": 0, "tokens": 0, "input_tokens": 0, "output_tokens": 0,
                   "accounting_complete": True, "response": ""}
+        record.update(upstream_requested_output_tokens=upstream_cap, configured_output_tokens=output_tokens)
         if edit_policy is not None:
             record['proposal_policy'] = edit_policy
         if provider is not None:
@@ -441,6 +446,9 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
                 record["status"] = "budget_exhausted"
             elif answer is None:
                 record["status"] = "incomplete_response"
+                try:partial = _answer(response, api_mode, allow_incomplete=True)
+                except (AttributeError, KeyError, TypeError):partial = None
+                record['partial_response'] = _redact(partial, secrets) if partial is not None else ''
             else:
                 record.update(status="completed", response=_redact(answer, secrets))
                 if edit_policy is not None:

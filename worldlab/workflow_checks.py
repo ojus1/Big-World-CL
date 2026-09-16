@@ -196,6 +196,9 @@ def verdict(payload):
             if errors:raise ValueError('; '.join(errors))
             return None  # Numeric correctness does not discharge semantic obligations.
         elif matched['kind']=='exams':
+            if identifier=='md_paragraph14_handling':
+                if not output('output/konfliktloesungen.md').strip():raise ValueError('Required Markdown is missing')
+                return None
             check_exams(files,identifier)
             if identifier=='professional_adequacy':return None
         else:raise RuntimeError('Unknown registered workflow kind')

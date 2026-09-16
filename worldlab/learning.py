@@ -11,7 +11,8 @@ from lifespan.evaluation.provider import provider_contract
 
 class SkillOpt:
     def __init__(self, source, model, base_url, *, budget=None, edit_budget=2, rollouts_k=2,
-                 scoped_edits=True, confirmation_cases=0, confirmation_repeats=2, confirmation_min_gain=0.05):
+                 scoped_edits=True, confirmation_cases=0, confirmation_repeats=2, confirmation_min_gain=0.05,
+                 optimizer_output_tokens=4096):
         self.source = Path(source).resolve()
         _load_upstream(self.source)
         self.provider = provider_contract(model, base_url)
@@ -25,6 +26,9 @@ class SkillOpt:
         self.edit_policy = POLICY if scoped_edits else None
         self.confirmation_cases, self.confirmation_repeats = confirmation_cases, confirmation_repeats
         self.confirmation_min_gain = confirmation_min_gain
+        if type(optimizer_output_tokens) is not int or optimizer_output_tokens < 1:
+            raise ValueError('optimizer_output_tokens must be a positive integer')
+        self.optimizer_output_tokens = optimizer_output_tokens
 
     def validate_plan(self, spec, judge):
         """Reserve the entire declared epoch; never a knowingly truncated gate."""
@@ -51,6 +55,7 @@ class SkillOpt:
                 'edit_budget': self.edit_budget, 'rollouts_k': self.rollouts_k,
                 'budget': asdict(self.budget), 'gate_metric': 'mixed', 'gate_no_regression': True,
                 'edit_policy': self.edit_policy,
+                'optimizer_output_tokens': self.optimizer_output_tokens,
                 'confirmation': ({'cases': self.confirmation_cases, 'repeats': self.confirmation_repeats,
                     'min_gain': self.confirmation_min_gain, 'selection': 'last_predeclared_validation_cases',
                     'no_case_regression': True} if self.confirmation_cases else None)}
@@ -62,7 +67,8 @@ class SkillOpt:
                        'api_key': os.environ.get('WORLDLAB_API_KEY', 'EMPTY'),
                        'provider_profile': self.provider['profile']}
         from lifespan.evaluation.scoped_edits import BANNER
-        reflector = make_reflector(credentials, augment_training_context=True, edit_policy=self.edit_policy)
+        reflector = make_reflector(credentials, augment_training_context=True, edit_policy=self.edit_policy,
+                                   output_tokens=self.optimizer_output_tokens)
         learner = SkillOptLearner(source=self.source, edit_budget=self.edit_budget, rollouts_k=self.rollouts_k,
             learned_banner=BANNER if self.edit_policy else None, confirmation_cases=self.confirmation_cases,
             confirmation_repeats=self.confirmation_repeats, confirmation_min_gain=self.confirmation_min_gain)
@@ -70,6 +76,7 @@ class SkillOpt:
                                 current_day=current_day, budget=self.budget)
         result['optimizer_transport_audit'] = reflector.audit_records
         result['edit_policy'] = self.edit_policy
+        result['optimizer_output_tokens'] = self.optimizer_output_tokens
         save(Path(artifact_root) / 'UPDATE.json', result)
         return result
 
@@ -95,6 +102,13 @@ class SkillOpt:
         from scripts.audit_evaluation import optimizer_provider_check
         operations = [row for row in update['costs']['operations'] if row['kind'] == 'optimizer']
         receipts = update['optimizer_transport_audit']
+        if expected_identity.get('optimizer_output_tokens') is not None:
+            if update.get('optimizer_output_tokens') != expected_identity['optimizer_output_tokens']:
+                raise ValueError('Optimizer output allowance differs from frozen learner identity')
+            for receipt in receipts:
+                if (receipt.get('configured_output_tokens') != expected_identity['optimizer_output_tokens']
+                        or receipt.get('max_output_tokens', 0) > expected_identity['optimizer_output_tokens']):
+                    raise ValueError('Optimizer transport output allowance differs')
         if len(operations) != len(receipts):
             raise ValueError('Missing native optimizer transport evidence')
         for row, receipt in zip(operations, receipts):

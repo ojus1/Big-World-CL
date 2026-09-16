@@ -10,7 +10,8 @@
     "csv_row_ordering",
     "csv_structure_and_coverage",
     "constraint_satisfaction",
-    "professional_adequacy"
+    "professional_adequacy",
+    "md_paragraph14_handling"
   ],
   "schema_version": 1,
   "tasks": {
@@ -73,6 +74,25 @@
           "id": "constraint_satisfaction",
           "requirement": "Every assignment respects: deadline_week (¶10.3), strict prerequisite ordering (¶13), examiner availability (¶12), max-one-per-week-per-examiner (¶10.2), room capacity ≥ enrollment (¶11.1), Simulations-PCs only in HS3 (¶11.2), one room per week (¶11.3), closed rooms unused (¶11.4).",
           "weight": 2.0
+        },
+        {
+          "id": "md_paragraph14_handling",
+          "weight": 1.0,
+          "requirement": "If and only if a genuine Paragraph-14 conflict arises (two exams of the same examiner forced into the same week with no alternative), the markdown documents it with (a) involved exams, (b) conflict cause, (c) rule invoked (Abs. 1 lit. a or b), (d) result, (e) numeric justification. If no conflict arises, the document must not fabricate one.",
+          "evidence_anchors": [
+            "input/einschreibungen.csv",
+            "input/hoersaale.csv",
+            "input/modulmatrix.csv",
+            "input/pruefer_verfuegbarkeit.csv",
+            "input/pruefungsordnung_fh_nordwerk_2023.md",
+            "input/wartungsplan.csv",
+            "output/konfliktloesungen.md",
+            "output/pruefungsplan.csv"
+          ],
+          "acceptable_alternatives": [
+            "In this instance the reference solutions show no ¶14 conflict is necessary; a correct submission may state that no conflict arose, or simply omit per-conflict paragraphs while retaining the completeness section."
+          ],
+          "failure_examples": []
         }
       ],
       "input_text_sha256": {
@@ -89,7 +109,8 @@
         "constraint_satisfaction": "output/pruefungsplan.csv",
         "csv_row_ordering": "output/pruefungsplan.csv",
         "csv_structure_and_coverage": "output/pruefungsplan.csv",
-        "professional_adequacy": "output/pruefungsplan.csv"
+        "professional_adequacy": "output/pruefungsplan.csv",
+        "md_paragraph14_handling": "output/konfliktloesungen.md"
       }
     },
     "internal/euw_v1_de_024": {
