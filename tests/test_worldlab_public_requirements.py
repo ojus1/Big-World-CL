@@ -41,7 +41,7 @@ class SourceIntegrationTests(unittest.TestCase):
             result = qualify(Bank(BANK), Path(tmp) / 'qualification')
             self.assertTrue(result['ok']); self.assertEqual(result['cases'], 18)
 
-    def test_public_numeric_failure_prevents_perfect_grade_despite_all_semantic_passes(self):
+    def test_numeric_failure_vetoes_csv_criterion_and_supplement_despite_semantic_passes(self):
         bank = Bank(BANK)
         case = next(c for c in controls(bank) if c['id'] == 'negative-mri-report-total')
         calls = []
@@ -61,9 +61,10 @@ class SourceIntegrationTests(unittest.TestCase):
                 path = workspace / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(text)
             result = judge.grade(case['task_id'], workspace, baseline, root / 'judging')
             self.assertTrue(result['grading_complete'])
-            self.assertTrue(all(v['passed'] for v in result['criteria']))
+            self.assertEqual([v['criterion_id'] for v in result['criteria'] if not v['passed']],
+                             ['csv_structure_and_values'])
             self.assertFalse(result['success']); self.assertLess(result['quality_score'], 1)
-            self.assertEqual(len(calls), len(result['criteria']))
+            self.assertEqual(len(calls), len(result['criteria'])-1)
             self.assertEqual(result['usage']['charged_tokens'], 15 * len(calls))
             self.assertEqual([c['id'] for c in result['public_requirements']['checks'] if not c['passed']],
                              ['public_mri_weighted_scores'])

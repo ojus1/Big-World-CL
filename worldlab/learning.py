@@ -7,6 +7,7 @@ from scripts.source_world_calibration import save
 from lifespan.evaluation.optimizer import make_reflector
 from lifespan.evaluation.skillopt import SkillOptLearner, LearningBudget, REVISION, _load_upstream
 from lifespan.evaluation.provider import provider_contract
+from .learning_feedback import POLICY as FEEDBACK_POLICY
 
 
 class SkillOpt:
@@ -56,7 +57,7 @@ class SkillOpt:
                 'budget': asdict(self.budget), 'gate_metric': 'mixed', 'gate_no_regression': True,
                 'edit_policy': self.edit_policy,
                 'optimizer_output_tokens': self.optimizer_output_tokens,
-                'feedback_projection': 'released_failures_first_v1',
+                'feedback_projection': FEEDBACK_POLICY,
                 'confirmation': ({'cases': self.confirmation_cases, 'repeats': self.confirmation_repeats,
                     'min_gain': self.confirmation_min_gain, 'selection': 'last_predeclared_validation_cases',
                     'no_case_regression': True} if self.confirmation_cases else None)}

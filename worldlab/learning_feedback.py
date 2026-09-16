@@ -1,5 +1,7 @@
 """Prioritize released failures without changing grades or exposing private rubrics."""
 
+POLICY = 'released_failures_first_v2'
+
 
 def learning_feedback(grade):
     original=grade.get('feedback','')
@@ -13,6 +15,12 @@ def learning_feedback(grade):
             if not label or type(row.get('passed')) is not bool or not isinstance(row.get('reasoning'),str):continue
             if row['passed']:passed.append(label)
             else:failures.append(label+': '+row['reasoning'])
+    for row in grade.get('public_requirements', {}).get('checks', []):
+        if not row.get('id') or type(row.get('passed')) is not bool:continue
+        if row['passed']:continue
+        # The grader already releases this exact requirement and evidence in
+        # its original feedback. Include its failure alongside rubric failures.
+        failures.append(row['id']+': '+row['requirement']+' '+' '.join(row['evidence']))
     if not failures:return original
     # Use only IDs and rationales already present in released feedback. Never
     # attach the private criterion text or hidden source definition here.

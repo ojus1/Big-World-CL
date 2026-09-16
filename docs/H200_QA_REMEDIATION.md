@@ -371,3 +371,25 @@ contracts. A fresh native epoch is needed to qualify this feedback policy. The
 v23 epoch remains a separate output-cap diagnostic and is not relabeled.
 
 The current audit also binds every optimizer-visible descriptor to released public task context and every training record to its native replay text and feedback. Regression tests reject tampered prompts, feedback and trajectories. Native qualification checks the same bindings.
+
+### Native QA iteration 9: complete failure projection and MRI criterion consistency
+
+The first two v24 native validation replays completed with full artifact and usage
+proof. The MRI replay scored 0.863636 because the deterministic public supplement
+correctly rejected supplier B's nonzero score and the model rejected the TCO
+formula. Yet the overlapping restored CSV criterion passed, and the memo's
+conditional award to excluded B passed professional review. French/German MRI
+variants in the large workload did not have the English supplemental check.
+
+The new source-bound procurement adapter vetoes an invalid scoring CSV under its
+existing criterion, with language-specific EXCLUDED/EXCLUIDO markers, for all five
+registered source variants. Valid numeric checks do not automatically pass other
+CSV semantics. The prose judge receives independently computed seven-year CSV
+sums and the mandatory B/C exclusions, including the absence of authority to
+waive a minimum through a compensation clause. Criterion weights, public tasks
+and source data are unchanged. Native positive/negative prose controls and copied
+regrades must qualify this change before a new native learning epoch and pilot.
+
+Learning feedback projection v2 also includes already released failed public
+supplement checks; it does not lose those failures when all rubric checks pass.
+Historical grading and learning runs are retained under their frozen source.

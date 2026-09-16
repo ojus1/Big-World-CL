@@ -1,0 +1,61 @@
+"""Source-bound MRI CSV veto and independently computed facts for prose review."""
+from copy import deepcopy
+import hashlib
+from pathlib import Path
+from scripts.source_world_calibration import read
+from .public_requirements import procurement, table, number
+
+REGISTRY = Path(__file__).with_name('procurement_registry.json')
+METHOD = 'registered_procurement_source_veto'
+
+
+def match(payload):
+    evidence=payload.get('evidence',{});files=evidence.get('files',{})
+    instruction=evidence.get('instruction','')
+    digest=hashlib.sha256(instruction.encode()).hexdigest()
+    for rule in read(REGISTRY)['tasks']:
+        if rule['instruction_sha256'] != digest:continue
+        criterion=payload.get('criterion',{})
+        if criterion != rule['criteria'].get(criterion.get('id')):continue
+        for name,expected in rule['input_text_sha256'].items():
+            text=files.get(name,{}).get('text')
+            if not isinstance(text,str) or hashlib.sha256(text.replace('\r\n','\n').replace('\r','\n').encode()).hexdigest()!=expected:break
+        else:return rule
+    return None
+
+
+def checks(payload,rule):
+    files={name:value['text'] for name,value in payload['evidence']['files'].items()}
+    return procurement(files,files,rule['excluded_marker'])
+
+
+def verdict(payload):
+    if payload.get('criterion',{}).get('id')!='csv_structure_and_values':return None
+    rule=match(payload)
+    if rule is None:return None
+    failures=[c for c in checks(payload,rule) if not c['passed']]
+    if not failures:return None  # Names, prose and remaining conditions still need judgment.
+    return {'criterion_id':'csv_structure_and_values','passed':False,
+            'evidence':'output/tabla_puntuacion.csv',
+            'reasoning':'Source-bound public scoring violation: '+'; '.join(
+                c['id']+': '+' '.join(c['evidence']) for c in failures)}
+
+
+def semantic_payload(payload):
+    rule=match(payload)
+    if rule is None:return payload
+    files=payload['evidence']['files'];costs=table(files['input/informe_coste_propiedad.csv']['text'])
+    tco={provider:sum(number(r[f'prov_{provider}_{kind}']) for r in costs
+        for kind in ('manten','consum','energia')) for provider in 'abc'}
+    result=deepcopy(payload)
+    result['registered_procurement_facts']={
+        'seven_year_csv_sums':{k:str(v) for k,v in tco.items()},
+        'scoring_basis':'Use these instructed CSV sums; do not add acquisition price or depreciation.',
+        'excluded_suppliers':{
+            'B':'The real 3T appendix measurements are 57–59 dB, above the mandatory 55 dB maximum.',
+            'C':'The 3-year warranty and uninitiated PACS integration violate mandatory minimums.'},
+        'eligible_supplier':'A, subject to the explicitly permitted PACS validation clause.',
+        'policy_precedence':'Mandatory exclusion rules apply before award selection. The additional noise compensation clause does not authorize waiving an exclusion or awarding to B conditionally.',
+        'csv_checks':checks(payload,rule),
+        'scope':'These facts are bound to the public instruction and exact source files. Assess only the supplied criterion and its remaining obligations; a passing numeric check does not certify prose correctness.'}
+    return result

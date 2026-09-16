@@ -14,7 +14,7 @@ from .worlds import stable_hash
 from .validation_context import select_experiences, validate_world, observed_feedback
 from .attempts import task_instruction
 from .artifact_inventory import verify as verify_inventory
-from .learning_feedback import learning_feedback
+from .learning_feedback import learning_feedback, POLICY as FEEDBACK_POLICY
 
 
 def require(condition, message):
@@ -113,7 +113,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness,
                                       employee_message=by_id[replay['id']].get('employee_message'), judge=judge)
             require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
-            if learner_identity and learner_identity.get('feedback_projection') == 'released_failures_first_v1':
+            if learner_identity and learner_identity.get('feedback_projection') == FEEDBACK_POLICY:
                 require(replay.get('feedback') == learning_feedback(r['grade']), 'Replay learning feedback differs from released grade')
                 require(replay.get('response') == json.dumps({'messages': r['trajectory']}, ensure_ascii=False),
                         'Replay response differs from native trajectory')
@@ -126,7 +126,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             counts['learning_replays'] += 1
         require(learner is not None and learner_identity is not None,
                 'Supply the registered learner offline auditor')
-        if learner_identity.get('feedback_projection') == 'released_failures_first_v1':
+        if learner_identity.get('feedback_projection') == FEEDBACK_POLICY:
             audit_learning_context(bank, selected, update)
         learner.audit_update(update_root, update, skill_before=before, expected_identity=learner_identity)
         counts['adoptions'] += int(update['accepted'])

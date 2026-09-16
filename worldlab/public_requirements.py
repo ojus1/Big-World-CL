@@ -78,7 +78,7 @@ def editorial(inputs, outputs):
                 for name in EDITORIAL_IDS]
 
 
-def procurement(inputs, outputs):
+def procurement(inputs, outputs, excluded_marker='EXCLUDED'):
     columns = 'criterio peso_pct punt_a punt_b punt_c ponderado_a ponderado_b ponderado_c'.split()
     try:
         rows = table(outputs.get('output/tabla_puntuacion.csv', ''), columns)
@@ -103,8 +103,8 @@ def procurement(inputs, outputs):
                 scores.append(f'Weight {weight}: supplier A partial score differs from the public source rules.')
             if number(row['ponderado_a']) != (expected[weight] * weight / 100).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP):
                 weighted.append(f'Weight {weight}: supplier A weighted score differs from rounded policy arithmetic.')
-            if any(row[f'punt_{provider}'] != 'EXCLUDED' for provider in 'bc'):
-                exclusions.append(f'Weight {weight}: B and C require the public English EXCLUDED marker.')
+            if any(row[f'punt_{provider}'] != excluded_marker for provider in 'bc'):
+                exclusions.append(f'Weight {weight}: B and C require the public {excluded_marker} marker.')
             # Only excluded TOTALs must be numeric zero. Intermediate weighted
             # cells may be blank, marked excluded, zero or informational scores.
         expected_total = sum((v * w / 100).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP) for w, v in expected.items())
@@ -115,7 +115,7 @@ def procurement(inputs, outputs):
         return [verdict('public_mri_rows', [], 'Five policy criteria and final TOTAL.'),
             verdict('public_mri_source_scores', scores, 'A scores: technical/reliability/warranty 10, pending PACS 6; price from seven-year CSV sums.'),
             verdict('public_mri_weighted_scores', weighted, 'Rounded partial × weight / 100; total is sum of rounded weighted scores.'),
-            verdict('public_mri_exclusions', exclusions, 'B noise and C warranty/PACS exclude them; English markers and zero TOTALs are required.')]
+            verdict('public_mri_exclusions', exclusions, f'B noise and C warranty/PACS exclude them; {excluded_marker} markers and zero TOTALs are required.')]
     except (KeyError, ValueError, InvalidOperation, csv.Error) as exc:
         return [verdict(name, [type(exc).__name__ + ': invalid or missing required CSV/number.'],
                         'Public scoring CSV and finite policy arithmetic.') for name in MRI_IDS]

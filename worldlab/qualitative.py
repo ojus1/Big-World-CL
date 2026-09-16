@@ -56,6 +56,7 @@ def verdict_input(payload, *, repair=False):
     from .memo_counts import semantic_payload as memo_semantic_payload
     from .source_coverage import semantic_payload as source_semantic_payload
     from .workflow_checks import semantic_payload as workflow_semantic_payload
+    from .procurement_checks import semantic_payload as procurement_semantic_payload
     rules = RULES
     if semantic_schema(payload) is not None:
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
@@ -64,7 +65,7 @@ def verdict_input(payload, *, repair=False):
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
             'Return only the structured section judgments and remaining requirement assessment requested in evaluation_scope. The host computes passed.')
     return [{'role': 'system', 'content': rules + (REPAIR_RULES if repair else '')},
-            {'role': 'user', 'content': json.dumps(exam_payload(workflow_semantic_payload(source_semantic_payload(memo_semantic_payload(semantic_payload(payload))))), ensure_ascii=False, sort_keys=True)}]
+            {'role': 'user', 'content': json.dumps(procurement_semantic_payload(exam_payload(workflow_semantic_payload(source_semantic_payload(memo_semantic_payload(semantic_payload(payload)))))), ensure_ascii=False, sort_keys=True)}]
 
 
 def parsed_response(response, criterion, evidence_paths):
@@ -169,7 +170,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 30, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 31, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -201,6 +202,8 @@ class FrozenRubricJudge:
                 'workflow_checks_sha256': sha(Path(__file__).with_name('workflow_checks.py')),
                 'workflow_registry_sha256': sha(Path(__file__).with_name('workflow_registry.json')),
                 'exam_semantics_sha256': sha(Path(__file__).with_name('exam_semantics.py')),
+                'procurement_checks_sha256': sha(Path(__file__).with_name('procurement_checks.py')),
+                'procurement_registry_sha256': sha(Path(__file__).with_name('procurement_registry.json')),
                 'source_obligation_method': 'structured judgments plus registered deterministic predicates; no blind execution of source gold',
                 'original_qualitative_criterion_limit': 8,
                 'memo_counts_sha256': sha(Path(__file__).with_name('memo_counts.py')),

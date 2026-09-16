@@ -50,5 +50,19 @@ class LearningFeedbackTests(unittest.TestCase):
             with self.subTest(target=target,key=key),self.assertRaises(ValueError):
                 audit_learning_context(bank,selected,changed)
 
+    def test_failed_public_check_is_visible_when_all_rubric_checks_pass(self):
+        grade={'feedback':'Rubric passed. Public requirement checks: total needs revision.',
+               'criteria':[{'criterion_id':'prose','passed':True,'reasoning':'Clear.'}],
+               'public_requirements':{'checks':[
+                   {'id':'public_total','passed':False,'requirement':'Recompute the total.',
+                    'evidence':['Total differs from source rows.']}]}}
+        original=deepcopy(grade);feedback=learning_feedback(grade)
+        self.assertIn('public_total: Recompute the total.',feedback[:140])
+        self.assertIn('Total differs from source rows.',feedback)
+        self.assertTrue(feedback.endswith(grade['feedback']))
+        self.assertEqual(grade,original)
+        grade['public_requirements']['checks'][0]['passed']=True
+        self.assertEqual(learning_feedback(grade),grade['feedback'])
+
 
 if __name__=='__main__':unittest.main()

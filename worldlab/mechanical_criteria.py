@@ -117,6 +117,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    from .procurement_checks import verdict as procurement_verdict, METHOD as PROCUREMENT_METHOD
+    if procurement_verdict(payload) is not None:return PROCUREMENT_METHOD
     from .workflow_checks import verdict as workflow_verdict
     if workflow_verdict(payload) is not None:
         return 'registered_workflow_source_predicate'
@@ -144,6 +146,9 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    from .procurement_checks import verdict as procurement_verdict
+    procurement = procurement_verdict(payload)
+    if procurement is not None:return procurement
     from .workflow_checks import verdict as workflow_verdict
     workflow = workflow_verdict(payload)
     if workflow is not None:
