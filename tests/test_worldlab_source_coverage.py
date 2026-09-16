@@ -15,6 +15,43 @@ from test_worldlab_judge_recovery import Bank, Client, response
 
 
 class CoverageTests(unittest.TestCase):
+    def test_existing_r3_correction_is_exactly_bound(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); bank = Bank(root / 'bank'); bank.private_definition = lambda _: {'rubric': []}
+            original = rubric(bank, 'fixture')['criteria'][0]
+            registry = root / 'registry.json'
+            save(registry, {'tasks': {'fixture': {
+                'definition_sha256': bank.by_id['fixture'].get('definition_sha256'),
+                'instruction_sha256': hashlib.sha256(bank.public('fixture')['instruction'].encode()).hexdigest(),
+                'corrections': {original['id']: {'original_requirement': original['requirement'],
+                                                 'requirement': 'Reviewed public source requirement.'}}}}})
+            with patch.object(source_coverage, 'REGISTRY', registry):
+                result = rubric(bank, 'fixture')
+                self.assertEqual(result['criteria'][0]['requirement'], 'Reviewed public source requirement.')
+                self.assertEqual(result['criteria'][0]['weight'], original['weight'])
+                self.assertEqual(result['source_coverage']['restored_ids'], [])
+
+    def test_mixed_length_veto_does_not_automatically_pass_semantics(self):
+        from worldlab.qualitative import request_verdict, verdict_input
+        with tempfile.TemporaryDirectory() as tmp:
+            registry = Path(tmp) / 'registry.json'
+            criterion = {'id': 'R7', 'requirement': '800 characters and correct French.', 'weight': 1}
+            rule = {'instruction_sha256': hashlib.sha256(b'Notes').hexdigest(), 'input_text_sha256': {},
+                'counts': {'R7': {'criterion': criterion, 'minimum': 800, 'maximum': None, 'unit': 'characters',
+                                  'mode': 'veto', 'path': 'output/notes.md', 'exclude_title': False}}}
+            save(registry, {'tasks': {'fixture': rule}})
+            with patch.object(source_coverage, 'REGISTRY', registry):
+                payload = {'criterion': criterion, 'evidence': {'instruction': 'Notes',
+                    'files': {'output/notes.md': {'text': 'é' * 799}}}}
+                self.assertFalse(source_coverage.count_verdict(payload)['passed'])
+                self.assertEqual(request_verdict(None, None, payload, 1).evaluation_method, 'registered_source_character_count')
+                payload['evidence']['files']['output/notes.md']['text'] += 'é'
+                self.assertIsNone(source_coverage.count_verdict(payload))
+                self.assertTrue(source_coverage.count_measure(payload)['passed'])
+                self.assertIn('Do not estimate or recount', verdict_input(payload)[1]['content'])
+                payload['evidence']['files']['output/notes.md']['text'] += 'é' * 3000
+                self.assertTrue(source_coverage.count_measure(payload)['passed'])
+
     def test_reviewed_translation_is_applied_only_to_bound_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp); bank = Bank(root / 'bank')

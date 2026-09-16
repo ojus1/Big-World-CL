@@ -33,13 +33,14 @@ def rubric(bank, task_id):
         value = {key: deepcopy(c[key]) for key in ('id', 'requirement', 'weight')}
         value.update(acceptable_alternatives=deepcopy(c.get('acceptable_alternatives', [])),
                      evidence_anchors=[], failure_examples=[])
-        correction = review.get('corrections', {}).get(c['id']) if review else None
-        if correction is not None:
-            if c['requirement'] != correction['original_requirement']:
-                raise ValueError('Corrected source requirement differs from reviewed original')
-            value['requirement'] = correction['requirement']
         restored.append(value); present.add(c['id'])
     result['criteria'].extend(restored)
+    for value in result['criteria']:
+        correction = review.get('corrections', {}).get(value['id']) if review else None
+        if correction is not None:
+            if value['requirement'] != correction['original_requirement']:
+                raise ValueError('Corrected source requirement differs from reviewed original')
+            value['requirement'] = correction['requirement']
     if restored:
         result.setdefault('evaluation_guidance', []).append(
             'These restored source obligations were formerly assigned to an executable checker. '
@@ -59,7 +60,7 @@ def rubric(bank, task_id):
     return result
 
 
-def count_verdict(payload):
+def count_measure(payload):
     evidence = payload.get('evidence', {})
     digest = hashlib.sha256(evidence.get('instruction', '').encode()).hexdigest()
     for review in read(REGISTRY)['tasks'].values():
@@ -76,8 +77,31 @@ def count_verdict(payload):
                 text = evidence['files'].get(rule['path'], {}).get('text', '')
                 if rule['exclude_title']:
                     text = '\n'.join(text.strip().splitlines()[1:])
-                count = sum(any(c.isalnum() for c in word) for word in text.split())
-                return {'criterion_id': identifier, 'passed': rule['minimum'] <= count <= rule['maximum'],
-                        'evidence': rule['path'], 'reasoning':
-                        f"The source-bound full-report count is {count} words; the required range is {rule['minimum']}–{rule['maximum']}. Whitespace-delimited tokens containing a Unicode letter/digit count once; standalone punctuation is excluded."}
+                unit = rule.get('unit', 'words')
+                count = len(text) if unit == 'characters' else sum(any(c.isalnum() for c in word) for word in text.split())
+                maximum = rule.get('maximum')
+                return {'criterion_id': identifier, 'passed': count >= rule['minimum'] and (maximum is None or count <= maximum),
+                        'path': rule['path'], 'count': count, 'unit': unit, 'minimum': rule['minimum'],
+                        'maximum': maximum, 'mode': rule.get('mode', 'count_only')}
     return None
+
+
+def count_verdict(payload):
+    measured = count_measure(payload)
+    if measured is None or (measured['mode'] == 'veto' and measured['passed']):
+        return None
+    limit = f"at least {measured['minimum']}" if measured['maximum'] is None else f"{measured['minimum']}–{measured['maximum']}"
+    return {'criterion_id': measured['criterion_id'], 'passed': measured['passed'], 'evidence': measured['path'],
+            'reasoning': f"The source-bound count is {measured['count']} {measured['unit']}; the requirement is {limit}. "
+                         'Characters are Unicode code points. Words are whitespace-delimited tokens containing a Unicode letter/digit; standalone punctuation is excluded.'}
+
+
+def semantic_payload(payload):
+    measured = count_measure(payload)
+    if measured is None or measured['mode'] != 'veto':
+        return payload
+    result = deepcopy(payload)
+    result['registered_length_measurement'] = measured
+    result['length_evaluation_scope'] = ('The registered source-bound length check has already passed. Do not estimate or recount length. '
+        'Evaluate all remaining semantic/format conditions independently; adequate length does not establish them.')
+    return result

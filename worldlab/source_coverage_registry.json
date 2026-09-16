@@ -61,6 +61,33 @@
       "definition_sha256": "e57ebd3ec1302c8467e70984a70e656de3b9f5987e99c839a985569e023e7437",
       "instruction_sha256": "79ecc334ba1e5bdafd85ff14d00ae4daa39460abccb006423666364c0be17fb5"
     },
+    "internal/euw_v1_de_024": {
+      "basis": "Prospective review of newly introduced large-run source families: public translated wording, actual source records, mathematical policy and explicit deliverables override inherited private gold assumptions. Source bank bytes retained.",
+      "corrections": {
+        "csv_conversion_values": {
+          "original_requirement": "Each converted uncertainty equals round(U_old/k_old × 1.96, 2 sig figs); C2 row applies §4.2 minimum (±0,01 bar); non-convertible rows retain original value.",
+          "requirement": "Each convertible uncertainty uses u*1.96, deriving u from supplied U_old/k_old when no direct u is used, then two significant figures and the NBN §4.2 global minimum of 0.01 bar. Do not require sub-minimum values shown in inherited private examples. Five nonzero table uncertainties become 0.015 bar; C2 becomes 0.01 bar. Unconvertible 5.4 and 8.1 retain their original values. Where rounded U and explicit u differ, accept either documented source basis consistent with the public conversion instruction."
+        },
+        "csv_structure_validity": {
+          "original_requirement": "CSV has 7 columns (nr,abschnitt,typ,original,angepasst,status,bemerkung), 17–30 rows, valid status/typ enums, norms-before-uncertainties-before-table ordering, exactly 6 table rows, ≥8 UNS_KONVERTIERT, ≥2 UNS_NICHT_KONVERTIERBAR, DIN 1341:2023 marked NORM_KEIN_AEQUIVALENT.",
+          "requirement": "CSV uses the seven specified semicolon-separated fields (nr,abschnitt,typ,original,angepasst,status,bemerkung), valid public status/typ enums, norm entries before individual uncertainties before six sensor rows, all eight supplied convertible prose values and two unconvertible ones represented, and DIN 1341:2023 marked NORM_KEIN_AEQUIVALENT. Every actual change is logged; repeated norm mentions may be grouped by section or listed separately. Do not impose an unsupported 17–30 row cap or invent a missing prose value to reach the erroneous source count."
+        },
+        "md_uncertainty_prose_correct": {
+          "original_requirement": "All 9 convertible U-values in prose are correctly recomputed (e.g. §2.1 → ±0,0061 bar, §2.2 → ±0,0099 bar, §3.2 → ±0,0038 bar, §4.1 → ±0,0076 bar, §4.2 → ±0,011 bar, §5.1 → ±0,0061 bar, §6.1 → ±0,0091 bar, §7.1 → ±0,011 bar); 2 non-convertible values (§5.4, §8.1) retain original ±0,020/±0,025 bar with French footnote '[non converti – k absent dans la source]'.",
+          "requirement": "Convert every actually supplied convertible prose uncertainty in sections 2.1, 2.2, 3.2, 4.1, 4.2, 5.1, 6.1 and 7.1 to 95% with k=1.96, rounding to two significant figures and applying the supplied NBN §4.2 minimum of 0.01 bar to all converted values below that floor. Section 4.2 is 0.011 bar from U_old/k_old. Section 7.1 is 0.012 bar using its directly stated u, or 0.011 bar using its rounded U_old/k_old; accept either documented source basis. All other converted prose values are 0.01 bar after the floor. The two unconvertible values in 5.4 and 8.1 retain 0.020 and 0.025 bar with the prescribed French missing-k footnotes. The source actually contains eight convertible prose U values and two without k; do not invent a ninth or fail a complete conversion for the task's erroneous eleven-item count."
+        }
+      },
+      "counts": {},
+      "definition_sha256": "666e5aff9c41c7631ed45e1303eb39a35e88bfa03079c536e6618c46d99f3743",
+      "input_text_sha256": {
+        "input/adaptationsrichtlinie.md": "927b6f086bf06a13c63d70a18f610945f4af04e251fcb397c55fe136aca5122c",
+        "input/din_1341.md": "ca5e27fc5cc870b88790843e50ed7bdab3b624a5a3a65e20b3049d5ad94d2c90",
+        "input/nbn_aequivalenz_tabelle.csv": "ff969cf7723546203df521c2fb86c64c1c7e2b063875e4b54a5d84f819337852",
+        "input/nbn_d50_001.md": "d713176c25d6642b6267b231f5d140fb9167397af7d9fc100c4bcc8a7ca30786",
+        "input/whitepaper_de.md": "f2f313a506b81eecca4b2e901f495690cf0f25b9f3f1cc6e025c88280de23d33"
+      },
+      "instruction_sha256": "f869e8db36c85a8970801b91af8a2b9eb9f4ee56bc2d66c9f908dee7e7bc0de9"
+    },
     "internal/euw_v1_es_017": {
       "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
       "corrections": {
@@ -180,6 +207,98 @@
       "counts": {},
       "definition_sha256": "7dabc519035c747e29cbca3a304e05d182eae801b5c317a94b5f43b2cfc620b9",
       "instruction_sha256": "0e4245ef3f8a6b98d5600ea9dd7d794e7faf597fdfd06f3d7f211e2c80053e9a"
+    },
+    "internal/euw_v1_es_021_fr_bridge": {
+      "basis": "Prospective review of newly introduced large-run source families: public translated wording, actual source records, mathematical policy and explicit deliverables override inherited private gold assumptions. Source bank bytes retained.",
+      "corrections": {
+        "no_rule_unchanged": {
+          "original_requirement": "The 25 tickets matching no rule (consultas with proteccion='no', disputas ≤200€, reversiones ≥30m) retain estado_inicial as estado_final, regla='N/A', and the standard 'Sin regla aplicable' justification.",
+          "requirement": "The 25 tickets matching no rule retain estado_inicial as estado_final, regla_aplicada='N/A', and the exact French justification given by the public task: 'Aucune règle applicable ; l’état initial est maintenu'. Typographic versus straight apostrophes are equivalent. Do not require the Spanish 'Sin regla aplicable' in this French task."
+        },
+        "r1_protection_applied": {
+          "original_requirement": "All 5 tickets with proteccion='sí' (LUM-2024-005, 010, 031, 032, 045) receive estado_final='pendiente_supervisor', regla='R1_proteccion', and the exact justification string referencing PCV v3 §2.",
+          "requirement": "The five protected source records LUM-2024-005, 010, 031, 032 and 045 receive estado_final='pendiente_supervisor' and regla_aplicada='R1_proteccion'. The source CSV spells the affirmative flag 'si'; this is the protected affirmative value described as 'sí' by the policy. Use the exact French justification explicitly supplied in the public task: 'Enregistrement protégé par PCV v3 §2 ; nécessite approbation explicite du superviseur'."
+        },
+        "resumen_structure_and_facts": {
+          "original_requirement": "output/resumen.md contains the numbers 45, 12, 3, 5, 25 and the word 'frontera', within 122 words maximum.",
+          "requirement": "output/resumen.md states 45 processed, 12 approved, 3 rejected, 5 pendiente_supervisor and 25 unchanged, and mentions the boundary cases in French. Accept French terms such as 'cas limites' or 'frontières'; do not require Spanish 'frontera'. Length is separately measured by resumen_word_count_exact."
+        }
+      },
+      "counts": {
+        "resumen_word_count_exact": {
+          "criterion": {
+            "acceptable_alternatives": [
+              "Punctuation-attached tokens (e.g., 'kWh/mes;') may be counted differently by different counters; ±2 tolerance absorbs this."
+            ],
+            "evidence_anchors": [
+              "input/log_auditoria_anterior.csv",
+              "input/manual_migracion_tarifas.md",
+              "input/politica_consumidor_vulnerable_v3.md",
+              "input/reglamento_disputas_tarifarias.md",
+              "input/tickets_lote.csv",
+              "output/resultados_tickets.csv",
+              "output/resumen.md"
+            ],
+            "failure_examples": [],
+            "id": "resumen_word_count_exact",
+            "requirement": "resumen.md is exactly 120 words ±2 (i.e., 118–122 words) when counted by standard French word segmentation.",
+            "weight": 1
+          },
+          "exclude_title": false,
+          "maximum": 122,
+          "minimum": 118,
+          "path": "output/resumen.md"
+        }
+      },
+      "definition_sha256": "e36890ddb79838fcb69fb04aa7f603eb791322db0aa7c3c3c4ce624f710cff58",
+      "input_text_sha256": {
+        "input/log_auditoria_anterior.csv": "e2717d91c4d091cbb5dce2e9c2ec9ef963481264e57bef0f446d57e4488ac5e9",
+        "input/manual_migracion_tarifas.md": "fb870ae949457de7773ece56f4a9143e1d9680867c7f6e15c5c3ac67dc581d30",
+        "input/politica_consumidor_vulnerable_v3.md": "b50c7641f15cdb2876395084d957af527e470ae610036a5969cb2781656c11c8",
+        "input/reglamento_disputas_tarifarias.md": "c6d9a64bfb00396eaaf2abb21b5058f7ebefc64ca47266f7b86f308f2bb262d1",
+        "input/tickets_lote.csv": "4d54afa0cabd7fedf490cc5e3ff2918d2ab997a9e4b2fda848888b6ab89a185d"
+      },
+      "instruction_sha256": "30ef283047c3dbdd18b7804d131eb253faf0189dda08aed1b3465769b85e9c65"
+    },
+    "internal/euw_v1_fr_012": {
+      "basis": "Prospective review of newly introduced large-run source families: public translated wording, actual source records, mathematical policy and explicit deliverables override inherited private gold assumptions. Source bank bytes retained.",
+      "corrections": {
+        "R3": {
+          "original_requirement": "audit_complet.csv preserves all 14 original events byte-identical and appends exactly EVT-015/016/017 with correct ticket_id, timestamp, actor_id, statut=OK. Total 17 rows, sequential EVT-IDs.",
+          "requirement": "output/audit_complet.csv preserves all field values of the 14 original audit events and appends exactly EVT-015, EVT-016 and EVT-017 with the correct ticket_id, timestamp, actor_id and statut=OK. There are 17 rows with sequential event IDs. CSV quoting or line-ending differences that preserve the original field values are not changes to the source events."
+        },
+        "R4": {
+          "original_requirement": "rapport_escalade.md contains all required section headings (Contexte, Transition 1, Transition 2, Transition 3, Enregistrements protégés, Conclusion, Justification déterministe) and references key terms (AGT-002, MGR-001, 740, 500, Platinum). Minimum 400 words, French prose, ≤2000 words.",
+          "requirement": "output/rapport_escalade.md contains the six required French sections (Contexte, Transition 1, Transition 2, Transition 3, Enregistrements protégés, Conclusion) and the requested Justification déterministe paragraph. A dedicated heading for that paragraph is acceptable but not mandatory. It references AGT-002, MGR-001, 740, 500 and Platinum. The report has at least 400 words; the public task specifies no upper word limit."
+        }
+      },
+      "counts": {
+        "R4": {
+          "criterion": {
+            "acceptable_alternatives": "Section heading capitalisation or minor formatting variants are acceptable as long as the heading text is present.",
+            "evidence_anchors": [],
+            "failure_examples": [],
+            "id": "R4",
+            "requirement": "output/rapport_escalade.md contains the six required French sections (Contexte, Transition 1, Transition 2, Transition 3, Enregistrements protégés, Conclusion) and the requested Justification déterministe paragraph. A dedicated heading for that paragraph is acceptable but not mandatory. It references AGT-002, MGR-001, 740, 500 and Platinum. The report has at least 400 words; the public task specifies no upper word limit.",
+            "weight": 1
+          },
+          "exclude_title": false,
+          "maximum": null,
+          "minimum": 400,
+          "mode": "veto",
+          "path": "output/rapport_escalade.md"
+        }
+      },
+      "definition_sha256": "a9388cb7b4c93f9150d8b8f3da1213d1bf95967b454e24e92569feaca365bbde",
+      "input_text_sha256": {
+        "input/agents_managers.csv": "fa7ef13d35e77fb9582c0f131a8045e2098b5d63c23aa3ffa5f55b8c88aae700",
+        "input/contrats_clients.csv": "8bf75d55b46859dc21d9c55b54aa1a19a01fb45e9ba6ad84417743d335ba54ca",
+        "input/historique_tickets.csv": "c33076acf6cb422c7615c4802a068143caa27fc007538e72f7f5759fb886c8db",
+        "input/journal_audit.csv": "98009d7091724c6baf66d47b3d0139bf1a04cadb5be2475608a553244cbeea5f",
+        "input/ticket_2025_0417.json": "ff539112e44dad2d3ebcea1df88c4b7550c3107828aa026a1330fca0af24a04f",
+        "input/workflow_rules.md": "47b1a13a30e78ea0b777d2b2f8869f3ae49737b42dd919fec4df45491741e460"
+      },
+      "instruction_sha256": "fe4d2a6acc0d01f85823d3d6cb6b2983780166971dd8d889b70fafa5457e1c40"
     },
     "internal/euw_v1_fr_014": {
       "basis": "Public instruction explicitly retains dates_fixes for unaffected glissement rows; original private criterion wrongly retained compression. Risk task does not prescribe a particular risk title.",
@@ -436,6 +555,52 @@
         "input/verbale_cda_1406.md": "053e6bd468e652874953f5f5bf71d1b894d65b8b873e2242fe4bcdcdff396688"
       },
       "instruction_sha256": "c65548555656fe7179e0786d9b1beee4c26e03b804ebba079fc99b92938a9de6"
+    },
+    "internal/euw_v1_it_018_fr_bridge": {
+      "basis": "Prospective review of newly introduced large-run source families: public translated wording, actual source records, mathematical policy and explicit deliverables override inherited private gold assumptions. Source bank bytes retained.",
+      "corrections": {
+        "R6": {
+          "original_requirement": "decision_notes.md contains the required title 'Note di decisione – Triage LogiTrack 2024-11-05', a 'Casi limite' section, and explicit mentions of TKT-1007, ATT-7721, TKT-1009, sla_policy.md, and escalation_matrix.json.",
+          "requirement": "output/decision_notes.md has the exact public French title 'Notes de décision – Triage LogiTrack 2024-11-05', a 'Cas limites' section, and explicit mentions of TKT-1007, ATT-7721, TKT-1009, sla_policy.md and escalation_matrix.json. Do not require Italian headings in this French task."
+        }
+      },
+      "counts": {
+        "R7": {
+          "criterion": {
+            "acceptable_alternatives": [
+              "The three edge-case explanations may appear in any order within the 'Cas limites' section; the per-operation sections may use slightly different sub-headings as long as rule/tickets/outcome/motivation are all addressed."
+            ],
+            "evidence_anchors": [
+              "input/approval_spec.json",
+              "input/audit_log.csv",
+              "input/escalation_matrix.json",
+              "input/sla_policy.md",
+              "input/tickets.csv",
+              "output/decision_notes.md",
+              "output/operations_log.json"
+            ],
+            "failure_examples": [],
+            "id": "R7",
+            "requirement": "decision_notes.md is at least 800 characters of coherent, professional French prose with a dedicated section per operation (rule applied, tickets involved, outcome, motivation) and a 'Cas limites' section that logically explains: (a) why TKT-1007 is rejected (legal_hold constraint from sla_policy.md), (b) why ATT-7721 is migrated rather than duplicated (merge rule in sla_policy.md), (c) why TKT-1009 escalation is rejected despite a valid code (status 'resolved' not in valid_escalation_states per escalation_matrix.json).",
+            "weight": 2
+          },
+          "exclude_title": false,
+          "maximum": null,
+          "minimum": 800,
+          "mode": "veto",
+          "path": "output/decision_notes.md",
+          "unit": "characters"
+        }
+      },
+      "definition_sha256": "7b789d000ed1a6b87657c4ce567b50e7b86f0065704584568c7c889b01289596",
+      "input_text_sha256": {
+        "input/approval_spec.json": "bab052211a36a1af3e0f05f974449a90b7949f7d9cfee4d3d9186912ea4f4fce",
+        "input/audit_log.csv": "b82403cfc0377c716d64c9c7c9b8a38f7278a540f2a133eb5e05558f133afa3f",
+        "input/escalation_matrix.json": "335c2e67ed20c4ae28b0d2fd0ba42da56a60aa0cdd72a2093f3047bd03d40dfc",
+        "input/sla_policy.md": "4ace1bcc1b047cbe471286948e82213ed7b3632c69d064bc46bc4e90f3ed93b8",
+        "input/tickets.csv": "6e40658651c5a59fd4c323d5c7c372057cba0e11817f06f9a4541d2dbe8078f1"
+      },
+      "instruction_sha256": "e29f05506732f078bc7e86c6269baf175148e4f29dc71860fac6e18650db4841"
     }
   }
 }

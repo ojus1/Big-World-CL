@@ -121,6 +121,9 @@ def evaluation_method(payload):
     if calendar_verdict(payload) is not None:
         return 'registered_calendar_source_predicate'
     if restored_count_verdict(payload) is not None:
+        from .source_coverage import count_measure
+        if count_measure(payload)['unit'] == 'characters':
+            return 'registered_source_character_count'
         return 'registered_source_report_word_count'
     if source_matrix_verdict(payload) is not None:
         return 'registered_supplier_matrix_source_predicate'

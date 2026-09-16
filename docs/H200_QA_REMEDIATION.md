@@ -239,3 +239,27 @@ mandatory risk-title reference is also removed in favor of its stated choice.
 Positive fixtures, targeted mutations, Unicode/source bindings and calendar
 boundaries pass; the complete local worldlab suite passes 221 tests (nine skips).
 The matched pilot still awaits fresh qualification and native employee checks.
+
+### Qualified pilot and prospective expansion review
+
+Frozen `d2ce66c` passed 221 H200 tests (one skip), 72/72 supplier controls,
+16/16 recommendation controls, four native-calendar arithmetic/policy checks,
+and all ten copied-output audits. Five native employees passed their full view,
+provider and usage checks. The valid empty optimizer receipt was adjudicated
+without another model call; original reports were retained. The two-pair pilot
+started at approximately 13:36 UTC on 2026-09-16 with study hash
+`989605c42827b97c5f524ee2907238928d5744be03e2c27cbb3d99d6e276c378`.
+It remains frozen in workplace-v17 while further prospective source QA proceeds.
+
+The six-pair/twelve-employee/twenty-day large draft introduces five source
+families beyond the pilot. Their source review found additional inherited
+translation requirements, unsupported report-length limits and uncertainty
+conversion examples that violate the supplied minimum-value policy. The new
+candidate corrects only those newly introduced task variants, binds corrections
+to exact sources, and supports measured length vetoes without automatically
+passing a mixed semantic criterion. The German whitepaper has eight convertible
+prose U values plus two without k, despite its claimed eleven; all actual source
+values are required, no missing value is invented. Rounded U and directly stated
+u are distinguished explicitly, and the supplied 0.01-bar floor applies globally.
+The candidate passes 223 local worldlab tests (nine skips). New-family native
+qualification and complete pilot QA still gate the large launch.
