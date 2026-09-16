@@ -369,3 +369,5 @@ fresh replay feedback use this projection. Registered learner replay audits
 reconstruct it from the saved grade; unrelated learner policies retain their own
 contracts. A fresh native epoch is needed to qualify this feedback policy. The
 v23 epoch remains a separate output-cap diagnostic and is not relabeled.
+
+The current audit also binds every optimizer-visible descriptor to released public task context and every training record to its native replay text and feedback. Regression tests reject tampered prompts, feedback and trajectories. Native qualification checks the same bindings.

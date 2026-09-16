@@ -11,7 +11,7 @@ from .bank import Bank
 from .campaign import source_identity, SEED_SKILL
 from .contracts import Budget, validate_execution, validate_grade
 from .worlds import stable_hash
-from .validation_context import select_experiences, validate_world
+from .validation_context import select_experiences, validate_world, observed_feedback
 from .attempts import task_instruction
 from .artifact_inventory import verify as verify_inventory
 from .learning_feedback import learning_feedback
@@ -19,6 +19,27 @@ from .learning_feedback import learning_feedback
 
 def require(condition, message):
     if not condition: raise ValueError(message)
+
+
+def audit_learning_context(bank, selected, update):
+    """Bind optimizer-visible text to released tasks and retained native replays."""
+    descriptors = {s['id']: {
+        'id': s['id'], 'split': s['split'], 'available_day': s['day'],
+        'feedback_available_day': s['feedback_day'], 'source_session': s['lineage_group'],
+        'prompt': task_instruction(bank.public(s['task_id'])['instruction'], s.get('employee_message')),
+        'context': '', 'feedback': observed_feedback(s)} for s in selected}
+    replays = {r['attempt_index']: r for r in update['replay_evidence']}
+    require(len(replays) == len(update['replay_evidence']), 'Duplicate native replay index')
+    for payload in update['optimizer_inputs']:
+        require(payload['current_day'] == update['current_day'], 'Optimizer context day changed')
+        for entry in payload['train_experiences']:
+            task = entry['task']
+            require(task.get('split') == 'train' and task == descriptors.get(task.get('id')),
+                    'Optimizer task context differs from released training evidence')
+            replay = replays.get(entry['attempt_index'])
+            require(replay is not None and replay['id'] == task['id'] and replay['split'] == 'train' and
+                    all(entry[k] == replay[k] for k in ('sample_id', 'phase', 'response', 'feedback')),
+                    'Optimizer training text differs from its native replay')
 
 
 def audit_attempt(bank, root, task_id, expected_skill=None, harness=None, employee_message=None, judge=None):
@@ -94,6 +115,8 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
             if learner_identity and learner_identity.get('feedback_projection') == 'released_failures_first_v1':
                 require(replay.get('feedback') == learning_feedback(r['grade']), 'Replay learning feedback differs from released grade')
+                require(replay.get('response') == json.dumps({'messages': r['trajectory']}, ensure_ascii=False),
+                        'Replay response differs from native trajectory')
             req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
             require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
             operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
@@ -103,6 +126,8 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             counts['learning_replays'] += 1
         require(learner is not None and learner_identity is not None,
                 'Supply the registered learner offline auditor')
+        if learner_identity.get('feedback_projection') == 'released_failures_first_v1':
+            audit_learning_context(bank, selected, update)
         learner.audit_update(update_root, update, skill_before=before, expected_identity=learner_identity)
         counts['adoptions'] += int(update['accepted'])
         if update['accepted']: skills[employee] = update['skill']
