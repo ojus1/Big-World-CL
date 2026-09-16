@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import unittest
 from worldlab.bank import Bank
-from worldlab.procurement_checks import match,verdict,semantic_payload,grading_rules,METHOD
+from worldlab.procurement_checks import match,verdict,semantic_payload,grading_rules,readable_evidence,METHOD
 from worldlab.qualitative import request_verdict,verdict_input
 from worldlab.qualify_public_requirements import controls
 from scripts.source_world_calibration import read,child
@@ -55,7 +55,12 @@ class ProcurementTests(unittest.TestCase):
             self.assertIn('does not authorize',facts['policy_precedence'])
             self.assertNotIn('registered_procurement_facts',p)
             self.assertIsNone(verdict(p))
-            self.assertIn('registered_procurement_facts',json.loads(verdict_input(p)[1]['content']))
+            self.assertIn('registered_procurement_facts',verdict_input(p)[1]['content'])
+            rendered=readable_evidence(projected)
+            for name,value in p['evidence']['files'].items():
+                self.assertIn(value['text'],rendered)
+                self.assertIn(name,rendered)
+            self.assertIn('BEGIN FILE',rendered)
             self.assertIn('overrides the general TCO',verdict_input(p)[0]['content'])
             changed=deepcopy(p);changed['evidence']['instruction']+=' changed'
             self.assertEqual(grading_rules(changed),'')

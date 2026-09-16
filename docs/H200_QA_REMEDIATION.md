@@ -404,3 +404,12 @@ corruption. The source-bound grading instructions now explicitly resolve that
 precedence, preserve decoded Markdown semantics and permit the required CSV
 filename reference. The exact saved complete controls must be rerun under this
 new source version; their contents and expected labels remain unchanged.
+
+The v26 panel kept all12control-request hashes identical but matched10/12:
+French/German positives were falsely rejected for nonexistent missing sections
+or broken newlines (all negatives rejected correctly). Explicit precedence alone
+was insufficient. The next scoped change presents complete MRI source/candidate
+files as readable text blocks with per-file IDs, hashes and character counts,
+while retaining the full structured grading context and exact saved evidence.
+No content is truncated or changed, and output constraints remain structured.
+This tests the evidence-presentation hypothesis; it is not yet a proven fix.

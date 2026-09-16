@@ -56,7 +56,7 @@ def verdict_input(payload, *, repair=False):
     from .memo_counts import semantic_payload as memo_semantic_payload
     from .source_coverage import semantic_payload as source_semantic_payload
     from .workflow_checks import semantic_payload as workflow_semantic_payload
-    from .procurement_checks import semantic_payload as procurement_semantic_payload, grading_rules as procurement_rules
+    from .procurement_checks import semantic_payload as procurement_semantic_payload, grading_rules as procurement_rules, readable_evidence
     rules = RULES + procurement_rules(payload)
     if semantic_schema(payload) is not None:
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
@@ -64,8 +64,10 @@ def verdict_input(payload, *, repair=False):
     elif exam_schema(payload) is not None:
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
             'Return only the structured section judgments and remaining requirement assessment requested in evaluation_scope. The host computes passed.')
+    projected=procurement_semantic_payload(exam_payload(workflow_semantic_payload(source_semantic_payload(memo_semantic_payload(semantic_payload(payload))))))
+    content=readable_evidence(projected)
     return [{'role': 'system', 'content': rules + (REPAIR_RULES if repair else '')},
-            {'role': 'user', 'content': json.dumps(procurement_semantic_payload(exam_payload(workflow_semantic_payload(source_semantic_payload(memo_semantic_payload(semantic_payload(payload)))))), ensure_ascii=False, sort_keys=True)}]
+            {'role': 'user', 'content': content if content is not None else json.dumps(projected,ensure_ascii=False,sort_keys=True)}]
 
 
 def parsed_response(response, criterion, evidence_paths):
@@ -170,7 +172,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 32, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 33, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
