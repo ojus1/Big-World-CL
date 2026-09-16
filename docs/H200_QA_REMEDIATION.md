@@ -477,3 +477,20 @@ optimizer tests pass; the 241-test local worldlab suite passes with nine expecte
 skips. Fresh H200 native reflection and full-epoch qualification remain required
 before the matched pilot. The prior rejected epoch and known grader variability
 are retained without relabeling them as learning benefit.
+
+### Native QA iteration 12: preserve structured tool receipts during redaction
+
+The v30 epoch completed twelve fresh replays (203 target calls, one optimizer
+call, 4,292,720 tokens) and rejected its one scoped proposal for no validation
+gain. All native audits passed. Raw review found a remaining status-label defect:
+regex redaction inside serialized JSON consumed an escaped closing quote in a
+public example URL. The resulting parse failure made successful terminal output
+containing the business word "failure" look like a failed tool operation.
+
+Context adapter v3 parses intact JSON first, then sanitizes individual values.
+This preserves execution fields and removes sensitive metadata structurally.
+Regression tests cover terminal and patch success receipts, escaped example
+credentials, metadata removal and preservation of an earlier real tool failure.
+The output schema, serving, judge and learning gates remain unchanged. The v30
+result is retained with its original rejection, receipt and diagnostic labels;
+fresh context qualification and a complete learning epoch precede the pilot.

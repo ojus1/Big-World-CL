@@ -261,6 +261,31 @@ class ReflectorTests(unittest.TestCase):
         self.assertLessEqual(result['supplemental_bytes'], 16000)
         self.assertLessEqual(result['input_token_reservation'] + result['max_output_tokens'], 32000)
 
+    def test_escaped_secret_redaction_preserves_receipt_status_and_metadata_filtering(self):
+        from lifespan.evaluation.optimizer import _public_messages
+        for result_fields in ({'exit_code': 0, 'error': None}, {'success': True}):
+            receipt = dict(result_fields, output='curl "https://example.invalid/?password=demo"\nBusiness failure documentation',
+                           headers={'x-private': 'SECRET_HEADER'}, private_rubric='SECRET_RUBRIC')
+            messages = _public_messages([{'role': 'tool', 'content': json.dumps(receipt)}], [])
+            with self.subTest(result_fields=result_fields):
+                self.assertNotIn('non_success_tool_result', messages[0])
+                decoded = json.loads(messages[0]['content'])
+                self.assertTrue(all(decoded[k] == v for k, v in result_fields.items()))
+                self.assertNotIn('SECRET_', messages[0]['content'])
+                self.assertNotIn('password=demo', messages[0]['content'])
+                self.assertIn('Business failure documentation', decoded['output'])
+
+    def test_redacted_success_does_not_displace_actual_error_in_reflection(self):
+        data = payload()
+        data['train_experiences'][0]['messages'] = [
+            {'role': 'tool', 'content': json.dumps({'error': 'ACTUAL_WRITE_FAILURE'})},
+            {'role': 'tool', 'content': json.dumps({'output': 'curl "https://example.invalid/?password=demo"\nValidation failure examples', 'exit_code': 0, 'error': None})},
+        ]
+        result = make_reflector(CREDENTIALS, transport=Transport())(data, limits())
+        section = result['optimizer_prompt'].split('Latest non-success tool result (may be expected):\n')[1].split('\nRecent public')[0]
+        self.assertIn('ACTUAL_WRITE_FAILURE', section)
+        self.assertNotIn('Validation failure examples', section)
+
     def test_transport_failure_is_counted_without_retry_or_secret_exception(self):
         calls = []
         def transport(*args, **kwargs):

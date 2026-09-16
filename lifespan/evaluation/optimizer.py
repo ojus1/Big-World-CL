@@ -15,7 +15,7 @@ import time
 from urllib.parse import urlsplit
 
 
-CONTEXT_ADAPTER = "skillopt_sleep_bigworld_trajectory_context_v2"
+CONTEXT_ADAPTER = "skillopt_sleep_bigworld_trajectory_context_v3"
 EXACT_ADAPTER = "skillopt_sleep_exact_prompt_v1"
 INPUT_FRAMING_RESERVE = 256
 MAX_CONTEXT_BYTES = 16_000
@@ -77,13 +77,15 @@ def _clean(value, secrets, depth=0):
     if depth > 8:
         return "[DEPTH LIMIT]"
     if isinstance(value, str):
-        text = _redact(value, secrets)
-        if text.lstrip().startswith(("{", "[")):
+        # Parse intact JSON before redacting its string leaves. Regex redaction
+        # of a serialized value can consume an escaped closing quote, breaking
+        # the receipt and bypassing both field filtering and status inspection.
+        if value.lstrip().startswith(("{", "[")):
             try:
-                return _clean(json.loads(text), secrets, depth + 1)
+                return _clean(json.loads(value), secrets, depth + 1)
             except (ValueError, RecursionError):
                 pass
-        return _excerpt(text, 16_000)
+        return _excerpt(_redact(value, secrets), 16_000)
     if isinstance(value, dict):
         return {str(key): _clean(item, secrets, depth + 1)
                 for key, item in list(value.items())[:128] if not _SENSITIVE_KEY.search(str(key))}
