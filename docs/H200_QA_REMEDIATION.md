@@ -413,3 +413,14 @@ files as readable text blocks with per-file IDs, hashes and character counts,
 while retaining the full structured grading context and exact saved evidence.
 No content is truncated or changed, and output constraints remain structured.
 This tests the evidence-presentation hypothesis; it is not yet a proven fix.
+
+The readable v27 panel passed17/17controls and all3copied-grade audits (38calls,
+506453tokens); all339non-MRI payloads remained unchanged. Manual raw review still
+found a false pass in the redundant scoring_calculation_correctness criterion
+for retained replay0: it endorsed A=9.7 although the source predicate correctly
+requires10.0 and rejected the CSV. The same registered arithmetic veto now also
+applies to that calculation criterion. Eligibility-only violations remain with
+their own criterion; valid arithmetic still requires semantic TCO-method review.
+This last deterministic change is qualified on the retained failing request and
+source variants, with byte-equivalence checks carrying the passing v27 native
+controls. A fresh complete learning epoch under the final source remains required.

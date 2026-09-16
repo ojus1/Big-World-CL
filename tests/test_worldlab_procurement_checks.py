@@ -65,5 +65,17 @@ class ProcurementTests(unittest.TestCase):
             changed=deepcopy(p);changed['evidence']['instruction']+=' changed'
             self.assertEqual(grading_rules(changed),'')
 
+    def test_calculation_criterion_cannot_override_the_same_source_arithmetic(self):
+        for rule,p in self.payloads():
+            p['criterion']=rule['criteria']['scoring_calculation_correctness']
+            self.assertIsNone(verdict(p))
+            bad=deepcopy(p);f=bad['evidence']['files']['output/tabla_puntuacion.csv']
+            f['text']=f['text'].replace('10.0','9.7',1)
+            self.assertFalse(verdict(bad)['passed'])
+            self.assertEqual(verdict(bad)['criterion_id'],'scoring_calculation_correctness')
+            policy_only=deepcopy(p);f=policy_only['evidence']['files']['output/tabla_puntuacion.csv']
+            f['text']=f['text'].replace(rule['excluded_marker'],'9.8',1)
+            self.assertIsNone(verdict(policy_only))
+
 
 if __name__=='__main__':unittest.main()

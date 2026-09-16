@@ -58,12 +58,16 @@ def readable_evidence(payload):
 
 
 def verdict(payload):
-    if payload.get('criterion',{}).get('id')!='csv_structure_and_values':return None
+    identifier=payload.get('criterion',{}).get('id')
+    if identifier not in ('csv_structure_and_values','scoring_calculation_correctness'):return None
     rule=match(payload)
     if rule is None:return None
     failures=[c for c in checks(payload,rule) if not c['passed']]
+    if identifier=='scoring_calculation_correctness':
+        # This criterion owns arithmetic, not the separate eligibility policy.
+        failures=[c for c in failures if c['id']!='public_mri_exclusions']
     if not failures:return None  # Names, prose and remaining conditions still need judgment.
-    return {'criterion_id':'csv_structure_and_values','passed':False,
+    return {'criterion_id':identifier,'passed':False,
             'evidence':'output/tabla_puntuacion.csv',
             'reasoning':'Source-bound public scoring violation: '+'; '.join(
                 c['id']+': '+' '.join(c['evidence']) for c in failures)}

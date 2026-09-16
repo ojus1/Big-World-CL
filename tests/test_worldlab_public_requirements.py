@@ -62,9 +62,9 @@ class SourceIntegrationTests(unittest.TestCase):
             result = judge.grade(case['task_id'], workspace, baseline, root / 'judging')
             self.assertTrue(result['grading_complete'])
             self.assertEqual([v['criterion_id'] for v in result['criteria'] if not v['passed']],
-                             ['csv_structure_and_values'])
+                             ['csv_structure_and_values','scoring_calculation_correctness'])
             self.assertFalse(result['success']); self.assertLess(result['quality_score'], 1)
-            self.assertEqual(len(calls), len(result['criteria'])-1)
+            self.assertEqual(len(calls), len(result['criteria'])-2)
             self.assertEqual(result['usage']['charged_tokens'], 15 * len(calls))
             self.assertEqual([c['id'] for c in result['public_requirements']['checks'] if not c['passed']],
                              ['public_mri_weighted_scores'])
