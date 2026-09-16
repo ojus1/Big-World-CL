@@ -18,6 +18,7 @@ def replay_commands(bank, world, state):
     sessions = {s['id']: s for s in state['sessions']}
     require(len(sessions) == len(state['sessions']), 'Duplicate online session')
     visited = set()
+    delegated = {}
     for command in state['workplace']['commands']:
         op, args = command['operation'], command['arguments']
         if op == 'decide':
@@ -30,11 +31,17 @@ def replay_commands(bank, world, state):
                     'Actor view includes different or unreleased information')
             require(decision['session_id'] == (decision['id'] if args['decision']['delegate'] else None),
                     'Deferral/delegation changed')
+            if decision['session_id'] is not None:
+                require(decision['session_id'] not in delegated, 'Duplicate delegated session')
+                delegated[decision['session_id']] = decision
         elif op == 'start':
             sid = args['session_id']
             require(sid in sessions and sid not in visited, 'Unrecorded or duplicate work start')
             visited.add(sid)
             session = sessions[sid]
+            decision = delegated.get(sid)
+            require(decision is not None and decision['obligation_id'] == args['obligation_id'],
+                    'Work admission lacks the matching delegation')
             original = place.arrivals[args['obligation_id']]
             require(session['employee_id'] == original['employee_id'] and session['day'] == place.day and
                     session['employee_message'] == decision['decision']['request'] and

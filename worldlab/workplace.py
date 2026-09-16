@@ -130,7 +130,11 @@ class Workplace:
         department = profile.get('department', profile['role'])
         return {'day': self.day, 'employee_id': employee_id, 'role': profile['role'], 'language': profile['language'],
                 'department': department, 'own_previous_working_notes': employee['notes'], 'trust': employee['trust'],
-                'pending_task': {k: obligation[k] for k in ('id', 'due_day', 'attempts')},
+                'pending_task': {k: obligation[k] for k in ('id', 'task_id', 'due_day', 'attempts', 'status')},
+                'pending_task_observed_outcomes': deepcopy([f for f in employee['released_feedback']
+                                                            if f['obligation_id'] == obligation_id]),
+                'employee_capabilities': {'inspect_source_files': False, 'execute_tools': False,
+                                          'complete_artifacts': False, 'delegate_to_assistant': True},
                 'substantive_work': bank.public(obligation['task_id'])['instruction'],
                 'recent_observed_outcomes': deepcopy(employee['released_feedback'][-6:]),
                 'received_colleague_messages': deepcopy(employee['mailbox']),

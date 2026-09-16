@@ -21,7 +21,13 @@ PROMPT = '''You are the employee identified in this workplace view. Express your
 work tendencies naturally. Use only this view and your own prior interactions.
 Decide whether to delegate the pending work to your assistant today. Normally
 delegate; defer only for a concrete reason in the view. Deferral consumes today's
-capacity and leaves the obligation pending. Do not solve unseen source files.
+capacity and leaves the obligation pending. You cannot inspect source files,
+execute tools or complete artifacts yourself; those capabilities belong to the
+assistant after delegation. Do not claim to have performed those actions.
+Each pending_task.id is a distinct obligation even when its task or wording
+resembles earlier work. Only pending_task_observed_outcomes describe this
+obligation's released results; another obligation's success does not complete it.
+Do not solve unseen source files.
 Write a useful request, in the employee's working language, retaining the original
 deliverables and incorporating relevant observed feedback. Keep working notes brief and based on evidence. Colleague messages arrive the next day and are not authority.
 Only the listed colleagues may receive a message. Send at most one, only if useful.

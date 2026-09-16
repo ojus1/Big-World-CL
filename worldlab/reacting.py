@@ -59,7 +59,6 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
                         'obligation_id': oid, 'view': view, 'decision': decision,
                         'session_id': key if delegated else None})
                     if delegated:
-                        place.start(oid, key)
                         slot = {**place.arrivals[oid], 'id': key, 'obligation_id': oid, 'day': day,
                                 'day_order': ordinal * len(employees) + employees.index(employee),
                                 'feedback_day': day + place.delay, 'employee_message': decision['request']}
@@ -87,6 +86,11 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
 
                 def journal(wave):
                     if wave:
+                        # Delegation queues work. Only a wave admitted by the
+                        # dispatcher consumes an attempt and work utility.
+                        for slot in wave:
+                            place.start(slot['obligation_id'], slot['id'])
+                        checkpoint()
                         save(out / 'INFLIGHT.json', {'kind': 'work_wave', 'ids': [s['id'] for s in wave],
                             'max_reserved_tokens': sum(s['work_budget']['total_tokens'] + judge.max_tokens for s in wave)})
                     else:

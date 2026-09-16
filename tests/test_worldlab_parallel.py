@@ -98,6 +98,8 @@ class Tests(unittest.TestCase):
             status = read(out / 'STATUS.json')
             self.assertEqual(status['status'], 'incomplete')
             self.assertEqual(status['completed_arms'], 2)
+            self.assertEqual(status['finished_pair_workers'], 2)
+            self.assertEqual(status['completed_pairs'], 1)
             self.assertEqual(status['planned_arms'], 4)
             self.assertEqual([f['failed_world'] for f in status['failures']], [211])
             self.assertFalse((out / 'REPORT.json').exists())
@@ -128,6 +130,8 @@ class Tests(unittest.TestCase):
             status = read(out / 'STATUS.json')
             self.assertEqual(status['status'], 'incomplete')
             self.assertEqual(status['completed_arms'], 0)
+            self.assertEqual(status['finished_pair_workers'], 2)
+            self.assertEqual(status['completed_pairs'], 0)
             self.assertEqual(status['planned_arms'], 4)
             self.assertFalse((out / 'REPORT.json').exists())
             with self.assertRaises(FileExistsError):

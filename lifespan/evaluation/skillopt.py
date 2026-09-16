@@ -104,12 +104,16 @@ def _load_upstream(source: Path):
 
 
 @contextmanager
-def _frozen_upstream_settings(prompts):
+def _frozen_upstream_settings(prompts, learned_banner=None):
     # consolidate's replay_batch reads this process variable, and CliBackend
     # normally consults user prompt overrides. Serialize our calls and replace
     # only the renderer temporarily, without reading/writing personal config.
     previous_workers = os.environ.get("SKILLOPT_SLEEP_WORKERS")
     previous_render = prompts.render
+    memory_module = importlib.import_module('skillopt_sleep.memory')
+    previous_banner = memory_module._BANNER
+    if learned_banner is not None:
+        memory_module._BANNER = learned_banner
 
     def render(name, replacements):
         result = prompts.DEFAULTS[name]["text"]
@@ -122,6 +126,7 @@ def _frozen_upstream_settings(prompts):
     try:
         yield
     finally:
+        memory_module._BANNER = previous_banner
         prompts.render = previous_render
         if previous_workers is None:
             os.environ.pop("SKILLOPT_SLEEP_WORKERS", None)
@@ -326,7 +331,8 @@ class SkillOptLearner:
     def __init__(self, *, source: str | Path = DEFAULT_SOURCE, edit_budget: int = 4,
                  gate_metric: str = "mixed", gate_no_regression: bool = True,
                  gate_mixed_weight: float = 0.5,
-                 rollouts_k: int = 1):
+                 rollouts_k: int = 1, learned_banner=None, confirmation_cases=0,
+                 confirmation_repeats=2, confirmation_min_gain=0.05):
         if not isinstance(edit_budget, int) or isinstance(edit_budget, bool) or edit_budget < 1:
             raise ValueError("edit_budget must be a positive integer")
         if gate_metric not in {"hard", "soft", "mixed"}:
@@ -339,6 +345,13 @@ class SkillOptLearner:
         self.gate_metric, self.gate_no_regression = gate_metric, gate_no_regression
         self.gate_mixed_weight = gate_mixed_weight
         self.rollouts_k = rollouts_k
+        if type(confirmation_cases) is not int or confirmation_cases < 0 or type(confirmation_repeats) is not int or confirmation_repeats < 1:
+            raise ValueError('Invalid confirmation case/repetition count')
+        if type(confirmation_min_gain) not in (int, float) or not math.isfinite(confirmation_min_gain) or not 0 < confirmation_min_gain <= 1:
+            raise ValueError('Confirmation requires a positive finite minimum gain')
+        self.learned_banner = learned_banner
+        self.confirmation_cases, self.confirmation_repeats = confirmation_cases, confirmation_repeats
+        self.confirmation_min_gain = confirmation_min_gain
 
     def update(self, skill: str, experiences: list[dict], replay: Callable, reflect: Callable,
                *, current_day: int, budget: LearningBudget | dict | None = None,
@@ -349,6 +362,10 @@ class SkillOptLearner:
         budget = LearningBudget(**budget) if isinstance(budget, dict) else budget or LearningBudget()
         ledger = _Ledger(budget)
         attempts, optimizer_inputs = [], []
+        validation = [x['id'] for x in safe if x['split'] == 'val']
+        if self.confirmation_cases and len(validation) <= self.confirmation_cases:
+            raise InvalidExperience('Confirmation must leave nonempty separate proposal validation cases')
+        confirm_ids = validation[-self.confirmation_cases:] if self.confirmation_cases else []
         result = {
             "learning_evidence_version": 2,
             "algorithm": self.name, "upstream_revision": REVISION,
@@ -360,13 +377,23 @@ class SkillOptLearner:
                 "gate_mode": "on", "evolve_memory": False, "rollouts_k": self.rollouts_k,
                 "budget": asdict(budget)},
         }
+        if self.confirmation_cases:
+            result['configuration']['confirmation'] = {'cases': self.confirmation_cases,
+                'repeats': self.confirmation_repeats, 'min_gain': self.confirmation_min_gain,
+                'selection': 'last_predeclared_validation_cases', 'no_case_regression': True}
+            result['proposal_validation_ids'] = [i for i in validation if i not in confirm_ids]
+            result['confirmation_validation_ids'] = confirm_ids
+            result['confirmation'] = None
         with _UPSTREAM_LOCK:
             consolidate, CliBackend, TaskRecord, prompts = _load_upstream(self.source)
             descriptors = {x["id"]: x for x in safe}
             tasks = [TaskRecord(id=x["id"], project="big-world-cl", intent=x["prompt"],
                                 context_excerpt=x["context"], split=x["split"],
                                 reference_kind="none", source_sessions=[x["source_session"]] if x["source_session"] else [])
-                     for x in safe]
+                     for x in safe if x['id'] not in confirm_ids]
+            confirmation_tasks = {x['id']: TaskRecord(id=x['id'], project='big-world-cl', intent=x['prompt'],
+                context_excerpt=x['context'], split='val', reference_kind='none',
+                source_sessions=[x['source_session']] if x['source_session'] else []) for x in safe if x['id'] in confirm_ids}
 
             class NativeBridge(CliBackend):
                 name = "big-world-native-hermes"
@@ -436,7 +463,7 @@ class SkillOptLearner:
 
             bridge = NativeBridge()
             try:
-                with _frozen_upstream_settings(prompts):
+                with _frozen_upstream_settings(prompts, self.learned_banner):
                     consolidated = consolidate(
                         bridge, tasks, skill, "", edit_budget=self.edit_budget,
                         gate_metric=self.gate_metric, gate_mixed_weight=self.gate_mixed_weight,
@@ -448,13 +475,28 @@ class SkillOptLearner:
                 # copies are removed from the public gate record.
                 evidence.pop("reflect_raw", None)
                 evidence.pop("call_error", None)
+                accepted = consolidated.accepted
+                if self.confirmation_cases:
+                    result['proposal_gate_evidence'] = evidence
+                    if accepted:
+                        from .confirmation import plan, evaluate
+                        start = len(attempts)
+                        for phase, task_id, sample in plan(confirm_ids, self.confirmation_repeats):
+                            bridge.evidence_phase = phase
+                            candidate = skill if phase == 'confirmation_baseline' else consolidated.new_skill
+                            task = confirmation_tasks[task_id]
+                            answer = bridge.attempt(task, candidate, '', sample_id=sample)
+                            bridge.judge(task, answer)
+                        result['confirmation'] = evaluate(attempts[start:], confirm_ids, self.confirmation_repeats,
+                            self.confirmation_min_gain, _hash(skill), _hash(consolidated.new_skill))
+                        accepted = result['confirmation']['passed']
                 ledger.decision_elapsed_seconds = time.monotonic() - ledger.started
                 if ledger.decision_elapsed_seconds > budget.max_seconds:
                     ledger.stop_evidence = {"stage": "post_consolidation", "reason": "wall_seconds",
                         "elapsed_seconds": ledger.decision_elapsed_seconds}
                     raise BudgetExhausted("Epoch deadline expired before the adoption decision")
-                result.update(status="completed", accepted=consolidated.accepted,
-                              skill=consolidated.new_skill if consolidated.accepted else skill,
+                result.update(status="completed", accepted=accepted,
+                              skill=consolidated.new_skill if accepted else skill,
                               gate_evidence=evidence)
             except (ReplayFailure, InvalidExperience) as exc:
                 result.update(status="budget_exhausted" if isinstance(exc, BudgetExhausted) else "failed",

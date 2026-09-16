@@ -14,6 +14,7 @@ from lifespan.evaluation.provider import provider_contract
 from . import jobbench_capabilities as capabilities
 from .judge_transport import StructuredJudgeBudget, JUDGE_SAMPLING, digest
 from .hermes_deadline import save as checkpoint
+from .artifact_contract import CandidateEvidenceError, input_changes, rejected_grade
 
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml', '.conf', '.rules'}
 SOURCE = {'dataset_repository': 'JobBench/job-bench', 'dataset_revision': capabilities.DATASET_REVISION,
@@ -111,16 +112,24 @@ def output_evidence(workspace, baseline):
         directory = pending.pop()
         for path in sorted(directory.iterdir()):
             if directory == workspace and path.name == 'scratch': continue
-            if path.is_symlink(): raise ValueError('Symlink in JobBench workspace')
+            if path.is_symlink():
+                raise CandidateEvidenceError(str(path.relative_to(workspace)), 'symlink',
+                                             'Symlink in JobBench workspace; submit ordinary files')
             if path.is_dir():
                 pending.append(path); continue
             relative = str(path.relative_to(workspace))
             if relative in baseline or relative == '.employee_identity': continue
-            if not path.is_file(): raise ValueError('Nonregular JobBench output evidence')
+            if not path.is_file():
+                raise CandidateEvidenceError(relative, 'special_file', 'Nonregular JobBench output evidence')
             if path.stat().st_size and path.suffix.lower() not in TEXT_FORMATS:
-                raise ValueError('Complete JobBench document evidence has not been qualified')
+                raise CandidateEvidenceError(relative, 'unsupported_format',
+                                             'Complete JobBench document evidence has not been qualified')
             # Strict UTF-8: binary/unsupported evidence is never silently dropped.
-            files[relative] = {'text': path.read_bytes().decode('utf-8'), 'sha256': sha(path)}
+            try:
+                text = path.read_bytes().decode('utf-8')
+            except UnicodeDecodeError as exc:
+                raise CandidateEvidenceError(relative, 'invalid_utf8', 'JobBench output is not valid UTF-8') from exc
+            files[relative] = {'text': text, 'sha256': sha(path)}
     return files
 
 
@@ -140,6 +149,14 @@ def feedback(verdicts):
         for v in verdicts for c in v['criteria_results'])
 
 
+def rejected_artifact(workspace, baseline, violation):
+    # JobBench permits root-level deliverables. Do not import EuroBench's
+    # extra-file penalty or turn changed inputs alone into a benchmark zero.
+    return {'policy': 'qualified_jobbench_text_submission_v1', 'passed': False,
+            'input_changes': input_changes(workspace, baseline), 'unauthorized_files': [],
+            'evidence_violations': [violation]}
+
+
 class JobBenchJudge:
     max_model_calls = 13  # Up to twelve original rubrics plus one format repair.
 
@@ -148,7 +165,7 @@ class JobBenchJudge:
         self.max_tokens, self.client_factory = max_tokens, client_factory
 
     def identity(self):
-        return {'name': 'original_jobbench_text_rubric_judge', 'version': 2,
+        return {'name': 'original_jobbench_text_rubric_judge', 'version': 3,
                 'provider': self.provider, 'sampling': dict(JUDGE_SAMPLING), 'source': SOURCE,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'max_tokens': self.max_tokens, 'max_model_calls': self.max_model_calls,
@@ -158,6 +175,8 @@ class JobBenchJudge:
                 'success': 'all original rubrics pass', 'unit': 'one original rubric per call',
                 'evidence': 'all UTF-8 candidate files outside baseline, scratch and employee metadata; no truncation',
                 'input_changes': 'recorded without importing an extra benchmark score penalty',
+                'invalid_candidate_evidence': 'auditable_zero_without_model_calls_or_unsafe_traversal',
+                'artifact_contract_sha256': sha(Path(__file__).with_name('artifact_contract.py')),
                 'format_recovery': 'one known-usage invalid response per grade; valid verdicts never retried',
                 'structured_output': 'exact subcriterion object keys; Boolean verdicts; enum output filenames',
                 'official_benchmark_score': False, 'human_calibrated': False,
@@ -187,7 +206,14 @@ class JobBenchJudge:
         deadline = time.monotonic() + timeout_seconds
         rubrics, rubric_sha = self.rubric(task_id)
         out = Path(out); out.mkdir(parents=True, exist_ok=False)
-        files = output_evidence(workspace, baseline)
+        try:
+            files = output_evidence(workspace, baseline)
+        except CandidateEvidenceError as exc:
+            record = rejected_artifact(workspace, baseline, exc.violation)
+            save(out / 'ARTIFACT_CONTRACT.json', record)
+            result = rejected_grade(record, rubric_sha, sha(out / 'ARTIFACT_CONTRACT.json'))
+            save(out / 'GRADE.json', result)
+            return result
         evidence = {'output_files': files}
         save(out / 'EVIDENCE.json', evidence)
         meter = StructuredJudgeBudget(structured_contracts=[rubric_contract(r, files) for r in rubrics],
@@ -244,8 +270,7 @@ class JobBenchJudge:
             'rubric_pass_rate': sum(v['passed'] for v in verdicts) / len(rubrics) if valid else None,
             'criteria': verdicts, 'format_recoveries': recoveries, 'error_type': error, 'usage': usage,
             'rubric_sha256': rubric_sha, 'evidence_sha256': sha(out / 'EVIDENCE.json'),
-            'input_changes': [n for n, h in baseline.items() if not child(workspace, n).is_file()
-                              or sha(child(workspace, n)) != h],
+            'input_changes': input_changes(workspace, baseline),
             'feedback': feedback(verdicts) if valid else '',
             'scope': 'Original conjunctive weighted rubrics, configured-model development judging. '
                      'No official leaderboard equivalence or independent semantic calibration claimed.'}
@@ -261,6 +286,19 @@ class JobBenchJudge:
         require(not self.unsupported(bank.public(task_id)), 'Unreviewed JobBench audit task')
         require(grade == read(out / 'GRADE.json') and grade['grading_complete'] is True
                 and grade['status'] == 'completed' and grade['error_type'] is None, 'JobBench grade incomplete')
+        if grade.get('evaluation_method') == 'invalid_candidate_artifact':
+            try:
+                output_evidence(workspace, baseline)
+            except CandidateEvidenceError as exc:
+                record = rejected_artifact(workspace, baseline, exc.violation)
+            else:
+                raise ValueError('JobBench artifact rejection is not reproducible')
+            require(record == read(out / 'ARTIFACT_CONTRACT.json') and
+                    grade == rejected_grade(record, rubric_sha, sha(out / 'ARTIFACT_CONTRACT.json')),
+                    'JobBench artifact rejection, feedback or cost changed')
+            require({p.name for p in out.iterdir()} == {'GRADE.json', 'ARTIFACT_CONTRACT.json'},
+                    'Unexpected model artifacts on zero-call JobBench rejection')
+            return
         files = output_evidence(workspace, baseline)
         evidence = {'output_files': files}
         require(read(out / 'EVIDENCE.json') == evidence and grade['evidence_sha256'] == sha(out / 'EVIDENCE.json')
@@ -291,7 +329,7 @@ class JobBenchJudge:
                 (out / 'FORMAT_RECOVERIES.json').exists() == bool(recoveries) and
                 (read(out / 'FORMAT_RECOVERIES.json') if recoveries else []) == recoveries,
                 'Unregistered JobBench repair artifacts')
-        changes = [n for n, h in baseline.items() if not child(workspace, n).is_file() or sha(child(workspace, n)) != h]
+        changes = input_changes(workspace, baseline)
         require(grade['input_changes'] == changes and grade['quality_score'] == aggregate(verdicts)
                 and grade['success'] == all(v['passed'] for v in verdicts)
                 and grade['rubric_pass_rate'] == sum(v['passed'] for v in verdicts) / len(rubrics),

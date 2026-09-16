@@ -59,6 +59,8 @@ def number(value):
 
 def gate_check(update):
     """Recompute pinned K2 skill-only gates from independently graded replays."""
+    if update['configuration'].get('confirmation') is not None:
+        return confirmed_gate_check(update)
     from scripts.audit_learning_v2 import reconcile, version
     cfg = update['configuration']
     require(cfg['gate_metric'] == 'mixed' and type(cfg['gate_mixed_weight']) is float
@@ -117,6 +119,58 @@ def gate_check(update):
     require(bool(gate['applied_edits']) == accepted and gate['new_memory'] == ''
             and gate['new_skill'] == update['skill']
             and update['skill_after_sha256'] == (proposed if accepted else seed), 'upstream_gate_document_mismatch')
+
+
+def confirmed_gate_check(update):
+    """Audit the original upstream gate AND the subsequent fresh-task veto."""
+    from copy import deepcopy
+    from scripts.audit_learning_v2 import reconcile
+    from lifespan.evaluation.confirmation import plan, evaluate
+    cfg = update['configuration']['confirmation']
+    require(set(cfg) == {'cases', 'repeats', 'min_gain', 'selection', 'no_case_regression'} and
+            type(cfg['cases']) is int and cfg['cases'] > 0 and type(cfg['repeats']) is int and cfg['repeats'] > 0
+            and number(cfg['min_gain']) and 0 < cfg['min_gain'] <= 1 and cfg['no_case_regression'] is True
+            and cfg['selection'] == 'last_predeclared_validation_cases', 'confirmation_configuration')
+    val = update['validation_ids']
+    ids, proposal_ids = val[-cfg['cases']:], val[:-cfg['cases']]
+    require(proposal_ids and update['proposal_validation_ids'] == proposal_ids and
+            update['confirmation_validation_ids'] == ids and len(set(val)) == len(val), 'confirmation_selection')
+    identities = reconcile(update)
+    is_confirmation = lambda r: r['phase'].startswith('confirmation_')
+    confirm = [r for r in update['replay_evidence'] if is_confirmation(r)]
+    actual = [(r['phase'], r['id'], r['sample_id']) for r in identities if is_confirmation(r)]
+    expected = plan(ids, cfg['repeats'])
+    require(actual == expected[:len(actual)], 'confirmation_replay_schedule')
+    require(not any(is_confirmation(r) for r in identities[:len(identities) - len(actual)]), 'confirmation_interleaved_with_proposal')
+    core = deepcopy(update)
+    core['configuration'].pop('confirmation')
+    core['learning_evidence_version'] = 1  # Whole V2 ledger was reconciled above.
+    core['validation_ids'] = proposal_ids
+    core['replay_evidence'] = [r for r in update['replay_evidence'] if not is_confirmation(r)]
+    proposal = update.get('proposal_gate_evidence')
+    if proposal is not None:
+        core.update(status='completed', accepted=proposal['accepted'], skill=proposal['new_skill'],
+                    skill_after_sha256=skill_hash(proposal['new_skill']), gate_evidence=proposal)
+    gate_check(core)
+    require(not actual or (proposal is not None and proposal['accepted']), 'confirmation_without_accepted_proposal')
+    seed = update['skill_before_sha256']
+    proposed = skill_hash(proposal['new_skill']) if proposal is not None else seed
+    require(all(r['skill_sha256'] == (seed if r['phase'] == 'confirmation_baseline' else proposed)
+                for r in identities if is_confirmation(r)), 'confirmation_candidate_binding')
+    if update['status'] == 'budget_exhausted':
+        require(update['confirmation'] is None or actual == expected, 'partial_confirmation_claim')
+        return  # Reconcile already requires unchanged skill and reject_incomplete.
+    require(proposal is not None and update['gate_evidence'] == proposal, 'missing_original_proposal_gate')
+    if proposal['accepted']:
+        require(actual == expected, 'missing_confirmation_replays')
+        checked = evaluate(confirm, ids, cfg['repeats'], cfg['min_gain'], seed, proposed)
+        require(update['confirmation'] == checked, 'confirmation_outcome_mismatch')
+        accepted = checked['passed']
+    else:
+        require(not actual and update['confirmation'] is None, 'confirmation_of_rejected_proposal')
+        accepted = False
+    require(update['accepted'] is accepted and update['skill_after_sha256'] == (proposed if accepted else seed)
+            and skill_hash(update['skill']) == update['skill_after_sha256'], 'confirmed_adoption_mismatch')
 
 
 def _learning(root, output):

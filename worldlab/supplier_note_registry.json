@@ -1,0 +1,152 @@
+[
+  {
+    "task_id": "internal/euw_v1_de_013",
+    "instruction_sha256": "992f4401d35459118e9ec8e5055e694e99b7d78a8206f9147c434f1ffc935c50",
+    "criterion": {
+      "id": "R7",
+      "weight": 2,
+      "requirement": "anmerkung column: ≤ 200 chars, German, provides substantive justification tied to evidence",
+      "evidence_anchors": [
+        "input/auditbericht_2024-03.md",
+        "input/guetezeugnis_316L.json",
+        "input/handbuch_kap8.md",
+        "input/scope_change_memo.md",
+        "input/versicherung_kessler.json",
+        "input/vertragsaenderung_nr7.md",
+        "output/empfehlung.md",
+        "output/entscheidungs_matrix.csv"
+      ],
+      "acceptable_alternatives": [],
+      "failure_examples": []
+    },
+    "source_sha256": {
+      "input/auditbericht_2024-03.md": "eff1dfb497593028126d7d2805e8cfaa53610994843e0183ee35e68ec333d51b",
+      "input/guetezeugnis_316L.json": "b2fc5b40a6bd6b7c673ee0dd89a39a49b1f8a8c01370e3aebb409e84c92532a7",
+      "input/handbuch_kap8.md": "34cd4510ccbf75cd3059ae826861cab03a4f5dc099b0599e10001218552218b2",
+      "input/scope_change_memo.md": "5229f5b71bb46e93959ea9592db9202671253838f69045b2779c7187175e2aaa",
+      "input/versicherung_kessler.json": "5b56cb9b7fda6b00910f27548d14b90a3501b1ac512d19da6f3b767edf5c8a0a",
+      "input/vertragsaenderung_nr7.md": "80dc3b6dcd300e18fe03d323b95242988124bac0fd72d017445a81e8f0361a9f"
+    },
+    "semantic_requirement": "anmerkung column: German, provides substantive justification tied to evidence"
+  },
+  {
+    "task_id": "internal/euw_v1_de_013_en_bridge",
+    "instruction_sha256": "0163d2907bac733a303b485c667e205fa2fb0d3721029a0020a55ccb5ced6fa6",
+    "criterion": {
+      "id": "R7",
+      "weight": 2,
+      "requirement": "anmerkung column: ≤ 200 chars, English, provides substantive justification tied to evidence",
+      "evidence_anchors": [
+        "input/auditbericht_2024-03.md",
+        "input/guetezeugnis_316L.json",
+        "input/handbuch_kap8.md",
+        "input/scope_change_memo.md",
+        "input/versicherung_kessler.json",
+        "input/vertragsaenderung_nr7.md",
+        "output/empfehlung.md",
+        "output/entscheidungs_matrix.csv"
+      ],
+      "acceptable_alternatives": [],
+      "failure_examples": []
+    },
+    "source_sha256": {
+      "input/auditbericht_2024-03.md": "5f5a77c458464dad4a17e53ecf74c5e503bab843dedf09753663e79cfa21f8d5",
+      "input/guetezeugnis_316L.json": "49870e9c88bb56aa54180d6d25e3e67524319714e4edf98da96ddb942f81bfee",
+      "input/handbuch_kap8.md": "8edd01857147830e6c65a2e8812c49a7934ae817782e6d2caaff76083362d702",
+      "input/scope_change_memo.md": "9112f48a298a69be4705ea94279c32598b6fa9e6195a786ed138af70dda4771f",
+      "input/versicherung_kessler.json": "7855f3ea154a0d50ab708bd9b7ab69a10fe436ed718f90a0a7266c99dc41d4f8",
+      "input/vertragsaenderung_nr7.md": "a01a730372014311e6cf94dc343438320057b3fe8d03383d6a51bb0c5ee6c259"
+    },
+    "semantic_requirement": "anmerkung column: English, provides substantive justification tied to evidence"
+  },
+  {
+    "task_id": "internal/euw_v1_de_013_es_bridge",
+    "instruction_sha256": "524369c91f0e9f3614bbceb8bd88648d383f69eaf2864318e461191ce3cf9d3a",
+    "criterion": {
+      "id": "R7",
+      "weight": 2,
+      "requirement": "anmerkung column: ≤ 200 chars, Spanish, provides substantive justification tied to evidence",
+      "evidence_anchors": [
+        "input/auditbericht_2024-03.md",
+        "input/guetezeugnis_316L.json",
+        "input/handbuch_kap8.md",
+        "input/scope_change_memo.md",
+        "input/versicherung_kessler.json",
+        "input/vertragsaenderung_nr7.md",
+        "output/empfehlung.md",
+        "output/entscheidungs_matrix.csv"
+      ],
+      "acceptable_alternatives": [],
+      "failure_examples": []
+    },
+    "source_sha256": {
+      "input/auditbericht_2024-03.md": "08227f9a5cb4573e4d9f0110c37d833657f63229c58e0c0ac87444a752027318",
+      "input/guetezeugnis_316L.json": "5356d6e76f6b57826c688062eb4b3030e6d098e77f0b203eb2ccb164b3c2b800",
+      "input/handbuch_kap8.md": "cace81364a99d60149376b3b4f9b19cb91e13ace8eb9a2d9faf6f7b93ff71caa",
+      "input/scope_change_memo.md": "c1f64247212c79c53231c69da50c68e13729f9bff9ac5252578b5116a635dd7b",
+      "input/versicherung_kessler.json": "be2cd73c39ec40430cb1586463a6b66cc0508d45b7c4b898e9b92428f90e1b2d",
+      "input/vertragsaenderung_nr7.md": "bc3cc138d02b72b9b494d6b634c3c992df02a32fb206b833f3c9cd54ac29115b"
+    },
+    "semantic_requirement": "anmerkung column: Spanish, provides substantive justification tied to evidence"
+  },
+  {
+    "task_id": "internal/euw_v1_de_013_fr_bridge",
+    "instruction_sha256": "abc30dfe1d0ca7e7df5e599bb3511bc5b9f1a49f50b22edddf3235c15ae6ccbf",
+    "criterion": {
+      "id": "R7",
+      "weight": 2,
+      "requirement": "anmerkung column: ≤ 200 chars, French, provides substantive justification tied to evidence",
+      "evidence_anchors": [
+        "input/auditbericht_2024-03.md",
+        "input/guetezeugnis_316L.json",
+        "input/handbuch_kap8.md",
+        "input/scope_change_memo.md",
+        "input/versicherung_kessler.json",
+        "input/vertragsaenderung_nr7.md",
+        "output/empfehlung.md",
+        "output/entscheidungs_matrix.csv"
+      ],
+      "acceptable_alternatives": [],
+      "failure_examples": []
+    },
+    "source_sha256": {
+      "input/auditbericht_2024-03.md": "22f0661ef61fa09e691e8e0e4c5bda2f8f07f90b2f7dbffa2db2eafea5a50761",
+      "input/guetezeugnis_316L.json": "36da8e3005b772921c0898152b87352fd988779621c5b15c4d76decdb11a96dc",
+      "input/handbuch_kap8.md": "ea8958e2bde79c822f1ade11edd858ff1e572d70f04ea8ff0063b8548f850cba",
+      "input/scope_change_memo.md": "e1a4ac1a76ee3b912b714ed7fafd01c35b240b725aac7d60dc5058058744abdb",
+      "input/versicherung_kessler.json": "89ac034f16b0b535231044d00c9ba0a2bfbbdc1c8d8bfd472b8919aa04a38f03",
+      "input/vertragsaenderung_nr7.md": "9e779e8ff9ba571fe8c5371f9d2925ee10ae4820b146f664c22c1324586c5cd0"
+    },
+    "semantic_requirement": "anmerkung column: French, provides substantive justification tied to evidence"
+  },
+  {
+    "task_id": "internal/euw_v1_de_013_it_bridge",
+    "instruction_sha256": "79ecc334ba1e5bdafd85ff14d00ae4daa39460abccb006423666364c0be17fb5",
+    "criterion": {
+      "id": "R7",
+      "weight": 2,
+      "requirement": "anmerkung column: ≤ 200 chars, Italian, provides substantive justification tied to evidence",
+      "evidence_anchors": [
+        "input/auditbericht_2024-03.md",
+        "input/guetezeugnis_316L.json",
+        "input/handbuch_kap8.md",
+        "input/scope_change_memo.md",
+        "input/versicherung_kessler.json",
+        "input/vertragsaenderung_nr7.md",
+        "output/empfehlung.md",
+        "output/entscheidungs_matrix.csv"
+      ],
+      "acceptable_alternatives": [],
+      "failure_examples": []
+    },
+    "source_sha256": {
+      "input/auditbericht_2024-03.md": "35737648764199ec284b430ce5bda83bc9df3f37f1cba6f6cd51a6d697f8116e",
+      "input/guetezeugnis_316L.json": "b0e433bc1dc0e5dff2ae8ba7f69d71f4945e88aa9303ea66e43c358c6bfbe892",
+      "input/handbuch_kap8.md": "a95723f920044dd3588f01610cf35752e32918290227adeb2d1796c066c3248a",
+      "input/scope_change_memo.md": "649f729a49c1308b7a5e36ce45ee4c55187e2add637def63e0010068032cfcc4",
+      "input/versicherung_kessler.json": "ccbc2a9f883ffea92014e555c4f01ee4f540f5580b46ed276fb63123e92f6bec",
+      "input/vertragsaenderung_nr7.md": "102a597f7a496cbf079ea294bd862fee200f17adbdf3a47274e1c41aca8bf5e1"
+    },
+    "semantic_requirement": "anmerkung column: Italian, provides substantive justification tied to evidence"
+  }
+]

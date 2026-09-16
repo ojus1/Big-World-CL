@@ -33,6 +33,26 @@ class Factory:
 
 
 class Tests(unittest.TestCase):
+    def test_multiple_queued_delegations_bind_to_their_own_later_work_admissions(self):
+        spec = copy.deepcopy(SPEC)
+        spec['employees'].append({**spec['employees'][0], 'id': 'colleague'})
+        spec['max_parallel_employees'] = 2
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / 'study'; factory = Factory()
+            prepare_study(Bank(), spec, [211], Harness(), Judge(), Learning(), out, factory)
+            def attempt(*args, **kw):
+                value = {'status': 'completed', 'tokens': 1, 'model_calls': 1,
+                         'grade': {'grading_complete': True, 'quality_score': 1., 'success': True, 'feedback': 'Done'}}
+                save(kw['out'] / 'ATTEMPT.json', value)
+                return value
+            with patch('worldlab.reacting.execute_task', side_effect=attempt):
+                execute_study(Bank(), Harness(), Judge(), Learning(), out, factory)
+            study = json.loads((out / 'STUDY.json').read_text())
+            state = json.loads((out / 'worlds/seed-211/no_learning/STATE.json').read_text())
+            self.assertEqual([c['operation'] for c in state['workplace']['commands'][:5]],
+                             ['advance', 'decide', 'decide', 'start', 'start'])
+            replay_commands(Bank(), study['worlds'][0], state)
+
     def test_arrivals_and_capacity_are_independent_and_rework_is_reserved(self):
         spec = copy.deepcopy(SPEC)
         spec['employees'][0].update(sessions_per_day=2, arrivals_per_day=1)

@@ -64,7 +64,8 @@ def execute_pairs(bank, study, harness, judge, learner, out, employee_factory, w
             reports = [report for key in sorted(completed) for report in completed[key]]
             save(Path(out) / 'STATUS.json', {'status': 'incomplete' if failures else 'running',
                 'completed_arms': len(reports), 'planned_arms': 2 * len(study['worlds']),
-                'completed_pairs': len(completed), 'max_parallel_worlds': workers,
+                'finished_pair_workers': len(completed),
+                'completed_pairs': len(completed) - len(failures), 'max_parallel_worlds': workers,
                 'failure_policy': policy, 'stop_requested': cancellation is not None and cancellation.path.exists(),
                 'failures': failures, 'reports': reports})
     if failures:

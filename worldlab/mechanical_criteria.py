@@ -6,6 +6,7 @@ These are narrow source checks, not a model judgment or general semantic oracle.
 import hashlib
 import html
 import re
+from .supplier_notes import veto as supplier_note_veto, check as supplier_note_check
 
 SOURCE = 'input/manual_v23_section4.md'
 OUTPUT = 'output/texte_restructure_v3.md'
@@ -114,6 +115,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    if supplier_note_check(payload) is not None:
+        return 'registered_supplier_note_csv_length_veto'
     if payload.get('criterion') == DELIVERABLE_CRITERION:
         return 'registered_deliverable_set_veto'
     return 'registered_missing_heading_veto' if payload.get('criterion') == HEADING_CRITERION else 'registered_literal_count'
@@ -124,6 +127,9 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    note_verdict = supplier_note_veto(payload)
+    if note_verdict is not None:
+        return note_verdict
     if payload.get('criterion') == DELIVERABLE_CRITERION:
         return deliverable_set_veto(payload)
     if payload.get('criterion') == HEADING_CRITERION:

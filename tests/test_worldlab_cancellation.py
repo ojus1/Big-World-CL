@@ -95,6 +95,12 @@ class Tests(unittest.TestCase):
             self.assertTrue(factory.drivers[0].closed)
             self.assertEqual(len(read(arm / 'STATE.json')['decisions']), 1)
             self.assertFalse(list(arm.rglob('ATTEMPT.json')))
+            state = read(arm / 'STATE.json')
+            self.assertFalse([c for c in state['workplace']['commands'] if c['operation'] == 'start'])
+            self.assertFalse(state['workplace']['ledger'])
+            self.assertTrue(all(o['attempts'] == 0 for o in state['workplace']['obligations'].values()))
+            from worldlab.audit_reacting import replay_commands
+            replay_commands(bank, world, state)
 
     def test_unknown_failure_policy_is_rejected_before_native_preparation(self):
         with tempfile.TemporaryDirectory() as tmp:

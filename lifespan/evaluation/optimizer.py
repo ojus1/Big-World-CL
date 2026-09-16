@@ -21,8 +21,12 @@ INPUT_FRAMING_RESERVE = 256
 MAX_CONTEXT_BYTES = 16_000
 
 
-def optimizer_structured_output():
+def optimizer_structured_output(edit_policy=None):
     """Native vLLM JSON constraint matching upstream's edit-array interface."""
+    if edit_policy is not None:
+        from .scoped_edits import POLICY, schema
+        if edit_policy != POLICY: raise ValueError('Unknown optimizer edit policy')
+        return schema()
     properties = {'target': {'type': 'string', 'enum': ['skill', 'memory']},
                   'op': {'type': 'string', 'enum': ['add', 'delete', 'replace']},
                   'content': {'type': 'string'}, 'anchor': {'type': 'string'},
@@ -240,7 +244,7 @@ def _render_context(training, room):
     return "".join(pieces)
 
 
-def _sdk_transport(credentials):
+def _sdk_transport(credentials, edit_policy=None):
     # Initialization is lazy and key stays in this closure/client only.
     def send(request, *, timeout, api_mode):
         from openai import OpenAI
@@ -252,7 +256,7 @@ def _sdk_transport(credentials):
                     or request.get('model') != policy['model'] or api_mode != policy['api_mode']
                     or request.get('stream') is not False or request.get('store') is not False
                     or request.get('extra_body') != {'chat_template_kwargs': policy['chat_template_kwargs'],
-                                                    'structured_outputs': optimizer_structured_output()}
+                                                    'structured_outputs': optimizer_structured_output(edit_policy)}
                     or request['extra_body']['chat_template_kwargs']['enable_thinking'] is not False):
                 raise OptimizerInputError('Optimizer request differs from configured provider policy')
             if api_mode == "responses":
@@ -297,7 +301,7 @@ def _answer(response, api_mode):
     return text if isinstance(text, str) and text else None
 
 
-def make_reflector(credentials, *, augment_training_context=True, transport=None):
+def make_reflector(credentials, *, augment_training_context=True, transport=None, edit_policy=None):
     """Return a real-model callback compatible with ``SkillOptLearner.update``.
 
     credentials: {api_key, base_url, model, api_mode?='responses', reasoning_effort?}.
@@ -320,7 +324,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         raise OptimizerInputError("api_mode must be responses or chat_completions")
     if type(augment_training_context) is not bool:
         raise OptimizerInputError("augment_training_context must be boolean")
-    send = transport or _sdk_transport(creds)
+    structured_contract = optimizer_structured_output(edit_policy)
+    send = transport or _sdk_transport(creds, edit_policy)
     secrets = [creds["api_key"]]
     adapter = CONTEXT_ADAPTER if augment_training_context else EXACT_ADAPTER
     audit_records = []
@@ -350,6 +355,9 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         if type(cap) is not int or cap < 1:
             raise OptimizerInputError("max_output_tokens must be a positive integer")
         prompt = _redact(payload.get("prompt"), secrets)
+        if edit_policy is not None:
+            from .scoped_edits import RULES
+            prompt += RULES
         # Validate the entire sidecar even in exact-prompt mode. Never silently
         # ignore a validation/test/future record as if its presence were safe.
         training = _training_context(payload, secrets)
@@ -358,6 +366,8 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
         record = {"context_adapter": adapter, "status": "not_dispatched", "model_calls": 0,
                   "tool_calls": 0, "tokens": 0, "input_tokens": 0, "output_tokens": 0,
                   "accounting_complete": True, "response": ""}
+        if edit_policy is not None:
+            record['proposal_policy'] = edit_policy
         if provider is not None:
             record['provider_contract'] = deepcopy(provider)
         if output_limit < 1:
@@ -400,11 +410,11 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
             request["max_completion_tokens" if creds["model"].startswith("gpt-5") else "max_tokens"] = output_limit
         if provider is not None:
             request.update(stream=False, extra_body={'chat_template_kwargs': deepcopy(provider['chat_template_kwargs']),
-                                                    'structured_outputs': optimizer_structured_output()})
+                                                    'structured_outputs': structured_contract})
             record.update(request_api_mode=api_mode, request_model=request['model'],
                           request_base_url=provider['base_url'], request_stream=request['stream'],
                           request_store=request['store'], request_chat_template_kwargs=deepcopy(provider['chat_template_kwargs']),
-                          request_structured_outputs=optimizer_structured_output(),
+                          request_structured_outputs=structured_contract,
                           provider_request_sha256=hashlib.sha256(json.dumps(request, sort_keys=True,
                               separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest())
         record["model_calls"] = 1
@@ -433,6 +443,15 @@ def make_reflector(credentials, *, augment_training_context=True, transport=None
                 record["status"] = "incomplete_response"
             else:
                 record.update(status="completed", response=_redact(answer, secrets))
+                if edit_policy is not None:
+                    from .scoped_edits import compile_response
+                    record['raw_proposal_response'] = record['response']
+                    try:
+                        record['response'] = compile_response(record['raw_proposal_response'],
+                                                             {x['task']['id'] for x in training})
+                        record['proposal_rejected'] = False
+                    except (ValueError, TypeError):
+                        record.update(response='[]', proposal_rejected=True)
         audit_records.append(dict(record))
         return record
 

@@ -40,6 +40,23 @@ def response(i, passes=(True, True), *, text=None, status='completed', usage=Tru
 
 
 class Tests(unittest.TestCase):
+    def test_invalid_candidate_is_an_auditable_zero_without_importing_root_file_penalties(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); bank = Bank(root / 'bank')
+            workspace = root / 'workspace'; workspace.mkdir()
+            (workspace / 'source.conf').write_text('Source')
+            baseline = {'source.conf': sha(workspace / 'source.conf')}
+            (workspace / 'root-result.conf').write_text('Allowed root deliverable')
+            (workspace / 'output').mkdir()
+            (workspace / 'output/link.conf').symlink_to('/nonexistent/outside')
+            client = Client([])
+            judge = JobBenchJudge(bank, 'fixture', client.base_url, client_factory=lambda: client)
+            grade = judge.grade(TASK, workspace, baseline, root / 'judge')
+            self.assertTrue(grade['grading_complete']); self.assertEqual(grade['quality_score'], 0.)
+            self.assertEqual(grade['unauthorized_files'], [])
+            self.assertIn('output/link.conf', grade['feedback']); self.assertFalse(client.calls)
+            judge.audit_grade(bank, TASK, workspace, baseline, root / 'judge', grade)
+
     def setUp(self):
         self.patch = patch.dict(caps.REVIEWED, {TASK: REVIEW})
         self.patch.start(); self.addCleanup(self.patch.stop)
