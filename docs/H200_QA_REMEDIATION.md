@@ -393,3 +393,14 @@ regrades must qualify this change before a new native learning epoch and pilot.
 Learning feedback projection v2 also includes already released failed public
 supplement checks; it does not lose those failures when all rubric checks pass.
 Historical grading and learning runs are retained under their frozen source.
+
+The v25 CSV controls passed 20/20 and three copied submissions passed full
+artifact/usage audits. The first prose fixtures were too abbreviated for the
+required public layout; corrected full fixtures and every failed response are
+retained. On complete committee-facing controls, 11/12 outcomes matched; one
+English positive was falsely rejected by applying the general policy TCO
+formula instead of the explicit task rule and alleging a nonexistent Markdown
+corruption. The source-bound grading instructions now explicitly resolve that
+precedence, preserve decoded Markdown semantics and permit the required CSV
+filename reference. The exact saved complete controls must be rerun under this
+new source version; their contents and expected labels remain unchanged.

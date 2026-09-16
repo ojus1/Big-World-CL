@@ -29,6 +29,19 @@ def checks(payload,rule):
     return procurement(files,files,rule['excluded_marker'])
 
 
+def grading_rules(payload):
+    if match(payload) is None:return ''
+    return (' Registered source audit for this procurement task: the explicit public task rule '
+        'requires the seven-year CSV sum for the price score and overrides the general TCO '
+        'definition in policy chapter 5.1 and the narrative internal-report totals. '
+        'A memo correctly using CSV-only sums must not fail for omitting acquisition price or '
+        'depreciation. Check the actual decoded Markdown text; JSON newline escaping is not '
+        'document corruption. A reference to output/tabla_puntuacion.csv is explicitly required '
+        'and is not itself an unprofessional filename leak. Evaluate the stated criterion '
+        'against these resolved source facts. All other source fidelity, language, coherence '
+        'and eligibility requirements still apply; do not automatically pass the submission.')
+
+
 def verdict(payload):
     if payload.get('criterion',{}).get('id')!='csv_structure_and_values':return None
     rule=match(payload)

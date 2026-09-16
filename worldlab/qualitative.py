@@ -56,8 +56,8 @@ def verdict_input(payload, *, repair=False):
     from .memo_counts import semantic_payload as memo_semantic_payload
     from .source_coverage import semantic_payload as source_semantic_payload
     from .workflow_checks import semantic_payload as workflow_semantic_payload
-    from .procurement_checks import semantic_payload as procurement_semantic_payload
-    rules = RULES
+    from .procurement_checks import semantic_payload as procurement_semantic_payload, grading_rules as procurement_rules
+    rules = RULES + procurement_rules(payload)
     if semantic_schema(payload) is not None:
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
             'Return only the structured criterion_id and per-row judgments requested in evaluation_scope. The host computes passed.')
@@ -170,7 +170,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 31, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 32, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
