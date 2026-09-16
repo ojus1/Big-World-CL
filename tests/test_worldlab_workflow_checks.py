@@ -101,6 +101,10 @@ class WorkflowTests(unittest.TestCase):
         files['output/pruefungsplan.csv']={'text':valid}
         for identifier in ('csv_row_ordering','csv_structure_and_coverage','constraint_satisfaction'):
             w.check_exams(files,identifier)
+        files['output/pruefungsplan.csv']['text']=valid.replace('P01,A,','P01,Changed name,')
+        w.check_exams(files,'constraint_satisfaction')  # An unrelated label defect is not an arithmetic failure.
+        for identifier in ('csv_structure_and_coverage','professional_adequacy'):
+            with self.assertRaisesRegex(ValueError,'source name'):w.check_exams(files,identifier)
         for old,new,reason in [('P01,A,38,HS1','P01,A,38,HS2','capacity'),('P02,B,40','P02,B,39','unavailable'),
                                ('P02,B,40','P02,B,42','closed'),('P02,B,40','P02,B,38','prerequisite'),
                                ('P02,B,40','P02,B,44','deadline'),('P03,C,38,HS2','P03,C,38,HS1','double booked'),

@@ -114,8 +114,10 @@ def check_exams(files, identifier):
         return
     for row in plan:
         src=expected[row['pruefung_id']]
-        if any(row[k]!=src[k] for k in ('pruefung_name','pruefer')) or row['typ'].replace('ü','ue')!=src['typ']:
-            raise ValueError(row['pruefung_id']+': altered source name, examiner or exam type')
+        if row['pruefer']!=src['pruefer']:
+            raise ValueError(row['pruefung_id']+': altered source examiner')
+        if identifier!='constraint_satisfaction' and (row['pruefung_name']!=src['pruefung_name'] or row['typ'].replace('ü','ue')!=src['typ']):
+            raise ValueError(row['pruefung_id']+': altered source name or exam type')
         if not 38<=int(row['woche'])<=49:raise ValueError('Week outside the public block')
     if identifier=='csv_structure_and_coverage':return
     _,rooms=rows('input/hoersaale.csv');rooms={r['raum_id']:r for r in rooms}
@@ -155,7 +157,7 @@ def binding(payload):
 def semantic_payload(payload):
     rule=binding(payload)
     if rule is None or rule['kind']!='exams' or payload['criterion']['id']!='professional_adequacy':return payload
-    try:check_exams(payload['evidence']['files'],'constraint_satisfaction')
+    try:check_exams(payload['evidence']['files'],'professional_adequacy')
     except (ValueError,KeyError,TypeError,csv.Error):return payload
     return {**payload,'registered_schedule_verification': {
         'method':'source_bound_csv_parser_and_constraint_predicates',
