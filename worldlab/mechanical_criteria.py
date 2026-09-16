@@ -8,6 +8,7 @@ import html
 import re
 from .supplier_notes import veto as supplier_note_veto, check as supplier_note_check, source_matrix_verdict
 from .memo_counts import verdict as memo_count_verdict
+from .source_coverage import count_verdict as restored_count_verdict
 
 SOURCE = 'input/manual_v23_section4.md'
 OUTPUT = 'output/texte_restructure_v3.md'
@@ -116,6 +117,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    if restored_count_verdict(payload) is not None:
+        return 'registered_source_report_word_count'
     if source_matrix_verdict(payload) is not None:
         return 'registered_supplier_matrix_source_predicate'
     if memo_count_verdict(payload) is not None:
@@ -132,6 +135,9 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    counted = restored_count_verdict(payload)
+    if counted is not None:
+        return counted
     matrix_verdict = source_matrix_verdict(payload)
     if matrix_verdict is not None:
         return matrix_verdict

@@ -154,7 +154,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 24, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 25, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -180,6 +180,7 @@ class FrozenRubricJudge:
                 'source_quality_policy_sha256': sha(Path(__file__).with_name('source_quality.py')),
                 'source_quality_registry_sha256': sha(Path(__file__).with_name('source_quality_registry.json')),
                 'source_coverage_sha256': sha(Path(__file__).with_name('source_coverage.py')),
+                'source_coverage_registry_sha256': sha(Path(__file__).with_name('source_coverage_registry.json')),
                 'source_obligation_method': 'structured judgments plus registered deterministic predicates; no blind execution of source gold',
                 'original_qualitative_criterion_limit': 8,
                 'memo_counts_sha256': sha(Path(__file__).with_name('memo_counts.py')),
@@ -313,7 +314,7 @@ class FrozenRubricJudge:
                       for v in verdicts) + '; Public requirement checks: ' + '; '.join(
                       c['id'] + ': ' + ('satisfied' if c['passed'] else 'needs revision') + '. ' +
                       c['requirement'] + ' ' + ' '.join(c['evidence']) for c in supplement['checks'])) if valid else '',
-                  'scope': 'Frozen r3 development criteria plus source-reviewed public supplements. Registered counts and supplements are deterministic; other criteria are model judged. Full public-contract coverage and independent semantic calibration are not established.'}
+                  'scope': 'Frozen r3 plus restored source obligations and reviewed public corrections/supplements. Registered predicates are deterministic; other criteria are model judged. This is a new development metric. Full public-contract coverage and independent semantic calibration are not established.'}
         save(out / 'GRADE.json', result)
         return result
 

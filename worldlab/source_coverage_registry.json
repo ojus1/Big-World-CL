@@ -1,0 +1,425 @@
+{
+  "schema_version": 1,
+  "tasks": {
+    "internal/euw_v1_de_013": {
+      "definition_sha256": "f35b2ce24f11d3a56fad12e6d20463b6688e14cfa16b3c6c6557550f106fe24f",
+      "instruction_sha256": "992f4401d35459118e9ec8e5055e694e99b7d78a8206f9147c434f1ffc935c50",
+      "corrections": {
+        "R8": {
+          "original_requirement": "empfehlung.md states exactly 'Ablehnung' as the sole recommendation",
+          "requirement": "output/empfehlung.md states exactly 'Ablehnung' as its sole final recommendation, as explicitly required by this public task's decision rule. Negated or contrasted alternatives in an explanation are not additional recommendations."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_de_013_en_bridge": {
+      "definition_sha256": "f44ac7e6dcaa8230b5d5ef32ccfb8205d6413d5a94c01302ef844aa935dc808e",
+      "instruction_sha256": "0163d2907bac733a303b485c667e205fa2fb0d3721029a0020a55ccb5ced6fa6",
+      "corrections": {
+        "R8": {
+          "original_requirement": "empfehlung.md states exactly 'Ablehnung' as the sole recommendation",
+          "requirement": "output/empfehlung.md states exactly 'Rejection' as its sole final recommendation, as explicitly required by this public task's decision rule. Negated or contrasted alternatives in an explanation are not additional recommendations."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_de_013_es_bridge": {
+      "definition_sha256": "d31075313e2cb98a839e426cc0b79626121b45d9b044c2fd789c44a197801b82",
+      "instruction_sha256": "524369c91f0e9f3614bbceb8bd88648d383f69eaf2864318e461191ce3cf9d3a",
+      "corrections": {
+        "R8": {
+          "original_requirement": "empfehlung.md states exactly 'Ablehnung' as the sole recommendation",
+          "requirement": "output/empfehlung.md states exactly 'Ablehnung' as its sole final recommendation, as explicitly required by this public task's decision rule. Negated or contrasted alternatives in an explanation are not additional recommendations."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_de_013_fr_bridge": {
+      "definition_sha256": "4e3bc7b4b55737a01ef0e05e0a399504ab0d45287efb7b88a2d038dee6709563",
+      "instruction_sha256": "abc30dfe1d0ca7e7df5e599bb3511bc5b9f1a49f50b22edddf3235c15ae6ccbf",
+      "corrections": {
+        "R8": {
+          "original_requirement": "empfehlung.md states exactly 'Ablehnung' as the sole recommendation",
+          "requirement": "output/empfehlung.md states exactly 'Ablehnung' as its sole final recommendation, as explicitly required by this public task's decision rule. Negated or contrasted alternatives in an explanation are not additional recommendations."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_de_013_it_bridge": {
+      "definition_sha256": "e57ebd3ec1302c8467e70984a70e656de3b9f5987e99c839a985569e023e7437",
+      "instruction_sha256": "79ecc334ba1e5bdafd85ff14d00ae4daa39460abccb006423666364c0be17fb5",
+      "corrections": {
+        "R8": {
+          "original_requirement": "empfehlung.md states exactly 'Ablehnung' as the sole recommendation",
+          "requirement": "output/empfehlung.md states exactly 'Ablehnung' as its sole final recommendation, as explicitly required by this public task's decision rule. Negated or contrasted alternatives in an explanation are not additional recommendations."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_es_017": {
+      "definition_sha256": "3673506bd6ce63940ff074bc4a0a1a2ce64898de9c0075e520a61b2957bbd5ca",
+      "instruction_sha256": "21c27a16bd72c8cb1f49a0df1b2794942e055b2051f1c826753a48f55053486c",
+      "corrections": {
+        "csv_structure_and_values": {
+          "original_requirement": "output/tabla_puntuacion.csv has exactly 6 rows (5 criteria + TOTAL), correct column schema, weights 30/25/20/15/10, Provider A scores (Técnico 10.0, TCO 9.2, Fiabilidad 10.0, PACS 6.0, Garantía 10.0), B and C marked EXCLUIDO in punt columns with 0.0 ponderados, TOTAL row ponderado_a=9.20, sum consistency.",
+          "requirement": "output/tabla_puntuacion.csv has five criterion rows and one final TOTAL, the public eight columns, weights 30/25/20/15/10, and source-derived partial and weighted values. In excluded suppliers' punt columns use 'EXCLUIDO'; their TOTAL ponderado cells are numeric zero. The public task does not require every intermediate weighted cell of an excluded supplier to be zero. TOTAL for eligible suppliers is the sum of rounded weighted values."
+        },
+        "scoring_calculation_correctness": {
+          "original_requirement": "All partial scores follow the stated rules: Técnico = mean of 12 param scores (A: all meet → 10.0); TCO = 10×(TCO_min_nonC/TCO_A) using 7-yr CSV sums + acquisition + depreciation (A: 9.2); Fiabilidad A = 10 (no contradiction, uptime ≥99%); PACS A = 6 (pendiente de prueba en sitio); Garantía A = 10 (5 yr, 24 h response → +1 capped at 10). Ponderados = score×weight/100 rounded to 2 dp.",
+          "requirement": "Recompute scores from the public rules and actual files: technical = average of the 12 parameter scores (10/8/5 under stated thresholds); TCO = seven-year CSV sums only, minimum over the provided suppliers, then 10 * min / supplier, rounded to one decimal. Do not add acquisition or depreciation absent from the instructed CSV sum. Reliability uses stated contradiction and uptime deductions; PACS uses stated 10/6/3 categories; warranty uses 10/7/4 and response time strictly below 24h adds one, capped at 10. Weighted values = rounded partial score * weight / 100, rounded to two decimals; totals sum these rounded weighted values."
+        },
+        "memo_section_headers": {
+          "original_requirement": "output/memo_recomendacion.md contains all six required section headings: Resumen ejecutivo, Metodología de puntuación, Análisis de contradicciones y exclusiones, Tabla de puntuación, Recomendación, Condiciones contractuales.",
+          "requirement": "output/memo_recomendacion.md contains all six sections required by the actual public instruction, in its required output language: executive summary, scoring methodology, contradictions/exclusions, scoring table, recommendation, and contractual conditions. Use the translated section wording supplied by this task, not headings copied from a different language variant."
+        },
+        "condiciones_json_required_pairs": {
+          "original_requirement": "output/condiciones_contractuales.json is a JSON array of ≥4 objects each with id(int), tipo, descripcion, proveedor_afectado, justificacion_evidencia. Must include at least: tipo=ruido/proveedor=NovaScan, tipo=garantia/proveedor=IberResonance, tipo=integracion/proveedor=MagnaTech, tipo=soporte/proveedor=MagnaTech.",
+          "requirement": "output/condiciones_contractuales.json is a JSON array with at least four source-grounded contractual conditions and the public fields/types: id integer, tipo from the stated enum, descripcion, proveedor_afectado, justificacion_evidencia. The evidence justification identifies a source file and specific section/data. Conditions address the required findings and affected suppliers; do not invent a private mandatory tuple beyond the public task."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_es_017_de_bridge": {
+      "definition_sha256": "683f5fd96f3f9376383320db00c9f2fd1a42cee6a3c45cd5b1bfa5760e413973",
+      "instruction_sha256": "b3bb27b7d781ea6c11d7f1543ef8e0039e70aa073ee60ce04ab635f742fce141",
+      "corrections": {
+        "csv_structure_and_values": {
+          "original_requirement": "output/tabla_puntuacion.csv has exactly 6 rows (5 criteria + TOTAL), correct column schema, weights 30/25/20/15/10, Provider A scores (Técnico 10.0, TCO 9.2, Fiabilidad 10.0, PACS 6.0, Garantía 10.0), B and C marked EXCLUIDO in punt columns with 0.0 ponderados, TOTAL row ponderado_a=9.20, sum consistency.",
+          "requirement": "output/tabla_puntuacion.csv has five criterion rows and one final TOTAL, the public eight columns, weights 30/25/20/15/10, and source-derived partial and weighted values. In excluded suppliers' punt columns use 'EXCLUIDO'; their TOTAL ponderado cells are numeric zero. The public task does not require every intermediate weighted cell of an excluded supplier to be zero. TOTAL for eligible suppliers is the sum of rounded weighted values."
+        },
+        "scoring_calculation_correctness": {
+          "original_requirement": "All partial scores follow the stated rules: Técnico = mean of 12 param scores (A: all meet → 10.0); TCO = 10×(TCO_min_nonC/TCO_A) using 7-yr CSV sums + acquisition + depreciation (A: 9.2); Fiabilidad A = 10 (no contradiction, uptime ≥99%); PACS A = 6 (pendiente de prueba en sitio); Garantía A = 10 (5 yr, 24 h response → +1 capped at 10). Ponderados = score×weight/100 rounded to 2 dp.",
+          "requirement": "Recompute scores from the public rules and actual files: technical = average of the 12 parameter scores (10/8/5 under stated thresholds); TCO = seven-year CSV sums only, minimum over the provided suppliers, then 10 * min / supplier, rounded to one decimal. Do not add acquisition or depreciation absent from the instructed CSV sum. Reliability uses stated contradiction and uptime deductions; PACS uses stated 10/6/3 categories; warranty uses 10/7/4 and response time strictly below 24h adds one, capped at 10. Weighted values = rounded partial score * weight / 100, rounded to two decimals; totals sum these rounded weighted values."
+        },
+        "memo_section_headers": {
+          "original_requirement": "output/memo_recomendacion.md contains all six required section headings: Resumen ejecutivo, Metodología de puntuación, Análisis de contradicciones y exclusiones, Tabla de puntuación, Recomendación, Condiciones contractuales.",
+          "requirement": "output/memo_recomendacion.md contains all six sections required by the actual public instruction, in its required output language: executive summary, scoring methodology, contradictions/exclusions, scoring table, recommendation, and contractual conditions. Use the translated section wording supplied by this task, not headings copied from a different language variant."
+        },
+        "condiciones_json_required_pairs": {
+          "original_requirement": "output/condiciones_contractuales.json is a JSON array of ≥4 objects each with id(int), tipo, descripcion, proveedor_afectado, justificacion_evidencia. Must include at least: tipo=ruido/proveedor=NovaScan, tipo=garantia/proveedor=IberResonance, tipo=integracion/proveedor=MagnaTech, tipo=soporte/proveedor=MagnaTech.",
+          "requirement": "output/condiciones_contractuales.json is a JSON array with at least four source-grounded contractual conditions and the public fields/types: id integer, tipo from the stated enum, descripcion, proveedor_afectado, justificacion_evidencia. The evidence justification identifies a source file and specific section/data. Conditions address the required findings and affected suppliers; do not invent a private mandatory tuple beyond the public task."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_es_017_en_bridge": {
+      "definition_sha256": "21d0838331e9535f3c8bfcf35cd5e46a5d9515558f7892bc07246e19717659d8",
+      "instruction_sha256": "20aa5a68759f40fc4975a925006f6b00b5d337211be12f8a8bff4c4281c6c5d5",
+      "corrections": {
+        "csv_structure_and_values": {
+          "original_requirement": "output/tabla_puntuacion.csv has exactly 6 rows (5 criteria + TOTAL), correct column schema, weights 30/25/20/15/10, Provider A scores (Técnico 10.0, TCO 9.2, Fiabilidad 10.0, PACS 6.0, Garantía 10.0), B and C marked EXCLUIDO in punt columns with 0.0 ponderados, TOTAL row ponderado_a=9.20, sum consistency.",
+          "requirement": "output/tabla_puntuacion.csv has five criterion rows and one final TOTAL, the public eight columns, weights 30/25/20/15/10, and source-derived partial and weighted values. In excluded suppliers' punt columns use 'EXCLUDED'; their TOTAL ponderado cells are numeric zero. The public task does not require every intermediate weighted cell of an excluded supplier to be zero. TOTAL for eligible suppliers is the sum of rounded weighted values."
+        },
+        "scoring_calculation_correctness": {
+          "original_requirement": "All partial scores follow the stated rules: Técnico = mean of 12 param scores (A: all meet → 10.0); TCO = 10×(TCO_min_nonC/TCO_A) using 7-yr CSV sums + acquisition + depreciation (A: 9.2); Fiabilidad A = 10 (no contradiction, uptime ≥99%); PACS A = 6 (pendiente de prueba en sitio); Garantía A = 10 (5 yr, 24 h response → +1 capped at 10). Ponderados = score×weight/100 rounded to 2 dp.",
+          "requirement": "Recompute scores from the public rules and actual files: technical = average of the 12 parameter scores (10/8/5 under stated thresholds); TCO = seven-year CSV sums only, minimum over the provided suppliers, then 10 * min / supplier, rounded to one decimal. Do not add acquisition or depreciation absent from the instructed CSV sum. Reliability uses stated contradiction and uptime deductions; PACS uses stated 10/6/3 categories; warranty uses 10/7/4 and response time strictly below 24h adds one, capped at 10. Weighted values = rounded partial score * weight / 100, rounded to two decimals; totals sum these rounded weighted values."
+        },
+        "memo_section_headers": {
+          "original_requirement": "output/memo_recomendacion.md contains all six required section headings: Resumen ejecutivo, Metodología de puntuación, Análisis de contradicciones y exclusiones, Tabla de puntuación, Recomendación, Condiciones contractuales.",
+          "requirement": "output/memo_recomendacion.md contains all six sections required by the actual public instruction, in its required output language: executive summary, scoring methodology, contradictions/exclusions, scoring table, recommendation, and contractual conditions. Use the translated section wording supplied by this task, not headings copied from a different language variant."
+        },
+        "condiciones_json_required_pairs": {
+          "original_requirement": "output/condiciones_contractuales.json is a JSON array of ≥4 objects each with id(int), tipo, descripcion, proveedor_afectado, justificacion_evidencia. Must include at least: tipo=ruido/proveedor=NovaScan, tipo=garantia/proveedor=IberResonance, tipo=integracion/proveedor=MagnaTech, tipo=soporte/proveedor=MagnaTech.",
+          "requirement": "output/condiciones_contractuales.json is a JSON array with at least four source-grounded contractual conditions and the public fields/types: id integer, tipo from the stated enum, descripcion, proveedor_afectado, justificacion_evidencia. The evidence justification identifies a source file and specific section/data. Conditions address the required findings and affected suppliers; do not invent a private mandatory tuple beyond the public task."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_es_017_fr_bridge": {
+      "definition_sha256": "5922191e3412c50ab85e9a0d07526f475283b7b7e683ba149f0e9ab9e6fa5e13",
+      "instruction_sha256": "bc3e9077998c2238dd43e4c7f7528285d81e7eddbd7b1facd40f77d6bbabecb8",
+      "corrections": {
+        "csv_structure_and_values": {
+          "original_requirement": "output/tabla_puntuacion.csv has exactly 6 rows (5 criteria + TOTAL), correct column schema, weights 30/25/20/15/10, Provider A scores (Técnico 10.0, TCO 9.2, Fiabilidad 10.0, PACS 6.0, Garantía 10.0), B and C marked EXCLUIDO in punt columns with 0.0 ponderados, TOTAL row ponderado_a=9.20, sum consistency.",
+          "requirement": "output/tabla_puntuacion.csv has five criterion rows and one final TOTAL, the public eight columns, weights 30/25/20/15/10, and source-derived partial and weighted values. In excluded suppliers' punt columns use 'EXCLUIDO'; their TOTAL ponderado cells are numeric zero. The public task does not require every intermediate weighted cell of an excluded supplier to be zero. TOTAL for eligible suppliers is the sum of rounded weighted values."
+        },
+        "scoring_calculation_correctness": {
+          "original_requirement": "All partial scores follow the stated rules: Técnico = mean of 12 param scores (A: all meet → 10.0); TCO = 10×(TCO_min_nonC/TCO_A) using 7-yr CSV sums + acquisition + depreciation (A: 9.2); Fiabilidad A = 10 (no contradiction, uptime ≥99%); PACS A = 6 (pendiente de prueba en sitio); Garantía A = 10 (5 yr, 24 h response → +1 capped at 10). Ponderados = score×weight/100 rounded to 2 dp.",
+          "requirement": "Recompute scores from the public rules and actual files: technical = average of the 12 parameter scores (10/8/5 under stated thresholds); TCO = seven-year CSV sums only, minimum over the provided suppliers, then 10 * min / supplier, rounded to one decimal. Do not add acquisition or depreciation absent from the instructed CSV sum. Reliability uses stated contradiction and uptime deductions; PACS uses stated 10/6/3 categories; warranty uses 10/7/4 and response time strictly below 24h adds one, capped at 10. Weighted values = rounded partial score * weight / 100, rounded to two decimals; totals sum these rounded weighted values."
+        },
+        "memo_section_headers": {
+          "original_requirement": "output/memo_recomendacion.md contains all six required section headings: Resumen ejecutivo, Metodología de puntuación, Análisis de contradicciones y exclusiones, Tabla de puntuación, Recomendación, Condiciones contractuales.",
+          "requirement": "output/memo_recomendacion.md contains all six sections required by the actual public instruction, in its required output language: executive summary, scoring methodology, contradictions/exclusions, scoring table, recommendation, and contractual conditions. Use the translated section wording supplied by this task, not headings copied from a different language variant."
+        },
+        "condiciones_json_required_pairs": {
+          "original_requirement": "output/condiciones_contractuales.json is a JSON array of ≥4 objects each with id(int), tipo, descripcion, proveedor_afectado, justificacion_evidencia. Must include at least: tipo=ruido/proveedor=NovaScan, tipo=garantia/proveedor=IberResonance, tipo=integracion/proveedor=MagnaTech, tipo=soporte/proveedor=MagnaTech.",
+          "requirement": "output/condiciones_contractuales.json is a JSON array with at least four source-grounded contractual conditions and the public fields/types: id integer, tipo from the stated enum, descripcion, proveedor_afectado, justificacion_evidencia. The evidence justification identifies a source file and specific section/data. Conditions address the required findings and affected suppliers; do not invent a private mandatory tuple beyond the public task."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_es_017_it_bridge": {
+      "definition_sha256": "7dabc519035c747e29cbca3a304e05d182eae801b5c317a94b5f43b2cfc620b9",
+      "instruction_sha256": "0e4245ef3f8a6b98d5600ea9dd7d794e7faf597fdfd06f3d7f211e2c80053e9a",
+      "corrections": {
+        "csv_structure_and_values": {
+          "original_requirement": "output/tabla_puntuacion.csv has exactly 6 rows (5 criteria + TOTAL), correct column schema, weights 30/25/20/15/10, Provider A scores (Técnico 10.0, TCO 9.2, Fiabilidad 10.0, PACS 6.0, Garantía 10.0), B and C marked EXCLUIDO in punt columns with 0.0 ponderados, TOTAL row ponderado_a=9.20, sum consistency.",
+          "requirement": "output/tabla_puntuacion.csv has five criterion rows and one final TOTAL, the public eight columns, weights 30/25/20/15/10, and source-derived partial and weighted values. In excluded suppliers' punt columns use 'EXCLUIDO'; their TOTAL ponderado cells are numeric zero. The public task does not require every intermediate weighted cell of an excluded supplier to be zero. TOTAL for eligible suppliers is the sum of rounded weighted values."
+        },
+        "scoring_calculation_correctness": {
+          "original_requirement": "All partial scores follow the stated rules: Técnico = mean of 12 param scores (A: all meet → 10.0); TCO = 10×(TCO_min_nonC/TCO_A) using 7-yr CSV sums + acquisition + depreciation (A: 9.2); Fiabilidad A = 10 (no contradiction, uptime ≥99%); PACS A = 6 (pendiente de prueba en sitio); Garantía A = 10 (5 yr, 24 h response → +1 capped at 10). Ponderados = score×weight/100 rounded to 2 dp.",
+          "requirement": "Recompute scores from the public rules and actual files: technical = average of the 12 parameter scores (10/8/5 under stated thresholds); TCO = seven-year CSV sums only, minimum over the provided suppliers, then 10 * min / supplier, rounded to one decimal. Do not add acquisition or depreciation absent from the instructed CSV sum. Reliability uses stated contradiction and uptime deductions; PACS uses stated 10/6/3 categories; warranty uses 10/7/4 and response time strictly below 24h adds one, capped at 10. Weighted values = rounded partial score * weight / 100, rounded to two decimals; totals sum these rounded weighted values."
+        },
+        "memo_section_headers": {
+          "original_requirement": "output/memo_recomendacion.md contains all six required section headings: Resumen ejecutivo, Metodología de puntuación, Análisis de contradicciones y exclusiones, Tabla de puntuación, Recomendación, Condiciones contractuales.",
+          "requirement": "output/memo_recomendacion.md contains all six sections required by the actual public instruction, in its required output language: executive summary, scoring methodology, contradictions/exclusions, scoring table, recommendation, and contractual conditions. Use the translated section wording supplied by this task, not headings copied from a different language variant."
+        },
+        "condiciones_json_required_pairs": {
+          "original_requirement": "output/condiciones_contractuales.json is a JSON array of ≥4 objects each with id(int), tipo, descripcion, proveedor_afectado, justificacion_evidencia. Must include at least: tipo=ruido/proveedor=NovaScan, tipo=garantia/proveedor=IberResonance, tipo=integracion/proveedor=MagnaTech, tipo=soporte/proveedor=MagnaTech.",
+          "requirement": "output/condiciones_contractuales.json is a JSON array with at least four source-grounded contractual conditions and the public fields/types: id integer, tipo from the stated enum, descripcion, proveedor_afectado, justificacion_evidencia. The evidence justification identifies a source file and specific section/data. Conditions address the required findings and affected suppliers; do not invent a private mandatory tuple beyond the public task."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_015": {
+      "definition_sha256": "ec1e8b550462c17324f3cc8442dce4d09608c54ad27b726d600f2d4a96c1f78b",
+      "instruction_sha256": "98c42d78c3d32196bff0397acc5106cd8ba5f5f171ec69f68875634f1a0d1c4c",
+      "corrections": {
+        "scheda_sections_and_codes": {
+          "original_requirement": "scheda_accreditamento.md contains all 5 sections in order (Intestazione, Evidenze, Gap e azioni correttive, Dichiarazione di completezza, Appendice–Riferimenti documentali), cites [S3][AU][QS][RE][CV][MP], ≤1800 words",
+          "requirement": "output/scheda_accreditamento.md has the five sections in the order and language actually specified by the public task: programme header, evidence, gaps/corrective actions, declaration of completeness, appendix/document references. Cite the specified document codes [S3], [AU], [QS], [RE], [CV], [MP]. Apply the public three-page/about-1800-word scope; do not demand Italian section names where this task explicitly translates them."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_015_de_bridge": {
+      "definition_sha256": "0ef818e9d822965a0ff36db69fa2ec754c8eae8064ae95187f55b3b5b7a5f63b",
+      "instruction_sha256": "ba050f19b3edb18154c7e4c70972c9797b2ce6be035a590c5504ba06ede17e41",
+      "corrections": {
+        "scheda_sections_and_codes": {
+          "original_requirement": "scheda_accreditamento.md contains all 5 sections in order (Intestazione, Evidenze, Gap e azioni correttive, Dichiarazione di completezza, Appendice–Riferimenti documentali), cites [S3][AU][QS][RE][CV][MP], ≤1800 words",
+          "requirement": "output/scheda_accreditamento.md has the five sections in the order and language actually specified by the public task: programme header, evidence, gaps/corrective actions, declaration of completeness, appendix/document references. Cite the specified document codes [S3], [AU], [QS], [RE], [CV], [MP]. Apply the public three-page/about-1800-word scope; do not demand Italian section names where this task explicitly translates them."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_015_en_bridge": {
+      "definition_sha256": "12d8ae8bdcc97c9aae6cb3d696d1b77df72168f3f418ec6f387f3ed91231fb67",
+      "instruction_sha256": "6845502b05f4cfd05c6e1b1d49c78fcfe020de0e45b98fe3435002c65815dccd",
+      "corrections": {
+        "scheda_sections_and_codes": {
+          "original_requirement": "scheda_accreditamento.md contains all 5 sections in order (Intestazione, Evidenze, Gap e azioni correttive, Dichiarazione di completezza, Appendice–Riferimenti documentali), cites [S3][AU][QS][RE][CV][MP], ≤1800 words",
+          "requirement": "output/scheda_accreditamento.md has the five sections in the order and language actually specified by the public task: programme header, evidence, gaps/corrective actions, declaration of completeness, appendix/document references. Cite the specified document codes [S3], [AU], [QS], [RE], [CV], [MP]. Apply the public three-page/about-1800-word scope; do not demand Italian section names where this task explicitly translates them."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_015_es_bridge": {
+      "definition_sha256": "ce7e23999adc42c799d6e4e283d26fd01d22479ad4ebe97d718472e214994a01",
+      "instruction_sha256": "2691aa7975a30fb960107ea41f85680fd0fca92f3395515f97ef4c55f9ea353d",
+      "corrections": {
+        "scheda_sections_and_codes": {
+          "original_requirement": "scheda_accreditamento.md contains all 5 sections in order (Intestazione, Evidenze, Gap e azioni correttive, Dichiarazione di completezza, Appendice–Riferimenti documentali), cites [S3][AU][QS][RE][CV][MP], ≤1800 words",
+          "requirement": "output/scheda_accreditamento.md has the five sections in the order and language actually specified by the public task: programme header, evidence, gaps/corrective actions, declaration of completeness, appendix/document references. Cite the specified document codes [S3], [AU], [QS], [RE], [CV], [MP]. Apply the public three-page/about-1800-word scope; do not demand Italian section names where this task explicitly translates them."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_015_fr_bridge": {
+      "definition_sha256": "05ee5af5bb92e20f0e5b5a7b18a023429798e755393c33362da9ead5857ea4c5",
+      "instruction_sha256": "15838b86eeedb4e3961feae764bd9fad13f265de8ce43353e1dd96ee90590dcd",
+      "corrections": {
+        "scheda_sections_and_codes": {
+          "original_requirement": "scheda_accreditamento.md contains all 5 sections in order (Intestazione, Evidenze, Gap e azioni correttive, Dichiarazione di completezza, Appendice–Riferimenti documentali), cites [S3][AU][QS][RE][CV][MP], ≤1800 words",
+          "requirement": "output/scheda_accreditamento.md has the five sections in the order and language actually specified by the public task: programme header, evidence, gaps/corrective actions, declaration of completeness, appendix/document references. Cite the specified document codes [S3], [AU], [QS], [RE], [CV], [MP]. Apply the public three-page/about-1800-word scope; do not demand Italian section names where this task explicitly translates them."
+        }
+      },
+      "counts": {},
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained."
+    },
+    "internal/euw_v1_it_017": {
+      "definition_sha256": "ef4781e92605a32f2e30408d0809ccac2f2cb5fba8f53538c8a29f4b286dcada",
+      "instruction_sha256": "2ffb976d00a22d1426e27fa0ffb60fcbbb512c5ff17318b63089f8fcb88767e8",
+      "corrections": {
+        "report_sections_and_citations": {
+          "original_requirement": "report_avanzamento.md contains exactly 4 H2 sections in order (Attività svolte, Varianza budget, Cambio di scope, Prossimi 6 mesi) and explicitly mentions 'art. 7.3', '29/09/2024', 'Rizzo', and 'data_ignota'.",
+          "requirement": "output/report_avanzamento.md has exactly these four H2 headings in this order: ['## Attività svolte', '## Varianza budget', '## Cambio di scope', '## Prossimi 6 mesi']. It explicitly cites art. 7.3, 29/09/2024, the Rizzo condition and the three undated entries. The CSV's literal data_ignota code remains binding there; prose may describe undated entries in the required report language."
+        }
+      },
+      "counts": {
+        "report_word_count": {
+          "path": "output/report_avanzamento.md",
+          "minimum": 1200,
+          "maximum": 1800,
+          "exclude_title": false,
+          "criterion": {
+            "id": "report_word_count",
+            "requirement": "Report is between 1 200 and 1 800 words (≈ 2 pages).",
+            "weight": 1,
+            "acceptable_alternatives": [],
+            "evidence_anchors": [],
+            "failure_examples": []
+          }
+        }
+      },
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
+      "input_text_sha256": {
+        "input/lettera_donatore_rizzo.md": "7db351090fc6f4aa93b33236bc6fea91532b45ed68675c47ea2adc245d92c75e",
+        "input/accordo_grant.md": "6de54851cdbbf1e9a51d4367984e5cd0918e2b09e230022feb71a50a173d9682",
+        "input/log_attivita_q2.csv": "1b45794d0c6ad0017a4c22f661e532aa2120b75b01213b520b9648d5b3aa8fd0",
+        "input/log_attivita_q1.csv": "dad253ee176b1413d26ed9a50c00cdfe58a67eab275e6e3d39420aa9934c962a",
+        "input/budget_grant.csv": "36b8199155149b55312e0c04bdf1c3eca46e7ac025a322b02ba732b1d0a88797",
+        "input/verbale_cda_1406.md": "2ed66fe4977c3b0c162e90ddbd24d3e8d79d99291a072101a696b04e149b0b61",
+        "input/log_attivita_q2_supp.csv": "3c8d57345ea74b52f9ce7641336b85014f76ad6cf647304c01757913164af417"
+      }
+    },
+    "internal/euw_v1_it_017_de_bridge": {
+      "definition_sha256": "527eb893cb329bb50c589a0b151f1666edba23ec31a295f771140298e032ebde",
+      "instruction_sha256": "b7018e8a04587a002ae5bb6004878a317fe3dc3920dfa3bcb06644b914838594",
+      "corrections": {
+        "report_sections_and_citations": {
+          "original_requirement": "report_avanzamento.md contains exactly 4 H2 sections in order (Attività svolte, Varianza budget, Cambio di scope, Prossimi 6 mesi) and explicitly mentions 'art. 7.3', '29/09/2024', 'Rizzo', and 'data_ignota'.",
+          "requirement": "output/report_avanzamento.md has exactly these four H2 headings in this order: ['## Durchgeführte Aktivitäten', '## Budgetabweichung', '## Scope-Änderung', '## Nächste 6 Monate']. It explicitly cites art. 7.3, 29/09/2024, the Rizzo condition and the three undated entries. The CSV's literal data_ignota code remains binding there; prose may describe undated entries in the required report language."
+        }
+      },
+      "counts": {
+        "report_word_count": {
+          "path": "output/report_avanzamento.md",
+          "minimum": 1200,
+          "maximum": 1800,
+          "exclude_title": false,
+          "criterion": {
+            "id": "report_word_count",
+            "requirement": "Report is between 1 200 and 1 800 words (≈ 2 pages).",
+            "weight": 1,
+            "acceptable_alternatives": [],
+            "evidence_anchors": [],
+            "failure_examples": []
+          }
+        }
+      },
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
+      "input_text_sha256": {
+        "input/lettera_donatore_rizzo.md": "99b82fac15079d80731e5373c7716b8166eb28f6183f6258a4739b0764a10973",
+        "input/accordo_grant.md": "c6a4fe8576a0debc2f9ff7e1baa1d6d172b140fbb335da9274c795a189ef5354",
+        "input/log_attivita_q2.csv": "d8e51a1d475d34d5deb5ce9a6940ea44f83259b1a3f09d95f71cb405b79d0f98",
+        "input/log_attivita_q1.csv": "cd2eaac8b7a12ffe4e6f0777d1ddb5019576e40ea0aca6709bc892bc3ad8cb1b",
+        "input/budget_grant.csv": "7c85d7f58bbbe82ae5c95eb8eb4c23af3d61f4f8ff37c3e594e696a3ab82096f",
+        "input/verbale_cda_1406.md": "5c712e9fc487a8ade7772432dc87edffb3d42d3a8084681f41022018f9ebc61a",
+        "input/log_attivita_q2_supp.csv": "8d8536e4df44c0381d38881f180bee016eae90b1986634f40001dfe8d68abbe1"
+      }
+    },
+    "internal/euw_v1_it_017_en_bridge": {
+      "definition_sha256": "92ca44d099a2291bb9b16513ccbefabbfae3c49c5c73b6b0095f7bcaa474938b",
+      "instruction_sha256": "4f6b065812acba4b9eb4f965d7c0b9ecc1995e3fd8b318fa7d29096af8afc95f",
+      "corrections": {
+        "report_sections_and_citations": {
+          "original_requirement": "report_avanzamento.md contains exactly 4 H2 sections in order (Attività svolte, Varianza budget, Cambio di scope, Prossimi 6 mesi) and explicitly mentions 'art. 7.3', '29/09/2024', 'Rizzo', and 'data_ignota'.",
+          "requirement": "output/report_avanzamento.md has exactly these four H2 headings in this order: ['## Activities completed', '## Budget variance', '## Scope change', '## Next 6 months']. It explicitly cites art. 7.3, 29/09/2024, the Rizzo condition and the three undated entries. The CSV's literal data_ignota code remains binding there; prose may describe undated entries in the required report language."
+        }
+      },
+      "counts": {
+        "report_word_count": {
+          "path": "output/report_avanzamento.md",
+          "minimum": 1200,
+          "maximum": 1800,
+          "exclude_title": false,
+          "criterion": {
+            "id": "report_word_count",
+            "requirement": "Report is between 1 200 and 1 800 words (≈ 2 pages).",
+            "weight": 1,
+            "acceptable_alternatives": [],
+            "evidence_anchors": [],
+            "failure_examples": []
+          }
+        }
+      },
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
+      "input_text_sha256": {
+        "input/lettera_donatore_rizzo.md": "4d2df9000fb3e31d1cceefe70e6d16caedc31cf042eb535fe38d9562eaf8dc55",
+        "input/accordo_grant.md": "78747cd4622502029b0296286a23f782f9aa2c000f9c797d3822222e34526922",
+        "input/log_attivita_q2.csv": "2038051cb7cc9ebcf5e460ff417ee81d6afe3007c3af652bb3fe8ebca45e778b",
+        "input/log_attivita_q1.csv": "714f21f79c9227faf102c7d575df161a2b8417a4226174abd4f91354abac0622",
+        "input/budget_grant.csv": "59e0d595bfe1668249a6af98c67762a752477c4e015944f1a28b0cd8b77884b2",
+        "input/verbale_cda_1406.md": "e3f22b8fd8afdd04d40d5f776455fb267801631810cd32dbf46a0d8b9bb3bb7b",
+        "input/log_attivita_q2_supp.csv": "ea4b0cc5e9a3d4c11c26a82b2f2b0b334f7e5c2225848a4faab2133b84f4300e"
+      }
+    },
+    "internal/euw_v1_it_017_es_bridge": {
+      "definition_sha256": "d8f8c86647ba7ee39dbf7935f6f7acb6a4b3934ac89c1596f8aa5cdc3127fb63",
+      "instruction_sha256": "5cdc1e8143ee1960fcd384e3372e018e81e04bfa7808355a26a10a91c79b8e87",
+      "corrections": {
+        "report_sections_and_citations": {
+          "original_requirement": "report_avanzamento.md contains exactly 4 H2 sections in order (Attività svolte, Varianza budget, Cambio di scope, Prossimi 6 mesi) and explicitly mentions 'art. 7.3', '29/09/2024', 'Rizzo', and 'data_ignota'.",
+          "requirement": "output/report_avanzamento.md has exactly these four H2 headings in this order: ['## Actividades realizadas', '## Varianza del presupuesto', '## Cambio de alcance', '## Próximos 6 meses']. It explicitly cites art. 7.3, 29/09/2024, the Rizzo condition and the three undated entries. The CSV's literal data_ignota code remains binding there; prose may describe undated entries in the required report language."
+        }
+      },
+      "counts": {
+        "report_word_count": {
+          "path": "output/report_avanzamento.md",
+          "minimum": 1200,
+          "maximum": 1800,
+          "exclude_title": false,
+          "criterion": {
+            "id": "report_word_count",
+            "requirement": "Report is between 1 200 and 1 800 words (≈ 2 pages).",
+            "weight": 1,
+            "acceptable_alternatives": [],
+            "evidence_anchors": [],
+            "failure_examples": []
+          }
+        }
+      },
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
+      "input_text_sha256": {
+        "input/lettera_donatore_rizzo.md": "da848d7444926d8b80c405694c731b314364226fc1c47ae13d514255b2506dc6",
+        "input/accordo_grant.md": "774e452e6bea0b31b21106dc6cc633ea2f6af3752c5a74f27a8f26ae8d99b795",
+        "input/log_attivita_q2.csv": "83e38d10d7dc18d38a6cf7d68c146ec78c20a5681fd3a1c00ff861f944992431",
+        "input/log_attivita_q1.csv": "d81da5cb3db8c80a38e8ac0b781f1fbe41326243e5827aecd822f5c6d8ebaf42",
+        "input/budget_grant.csv": "850d462aa8baf565fcac7b768a6d0ce888b5f51df4b78a2bc4accd16252a1d6e",
+        "input/verbale_cda_1406.md": "0fb27481ea7d2e5f5404d67e4698337d207b779d13fa175c9a1400a77663ed90",
+        "input/log_attivita_q2_supp.csv": "ee41d5340fba5797b8cde9e25a4ce83cb44213b80a39725eb3389c218da64bcd"
+      }
+    },
+    "internal/euw_v1_it_017_fr_bridge": {
+      "definition_sha256": "ddadded57989dcac81d1dc221666c44d2498d609fddd7b660f78a70fe6e080e4",
+      "instruction_sha256": "c65548555656fe7179e0786d9b1beee4c26e03b804ebba079fc99b92938a9de6",
+      "corrections": {
+        "report_sections_and_citations": {
+          "original_requirement": "report_avanzamento.md contains exactly 4 H2 sections in order (Attività svolte, Varianza budget, Cambio di scope, Prossimi 6 mesi) and explicitly mentions 'art. 7.3', '29/09/2024', 'Rizzo', and 'data_ignota'.",
+          "requirement": "output/report_avanzamento.md has exactly these four H2 headings in this order: ['## Activités réalisées', '## Variance budget', '## Changement de périmètre', '## Prochains 6 mois']. It explicitly cites art. 7.3, 29/09/2024, the Rizzo condition and the three undated entries. The CSV's literal data_ignota code remains binding there; prose may describe undated entries in the required report language."
+        }
+      },
+      "counts": {
+        "report_word_count": {
+          "path": "output/report_avanzamento.md",
+          "minimum": 1200,
+          "maximum": 1800,
+          "exclude_title": false,
+          "criterion": {
+            "id": "report_word_count",
+            "requirement": "Report is between 1 200 and 1 800 words (≈ 2 pages).",
+            "weight": 1,
+            "acceptable_alternatives": [],
+            "evidence_anchors": [],
+            "failure_examples": []
+          }
+        }
+      },
+      "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
+      "input_text_sha256": {
+        "input/lettera_donatore_rizzo.md": "803455ec9171b6747ecbf711433618e3d48824612b0333febe1c102ca5e54f9c",
+        "input/accordo_grant.md": "0506d1c62e5c18f076db1573b4198a19fc1567c3a32f5cb495ad903485796c8a",
+        "input/log_attivita_q2.csv": "7c2bfebee7eb7c8e3cf521a27eb2b510aca2323c50d49f4589c0be33adcdec13",
+        "input/log_attivita_q1.csv": "382969d797b6039fc2d2a678898f9998e6a4d470514e29ac53af35c2955eca69",
+        "input/budget_grant.csv": "0aff896acfe346efbea3f21bf0e1065050419be1b48aaca856b331e96c8992a6",
+        "input/verbale_cda_1406.md": "053e6bd468e652874953f5f5bf71d1b894d65b8b873e2242fe4bcdcdff396688",
+        "input/log_attivita_q2_supp.csv": "1f923e42aacd5b69ee7e46d20f1590b1dfa33d635434e417832ca1014f6c7f21"
+      }
+    }
+  }
+}

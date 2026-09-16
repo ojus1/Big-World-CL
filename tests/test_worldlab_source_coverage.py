@@ -9,11 +9,61 @@ import hashlib
 
 from scripts.source_world_calibration import read, save
 from worldlab.source_coverage import rubric
+from worldlab import source_coverage
 from worldlab.qualitative import FrozenRubricJudge
 from test_worldlab_judge_recovery import Bank, Client, response
 
 
 class CoverageTests(unittest.TestCase):
+    def test_reviewed_translation_is_applied_only_to_bound_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); bank = Bank(root / 'bank')
+            original = {'id': 'R8', 'verification': 'mechanical', 'weight': 1,
+                        'requirement': 'German recommendation Ablehnung.'}
+            bank.private_definition = lambda _: {'rubric': [original]}
+            correction = {'original_requirement': original['requirement'],
+                          'requirement': 'English recommendation Rejection.'}
+            registry = root / 'registry.json'
+            save(registry, {'tasks': {'fixture': {
+                'definition_sha256': bank.by_id['fixture'].get('definition_sha256'),
+                'instruction_sha256': hashlib.sha256(bank.public('fixture')['instruction'].encode()).hexdigest(),
+                'corrections': {'R8': correction}}}})
+            with patch.object(source_coverage, 'REGISTRY', registry):
+                value = rubric(bank, 'fixture')
+                self.assertEqual(value['criteria'][-1]['requirement'], correction['requirement'])
+                self.assertEqual(value['source_coverage']['corrected_ids'], ['R8'])
+                original['requirement'] += ' Changed.'
+                with self.assertRaisesRegex(ValueError, 'reviewed original'):
+                    rubric(bank, 'fixture')
+                bank.by_id['fixture']['definition_sha256'] = 'changed'
+                with self.assertRaisesRegex(ValueError, 'requalification'):
+                    rubric(bank, 'fixture')
+
+    def test_report_count_boundaries_and_source_binding_without_inference(self):
+        from worldlab.qualitative import request_verdict
+        with tempfile.TemporaryDirectory() as tmp:
+            registry = Path(tmp) / 'registry.json'
+            criterion = {'id': 'report_word_count', 'requirement': '1200–1800 words.', 'weight': 1}
+            rule = {'instruction_sha256': hashlib.sha256(b'Report').hexdigest(),
+                    'input_text_sha256': {'input/source.md': hashlib.sha256(b'Source\n').hexdigest()},
+                    'counts': {'report_word_count': {'criterion': criterion, 'minimum': 1200,
+                        'maximum': 1800, 'path': 'output/report.md', 'exclude_title': False}}}
+            save(registry, {'tasks': {'fixture': rule}})
+            with patch.object(source_coverage, 'REGISTRY', registry):
+                for count, expected in [(1199, False), (1200, True), (1800, True), (1801, False)]:
+                    payload = {'criterion': criterion, 'evidence': {'instruction': 'Report', 'files': {
+                        'input/source.md': {'text': 'Source\r\n'},
+                        'output/report.md': {'text': '中文 l’école quarante-huit : ; ' + ' '.join(['word'] * (count - 3))}}}}
+                    self.assertEqual(source_coverage.count_verdict(payload)['passed'], expected)
+                    result = request_verdict(None, None, payload, 1)
+                    self.assertEqual(result.evaluation_method, 'registered_source_report_word_count')
+                for field in ['source', 'instruction', 'criterion']:
+                    changed = deepcopy(payload)
+                    if field == 'source': changed['evidence']['files']['input/source.md']['text'] += '!'
+                    if field == 'instruction': changed['evidence']['instruction'] += '!'
+                    if field == 'criterion': changed['criterion']['weight'] = 2
+                    self.assertIsNone(source_coverage.count_verdict(changed))
+
     def test_supplier_predicates_bind_each_language_and_detect_status_mutation(self):
         from worldlab import supplier_notes
         rules = read(supplier_notes.REGISTRY)

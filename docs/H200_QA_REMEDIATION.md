@@ -201,3 +201,28 @@ replay reservation increases to 129 calls (96 work + 33 judge), three million
 tokens (two million work + one million judge), with the unchanged full time
 window. Native controls and the matched pilot must validate this version before
 it can release the scale-up gate.
+
+### Source-language corrections and second qualification
+
+The 10-task resource panel completed and audited every attempt with no work
+budget exhaustion: 231 calls and 6,375,480 tokens. It qualifies the prospective
+two-million work / one-million judge allocation, not every grading criterion.
+The v15 coverage panel subsequently audited all ten copied outputs, but five
+of eight positive English recommendation controls failed because inherited R8
+still required German `Ablehnung`. All eight negative controls were rejected.
+These failed controls remain immutable; there is no pilot launch yet.
+
+Judge v25 binds 35 reviewed corrections across 20 task variants to both source
+definition and public-instruction hashes. It preserves explicitly required
+machine labels, fixes translated heading/recommendation obligations and MRI
+arithmetic instructions that disagreed with public sources, and records every
+corrected criterion. Five report-length rules now use exact source-bound
+Unicode word counts. Local QA passes 219 tests (nine environment skips).
+
+The v15 optimizer returned a valid empty edit list with complete accounting
+(one call, 402 tokens). Its qualification operator incorrectly required a
+nonempty proposal; abstention is valid and must not be retried until an edit
+appears. The earlier nonempty structured control remains separate evidence.
+The v15 employee qualification stopped before inference because its controller
+environment omitted the explicit provider profile. A fresh launch must set the
+profile, model and gateway URL and pass the existing fail-closed identity check.

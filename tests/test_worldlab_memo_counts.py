@@ -19,7 +19,7 @@ class MemoCountsTests(unittest.TestCase):
     def test_boundaries_and_no_provider_dispatch(self):
         for count, expected in [(144, False), (145, True), (155, True), (156, False)]:
             rule, payload = self.payload(count)
-            with patch.object(memo_counts.json, 'loads', return_value=[rule]):
+            with patch.object(memo_counts, 'registration', return_value=rule):
                 value = evaluate(payload)
                 self.assertEqual(value['passed'], expected)
                 result = request_verdict(None, None, payload, 1)
