@@ -30,7 +30,7 @@ validation or confirmation cases. Do not infer their answers.
 def schema():
     props = {name: {'type': 'string'} for name in ('content', 'anchor', 'rationale', 'applies_when')}
     for name in ('content', 'applies_when'):
-        props[name]['pattern'] = '^[^\r\n]*$'
+        props[name]['pattern'] = r'^[^\r\n]*$'
     props.update(target={'type': 'string', 'enum': ['skill']},
                  op={'type': 'string', 'enum': ['add', 'delete', 'replace']},
                  source_task_ids={'type': 'array', 'items': {'type': 'string'}, 'minItems': 1})

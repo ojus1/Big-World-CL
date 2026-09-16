@@ -119,7 +119,7 @@ class Tests(unittest.TestCase):
         criterion = {'id': 'R7', 'weight': 2, 'requirement': 'Notes <= 200 chars, German, evidence-based.'}
         source = 'Original evidence.'
         registry = self.root / 'registry.json'
-        save(registry, [{'instruction_sha256': hashlib.sha256(instruction.encode()).hexdigest(),
+        save(registry, [{'task_id': 'fixture', 'instruction_sha256': hashlib.sha256(instruction.encode()).hexdigest(),
             'source_sha256': {'input/source.md': hashlib.sha256(source.encode()).hexdigest()},
             'criterion': criterion, 'semantic_requirement': 'Notes in German with evidence-based substance.'}])
         stream = io.StringIO(newline=''); writer = csv.writer(stream)
@@ -172,6 +172,58 @@ class Tests(unittest.TestCase):
             if field == 'criterion': value['criterion']['requirement'] += ' changed'
             self.assertIsNone(supplier_notes.check(value))
             self.assertEqual(supplier_notes.semantic_payload(value), value)
+
+    def test_supplier_row_conjunction_cannot_hide_one_factual_error(self):
+        payload = self.supplier_fixture(['grounded'] * 5)
+        value = {'criterion_id': 'R7', 'rows': {f'K{i}': {'evidence': 'input/source.md',
+            'reasoning': 'Supported by the supplied source.', 'language_correct': True,
+            'facts_supported': True, 'justification_substantive': True} for i in range(1, 6)}}
+        self.assertTrue(supplier_notes.parse_semantic(value, payload['evidence']['files'])['passed'])
+        value['rows']['K1'].update(facts_supported=False, reasoning='The note calls a source Major finding Minor.')
+        verdict = supplier_notes.parse_semantic(value, payload['evidence']['files'])
+        self.assertFalse(verdict['passed']); self.assertIn('Major', verdict['reasoning'])
+        self.assertEqual(len(verdict['row_checks']), 5)
+        del value['rows']['K5']
+        with self.assertRaisesRegex(ValueError, 'row judgments'):
+            supplier_notes.parse_semantic(value, payload['evidence']['files'])
+
+    def test_public_matrix_status_check_detects_omitted_original_rubric_condition(self):
+        from types import SimpleNamespace
+        payload = self.supplier_fixture(['grounded'] * 5)
+        bank = SimpleNamespace(public=lambda task: {'instruction': payload['evidence']['instruction']})
+        checked = supplier_notes.matrix_status_check(bank, 'fixture', payload['evidence']['files'])
+        self.assertFalse(checked['passed'])  # The fixture sets all rows fulfilled.
+        self.assertEqual(checked['failure_count'], 2)  # K1 and K3.
+        body = payload['evidence']['files'][supplier_notes.OUTPUT]['text']
+        body = body.replace('K1,Name,erfuellt', 'K1,Name,nicht_erfuellt').replace('K3,Name,erfuellt', 'K3,Name,teilweise_erfuellt')
+        payload['evidence']['files'][supplier_notes.OUTPUT]['text'] = body
+        self.assertTrue(supplier_notes.matrix_status_check(bank, 'fixture', payload['evidence']['files'])['passed'])
+
+    def test_row_judgments_bind_physical_schema_and_saved_grade_audit(self):
+        payload = self.supplier_fixture(['grounded'] * 5)
+        bank = Bank(self.root / 'bank')
+        bank.public = lambda task: {'id': task, 'source': 'internal_eurobench', 'input_formats': ['.md'],
+                                    'instruction': payload['evidence']['instruction']}
+        save(bank.root / 'private/rubric.json', {'criteria': [payload['criterion']]})
+        bank.by_id['fixture']['rubric_sha256'] = sha(bank.root / 'private/rubric.json')
+        workspace = self.root / 'workspace'; (workspace / 'input').mkdir(parents=True); (workspace / 'output').mkdir()
+        for name, value in payload['evidence']['files'].items():
+            (workspace / name).write_text(value['text'])
+        value = {'criterion_id': 'R7', 'rows': {f'K{i}': {'evidence': 'input/source.md',
+            'reasoning': 'Supported source facts.', 'language_correct': True, 'facts_supported': True,
+            'justification_substantive': True} for i in range(1, 6)}}
+        client = Client([response(text=json.dumps(value))]); out = self.root / 'judge'
+        judge = FrozenRubricJudge(bank, 'fixture', client.base_url, client_factory=lambda: client)
+        baseline = {'input/source.md': sha(workspace / 'input/source.md')}
+        grade = judge.grade('fixture', workspace, baseline, out)
+        self.assertTrue(grade['grading_complete']); self.assertTrue(grade['criteria'][0]['passed'])
+        self.assertFalse(grade['success'], 'Public matrix-status errors still prevent a passing submission')
+        judge.audit_grade(bank, 'fixture', workspace, baseline, out, grade)
+        self.assertIn('rows', client.calls[0]['extra_body']['structured_outputs']['json']['properties'])
+        grade['criteria'][0]['row_checks'][0]['facts_supported'] = False
+        save(out / 'GRADE.json', grade)
+        with self.assertRaisesRegex(ValueError, 'verdicts changed'):
+            judge.audit_grade(bank, 'fixture', workspace, baseline, out, grade)
 
 
 if __name__ == '__main__': unittest.main()

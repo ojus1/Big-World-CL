@@ -13,6 +13,14 @@ from test_optimizer_preflight import CREDS, response
 
 @unittest.skipUnless(DEFAULT_SOURCE.is_dir(), 'Pinned upstream required')
 class Tests(unittest.TestCase):
+    def test_scope_regex_uses_escaped_control_characters_for_native_grammar(self):
+        from lifespan.evaluation.scoped_edits import schema
+        import re
+        value = schema()['json']['items']['properties']['content']['pattern']
+        self.assertNotIn('\n', value); self.assertNotIn('\r', value)
+        self.assertTrue(re.fullmatch(value, 'One procedure.'))
+        self.assertIsNone(re.fullmatch(value, 'One\nInjected bullet'))
+
     def test_preparation_rejects_an_epoch_that_cannot_reserve_all_gates(self):
         from types import SimpleNamespace
         from worldlab.learning import SkillOpt

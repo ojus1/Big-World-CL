@@ -19,7 +19,7 @@ from scripts.source_world_calibration import read, save, sha
 from worldlab.artifact_inventory import inventory, verify
 from worldlab.bank import Bank
 from worldlab.campaign import source_identity
-from worldlab.qualitative import FrozenRubricJudge, workspace_evidence, request_verdict, parsed_response
+from worldlab.qualitative import FrozenRubricJudge, workspace_evidence, request_verdict, parsed_response, judge_schema
 from worldlab.judge_transport import StructuredJudgeBudget
 from worldlab.verdict_schema import contract
 from worldlab.supplier_notes import COLUMNS, OUTPUT, check
@@ -45,19 +45,23 @@ def controls(bank, judge, out):
         'Contract amendment No. 7 is dated 2024-06-14 and bears both parties signatures, satisfying the signature/date requirement.',
         'Scope memo SCO-2024-0528 is dated 2024-05-28 and signed by T. Brandt, documenting the 316L scope change.',
     ]
-    # The first four conditions require semantic inference, 16 draws each.
-    # Mechanical controls are additional, and should use no model calls.
-    conditions = [('grounded', True), ('irrelevant', False), ('empty_notes', False), ('wrong_language', False),
+    # 64 predeclared semantic draws include plausible but factually wrong
+    # notes. Mechanical controls are additional and use no model calls.
+    conditions = [('grounded', True), ('wrong_severity', False), ('wrong_amount', False), ('wrong_date', False),
+                  ('irrelevant', False), ('empty_notes', False), ('wrong_language', False),
                   ('over_200', False), ('malformed_csv', False)]
     slots = []
     for name, expected in conditions:
-        for repeat in range(16 if name in ('grounded', 'irrelevant', 'empty_notes', 'wrong_language') else 4):
+        for repeat in range(16 if name == 'grounded' else 8 if name not in ('over_200', 'malformed_csv') else 4):
             identifier = f'{name}-{repeat:02d}'; directory = out / identifier
             bank.stage(task, directory / 'workspace')
             workspace = directory / 'workspace'; (workspace / 'output').mkdir()
             values = list(notes)
             if name == 'irrelevant': values = ['The sky is blue and breakfast is delicious.'] * 5
             if name == 'empty_notes': values = [''] * 5
+            if name == 'wrong_severity': values[0] = notes[0].replace('Major', 'Minor')
+            if name == 'wrong_amount': values[2] = notes[2].replace('EUR 5 million', 'EUR 10 million').replace('50 percent', '100 percent')
+            if name == 'wrong_date': values[1] = notes[1].replace('2024-02-10', '2023-02-10')
             if name == 'wrong_language': values = ['La note explique le résultat en français, sans justification tirée des preuves.'] * 5
             if name == 'over_200': values[0] = 'x' * 201
             stream = io.StringIO(newline=''); writer = csv.writer(stream)
@@ -80,7 +84,7 @@ def controls(bank, judge, out):
     def run(slot):
         from openai import OpenAI
         directory = out / slot['id']; payload = read(directory / 'REQUEST.json')
-        meter = StructuredJudgeBudget(structured_contracts=[contract('R7', payload['evidence']['files'])],
+        meter = StructuredJudgeBudget(structured_contracts=[judge_schema(payload)],
             max_model_calls=1, max_output_tokens=4096, max_total_tokens=400000, provider_contract=judge.provider)
         row = {'id': slot['id'], 'expected': slot['expected'], 'ok': False}
         with OpenAI(base_url=ENDPOINT, api_key=os.environ.get('WORLDLAB_API_KEY', 'EMPTY'), max_retries=0, timeout=300) as client:
@@ -126,6 +130,8 @@ def regrade(bank, judge, old, out):
         baseline = read(source / 'BASELINE.json'); save(directory / 'BASELINE.json', baseline)
         slots.append({'id': directory.name, 'source': str(source), 'source_workspace': str(workspace),
             'task_id': by_instruction[original], 'files': files, 'symlinks': links,
+            'expected_r7_and_matrix': {'case-00': [True, True], 'case-01': [True, False],
+                                      'case-02': [False, False]}.get(directory.name),
             'source_execution_receipt_sha256': sha(source / 'EXECUTION_RECEIPT.json'),
             'source_baseline_sha256': sha(source / 'BASELINE.json')})
     save(out / 'PLAN.json', {'source_sha256': source_identity(), 'judge': judge.identity(), 'slots': slots,
@@ -135,7 +141,14 @@ def regrade(bank, judge, old, out):
         grade = judge.grade(slot['task_id'], directory / 'workspace', baseline, directory / 'judging')
         judge.audit_grade(bank, slot['task_id'], directory / 'workspace', baseline, directory / 'judging', grade)
         verify(Path(slot['source_workspace']), slot['files'], slot['symlinks'])
-        row = {'id': slot['id'], 'audited': True, 'quality_score': grade['quality_score'], 'success': grade['success'],
+        expected = slot['expected_r7_and_matrix']
+        semantic_ok = True
+        if expected is not None:
+            r7 = next(v['passed'] for v in grade['criteria'] if v['criterion_id'] == 'R7')
+            matrix = next(v['passed'] for v in grade['public_requirements']['checks'] if v['id'] == 'public_supplier_matrix_statuses')
+            semantic_ok = [r7, matrix] == expected
+        row = {'id': slot['id'], 'audited': True, 'ok': semantic_ok, 'expected_r7_and_matrix': expected,
+               'quality_score': grade['quality_score'], 'success': grade['success'],
                'feedback': grade['feedback'], 'criteria': grade['criteria'], 'usage': grade['usage']}
         if slot['id'] == 'case-03':
             assert grade['evaluation_method'] == 'invalid_candidate_artifact' and grade['usage']['physical_model_calls'] == 0
@@ -145,7 +158,7 @@ def regrade(bank, judge, old, out):
         return row
     with ThreadPoolExecutor(max_workers=64) as pool:
         rows = list(pool.map(run, slots))
-    report = {'ok': all(r['audited'] for r in rows), 'rows': rows, 'plan_sha256': sha(out / 'PLAN.json'),
+    report = {'ok': all(r['audited'] and r['ok'] for r in rows), 'rows': rows, 'plan_sha256': sha(out / 'PLAN.json'),
               'calls': sum(r['usage']['physical_model_calls'] for r in rows),
               'tokens': sum(r['usage']['charged_tokens'] for r in rows)}
     save(out / 'REPORT.json', report)

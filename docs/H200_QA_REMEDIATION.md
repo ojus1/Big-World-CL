@@ -85,3 +85,33 @@ Native qualification uses the committed `scripts/qualify_worldlab_qa.py` driver:
 workspaces. Historical inputs and outputs are hash-verified and never regraded
 in place. Semantic outcome changes are reported individually, not interpreted
 as a recovered v10 treatment effect.
+
+### Native QA iteration 1 and resulting fixes
+
+Frozen `ec65903` passed 204 H200 worldlab tests (one environment skip).
+`qa-remediation-native-v1` matched all 72 initial labels: 64 physical judge calls
+and eight zero-call mechanical controls, 401,262 tokens. Five copied historical
+workspaces passed artifact audits with 20 new judge calls and 197,926 tokens.
+The original symlink submission now yields an auditable failed grade; the
+helper-file zero identifies `build_planning.py` and the scratch/output contract.
+
+This was insufficient for scale-up. Semantic inspection found a false-positive
+R7 on the German note calling an open Major a Minor, and a missing public status
+check let an English matrix with incorrect K1 status receive full credit.
+Judge v21 therefore requires separate structured language, factual-support and
+substance judgments for every K1-K5 note, with host-computed conjunction, plus a
+source-bound public matrix-status check. It retains the original R7 weight and
+adds one explicitly versioned public-requirement weight. Its 64 semantic controls
+now include plausible wrong-severity, wrong-date and wrong-amount notes. Exact
+historical semantic expectations are frozen before calls.
+
+The first scoped optimizer qualification returned HTTP 500 with unknown usage.
+Serving logs attribute it to an xgrammar compilation failure caused by literal
+CR/LF in the regex character class. Escaped regex controls compile successfully
+in the same serving container without a model call. The failed receipt remains
+retained; fresh native optimizer qualification is required before any pilot.
+
+The 14-attempt native resource/JobBench panel and five native employee decisions
+use separate frozen artifacts. Those executions are diagnostic until the revised
+grading and optimizer controls pass. No larger experiment has been authorized by
+these partial results.

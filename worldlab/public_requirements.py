@@ -125,11 +125,15 @@ CHECKERS = {'editorial_calendar_v1': editorial, 'mri_scoring_v1': procurement}
 
 
 def evaluate(bank, task_id, files):
+    from .supplier_notes import matrix_status_check
     registry = read(REGISTRY)
     registration = registry['tasks'].get(task_id)
     report = {'registry_sha256': sha(REGISTRY), 'source_sha256': sha(Path(__file__)),
               'registered': registration is not None, 'checks': [],
               'scope': 'Reviewed supplemental public requirements only; other obligations still need coverage review.'}
+    supplier = matrix_status_check(bank, task_id, files)
+    if supplier is not None:
+        report.update(registered=True, checker='supplier_public_status_rules_v1', checks=[supplier])
     if registration is None: return report
     row = bank.by_id[task_id]
     public = child(bank.root, row['public_directory'])
