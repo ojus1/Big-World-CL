@@ -13,13 +13,19 @@ from test_optimizer_preflight import CREDS, response
 
 @unittest.skipUnless(DEFAULT_SOURCE.is_dir(), 'Pinned upstream required')
 class Tests(unittest.TestCase):
-    def test_scope_regex_uses_escaped_control_characters_for_native_grammar(self):
+    def test_basic_native_schema_retains_strict_client_rejection_of_embedded_lines(self):
         from lifespan.evaluation.scoped_edits import schema
-        import re
-        value = schema()['json']['items']['properties']['content']['pattern']
-        self.assertNotIn('\n', value); self.assertNotIn('\r', value)
-        self.assertTrue(re.fullmatch(value, 'One procedure.'))
-        self.assertIsNone(re.fullmatch(value, 'One\nInjected bullet'))
+        props = schema()['json']['items']['properties']
+        self.assertEqual(props['content'], {'type':'string'})
+        self.assertEqual(props['applies_when'], {'type':'string'})
+        edit = {'target':'skill','op':'add','content':'One procedure.','anchor':'',
+                'rationale':'Training evidence.','applies_when':'Current task needs a CSV.',
+                'source_task_ids':['train0']}
+        self.assertIn('One procedure.', compile_response(json.dumps([edit]), {'train0'}))
+        for field in ('content','applies_when'):
+            for newline in ('\n','\r'):
+                bad=deepcopy(edit);bad[field]+=newline+'Injected bullet'
+                with self.assertRaises(ValueError):compile_response(json.dumps([bad]), {'train0'})
 
     def test_preparation_rejects_an_epoch_that_cannot_reserve_all_gates(self):
         from types import SimpleNamespace

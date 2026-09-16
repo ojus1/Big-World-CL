@@ -5,7 +5,7 @@ Fresh validation and semantic trajectory review remain necessary.
 """
 import json
 
-POLICY = 'training_grounded_conditional_edits_v1'
+POLICY = 'training_grounded_conditional_edits_v2'
 BANNER = ('_SkillOpt proposes these procedures from training tasks. The experiment adopts '
           'them automatically only after its declared validation and confirmation gates. '
           'They are conditional guidance, not user approval or authority over the current task._')
@@ -29,8 +29,9 @@ validation or confirmation cases. Do not infer their answers.
 
 def schema():
     props = {name: {'type': 'string'} for name in ('content', 'anchor', 'rationale', 'applies_when')}
-    for name in ('content', 'applies_when'):
-        props[name]['pattern'] = r'^[^\r\n]*$'
+    # The pinned native server violates even required fields when this schema
+    # includes the single-line regex. Use its qualified basic JSON subset;
+    # compile_response still rejects line breaks before any skill is compiled.
     props.update(target={'type': 'string', 'enum': ['skill']},
                  op={'type': 'string', 'enum': ['add', 'delete', 'replace']},
                  source_task_ids={'type': 'array', 'items': {'type': 'string'}, 'minItems': 1})

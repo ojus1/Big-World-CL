@@ -424,3 +424,24 @@ their own criterion; valid arithmetic still requires semantic TCO-method review.
 This last deterministic change is qualified on the retained failing request and
 source variants, with byte-equivalence checks carrying the passing v27 native
 controls. A fresh complete learning epoch under the final source remains required.
+
+### Native QA iteration 10: replay serialization and optimizer grammar
+
+The retained v24 epoch failed after eight replays (136 target calls, 3,125,204
+tokens) and one optimizer call (8,975 tokens). No skill was adopted. The replay
+audit compared JSON strings whose object keys were reordered by artifact saving;
+all eight parsed trajectories were identical. Audit now compares canonical JSON
+while rejecting duplicate keys, changed content/types and changed message order.
+Optimizer-context text remains bound exactly to the original replay text.
+
+The optimizer separately exhausted 4,096 output tokens after omitting required
+proposal fields and repeating whitespace. Four basic incompatible-prompt schema
+probes passed. Six subsequent causal probes isolated the newline-exclusion regex:
+both API families, bounded arrays and a wrapper object still failed with it;
+removing only the two regex patterns produced a valid complete seven-field edit.
+Server logs also show xgrammar state errors; their precise engine cause is not
+established. The v2 scoped proposal policy uses the supported basic JSON subset
+and keeps the existing client-side newline rejection before compilation/adoption.
+No arbitrary text-length limits, server changes or selective retries are added.
+Native concurrency and real-optimizer qualification are required before a fresh
+complete learning epoch and matched pilot. Earlier failed results remain intact.

@@ -21,6 +21,23 @@ def require(condition, message):
     if not condition: raise ValueError(message)
 
 
+def audit_replay_response(response, trajectory):
+    """Saved JSON sorts object keys; preserve content and array order, not key order."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, 'Duplicate JSON key in replay response')
+            result[key] = value
+        return result
+    try:
+        decoded = json.loads(response, object_pairs_hook=unique_object)
+        actual = json.dumps(decoded, sort_keys=True, ensure_ascii=False, allow_nan=False)
+        expected = json.dumps({'messages': trajectory}, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError):
+        raise ValueError('Replay response is not an unambiguous native trajectory') from None
+    require(actual == expected, 'Replay response differs from native trajectory')
+
+
 def audit_learning_context(bank, selected, update):
     """Bind optimizer-visible text to released tasks and retained native replays."""
     descriptors = {s['id']: {
@@ -115,8 +132,7 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
             if learner_identity and learner_identity.get('feedback_projection') == FEEDBACK_POLICY:
                 require(replay.get('feedback') == learning_feedback(r['grade']), 'Replay learning feedback differs from released grade')
-                require(replay.get('response') == json.dumps({'messages': r['trajectory']}, ensure_ascii=False),
-                        'Replay response differs from native trajectory')
+                audit_replay_response(replay.get('response'), r['trajectory'])
             req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
             require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
             operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']

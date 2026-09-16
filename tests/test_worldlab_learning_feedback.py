@@ -1,12 +1,25 @@
 from copy import deepcopy
+import json
 import unittest
 from worldlab.learning_feedback import learning_feedback
 from worldlab.validation_context import observed_feedback
-from worldlab.audit_worlds import audit_learning_context
+from worldlab.audit_worlds import audit_learning_context, audit_replay_response
 from worldlab.attempts import task_instruction
 
 
 class LearningFeedbackTests(unittest.TestCase):
+    def test_saved_trajectory_allows_json_key_order_but_rejects_content_changes(self):
+        trajectory=[{'role':'assistant','content':'Read source','tool_calls':[{'id':'1','args':{'path':'input.md'}}]},
+                    {'role':'tool','content':'source text'}]
+        response=json.dumps({'messages':trajectory},ensure_ascii=False)
+        saved=json.loads(json.dumps(trajectory,sort_keys=True))
+        audit_replay_response(response,saved)
+        for bad in [response.replace('source text','fabricated text'),
+                    json.dumps({'messages':list(reversed(trajectory))}),
+                    response.replace('"role": "assistant"','"role": "user", "role": "assistant"'),
+                    'null','not json']:
+            with self.subTest(value=bad),self.assertRaises(ValueError):audit_replay_response(bad,saved)
+
     def test_long_passing_prefix_cannot_hide_the_actual_failure(self):
         grade={'feedback':'Passing check. '*5000+'Missing Python examples.',
             'criteria':[{'index':0,'criteria_results':[{'index':0,'passed':True,'reasoning':'Sorting is correct.','criterion':'PRIVATE_RUBRIC_TEXT'}]},
