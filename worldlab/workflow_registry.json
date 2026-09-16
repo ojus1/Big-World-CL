@@ -9,7 +9,8 @@
     "md_uncertainty_prose_correct",
     "csv_row_ordering",
     "csv_structure_and_coverage",
-    "constraint_satisfaction"
+    "constraint_satisfaction",
+    "professional_adequacy"
   ],
   "schema_version": 1,
   "tasks": {
@@ -36,12 +37,31 @@
         },
         {
           "acceptable_alternatives": [
+            "Any presentation that is clear, complete, and free of internal contradictions; minor stylistic variation is acceptable."
+          ],
+          "evidence_anchors": [
+            "input/einschreibungen.csv",
+            "input/hoersaale.csv",
+            "input/modulmatrix.csv",
+            "input/pruefer_verfuegbarkeit.csv",
+            "input/pruefungsordnung_fh_nordwerk_2023.md",
+            "input/wartungsplan.csv",
+            "output/konfliktloesungen.md",
+            "output/pruefungsplan.csv"
+          ],
+          "failure_examples": [],
+          "id": "professional_adequacy",
+          "requirement": "The overall deliverable (CSV + MD) constitutes a coherent, internally consistent, professionally presented exam schedule in French, with no contradictions between the two files and no extraneous or missing content. For oral exam type, accept either the actual source value muendlich or the public description spelling mündlich; do not translate or romanize source proper names. The public ASCII constraint applies to column names, not all cell contents.",
+          "weight": 1.0
+        },
+        {
+          "acceptable_alternatives": [
             "Any valid (week, room) assignment satisfying all Paragraph 10–14 constraints; multiple feasible schedules exist as demonstrated by the two reference outputs."
           ],
           "evidence_anchors": [],
           "failure_examples": [],
           "id": "csv_structure_and_coverage",
-          "requirement": "output/pruefungsplan.csv exists with exactly 14 rows, columns pruefung_id/pruefung_name/woche/hoersaal/pruefer/typ, one row per exam P01–P14, no unknown or missing exams, weeks in 38–49, correct examiner/type/name per einschreibungen.csv.",
+          "requirement": "output/pruefungsplan.csv exists with exactly 14 rows, columns pruefung_id/pruefung_name/woche/hoersaal/pruefer/typ, one row per exam P01–P14, no unknown or missing exams, weeks in 38–49, correct examiner/type/name per einschreibungen.csv. For oral exam type, accept either the actual source value muendlich or the public description spelling mündlich; do not translate or romanize source proper names. The public ASCII constraint applies to column names, not all cell contents.",
           "weight": 1.0
         },
         {
@@ -68,7 +88,8 @@
       "outputs": {
         "constraint_satisfaction": "output/pruefungsplan.csv",
         "csv_row_ordering": "output/pruefungsplan.csv",
-        "csv_structure_and_coverage": "output/pruefungsplan.csv"
+        "csv_structure_and_coverage": "output/pruefungsplan.csv",
+        "professional_adequacy": "output/pruefungsplan.csv"
       }
     },
     "internal/euw_v1_de_024": {

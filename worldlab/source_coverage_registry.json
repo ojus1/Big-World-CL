@@ -61,6 +61,30 @@
       "definition_sha256": "e57ebd3ec1302c8467e70984a70e656de3b9f5987e99c839a985569e023e7437",
       "instruction_sha256": "79ecc334ba1e5bdafd85ff14d00ae4daa39460abccb006423666364c0be17fb5"
     },
+    "internal/euw_v1_de_020_fr_bridge": {
+      "basis": "The supplied source records spell oral type muendlich while the public description uses mündlich. Both represent the same enum; preserve original proper names exactly. Native QA exposed invented room clashes in the broad professional criterion, so registered CSV facts are supplied separately and Markdown assertions still require semantic review.",
+      "corrections": {
+        "csv_structure_and_coverage": {
+          "original_requirement": "output/pruefungsplan.csv exists with exactly 14 rows, columns pruefung_id/pruefung_name/woche/hoersaal/pruefer/typ, one row per exam P01–P14, no unknown or missing exams, weeks in 38–49, correct examiner/type/name per einschreibungen.csv.",
+          "requirement": "output/pruefungsplan.csv exists with exactly 14 rows, columns pruefung_id/pruefung_name/woche/hoersaal/pruefer/typ, one row per exam P01–P14, no unknown or missing exams, weeks in 38–49, correct examiner/type/name per einschreibungen.csv. For oral exam type, accept either the actual source value muendlich or the public description spelling mündlich; do not translate or romanize source proper names. The public ASCII constraint applies to column names, not all cell contents."
+        },
+        "professional_adequacy": {
+          "original_requirement": "The overall deliverable (CSV + MD) constitutes a coherent, internally consistent, professionally presented exam schedule in French, with no contradictions between the two files and no extraneous or missing content.",
+          "requirement": "The overall deliverable (CSV + MD) constitutes a coherent, internally consistent, professionally presented exam schedule in French, with no contradictions between the two files and no extraneous or missing content. For oral exam type, accept either the actual source value muendlich or the public description spelling mündlich; do not translate or romanize source proper names. The public ASCII constraint applies to column names, not all cell contents."
+        }
+      },
+      "counts": {},
+      "definition_sha256": "9b94834ab96988ae681444d133a404bfbd3a23dcd65f07a6bac9f7ca3acb9143",
+      "input_text_sha256": {
+        "input/einschreibungen.csv": "a10626d26ce8689a558dbcacc8e9a59e98ae799aa2b287ab1680d079c846d9f5",
+        "input/hoersaale.csv": "9d8a135dd4e2103a2b527a86b3528408797b492dd28a6fb84858eed32f63455a",
+        "input/modulmatrix.csv": "ad391d8b1901e3fca7438361bbbf79faab4090ce37bca3be700f6f07a9e2b5f3",
+        "input/pruefer_verfuegbarkeit.csv": "a87accbc6c19458b99cea3f4beec239d5af2ca11a204746f82460837b81717b1",
+        "input/pruefungsordnung_fh_nordwerk_2023.md": "8c3bfca324d60f2624ba47f3325439de7a588ca4d40e34d6135c4bbe123fa7ec",
+        "input/wartungsplan.csv": "f14a66a9c197ba13d48418d02ade31347f485a6622ef35cf81e285c317548f99"
+      },
+      "instruction_sha256": "74071ce5c12c22459e2354998ac31d1c43f61772f0f074efe19d75b07a44e2fa"
+    },
     "internal/euw_v1_de_024": {
       "basis": "Prospective review of newly introduced large-run source families: public translated wording, actual source records, mathematical policy and explicit deliverables override inherited private gold assumptions. Source bank bytes retained.",
       "corrections": {

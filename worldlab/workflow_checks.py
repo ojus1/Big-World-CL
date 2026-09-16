@@ -138,7 +138,7 @@ def check_exams(files, identifier):
         used_rooms.add((room,week));used_examiners.add((examiner,week))
 
 
-def verdict(payload):
+def binding(payload):
     registry=read(REGISTRY);c=payload.get('criterion',{})
     if c.get('id') not in registry['criterion_ids']:return None
     evidence=payload.get('evidence',{});files=evidence.get('files',{})
@@ -149,7 +149,26 @@ def verdict(payload):
         if all(isinstance(files.get(p,{}).get('text'),str) and
                hashlib.sha256(files[p]['text'].replace('\r\n','\n').replace('\r','\n').encode()).hexdigest()==h
                for p,h in rule['input_text_sha256'].items()):matched=rule;break
+    return matched
+
+
+def semantic_payload(payload):
+    rule=binding(payload)
+    if rule is None or rule['kind']!='exams' or payload['criterion']['id']!='professional_adequacy':return payload
+    try:check_exams(payload['evidence']['files'],'constraint_satisfaction')
+    except (ValueError,KeyError,TypeError,csv.Error):return payload
+    return {**payload,'registered_schedule_verification': {
+        'method':'source_bound_csv_parser_and_constraint_predicates',
+        'passed':['exact source exam identity and names','examiner and type values (muendlich/mündlich equivalence explicitly accepted)',
+                  '14 unique exams','weeks within block','deadlines','strict prerequisites','examiner availability',
+                  'one exam per examiner per week','room capacity','simulation equipment','room availability','one exam per room per week'],
+        'scope':'These facts were checked independently against actual CSV fields and frozen sources. Do not invent a contradictory CSV clash or repeat the type-spelling penalty. Evaluate the remaining professional coherence, required Markdown, and correspondence of its claims with the submitted schedule. Passing CSV constraints does not certify the Markdown or any claimed search/validation procedure.'}}
+
+
+def verdict(payload):
+    matched=binding(payload)
     if matched is None:return None
+    c=payload['criterion'];files=payload.get('evidence',{}).get('files',{})
     identifier=c['id'];path=matched['outputs'][identifier];reason='All registered source-bound workflow facts match.';passed=True
     def output(p):return files.get(p,{}).get('text','')
     try:
@@ -176,6 +195,7 @@ def verdict(payload):
             return None  # Numeric correctness does not discharge semantic obligations.
         elif matched['kind']=='exams':
             check_exams(files,identifier)
+            if identifier=='professional_adequacy':return None
         else:raise RuntimeError('Unknown registered workflow kind')
     except (ValueError,KeyError,TypeError,csv.Error) as exc:passed=False;reason=str(exc)
     return {'criterion_id':identifier,'passed':passed,'evidence':path,'reasoning':reason}

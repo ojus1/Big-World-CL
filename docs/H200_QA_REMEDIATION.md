@@ -311,3 +311,13 @@ immutable-output regrade audits. The previous uncertainty full pass now scores
 0.588235; arithmetic defects cannot be waved through by its semantic explanation.
 A positive corrected CSV still went through the model and passed. Resource
 qualification remains separate and pending.
+
+Native resource submissions exposed a broad-criterion false room-clash claim and
+a type-spelling source conflict: records use `muendlich`, the public description
+uses `mündlich`, while both describe the same exam type. Judge v29 explicitly
+accepts either value, still preserving proper names exactly. Independently
+verified CSV constraints are now supplied as measured facts to the professional
+prose assessment; an actual CSV violation vetoes that broad criterion, while a
+correct CSV cannot auto-pass Markdown or fabricated conflict explanations. The
+full local suite passes 228 tests; the targeted positive/negative/source-change
+checks also verify that valid arithmetic does not bypass semantic review.

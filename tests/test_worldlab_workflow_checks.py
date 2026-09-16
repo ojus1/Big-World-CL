@@ -107,6 +107,21 @@ class WorkflowTests(unittest.TestCase):
                                ('P02,B,40,HS3','P02,B,40,HS1','PCs')]:
             files['output/pruefungsplan.csv']['text']=valid.replace(old,new)
             with self.assertRaisesRegex(ValueError,reason):w.check_exams(files,'constraint_satisfaction')
+        files['output/pruefungsplan.csv']['text']=valid
+        c={'id':'professional_adequacy','requirement':'Source fidelity and prose coherence','weight':1}
+        registry=self.rule('exams',[c],{c['id']:'output/pruefungsplan.csv'})
+        registry['tasks']['fixture']['input_text_sha256']={p:hashlib.sha256(v['text'].encode()).hexdigest() for p,v in files.items() if p.startswith('input/')}
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'registry.json';save(path,registry)
+            with patch.object(w,'REGISTRY',path):
+                payload={'criterion':c,'evidence':{'instruction':'Workflow','files':files}}
+                self.assertIsNone(w.verdict(payload))  # Correct CSV does not certify Markdown.
+                self.assertIn('registered_schedule_verification',w.semantic_payload(payload))
+                files['output/pruefungsplan.csv']['text']=valid.replace('P01,A,38,HS1','P01,A,38,HS2')
+                self.assertFalse(w.verdict(payload)['passed'])
+                self.assertNotIn('registered_schedule_verification',w.semantic_payload(payload))
+                files['input/hoersaale.csv']['text']+='HS4,100\n'
+                self.assertEqual(w.semantic_payload(payload),payload)
 
 
 if __name__=='__main__':unittest.main()
