@@ -61,13 +61,14 @@ class Tests(unittest.TestCase):
         self.patch = patch.dict(caps.REVIEWED, {TASK: REVIEW})
         self.patch.start(); self.addCleanup(self.patch.stop)
 
-    def case(self, replies, weights=(8, 2), call_limit=None):
+    def case(self, replies, weights=(8, 2), call_limit=None, mutate=None):
         temp = tempfile.TemporaryDirectory(); self.addCleanup(temp.cleanup)
         root = Path(temp.name); bank = Bank(root, weights)
         workspace = root / 'workspace'; (workspace / 'output').mkdir(parents=True)
         (workspace / 'source.conf').write_text('Exact source bytes.\r\n')
         (workspace / 'output/result.conf').write_bytes(b'Full output\r\nsecond line\r\n')
         baseline = {'source.conf': sha(workspace / 'source.conf')}
+        if mutate: mutate(workspace)
         client = Client(replies)
         judge = JobBenchJudge(bank, 'fixture', client.base_url, client_factory=lambda: client)
         out = root / 'judging'
@@ -77,6 +78,34 @@ class Tests(unittest.TestCase):
     def audit(self, case):
         bank, judge, workspace, baseline, out, grade, _ = case
         judge.audit_grade(bank, TASK, workspace, baseline, out, grade)
+
+    def test_source_only_and_blank_workspaces_fail_without_model_calls(self):
+        for blank in [False, True]:
+            def mutate(workspace):
+                output = workspace / 'output/result.conf'
+                if blank: output.write_text(' \n')
+                else: output.unlink()
+                (workspace / 'scratch').mkdir()
+                (workspace / 'scratch/result.conf').write_text('Not submitted.')
+            case = self.case([], mutate=mutate)
+            self.audit(case)
+            *_, grade, client = case
+            self.assertEqual(grade['quality_score'], 0.)
+            self.assertTrue(grade['grading_complete']); self.assertFalse(client.calls)
+            self.assertEqual(grade['artifact_contract']['evidence_violations'][0]['code'], 'missing_deliverable')
+            (case[2] / 'root-result.conf').write_text('0')
+            with self.assertRaisesRegex(ValueError, 'not reproducible'): self.audit(case)
+
+    def test_nonempty_root_deliverable_keeps_original_jobbench_policy(self):
+        replies = [response(0), response(1)]
+        for reply in replies:
+            reply.output_text = reply.output_text.replace('output/result.conf', 'result.conf')
+        def mutate(workspace):
+            (workspace / 'output/result.conf').unlink()
+            (workspace / 'result.conf').write_text('0')
+        case = self.case(replies, mutate=mutate)
+        self.audit(case)
+        self.assertTrue(case[-2]['success']); self.assertEqual(len(case[-1].calls), 2)
 
     def test_original_weighted_conjunction_not_fraction_of_subcriteria(self):
         case = self.case([response(0, (True, False)), response(1)])

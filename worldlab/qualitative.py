@@ -15,7 +15,7 @@ from .mechanical_criteria import evaluate as mechanical_verdict, evaluation_meth
 from .public_requirements import evaluate as public_requirements, aggregate, REGISTRY
 from .evidence_archive import duplicate_text_archive
 from .supplier_notes import semantic_payload, semantic_schema, parse_semantic, ROW_METHOD, REGISTRY as SUPPLIER_REGISTRY
-from .artifact_contract import CandidateEvidenceError, contract as artifact_contract, feedback as artifact_feedback, rejected_grade
+from .artifact_contract import CandidateEvidenceError, contract as artifact_contract, feedback as artifact_feedback, rejected_grade, require_deliverable
 from .source_coverage import rubric as covered_rubric
 from .exam_semantics import semantic_payload as exam_payload, schema as exam_schema, parse as parse_exam, METHOD as EXAM_METHOD
 
@@ -172,7 +172,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 34, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 35, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -252,6 +252,7 @@ class FrozenRubricJudge:
         if self.unsupported(public): raise ValueError('Unsupported judge evidence')
         try:
             files = workspace_evidence(workspace)
+            require_deliverable(files, baseline)
         except CandidateEvidenceError as exc:
             record = artifact_contract(workspace, baseline, {}, violation=exc.violation)
             save(out / 'ARTIFACT_CONTRACT.json', record)
@@ -354,7 +355,7 @@ class FrozenRubricJudge:
         require(grade == read(artifact_root / 'GRADE.json') and grade['grading_complete'], 'Judgment incomplete')
         if grade.get('evaluation_method') == 'invalid_candidate_artifact':
             try:
-                workspace_evidence(workspace)
+                require_deliverable(workspace_evidence(workspace), baseline)
             except CandidateEvidenceError as exc:
                 record = artifact_contract(workspace, baseline, {}, violation=exc.violation)
             else:
@@ -373,6 +374,7 @@ class FrozenRubricJudge:
         recoveries = []
         evidence = read(artifact_root / 'EVIDENCE.json')
         expected_files = workspace_evidence(workspace)
+        require_deliverable(expected_files, baseline)
         require(evidence['files'] == expected_files and evidence['instruction'] == original,
                 'Judge evidence differs from original input and actual deliverables')
         integrity = artifact_contract(workspace, baseline, expected_files)

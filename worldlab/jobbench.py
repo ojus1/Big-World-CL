@@ -14,7 +14,7 @@ from lifespan.evaluation.provider import provider_contract
 from . import jobbench_capabilities as capabilities
 from .judge_transport import StructuredJudgeBudget, JUDGE_SAMPLING, digest
 from .hermes_deadline import save as checkpoint
-from .artifact_contract import CandidateEvidenceError, input_changes, rejected_grade
+from .artifact_contract import CandidateEvidenceError, input_changes, rejected_grade, require_deliverable
 
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml', '.conf', '.rules'}
 SOURCE = {'dataset_repository': 'JobBench/job-bench', 'dataset_revision': capabilities.DATASET_REVISION,
@@ -165,7 +165,7 @@ class JobBenchJudge:
         self.max_tokens, self.client_factory = max_tokens, client_factory
 
     def identity(self):
-        return {'name': 'original_jobbench_text_rubric_judge', 'version': 3,
+        return {'name': 'original_jobbench_text_rubric_judge', 'version': 4,
                 'provider': self.provider, 'sampling': dict(JUDGE_SAMPLING), 'source': SOURCE,
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'max_tokens': self.max_tokens, 'max_model_calls': self.max_model_calls,
@@ -208,6 +208,7 @@ class JobBenchJudge:
         out = Path(out); out.mkdir(parents=True, exist_ok=False)
         try:
             files = output_evidence(workspace, baseline)
+            require_deliverable(files, baseline, output_prefix='')
         except CandidateEvidenceError as exc:
             record = rejected_artifact(workspace, baseline, exc.violation)
             save(out / 'ARTIFACT_CONTRACT.json', record)
@@ -288,7 +289,7 @@ class JobBenchJudge:
                 and grade['status'] == 'completed' and grade['error_type'] is None, 'JobBench grade incomplete')
         if grade.get('evaluation_method') == 'invalid_candidate_artifact':
             try:
-                output_evidence(workspace, baseline)
+                require_deliverable(output_evidence(workspace, baseline), baseline, output_prefix='')
             except CandidateEvidenceError as exc:
                 record = rejected_artifact(workspace, baseline, exc.violation)
             else:
@@ -300,6 +301,7 @@ class JobBenchJudge:
                     'Unexpected model artifacts on zero-call JobBench rejection')
             return
         files = output_evidence(workspace, baseline)
+        require_deliverable(files, baseline, output_prefix='')
         evidence = {'output_files': files}
         require(read(out / 'EVIDENCE.json') == evidence and grade['evidence_sha256'] == sha(out / 'EVIDENCE.json')
                 and grade['rubric_sha256'] == rubric_sha, 'JobBench evidence or rubric changed')

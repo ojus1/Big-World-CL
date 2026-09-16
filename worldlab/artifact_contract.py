@@ -9,6 +9,22 @@ class CandidateEvidenceError(ValueError):
         self.violation = {'path': path, 'code': code, 'reason': message}
 
 
+def require_deliverable(files, baseline, *, output_prefix='output/'):
+    """Inputs and scratch work cannot earn credit for an absent submission.
+
+    This only tests whether candidate content exists. It does not impose a
+    minimum length or certify filenames, completeness or semantic correctness.
+    Archive projections are views of other files, not independent deliverables.
+    """
+    if not any(name.startswith(output_prefix) and name not in baseline and
+               not record.get('representation') and record['text'].strip()
+               for name, record in files.items()):
+        raise CandidateEvidenceError(output_prefix or '.', 'missing_deliverable',
+            'No nonempty candidate deliverable was submitted' +
+            (' in ' + output_prefix if output_prefix else '') + '. '
+            'Original inputs and scratch files do not constitute a submission.')
+
+
 def input_changes(workspace, baseline):
     """Never read a baseline file through an inserted directory/file symlink."""
     workspace = Path(workspace)

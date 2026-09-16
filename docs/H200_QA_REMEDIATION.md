@@ -494,3 +494,26 @@ credentials, metadata removal and preservation of an earlier real tool failure.
 The output schema, serving, judge and learning gates remain unchanged. The v30
 result is retained with its original rejection, receipt and diagnostic labels;
 fresh context qualification and a complete learning epoch precede the pilot.
+
+### V32 empty-submission guard (2026-09-16)
+
+The v31 matched pilot exposed a concrete grading defect: the budget-exhausted
+seed-461 control logistics attempt d005-communications-fr-001-001 submitted no
+deliverables, but received 0.428571 quality from judgments based on source inputs.
+A study-wide stop was requested after the current admitted waves; original
+attempts, grades, learning outcomes and costs remain immutable.
+
+Both source adapters now reject a submission containing no nonempty candidate
+file before calling the model. The EuroBench adapter requires output/ content;
+JobBench retains its source policy allowing root deliverables. Inputs, scratch,
+blank files and duplicate-archive descriptors cannot establish a submission.
+This adds no minimum length and does not certify correctness or completeness.
+The native grade and offline auditor execute the same check, with zero judge
+calls, explicit failure feedback, and retained solver costs.
+
+Validation covers absent/blank/scratch-only and wrong-location submissions,
+original inputs, archive projections, root JobBench outputs, single-character
+nonempty controls, and post-grade mutation detection. Retained native cases and
+fresh small runs are required before a replacement matched pilot. Existing
+nonempty-case prompts, schemas and outcome aggregation must remain unchanged.
+Large-run clearance remains blocked until the replacement pilot completes QA.

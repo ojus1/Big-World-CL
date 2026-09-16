@@ -71,6 +71,43 @@ class Tests(unittest.TestCase):
         with patch('worldlab.qualitative.workspace_evidence', side_effect=PermissionError('fixture I/O failure')):
             with self.assertRaises(PermissionError): self.grade_case(lambda w: None)
 
+    def test_absent_or_blank_deliverables_are_zero_cost_failures_even_with_source_evidence(self):
+        for kind in ['absent', 'empty', 'whitespace', 'scratch_only', 'root_only']:
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
+                self.root = Path(tmp)
+                def mutate(workspace):
+                    output = workspace / 'output/result.md'
+                    output.unlink()
+                    if kind == 'empty': output.touch()
+                    if kind == 'whitespace': output.write_text(' \n\t')
+                    if kind == 'scratch_only':
+                        (workspace / 'scratch').mkdir()
+                        (workspace / 'scratch/result.md').write_text('Unsubmitted result.')
+                    if kind == 'root_only': (workspace / 'result.md').write_text('Wrong directory.')
+                workspace, baseline, bank, judge, out, grade, client = self.grade_case(mutate)
+                self.assertTrue(grade['grading_complete'])
+                self.assertEqual(grade['quality_score'], 0.)
+                self.assertFalse(grade['success']); self.assertFalse(client.calls)
+                self.assertEqual(grade['usage']['physical_model_calls'], 0)
+                self.assertEqual(grade['artifact_contract']['evidence_violations'][0]['code'], 'missing_deliverable')
+                (workspace / 'output/result.md').write_text('A submitted result.')
+                with self.assertRaisesRegex(ValueError, 'not reproducible'):
+                    judge.audit_grade(bank, 'fixture', workspace, baseline, out, grade)
+
+    def test_deliverable_guard_does_not_add_a_length_or_correctness_requirement(self):
+        *_, grade, client = self.grade_case(lambda w: (w / 'output/result.md').write_text('0'))
+        self.assertTrue(grade['success'])
+        self.assertEqual(len(client.calls), 1)
+
+    def test_baseline_output_file_is_not_a_new_candidate_deliverable(self):
+        from worldlab.artifact_contract import CandidateEvidenceError, require_deliverable
+        files = {'output/template.md': {'text': 'Given template.'}}
+        with self.assertRaises(CandidateEvidenceError):
+            require_deliverable(files, {'output/template.md': 'original'})
+        with self.assertRaises(CandidateEvidenceError):
+            require_deliverable({'output/bundle.zip': {'text': 'Archive descriptor.',
+                'representation': 'verified_duplicate_text_archive'}}, {})
+
     def test_invalid_artifact_finalizes_attempt_and_preserves_known_solver_cost(self):
         from test_worldlab_adapters import Harness
         from worldlab.attempts import execute_task
