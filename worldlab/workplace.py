@@ -128,6 +128,16 @@ class Workplace:
         employee = self.state['employees'][employee_id]
         obligation = self.state['obligations'][obligation_id]
         department = profile.get('department', profile['role'])
+        history = []
+        for feedback in employee['released_feedback'][-6:]:
+            source = self.arrivals[feedback['obligation_id']]
+            same_family = source['lineage_group'] == obligation['lineage_group']
+            history.append({**deepcopy(feedback), 'task_id': source['task_id'],
+                            'relation_to_pending': ('same_obligation' if source['id'] == obligation_id else
+                                                    'same_source_family' if same_family else 'unrelated_task'),
+                            'feedback': feedback['feedback'] if same_family else '',
+                            'feedback_scope': ('released feedback for this task family' if same_family else
+                                               'numeric outcome only; detailed feedback belongs to another task family')})
         return {'day': self.day, 'employee_id': employee_id, 'role': profile['role'], 'language': profile['language'],
                 'department': department, 'own_previous_working_notes': employee['notes'], 'trust': employee['trust'],
                 'pending_task': {k: obligation[k] for k in ('id', 'task_id', 'due_day', 'attempts', 'status')},
@@ -136,7 +146,7 @@ class Workplace:
                 'employee_capabilities': {'inspect_source_files': False, 'execute_tools': False,
                                           'complete_artifacts': False, 'delegate_to_assistant': True},
                 'substantive_work': bank.public(obligation['task_id'])['instruction'],
-                'recent_observed_outcomes': deepcopy(employee['released_feedback'][-6:]),
+                'recent_observed_outcomes': history,
                 'received_colleague_messages': deepcopy(employee['mailbox']),
                 'backlog': sum(o['employee_id'] == employee_id and o['status'] in ('pending', 'awaiting_feedback')
                                for o in self.state['obligations'].values()),

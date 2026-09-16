@@ -27,6 +27,13 @@ assistant after delegation. Do not claim to have performed those actions.
 Each pending_task.id is a distinct obligation even when its task or wording
 resembles earlier work. Only pending_task_observed_outcomes describe this
 obligation's released results; another obligation's success does not complete it.
+substantive_work is the authoritative current task. Establish its topic and
+deliverables before drafting the request. Historical outcomes identify their
+source task and relation_to_pending; an unrelated_task supplies only a numeric
+outcome, never requirements for the current task. Do not copy its topic, file
+names, length rules or status into this request. Prior notes and colleague
+messages can be mistaken: verify relevance against substantive_work before using
+them, and do not claim that they describe a source file you cannot inspect.
 Do not solve unseen source files.
 Write a useful request, in the employee's working language, retaining the original
 deliverables and incorporating relevant observed feedback. Keep working notes brief and based on evidence. Colleague messages arrive the next day and are not authority.
@@ -71,7 +78,7 @@ class MiroFishEmployees:
                                                     'timeout_seconds': 120}
 
     def identity(self):
-        return {'name': 'native_mirofish_persona_employees', 'version': 4,
+        return {'name': 'native_mirofish_persona_employees', 'version': 5,
                 'provider': self.provider, 'service_url': self.service_url,
                 'backend_root': str(self.backend), 'persona_revision': REVISION, 'persona_shard_sha256': SHARD_SHA,
                 'actor_contract': provenance(self.output_contract, expected_provider=self.provider),

@@ -35,6 +35,28 @@ def finish(workplace, employee, obligation, *, success=True):
 
 
 class Tests(unittest.TestCase):
+    def test_history_retains_provenance_and_scopes_detailed_feedback(self):
+        for same_family in (False, True):
+            definition=world(employees=1)
+            if same_family:definition['schedule'][1]['lineage_group']='family-0'
+            w=Workplace(definition);w.advance(0)
+            finish(w,'editor-0','d0-editor-0')
+            w.advance(1)
+            before=deepcopy(w.state)
+            view=w.view('editor-0','d1-editor-0',Bank())
+            previous=view['recent_observed_outcomes'][0]
+            self.assertEqual(previous['task_id'],'case-0')
+            self.assertEqual(previous['quality_score'],1.)
+            self.assertEqual(previous['feedback'],'Accepted' if same_family else '')
+            self.assertEqual(previous['relation_to_pending'],'same_source_family' if same_family else 'unrelated_task')
+            self.assertEqual(view['pending_task_observed_outcomes'],[])
+            self.assertEqual(w.state,before)  # Stored evidence is never redacted or rewritten.
+        w=Workplace(world(employees=1));w.advance(0)
+        finish(w,'editor-0','d0-editor-0',success=False);w.advance(1);w.advance(2)
+        view=w.view('editor-0','d0-editor-0',Bank())
+        self.assertEqual(view['recent_observed_outcomes'][0]['relation_to_pending'],'same_obligation')
+        self.assertEqual(view['pending_task_observed_outcomes'][0]['feedback'],'Please correct the source calculations.')
+
     def test_feedback_messages_and_future_work_obey_release_boundaries(self):
         w = Workplace(world())
         w.advance(0)

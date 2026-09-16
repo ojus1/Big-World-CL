@@ -294,3 +294,20 @@ valid or ambiguous prose onward for semantic assessment. Exam-plan checks now
 independently enforce source capacities, availability, deadlines, prerequisites,
 equipment and unique room/examiner booking. All controls include source binding
 and targeted mutations. The original bank and every failed grade are retained.
+
+The stopped prefix passed all 78 causal/source/accounting checks. Manual review
+then found an employee confusing unrelated released editing feedback with the
+current fiber task. The new view preserves every stored feedback record and
+numeric historical outcome but exposes detailed prose only for the current
+source family, with explicit task identity and relationship. Current-obligation
+feedback remains complete. Employee instructions and delegated task wrappers
+explicitly prioritize the current public task over mistaken historical notes or
+colleague messages. This is a prospective actor-view policy change, applied
+identically to both arms; the old run remains unchanged. Native qualification
+must replay the contaminated context before another matched pilot.
+
+The v19 workflow qualification passed 17/17 predetermined controls and all nine
+immutable-output regrade audits. The previous uncertainty full pass now scores
+0.588235; arithmetic defects cannot be waved through by its semantic explanation.
+A positive corrected CSV still went through the model and passed. Resource
+qualification remains separate and pending.
