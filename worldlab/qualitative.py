@@ -51,12 +51,13 @@ def validate_verdict(value, criterion, evidence_paths=None):
 
 
 def verdict_input(payload, *, repair=False):
+    from .memo_counts import semantic_payload as memo_semantic_payload
     rules = RULES
     if semantic_schema(payload) is not None:
         rules = rules.replace('Return only JSON with criterion_id, evidence, reasoning and finally passed (boolean).',
             'Return only the structured criterion_id and per-row judgments requested in evaluation_scope. The host computes passed.')
     return [{'role': 'system', 'content': rules + (REPAIR_RULES if repair else '')},
-            {'role': 'user', 'content': json.dumps(semantic_payload(payload), ensure_ascii=False, sort_keys=True)}]
+            {'role': 'user', 'content': json.dumps(memo_semantic_payload(semantic_payload(payload)), ensure_ascii=False, sort_keys=True)}]
 
 
 def parsed_response(response, criterion, evidence_paths):
@@ -152,7 +153,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 21, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 23, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -175,6 +176,10 @@ class FrozenRubricJudge:
                 'mechanical_criteria_sha256': sha(Path(__file__).with_name('mechanical_criteria.py')),
                 'supplier_notes_sha256': sha(Path(__file__).with_name('supplier_notes.py')),
                 'supplier_note_registry_sha256': sha(SUPPLIER_REGISTRY),
+                'source_quality_policy_sha256': sha(Path(__file__).with_name('source_quality.py')),
+                'source_quality_registry_sha256': sha(Path(__file__).with_name('source_quality_registry.json')),
+                'memo_counts_sha256': sha(Path(__file__).with_name('memo_counts.py')),
+                'memo_count_registry_sha256': sha(Path(__file__).with_name('memo_count_registry.json')),
                 'artifact_contract_sha256': sha(Path(__file__).with_name('artifact_contract.py')),
                 'public_requirements_sha256': sha(Path(__file__).with_name('public_requirements.py')),
                 'public_requirements_registry_sha256': sha(REGISTRY),
@@ -183,7 +188,8 @@ class FrozenRubricJudge:
                 'source_sha256': sha(Path(__file__))}
 
     def unsupported(self, public):
-        reasons = []
+        from .source_quality import exclusions
+        reasons = exclusions(self.bank, public)
         if public['source'] != 'internal_eurobench': reasons.append('No frozen internal r3 rubric')
         if set(public['input_formats']) - TEXT_FORMATS: reasons.append('Complete visual/document judge not connected')
         if public.get('requires_app_state'): reasons.append('App-state evidence not connected')

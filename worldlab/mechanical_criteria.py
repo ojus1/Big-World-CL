@@ -7,6 +7,7 @@ import hashlib
 import html
 import re
 from .supplier_notes import veto as supplier_note_veto, check as supplier_note_check
+from .memo_counts import verdict as memo_count_verdict
 
 SOURCE = 'input/manual_v23_section4.md'
 OUTPUT = 'output/texte_restructure_v3.md'
@@ -115,6 +116,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    if memo_count_verdict(payload) is not None:
+        return 'registered_memo_body_word_count'
     if supplier_note_check(payload) is not None:
         return 'registered_supplier_note_csv_length_veto'
     if payload.get('criterion') == DELIVERABLE_CRITERION:
@@ -127,6 +130,9 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    memo_verdict = memo_count_verdict(payload)
+    if memo_verdict is not None:
+        return memo_verdict
     note_verdict = supplier_note_veto(payload)
     if note_verdict is not None:
         return note_verdict

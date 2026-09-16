@@ -115,3 +115,67 @@ The 14-attempt native resource/JobBench panel and five native employee decisions
 use separate frozen artifacts. Those executions are diagnostic until the revised
 grading and optimizer controls pass. No larger experiment has been authorized by
 these partial results.
+
+### Native QA iteration 2: passed controls and newly exposed blockers
+
+Frozen `2a14934` passed 208 H200 worldlab tests (one skip). The strengthened
+supplier qualification passed all 72 labels, with 64 metered model calls and
+440,500 tokens, plus 20 calls / 200,375 tokens for five historical regressions.
+The corrected native scoped optimizer passed with one call and 570 tokens.
+Five native employee decisions passed their source/view/usage audits.
+
+The first resource panel finalized and audited 14 attempts, consuming 349 calls
+and 8,354,202 tokens; five solver sessions exhausted one million work tokens.
+A prospectively declared second panel used two million work tokens, 96 calls
+and 1,800 seconds in both unchanged-skill repetitions. Thirteen of fourteen
+attempts passed audit; three work sessions exhausted their allowance. The
+remaining JobBench technical-writer session completed native work but its
+400,000-token judge allocation could not reserve the eleventh criterion request.
+Its saved receipt still contains complete physical usage: 39 combined calls and
+1,625,362 tokens. The panel summary omits that failed row's costs and must not be
+used as the total bill. A larger, prospectively reserved judge allowance needs
+fresh qualification; no failing verdict is retried in place.
+
+The resource panel exposed source defects independently verified from public
+inputs. `euw_v1_fr_010` starts ENT-Est at 95 pallets versus 40 capacity and
+requires a temporary 52-pallet peak while prohibiting stock reduction. The other
+three warehouses also start above capacity. The `euw_v1_es_018` family has nine
+instructors with more exams than available days, violating even a relaxed upper
+bound under its 48-hour gap rule. Its original checker nevertheless passed
+native schedules that violate that actual gap. These six task variants are
+prospectively quarantined by exact source hashes, not by observed low scores.
+Changed inputs require requalification. Original task-bank bytes remain intact.
+
+The scheduling family's memo judgments also estimated 135-138 words where saved
+bodies have 151 and 150 whitespace-separated tokens. A source-bound mechanical
+counter now handles the benchmark's 145-155-word rule; the separately judged
+format criterion cannot inherit an estimated word-count failure. The explicit
+counting convention excludes title and standalone punctuation, preserves
+hyphenated/apostrophe-containing tokens, and counts Unicode letters/digits. This
+repairs diagnostics but does not requalify the infeasible scheduling task.
+
+**Scale-up remains blocked by broader grade coverage.** An inventory found 179
+development/calibration task variants whose r3 files omit one or more original
+mechanical criterion IDs. This is a coverage flag, not 179 proven incorrect
+grades: public supplements already cover some conditions. The original checker
+cannot simply be turned on: supplier CSV checks reject required extra columns,
+recommendation substring bans reject negated/contrasted language, and scheduling
+checks miss same-day/actual-hour conflicts. An unqualified composition prototype
+and source-only diagnostic are retained under the ignored operator artifacts;
+they are not wired into a study or presented as repaired production grading.
+
+Remaining gates, in order:
+
+1. Qualify the new memo counts and source quarantine on frozen source; enlarge
+   judge/replay reservations prospectively and regrade a copied complete JobBench
+   submission without rerunning or selecting solver outputs.
+2. Produce an explicit per-task coverage matrix for the prepared cohort. Restore
+   omitted conditions with reviewed executable predicates or appropriate semantic
+   judgments. Validate positive witnesses and targeted mutations; never import
+   incorrect source gold strings as extra public requirements. Block any task
+   without a complete, qualified grade contract.
+3. Recompile the fresh two-pair, five-role pilot after source/grade changes, run
+   complete arms, and audit every native decision, replay, update and deployment.
+   Retain the prepared-but-unexecuted old pilot as superseded evidence.
+4. Only after the complete coverage gate and repeated pilot QA pass, freeze and
+   launch the larger development run. No large run has been launched.

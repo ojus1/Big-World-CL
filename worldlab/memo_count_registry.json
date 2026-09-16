@@ -1,0 +1,252 @@
+[
+  {
+    "task_id": "internal/euw_v1_es_018",
+    "instruction_sha256": "cb3bcd18a9a31eecca8ea16095fe63b461e22f4f14f4440defa7d7d9100edf2b",
+    "criteria": [
+      {
+        "id": "memo_word_count",
+        "weight": 0.6,
+        "requirement": "Memorando body is exactly 150 words ±5",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [],
+        "failure_examples": []
+      },
+      {
+        "id": "memo_format_quality",
+        "weight": 0.8,
+        "requirement": "Format: title + continuous body; professional register; clearly states (i) three rooms with both capacities, (ii) decision + normative basis, (iii) practical planning consequence",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [
+          "Any coherent professional Spanish memo meeting the three content points"
+        ],
+        "failure_examples": []
+      }
+    ],
+    "source_sha256": {
+      "input/aulas_vicerrectorado.csv": "978cbaee4a56443f3a7252c4e2e0fbfbfcb9ec008d203b9a046f31f8fe1ad9df",
+      "input/aulas_instalaciones.csv": "b5e2689b33d3724833d75b14e516b61ab22c77ad01bf515169a7a772623557fd",
+      "input/nota_ausencia_salas.md": "5de3b76cf8a12095f60408e39d2c8f28298e2623e58c65157f53a694bfdb7d2b",
+      "input/disponibilidad_docentes.csv": "2d37a971501d7ba0fe82ff19947631d1be6e39f2e33ac76be8be458f81f7b9ac",
+      "input/asignaturas.csv": "278af5c8ccea489ee3e2a46a9eb95c2f71a8d435b70832a2cdce8d7647c3ea76",
+      "input/reglamento_v4_1.md": "57bf4da21edc04c21d63f0c880f98981a3d07240794fe1d705e49601fb69ddb9"
+    }
+  },
+  {
+    "task_id": "internal/euw_v1_es_018_de_bridge",
+    "instruction_sha256": "6f096ed896611a199a5a90e7bfc050737aa648c3bcf99e7a0c87c019805f6c68",
+    "criteria": [
+      {
+        "id": "memo_word_count",
+        "weight": 0.6,
+        "requirement": "Memorando body is exactly 150 words ±5",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [],
+        "failure_examples": []
+      },
+      {
+        "id": "memo_format_quality",
+        "weight": 0.8,
+        "requirement": "Format: title + continuous body; professional register; clearly states (i) three rooms with both capacities, (ii) decision + normative basis, (iii) practical planning consequence",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [
+          "Any coherent professional German memo meeting the three content points"
+        ],
+        "failure_examples": []
+      }
+    ],
+    "source_sha256": {
+      "input/aulas_vicerrectorado.csv": "978cbaee4a56443f3a7252c4e2e0fbfbfcb9ec008d203b9a046f31f8fe1ad9df",
+      "input/aulas_instalaciones.csv": "b5e2689b33d3724833d75b14e516b61ab22c77ad01bf515169a7a772623557fd",
+      "input/nota_ausencia_salas.md": "1d94a430e55f9064f8d14e02588530c01d6bb56d5cea850d210c23412519b6b0",
+      "input/disponibilidad_docentes.csv": "2d37a971501d7ba0fe82ff19947631d1be6e39f2e33ac76be8be458f81f7b9ac",
+      "input/asignaturas.csv": "f15a7d317c803fc1f7b0a011b5df563465277ccb583f285de0667febe3b56774",
+      "input/reglamento_v4_1.md": "6e6cedc62a4c5025eee89ec300f6cf9f6b8d7345e0abb4d0ca725b305a0943d0"
+    }
+  },
+  {
+    "task_id": "internal/euw_v1_es_018_en_bridge",
+    "instruction_sha256": "c8b59baa037952f62d87a20e9ce66c1ba0627c7d06fa6ea657b799565c881e52",
+    "criteria": [
+      {
+        "id": "memo_word_count",
+        "weight": 0.6,
+        "requirement": "Memorando body is exactly 150 words ±5",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [],
+        "failure_examples": []
+      },
+      {
+        "id": "memo_format_quality",
+        "weight": 0.8,
+        "requirement": "Format: title + continuous body; professional register; clearly states (i) three rooms with both capacities, (ii) decision + normative basis, (iii) practical planning consequence",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [
+          "Any coherent professional English memo meeting the three content points"
+        ],
+        "failure_examples": []
+      }
+    ],
+    "source_sha256": {
+      "input/aulas_vicerrectorado.csv": "978cbaee4a56443f3a7252c4e2e0fbfbfcb9ec008d203b9a046f31f8fe1ad9df",
+      "input/aulas_instalaciones.csv": "b5e2689b33d3724833d75b14e516b61ab22c77ad01bf515169a7a772623557fd",
+      "input/nota_ausencia_salas.md": "7ba484ce2e423d1bd60663da35d984035e5d062740bc48e3efabe2aeed87041d",
+      "input/disponibilidad_docentes.csv": "2d37a971501d7ba0fe82ff19947631d1be6e39f2e33ac76be8be458f81f7b9ac",
+      "input/asignaturas.csv": "278af5c8ccea489ee3e2a46a9eb95c2f71a8d435b70832a2cdce8d7647c3ea76",
+      "input/reglamento_v4_1.md": "a91dd2d6237d0449ceac5bc0733735a2aad16f867e853bfd5e37fe1e9ae954f8"
+    }
+  },
+  {
+    "task_id": "internal/euw_v1_es_018_fr_bridge",
+    "instruction_sha256": "636b7553e0fb02e678257e14a51c672b13902d6a79098ab467f41ffa248636b1",
+    "criteria": [
+      {
+        "id": "memo_word_count",
+        "weight": 0.6,
+        "requirement": "Memorando body is exactly 150 words ±5",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [],
+        "failure_examples": []
+      },
+      {
+        "id": "memo_format_quality",
+        "weight": 0.8,
+        "requirement": "Format: title + continuous body; professional register; clearly states (i) three rooms with both capacities, (ii) decision + normative basis, (iii) practical planning consequence",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [
+          "Any coherent professional French memo meeting the three content points"
+        ],
+        "failure_examples": []
+      }
+    ],
+    "source_sha256": {
+      "input/aulas_vicerrectorado.csv": "978cbaee4a56443f3a7252c4e2e0fbfbfcb9ec008d203b9a046f31f8fe1ad9df",
+      "input/aulas_instalaciones.csv": "b5e2689b33d3724833d75b14e516b61ab22c77ad01bf515169a7a772623557fd",
+      "input/nota_ausencia_salas.md": "f43daf02405ce1c168dc5f9ae0ff22e31ecbfba604d0b4ac0a5e00f34cd6012e",
+      "input/disponibilidad_docentes.csv": "2d37a971501d7ba0fe82ff19947631d1be6e39f2e33ac76be8be458f81f7b9ac",
+      "input/asignaturas.csv": "e1efd558b8c9f4b4d710dd684959cf389a7a050b33ff84ec43caa0c4d4f84644",
+      "input/reglamento_v4_1.md": "c419fa8a35c071518b3ad8b1e1a898fbe767b057537a5083c77c16c51387fa7d"
+    }
+  },
+  {
+    "task_id": "internal/euw_v1_es_018_it_bridge",
+    "instruction_sha256": "bcf6ee2902ae04cdfdbbd0dafe1f58fc560b618c3e7122519395a87ed8a82535",
+    "criteria": [
+      {
+        "id": "memo_word_count",
+        "weight": 0.6,
+        "requirement": "Memorando body is exactly 150 words ±5",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [],
+        "failure_examples": []
+      },
+      {
+        "id": "memo_format_quality",
+        "weight": 0.8,
+        "requirement": "Format: title + continuous body; professional register; clearly states (i) three rooms with both capacities, (ii) decision + normative basis, (iii) practical planning consequence",
+        "evidence_anchors": [
+          "input/asignaturas.csv",
+          "input/aulas_instalaciones.csv",
+          "input/aulas_vicerrectorado.csv",
+          "input/disponibilidad_docentes.csv",
+          "input/nota_ausencia_salas.md",
+          "input/reglamento_v4_1.md",
+          "output/asignacion_examenes.csv",
+          "output/memorando.md"
+        ],
+        "acceptable_alternatives": [
+          "Any coherent professional Italian memo meeting the three content points"
+        ],
+        "failure_examples": []
+      }
+    ],
+    "source_sha256": {
+      "input/aulas_vicerrectorado.csv": "978cbaee4a56443f3a7252c4e2e0fbfbfcb9ec008d203b9a046f31f8fe1ad9df",
+      "input/aulas_instalaciones.csv": "b5e2689b33d3724833d75b14e516b61ab22c77ad01bf515169a7a772623557fd",
+      "input/nota_ausencia_salas.md": "965a00997fd7809873ea18ee70dad43c65e65930af2e416fc1363fdd90c0c0a5",
+      "input/disponibilidad_docentes.csv": "2d37a971501d7ba0fe82ff19947631d1be6e39f2e33ac76be8be458f81f7b9ac",
+      "input/asignaturas.csv": "4c7cc7c3e542c150f99e255022dbadee074d26c022db803dd4f8ed9a48bee7da",
+      "input/reglamento_v4_1.md": "f8b340552297969594cbcb88785fdf27514f4e9982bf93c276980105e17a3224"
+    }
+  }
+]
