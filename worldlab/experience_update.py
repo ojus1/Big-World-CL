@@ -7,6 +7,7 @@ from .attempts import execute_task, task_instruction
 from .contracts import Budget, judge_call_allocation
 from .validation_context import observed_feedback
 from .cancellation import check
+from .learning_feedback import learning_feedback
 
 
 def replay_admission(limits, work_budget):
@@ -102,7 +103,7 @@ def update_employee(bank, harness, judge, learner, selected, *, employee, day, s
         return {'status': attempt['status'], 'hard': float(grade['success']) if grade else 0.0,
                 'soft': grade['quality_score'] if grade and grade['grading_complete'] else 0.0,
                 'response': json.dumps({'messages': attempt['trajectory']}, ensure_ascii=False),
-                'feedback': grade['feedback'] if grade else '',
+                'feedback': learning_feedback(grade) if grade else '',
                 # The attempt's tokens include conservative reservations after
                 # an unknown provider receipt. The learner expects measured
                 # usage or None; retain its reservation when usage is unknown.

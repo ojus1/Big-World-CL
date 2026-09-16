@@ -114,4 +114,5 @@ def observed_feedback(case):
             raise ValueError('Prepared gate tasks cannot carry employee context or observed grades')
         # Day zero denotes public task availability, not a fabricated observation.
         return ''
-    return case['grade']['feedback']
+    from .learning_feedback import learning_feedback
+    return learning_feedback(case['grade'])

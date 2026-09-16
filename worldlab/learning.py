@@ -56,6 +56,7 @@ class SkillOpt:
                 'budget': asdict(self.budget), 'gate_metric': 'mixed', 'gate_no_regression': True,
                 'edit_policy': self.edit_policy,
                 'optimizer_output_tokens': self.optimizer_output_tokens,
+                'feedback_projection': 'released_failures_first_v1',
                 'confirmation': ({'cases': self.confirmation_cases, 'repeats': self.confirmation_repeats,
                     'min_gain': self.confirmation_min_gain, 'selection': 'last_predeclared_validation_cases',
                     'no_case_regression': True} if self.confirmation_cases else None)}

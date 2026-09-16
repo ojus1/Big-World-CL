@@ -351,3 +351,21 @@ The worker stopped at its 1,800-second active deadline with 1.5 seconds of
 cleanup, then the retained output was graded. All six expanded employee context
 checks preserved the current topic and deliverables; residual imperfect wording
 remains a model behavior outcome. The large study remains gated and unlaunched.
+
+
+### Native QA iteration 8: prioritize actual released learning failures
+
+Manual inspection of the real optimizer input found that upstream's short
+why-wrong excerpt started with passing JobBench ordering checks. A fresh native
+proposal consequently claimed an ordering failure even though all observed
+ordering subcriteria passed. The actual failures were missing code examples,
+priority assignments and SDK coverage later in the feedback.
+
+A deterministic learning-only projection now places already released failed
+check IDs and rationales first, followed by passing IDs and the complete original
+feedback. It adds no private criterion text, preserves grades and source files,
+and labels evaluator feedback as fallible. Both observed TRAIN feedback and
+fresh replay feedback use this projection. Registered learner replay audits
+reconstruct it from the saved grade; unrelated learner policies retain their own
+contracts. A fresh native epoch is needed to qualify this feedback policy. The
+v23 epoch remains a separate output-cap diagnostic and is not relabeled.

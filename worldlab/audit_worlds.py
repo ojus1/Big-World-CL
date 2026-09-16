@@ -14,6 +14,7 @@ from .worlds import stable_hash
 from .validation_context import select_experiences, validate_world
 from .attempts import task_instruction
 from .artifact_inventory import verify as verify_inventory
+from .learning_feedback import learning_feedback
 
 
 def require(condition, message):
@@ -91,6 +92,8 @@ def audit_updates(bank, world, root, state, name, harness, counts, learner=None,
             r = audit_attempt(bank, update_root / f'replay-{replay["attempt_index"]:03d}', by_id[replay['id']]['task_id'], harness=harness,
                                       employee_message=by_id[replay['id']].get('employee_message'), judge=judge)
             require(replay['hard'] == float(r['grade']['success']) and replay['soft'] == r['grade']['quality_score'], 'Replay score mismatch')
+            if learner_identity and learner_identity.get('feedback_projection') == 'released_failures_first_v1':
+                require(replay.get('feedback') == learning_feedback(r['grade']), 'Replay learning feedback differs from released grade')
             req = read(update_root / f'replay-{replay["attempt_index"]:03d}' / 'PUBLIC_REQUEST.json')
             require(hashlib.sha256(req['skill'].encode()).hexdigest() == replay['skill_sha256'], 'Replay skill mismatch')
             operations = [o for o in update['costs']['operations'] if o['kind'] == 'target']
