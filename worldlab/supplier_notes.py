@@ -132,8 +132,10 @@ def source_matrix_verdict(payload):
     # Reuse exact instruction/source binding and the same strict CSV parser.
     bound = None
     for rule in json.loads(REGISTRY.read_text()):
+        if payload.get('criterion') not in rule.get('matrix_criteria', []):
+            continue
         candidate = {**payload, 'criterion': rule['criterion']}
-        if payload.get('criterion') in rule.get('matrix_criteria', []) and registration(candidate) is not None:
+        if registration(candidate) is not None:
             bound = candidate
             break
     if bound is None:
