@@ -179,3 +179,25 @@ Remaining gates, in order:
    Retain the prepared-but-unexecuted old pilot as superseded evidence.
 4. Only after the complete coverage gate and repeated pilot QA pass, freeze and
    launch the larger development run. No large run has been launched.
+
+### Source-obligation coverage candidate
+
+Judge v24 prospectively restores original `verification=mechanical` rubric
+obligations absent from r3 into the actual scoring contract, retaining their
+source IDs and weights. It does **not** pretend the defective original checker
+is qualified: restored obligations use structured model judgments unless a
+reviewed executable predicate exists. Supplier R1-R5 now use source-bound CSV
+structure/status predicates, avoiding untranslated labels and incorrect gold
+column projections. Existing r3 criteria, ambiguity guidance, source precedence,
+and registered supplements remain binding. Every grade and audit binds the full
+effective criterion list to its original definition and r3 source hashes.
+
+This is a new development metric; old results are not comparable treatment
+estimates. Full public-contract completeness and independent judge correctness
+remain unclaimed. Eligibility retains the previously qualified maximum of eight
+original r3 criteria while allowing restored obligations, up to 32 total plus
+one bounded format repair. Per-task allocation is now explicit. The prospective
+replay reservation increases to 129 calls (96 work + 33 judge), three million
+tokens (two million work + one million judge), with the unchanged full time
+window. Native controls and the matched pilot must validate this version before
+it can release the scale-up gate.

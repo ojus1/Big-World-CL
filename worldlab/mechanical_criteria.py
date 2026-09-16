@@ -6,7 +6,7 @@ These are narrow source checks, not a model judgment or general semantic oracle.
 import hashlib
 import html
 import re
-from .supplier_notes import veto as supplier_note_veto, check as supplier_note_check
+from .supplier_notes import veto as supplier_note_veto, check as supplier_note_check, source_matrix_verdict
 from .memo_counts import verdict as memo_count_verdict
 
 SOURCE = 'input/manual_v23_section4.md'
@@ -116,6 +116,8 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    if source_matrix_verdict(payload) is not None:
+        return 'registered_supplier_matrix_source_predicate'
     if memo_count_verdict(payload) is not None:
         return 'registered_memo_body_word_count'
     if supplier_note_check(payload) is not None:
@@ -130,6 +132,9 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    matrix_verdict = source_matrix_verdict(payload)
+    if matrix_verdict is not None:
+        return matrix_verdict
     memo_verdict = memo_count_verdict(payload)
     if memo_verdict is not None:
         return memo_verdict

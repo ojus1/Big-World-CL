@@ -188,7 +188,7 @@ class Tests(unittest.TestCase):
             router.audit_grade(bank, TASK, workspace, baseline, out, grade)
         self.assertEqual(router.unsupported(PUBLIC), [])
         self.assertTrue(router.unsupported(dict(PUBLIC, source='unknown')))
-        self.assertEqual(router.max_model_calls, 13)
+        self.assertEqual(router.max_model_calls, 33)
         self.assertEqual(router.max_model_calls_for(TASK),3)
 
     def test_string_criteria_supported_and_invalid_weights_rejected(self):

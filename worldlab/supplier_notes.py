@@ -127,6 +127,36 @@ def parse_semantic(value, files):
             'row_checks': checks}
 
 
+def source_matrix_verdict(payload):
+    """Complete executable restored R1-R5 predicates for pinned supplier inputs."""
+    # Reuse exact instruction/source binding and the same strict CSV parser.
+    bound = None
+    for rule in json.loads(REGISTRY.read_text()):
+        candidate = {**payload, 'criterion': rule['criterion']}
+        if payload.get('criterion') in rule.get('matrix_criteria', []) and registration(candidate) is not None:
+            bound = candidate
+            break
+    if bound is None:
+        return None
+    measured = check(bound)
+    identifier = payload['criterion']['id']
+    issues = []
+    if measured['error'] is not None:
+        issues.append('Invalid required CSV structure: ' + measured['error'])
+    elif identifier != 'R1':
+        rows = {r['kriterium_id']: r for r in csv.DictReader(io.StringIO(
+            payload['evidence']['files'][OUTPUT]['text'].removeprefix('\ufeff'), newline=''), strict=True)}
+        expected = {'R2': {'K1': 'nicht_erfuellt'}, 'R3': {'K2': 'erfuellt'},
+                    'R4': {'K3': 'teilweise_erfuellt'}, 'R5': {'K4': 'erfuellt', 'K5': 'erfuellt'}}[identifier]
+        for key, status in expected.items():
+            if rows[key]['status'] != status:
+                issues.append(key + ': status ' + repr(rows[key]['status']) + '; source requires ' + status)
+    return {'criterion_id': identifier, 'passed': not issues, 'evidence': OUTPUT,
+            'reasoning': '; '.join(issues) if issues else
+                'The source-bound CSV predicate satisfies ' + identifier + ': ' + payload['criterion']['requirement'] +
+                '. Counts apply to decoded CSV cells; human-readable criterion labels are not compared with untranslated private gold.'}
+
+
 def matrix_status_check(bank, task_id, files):
     """The public handbook states exact statuses; all source bytes are pinned."""
     rule = next((r for r in json.loads(REGISTRY.read_text()) if r['task_id'] == task_id), None)
