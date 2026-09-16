@@ -226,3 +226,16 @@ appears. The earlier nonempty structured control remains separate evidence.
 The v15 employee qualification stopped before inference because its controller
 environment omitted the explicit provider profile. A fresh launch must set the
 profile, model and gateway URL and pass the existing fail-closed identity check.
+
+The v16 native controls passed 72/72 plus 16/16 recommendation controls; all ten
+copied submissions passed artifact/accounting audits. Manual review still found
+a calendar judgment contaminating arithmetic with date-policy assumptions,
+including rejecting a prescribed negative interval and shifting FR despite the
+explicit prohibition. Judge v26 therefore registers seven source-bound calendar
+CSV checks. Arithmetic follows submitted dates; separate checks enforce original,
+compression and delay dates. The inherited delay criterion is corrected to the
+public rule that unaffected rows retain original dates. The source's arbitrary
+mandatory risk-title reference is also removed in favor of its stated choice.
+Positive fixtures, targeted mutations, Unicode/source bindings and calendar
+boundaries pass; the complete local worldlab suite passes 221 tests (nine skips).
+The matched pilot still awaits fresh qualification and native employee checks.

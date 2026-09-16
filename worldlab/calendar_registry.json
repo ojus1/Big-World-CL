@@ -1,0 +1,93 @@
+{
+  "convention": "Inclusive date difference; subtract Sundays and listed holidays within the submitted interval, even when the difference is negative. Arithmetic does not silently apply separate date-policy rules.",
+  "criterion_ids": [
+    "csv_sort_order",
+    "csv_schema_completeness",
+    "dates_fixes_fidelity",
+    "window_arithmetic",
+    "compression_shift",
+    "glissement_logic",
+    "sous_seuil_flag"
+  ],
+  "schema_version": 1,
+  "tasks": {
+    "internal/euw_v1_fr_014": {
+      "criteria": [
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [
+            "input/agenda_editorial_v3.csv",
+            "input/charge_traducteurs.csv",
+            "input/contrats_auteurs.csv",
+            "input/emails_auteurs.md",
+            "input/indisponibilites.csv",
+            "input/politique_retards.md",
+            "output/decision.md",
+            "output/planning_scenarios.csv"
+          ],
+          "failure_examples": [],
+          "id": "csv_sort_order",
+          "requirement": "Rows sorted by scenario (alphabetical), then titre (alphabetical), then langue (alphabetical).",
+          "weight": 0.5
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "csv_schema_completeness",
+          "requirement": "planning_scenarios.csv has exactly 36 rows (3×12), 10 named columns, valid scenario/statut/sous_seuil enums, no missing/unknown/duplicate (scenario,titre,langue) keys.",
+          "weight": 1.0
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "dates_fixes_fidelity",
+          "requirement": "In scenario dates_fixes, date_livraison_manuscrit, date_relecture, and date_parution must exactly match agenda_editorial_v3.csv for every titre/langue.",
+          "weight": 1.0
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "window_arithmetic",
+          "requirement": "fenetre_jours_calendaires = relecture − livraison + 1 (inclusive); fenetre_jours_ouvrables = cal_days − Sundays − listed 2025 holidays in [livraison, relecture], correct in all three scenarios.",
+          "weight": 1.5
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "compression_shift",
+          "requirement": "In scenario compression, date_livraison_manuscrit = agenda livraison + 14 days; date_relecture and date_parution unchanged from agenda v3.",
+          "weight": 1.0
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "glissement_logic",
+          "requirement": "In scenario glissement, use the compression window to identify affected translated DE/EN rows (<10 working days). For affected rows other than the non-displaceable Atlas des Migrations DE event, retain the delayed manuscript delivery, move publication +14 days from agenda v3, and recalculate review as publication minus 7 days. An affected non-displaceable event retains compression dates. All unaffected rows, including FR, retain dates_fixes dates, as the public instruction explicitly requires.",
+          "weight": 1.5
+        },
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "sous_seuil_flag",
+          "requirement": "sous_seuil_10j = 'oui' iff fenetre_jours_ouvrables < 10, 'non' otherwise, in every row.",
+          "weight": 0.5
+        }
+      ],
+      "input_text_sha256": {
+        "input/agenda_editorial_v3.csv": "9cc19b94047e5e667e0cd9036f2a4f825d7935f3220b10f60f3a4c6dc4fe755c",
+        "input/charge_traducteurs.csv": "79a1322b3d34fa3bc59da7a15119902316d11597b825c8985f4c16093e6acab3",
+        "input/contrats_auteurs.csv": "2c2b5725ffffb484d8555f47d15ea398825ef3a78653b283d7d5ec232c947dc4",
+        "input/emails_auteurs.md": "0a351fdf66ee50a49a916680120daa879c28bb2da7b0557662c70ee5552a2ad7",
+        "input/indisponibilites.csv": "f1c1eca6b58ed1a87fb9eff46c90f4d30ce438d76f9abee92ace267a20ec8950",
+        "input/politique_retards.md": "23a3ae6f17f91faaf61bdab8736d3fb3408428821d13ae8231ea60ab2c14d3cc"
+      },
+      "instruction_sha256": "c29cb082da9bc6b6a15369d980e826ede8a500db9ddffc262f76bc8f752c8054"
+    }
+  }
+}

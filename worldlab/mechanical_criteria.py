@@ -117,6 +117,9 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    from .calendar_checks import verdict as calendar_verdict
+    if calendar_verdict(payload) is not None:
+        return 'registered_calendar_source_predicate'
     if restored_count_verdict(payload) is not None:
         return 'registered_source_report_word_count'
     if source_matrix_verdict(payload) is not None:
@@ -135,6 +138,10 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    from .calendar_checks import verdict as calendar_verdict
+    calendar = calendar_verdict(payload)
+    if calendar is not None:
+        return calendar
     counted = restored_count_verdict(payload)
     if counted is not None:
         return counted
