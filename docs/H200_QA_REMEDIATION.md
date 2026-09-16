@@ -263,3 +263,34 @@ values are required, no missing value is invented. Rounded U and directly stated
 u are distinguished explicitly, and the supplied 0.01-bar floor applies globally.
 The candidate passes 223 local worldlab tests (nine skips). New-family native
 qualification and complete pilot QA still gate the large launch.
+
+### Pilot stop, numeric predicates and resource requalification
+
+The v17 pilot was operator-stopped at a wave boundary after semantic QA found
+contradictory grading. All admitted work joined by 14:01:22 UTC on September 16.
+It retains 30 online attempts, 598 solver/judge calls and 11,491,254 tokens, with
+zero updates, zero adoptions and no unfinished executions. Two of six operations
+attempts exhausted their allocation; both were the feasible de020 exam task.
+This crosses the predeclared 20% role threshold. A fresh five-repeat resource
+diagnostic will use four million work tokens and 128 calls (same 1,800-second
+window), uniformly; at most one exhaustion and zero infrastructure/accounting
+failures are required before a uniformly reconfigured matched pilot. No attempt
+will be resumed or retried selectively.
+
+Raw-source inspection corrected an initial hypothesis about fr018: day 92 is
+correct; the submitted 79–91 interval has thirteen days, not the required
+fourteen. Deterministic inclusive-day, permit and safety checks now cover all
+four relevant criteria. Housing fr019 preserves mandatory CH-004/CH-006
+eligibility while allowing the rubric's existing, justified CH-001 journal
+reconciliation alternative; it does not accept fabricated certificate failures.
+
+The v18 new-family panel finalized ten attempts, 203 calls and 2,812,008 tokens
+with zero budget exhaustions. Artifact/accounting success did not establish
+semantic accuracy: de024 repeat 1 received full marks despite five sub-minimum
+converted uncertainties. Source-bound numeric vetoes now reject wrong values
+in CSV and unambiguous Markdown sections, compare decimal values numerically
+(0.010 equals 0.01), preserve the two missing-k originals, and send numerically
+valid or ambiguous prose onward for semantic assessment. Exam-plan checks now
+independently enforce source capacities, availability, deadlines, prerequisites,
+equipment and unique room/examiner booking. All controls include source binding
+and targeted mutations. The original bank and every failed grade are retained.

@@ -117,6 +117,9 @@ def missing_heading_veto(payload):
 
 def evaluation_method(payload):
     """Call only after evaluate returns a registered verdict."""
+    from .workflow_checks import verdict as workflow_verdict
+    if workflow_verdict(payload) is not None:
+        return 'registered_workflow_source_predicate'
     from .calendar_checks import verdict as calendar_verdict
     if calendar_verdict(payload) is not None:
         return 'registered_calendar_source_predicate'
@@ -141,6 +144,10 @@ def matches(text, number):
 
 
 def evaluate(payload):
+    from .workflow_checks import verdict as workflow_verdict
+    workflow = workflow_verdict(payload)
+    if workflow is not None:
+        return workflow
     from .calendar_checks import verdict as calendar_verdict
     calendar = calendar_verdict(payload)
     if calendar is not None:

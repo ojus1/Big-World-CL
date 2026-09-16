@@ -155,7 +155,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 27, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 28, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -184,6 +184,8 @@ class FrozenRubricJudge:
                 'source_coverage_registry_sha256': sha(Path(__file__).with_name('source_coverage_registry.json')),
                 'calendar_checks_sha256': sha(Path(__file__).with_name('calendar_checks.py')),
                 'calendar_registry_sha256': sha(Path(__file__).with_name('calendar_registry.json')),
+                'workflow_checks_sha256': sha(Path(__file__).with_name('workflow_checks.py')),
+                'workflow_registry_sha256': sha(Path(__file__).with_name('workflow_registry.json')),
                 'source_obligation_method': 'structured judgments plus registered deterministic predicates; no blind execution of source gold',
                 'original_qualitative_criterion_limit': 8,
                 'memo_counts_sha256': sha(Path(__file__).with_name('memo_counts.py')),

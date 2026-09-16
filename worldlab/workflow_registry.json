@@ -1,0 +1,197 @@
+{
+  "criterion_ids": [
+    "optimal_plan_correctness",
+    "fallback_plan_correctness",
+    "permit_analysis_json",
+    "evidence_entailment_schedule",
+    "core_json_facts",
+    "csv_conversion_values",
+    "md_uncertainty_prose_correct",
+    "csv_row_ordering",
+    "csv_structure_and_coverage",
+    "constraint_satisfaction"
+  ],
+  "schema_version": 1,
+  "tasks": {
+    "internal/euw_v1_de_020_fr_bridge": {
+      "criteria": [
+        {
+          "acceptable_alternatives": [
+            "Strict lexicographic ascending order of the pruefung_id column."
+          ],
+          "evidence_anchors": [
+            "input/einschreibungen.csv",
+            "input/hoersaale.csv",
+            "input/modulmatrix.csv",
+            "input/pruefer_verfuegbarkeit.csv",
+            "input/pruefungsordnung_fh_nordwerk_2023.md",
+            "input/wartungsplan.csv",
+            "output/konfliktloesungen.md",
+            "output/pruefungsplan.csv"
+          ],
+          "failure_examples": [],
+          "id": "csv_row_ordering",
+          "requirement": "The 14 CSV rows are sorted ascending by pruefung_id (P01, P02, …, P14) as stated in the instruction.",
+          "weight": 0.5
+        },
+        {
+          "acceptable_alternatives": [
+            "Any valid (week, room) assignment satisfying all Paragraph 10–14 constraints; multiple feasible schedules exist as demonstrated by the two reference outputs."
+          ],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "csv_structure_and_coverage",
+          "requirement": "output/pruefungsplan.csv exists with exactly 14 rows, columns pruefung_id/pruefung_name/woche/hoersaal/pruefer/typ, one row per exam P01–P14, no unknown or missing exams, weeks in 38–49, correct examiner/type/name per einschreibungen.csv.",
+          "weight": 1.0
+        },
+        {
+          "acceptable_alternatives": [
+            "Any assignment satisfying all listed constraints simultaneously; the solver need not match a specific reference."
+          ],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "constraint_satisfaction",
+          "requirement": "Every assignment respects: deadline_week (¶10.3), strict prerequisite ordering (¶13), examiner availability (¶12), max-one-per-week-per-examiner (¶10.2), room capacity ≥ enrollment (¶11.1), Simulations-PCs only in HS3 (¶11.2), one room per week (¶11.3), closed rooms unused (¶11.4).",
+          "weight": 2.0
+        }
+      ],
+      "input_text_sha256": {
+        "input/einschreibungen.csv": "a10626d26ce8689a558dbcacc8e9a59e98ae799aa2b287ab1680d079c846d9f5",
+        "input/hoersaale.csv": "9d8a135dd4e2103a2b527a86b3528408797b492dd28a6fb84858eed32f63455a",
+        "input/modulmatrix.csv": "ad391d8b1901e3fca7438361bbbf79faab4090ce37bca3be700f6f07a9e2b5f3",
+        "input/pruefer_verfuegbarkeit.csv": "a87accbc6c19458b99cea3f4beec239d5af2ca11a204746f82460837b81717b1",
+        "input/pruefungsordnung_fh_nordwerk_2023.md": "8c3bfca324d60f2624ba47f3325439de7a588ca4d40e34d6135c4bbe123fa7ec",
+        "input/wartungsplan.csv": "f14a66a9c197ba13d48418d02ade31347f485a6622ef35cf81e285c317548f99"
+      },
+      "instruction_sha256": "74071ce5c12c22459e2354998ac31d1c43f61772f0f074efe19d75b07a44e2fa",
+      "kind": "exams",
+      "outputs": {
+        "constraint_satisfaction": "output/pruefungsplan.csv",
+        "csv_row_ordering": "output/pruefungsplan.csv",
+        "csv_structure_and_coverage": "output/pruefungsplan.csv"
+      }
+    },
+    "internal/euw_v1_de_024": {
+      "criteria": [
+        {
+          "acceptable_alternatives": [
+            "Values may appear as '±0,0061 bar (95 %, k = 1,96)' or 'U = ±0,0061 bar' depending on sentence structure"
+          ],
+          "evidence_anchors": [
+            "input/adaptationsrichtlinie.md",
+            "input/din_1341.md",
+            "input/nbn_aequivalenz_tabelle.csv",
+            "input/nbn_d50_001.md",
+            "input/whitepaper_de.md",
+            "output/adaptationsprotokoll.csv",
+            "output/adaptiertes_whitepaper_fr.md"
+          ],
+          "failure_examples": [],
+          "id": "md_uncertainty_prose_correct",
+          "requirement": "Convert every actually supplied convertible prose uncertainty in sections 2.1, 2.2, 3.2, 4.1, 4.2, 5.1, 6.1 and 7.1 to 95% with k=1.96, rounding to two significant figures and applying the supplied NBN §4.2 minimum of 0.01 bar to all converted values below that floor. Section 4.2 is 0.011 bar from U_old/k_old. Section 7.1 is 0.012 bar using its directly stated u, or 0.011 bar using its rounded U_old/k_old; accept either documented source basis. All other converted prose values are 0.01 bar after the floor. The two unconvertible values in 5.4 and 8.1 retain 0.020 and 0.025 bar with the prescribed French missing-k footnotes. The source actually contains eight convertible prose U values and two without k; do not invent a ninth or fail a complete conversion for the task's erroneous eleven-item count.",
+          "weight": 3
+        },
+        {
+          "acceptable_alternatives": [
+            "alternative_reference_outputs with 'U = ±…' prefix in original/anpassst fields"
+          ],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "csv_conversion_values",
+          "requirement": "Each convertible uncertainty uses u*1.96, deriving u from supplied U_old/k_old when no direct u is used, then two significant figures and the NBN §4.2 global minimum of 0.01 bar. Do not require sub-minimum values shown in inherited private examples. Five nonzero table uncertainties become 0.015 bar; C2 becomes 0.01 bar. Unconvertible 5.4 and 8.1 retain their original values. Where rounded U and explicit u differ, accept either documented source basis consistent with the public conversion instruction.",
+          "weight": 4
+        }
+      ],
+      "input_text_sha256": {
+        "input/adaptationsrichtlinie.md": "927b6f086bf06a13c63d70a18f610945f4af04e251fcb397c55fe136aca5122c",
+        "input/din_1341.md": "ca5e27fc5cc870b88790843e50ed7bdab3b624a5a3a65e20b3049d5ad94d2c90",
+        "input/nbn_aequivalenz_tabelle.csv": "ff969cf7723546203df521c2fb86c64c1c7e2b063875e4b54a5d84f819337852",
+        "input/nbn_d50_001.md": "d713176c25d6642b6267b231f5d140fb9167397af7d9fc100c4bcc8a7ca30786",
+        "input/whitepaper_de.md": "f2f313a506b81eecca4b2e901f495690cf0f25b9f3f1cc6e025c88280de23d33"
+      },
+      "instruction_sha256": "f869e8db36c85a8970801b91af8a2b9eb9f4ee56bc2d66c9f908dee7e7bc0de9",
+      "kind": "uncertainty",
+      "outputs": {
+        "csv_conversion_values": "output/adaptationsprotokoll.csv",
+        "md_uncertainty_prose_correct": "output/adaptiertes_whitepaper_fr.md"
+      }
+    },
+    "internal/euw_v1_fr_018": {
+      "criteria": [
+        {
+          "acceptable_alternatives": "sous_traitant column may use 'ST1_Terrassement', 'ST1 – Terrassement', or 'ST1' as long as unambiguous; reference uses CSV input format.",
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "optimal_plan_correctness",
+          "requirement": "output/plan_travaux.csv contains exactly 6 rows (P1–P6) with correct schedule: P1 d1-30, P2 d31-50, P3 d51-65, P4 d61-70 (5-day overlap), P5 d51-60, P6 d71-84; chevauchement_jours=5 for P3/P4, 0 otherwise; violation_securite=OUI for P3/P4, NON otherwise; statut_autorisation_reseau=N/A for P1/P2/P5, conforme for P3/P4/P6.",
+          "weight": 4
+        },
+        {
+          "acceptable_alternatives": "Transition interpretation: P3 ends 65, transition 66-68, P4 starts 69 (reference). Alternative reading placing P4 at 68 is noted in known_issues but reference fixes 69.",
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "fallback_plan_correctness",
+          "requirement": "output/plan_repli.csv: P4 starts day 69 (3-day transition after P3 ends day 65), P6 starts day 79 (after max(P5=60, P4=78)+1), P6 ends day 92; chevauchement_jours=0 everywhere; violation_securite=NON everywhere; P6 statut_autorisation_reseau='expiré'; P3/P4 'conforme'; P1/P2/P5 'N/A'.",
+          "weight": 4
+        },
+        {
+          "acceptable_alternatives": "None – exact JSON match required.",
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "permit_analysis_json",
+          "requirement": "output/analyse_permis.json matches exact structure: permis_excavation conforme=true (P5 ends day 60 = expiration day 2025-05-01); autorisation_reseau scenario_optimal fin_projet=84 conforme=true; scenario_repli fin_projet=92 conforme=false, jours_sans_autorisation=2, prolongation_necessaire=true, date_limite_demande='2025-05-16'.",
+          "weight": 4
+        },
+        {
+          "acceptable_alternatives": "None – arithmetic is deterministic.",
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "evidence_entailment_schedule",
+          "requirement": "All schedule values in both CSVs and the JSON are correctly derived from the source files (cahier_des_charges durations/prerequisites, ST3 availability, zone constraints, permit validity) without external data.",
+          "weight": 2
+        }
+      ],
+      "input_text_sha256": {
+        "input/autorisation_reseau.json": "b01002a2563f9735f1b9d5bf4c3000651edfdfe3e64d384fa240c4ba05ab3887",
+        "input/cahier_des_charges.md": "a70a43fe2363c59bace9548f1cf822accc6bc57e14377fd12100550842c4e168",
+        "input/disponibilites_st.csv": "4844752fe822d39549b1446782c9184506cdce1a1d2d84d23a56dc5d21303b1c",
+        "input/permis_excavation.json": "34e49099890f36a19e90c5df934bf6f568f416b4dbce60bbe6d6916d62bcdbe8",
+        "input/protocole_securite.md": "46c40414e68fdd3e565feed9af04f5e14a89663b2551b8aee91657a9a4d0eaf6",
+        "input/zones_travaux.csv": "0b4328f025684cbb94ff167e5dd8cdf87886c842392476c9d08cc4c221130031"
+      },
+      "instruction_sha256": "aae7ce6f771019bbbc1b253d5897bd6bfa1b41116eeb52fcd0dbf232ce3b3730",
+      "kind": "fiber",
+      "outputs": {
+        "evidence_entailment_schedule": "output/analyse_permis.json",
+        "fallback_plan_correctness": "output/plan_repli.csv",
+        "optimal_plan_correctness": "output/plan_travaux.csv",
+        "permit_analysis_json": "output/analyse_permis.json"
+      }
+    },
+    "internal/euw_v1_fr_019": {
+      "criteria": [
+        {
+          "acceptable_alternatives": [],
+          "evidence_anchors": [],
+          "failure_examples": [],
+          "id": "core_json_facts",
+          "requirement": "decision_workflow.json has source-correct allocation_id, etudiant_id, chambre_actuelle, date_analyse, etat_actuel, integer jours_en_etat=12 and sorted flags_actifs. CH-004 and CH-006 must be included in chambres_rdc_eligibles. CH-001 may also be included based on registry/certificate checks, or held for transparent reconciliation of its conflicting CONFIRME allocation journal, as permitted by chambres_rdc_exclues_coherence. The semantic exclusion criterion independently verifies the reason; do not claim CH-001 has an expired certificate.",
+          "weight": 3
+        }
+      ],
+      "input_text_sha256": {
+        "input/calendrier_service_logement.json": "d2bc21b4b2f4cb633224bc09a8bce95348ef16a5ed1c314c40cd583265d74831",
+        "input/certificats_incendie.csv": "bc877f83e095f9e4c972811c7e0bf4f2a4bc13da83c0daaa82e8885c5ea2dbeb",
+        "input/journal_allocations.csv": "43209b2cd243188a1e259e149a93cc41d04884c7133a44688f16d29445dc43f6",
+        "input/politique_amenagements.md": "4337ce8cce2d0390fc1a3fa09b4437e688474c891ea8e98c2699e1c783cfe81a",
+        "input/registre_chambres.csv": "06ae6fdd72b9353d2a3565d42f39ce807cea77640823e02045e2a162567d88b7",
+        "input/spec_machine_etats.md": "55493a1806529476cd24b8a8330eff5c6117d1d39897f63245b11d96f262e5a1"
+      },
+      "instruction_sha256": "51cc1bd64fb1e72828de00cac4680b8fa072be512fdfc811db9c34634f983d35",
+      "kind": "housing",
+      "outputs": {
+        "core_json_facts": "output/decision_workflow.json"
+      }
+    }
+  }
+}

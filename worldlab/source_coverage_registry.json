@@ -316,6 +316,97 @@
       "definition_sha256": "04a49089f6f3c4fe7b7fd19135a9df282d39ec3e2dcc1898599a3b9456434f8f",
       "instruction_sha256": "c29cb082da9bc6b6a15369d980e826ede8a500db9ddffc262f76bc8f752c8054"
     },
+    "internal/euw_v1_fr_018": {
+      "basis": "Pilot semantic QA followed by independent inspection of actual submitted files and source tables. Fiber day 92 is correct; the 79–91 submitted interval is only thirteen days. Housing must honor its accepted source-reconciliation alternative for CH-001.",
+      "corrections": {},
+      "counts": {
+        "decision_doc_professional_adequacy": {
+          "criterion": {
+            "acceptable_alternatives": [
+              "Section headings optional; content may be in prose or structured paragraphs. Word count ≥200 in French."
+            ],
+            "evidence_anchors": [
+              "input/autorisation_reseau.json",
+              "input/cahier_des_charges.md",
+              "input/disponibilites_st.csv",
+              "input/permis_excavation.json",
+              "input/protocole_securite.md",
+              "input/zones_travaux.csv",
+              "output/analyse_permis.json",
+              "output/decision_chevauchement.md",
+              "output/plan_repli.csv",
+              "output/plan_travaux.csv"
+            ],
+            "failure_examples": [],
+            "id": "decision_doc_professional_adequacy",
+            "requirement": "The decision document is in French, ≥200 words, and contains all 5 mandated content elements: (1) identification of the overlap (packages, zone, days), (2) reference to the violated safety protocol article, (3) consequences of the fallback (extra delay, network authorization impact), (4) recommendation with approval condition (directeur de projet), (5) deadline for prolongation request if fallback is chosen.",
+            "weight": 3
+          },
+          "exclude_title": false,
+          "maximum": null,
+          "minimum": 200,
+          "mode": "veto",
+          "path": "output/decision_chevauchement.md"
+        }
+      },
+      "definition_sha256": "08e42f08675d15b27265042237d180c5cd1033df9f9f1e53e7075ca1e0111b71",
+      "input_text_sha256": {
+        "input/autorisation_reseau.json": "b01002a2563f9735f1b9d5bf4c3000651edfdfe3e64d384fa240c4ba05ab3887",
+        "input/cahier_des_charges.md": "a70a43fe2363c59bace9548f1cf822accc6bc57e14377fd12100550842c4e168",
+        "input/disponibilites_st.csv": "4844752fe822d39549b1446782c9184506cdce1a1d2d84d23a56dc5d21303b1c",
+        "input/permis_excavation.json": "34e49099890f36a19e90c5df934bf6f568f416b4dbce60bbe6d6916d62bcdbe8",
+        "input/protocole_securite.md": "46c40414e68fdd3e565feed9af04f5e14a89663b2551b8aee91657a9a4d0eaf6",
+        "input/zones_travaux.csv": "0b4328f025684cbb94ff167e5dd8cdf87886c842392476c9d08cc4c221130031"
+      },
+      "instruction_sha256": "aae7ce6f771019bbbc1b253d5897bd6bfa1b41116eeb52fcd0dbf232ce3b3730"
+    },
+    "internal/euw_v1_fr_019": {
+      "basis": "Pilot semantic QA followed by independent inspection of actual submitted files and source tables. Fiber day 92 is correct; the 79–91 submitted interval is only thirteen days. Housing must honor its accepted source-reconciliation alternative for CH-001.",
+      "corrections": {
+        "core_json_facts": {
+          "original_requirement": "decision_workflow.json contains correct allocation_id, etudiant_id, chambre_actuelle, date_analyse, etat_actuel, jours_en_etat (integer 12), flags_actifs (sorted), and recherche_alternative.chambres_rdc_eligibles = [CH-001, CH-004, CH-006].",
+          "requirement": "decision_workflow.json has source-correct allocation_id, etudiant_id, chambre_actuelle, date_analyse, etat_actuel, integer jours_en_etat=12 and sorted flags_actifs. CH-004 and CH-006 must be included in chambres_rdc_eligibles. CH-001 may also be included based on registry/certificate checks, or held for transparent reconciliation of its conflicting CONFIRME allocation journal, as permitted by chambres_rdc_exclues_coherence. The semantic exclusion criterion independently verifies the reason; do not claim CH-001 has an expired certificate."
+        }
+      },
+      "counts": {
+        "rapport_word_count_french": {
+          "criterion": {
+            "acceptable_alternatives": [
+              "Technical identifiers (CH-003, CERTIFICAT_EXPIRE) may remain in original form."
+            ],
+            "evidence_anchors": [
+              "input/calendrier_service_logement.json",
+              "input/certificats_incendie.csv",
+              "input/journal_allocations.csv",
+              "input/politique_amenagements.md",
+              "input/registre_chambres.csv",
+              "input/spec_machine_etats.md",
+              "output/decision_workflow.json",
+              "output/rapport_analyse.md"
+            ],
+            "failure_examples": [],
+            "id": "rapport_word_count_french",
+            "requirement": "rapport_analyse.md is written in French, ≥ 400 words, professional register, no English-only passages.",
+            "weight": 1
+          },
+          "exclude_title": false,
+          "maximum": null,
+          "minimum": 400,
+          "mode": "veto",
+          "path": "output/rapport_analyse.md"
+        }
+      },
+      "definition_sha256": "f3d63a3828e391842db6d9404c699c2044f0d223a496426680341df7dc10e1af",
+      "input_text_sha256": {
+        "input/calendrier_service_logement.json": "d2bc21b4b2f4cb633224bc09a8bce95348ef16a5ed1c314c40cd583265d74831",
+        "input/certificats_incendie.csv": "bc877f83e095f9e4c972811c7e0bf4f2a4bc13da83c0daaa82e8885c5ea2dbeb",
+        "input/journal_allocations.csv": "43209b2cd243188a1e259e149a93cc41d04884c7133a44688f16d29445dc43f6",
+        "input/politique_amenagements.md": "4337ce8cce2d0390fc1a3fa09b4437e688474c891ea8e98c2699e1c783cfe81a",
+        "input/registre_chambres.csv": "06ae6fdd72b9353d2a3565d42f39ce807cea77640823e02045e2a162567d88b7",
+        "input/spec_machine_etats.md": "55493a1806529476cd24b8a8330eff5c6117d1d39897f63245b11d96f262e5a1"
+      },
+      "instruction_sha256": "51cc1bd64fb1e72828de00cac4680b8fa072be512fdfc811db9c34634f983d35"
+    },
     "internal/euw_v1_it_015": {
       "basis": "Source-reviewed public language, literal fields and arithmetic take precedence over inherited untranslated prose and incorrect private example values. Source IDs and weights retained.",
       "corrections": {
