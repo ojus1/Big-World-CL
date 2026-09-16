@@ -216,6 +216,51 @@ class ReflectorTests(unittest.TestCase):
         self.assertEqual(result["status"], "budget_exhausted")
         self.assertEqual(transport.calls, [])
 
+    def test_six_replays_keep_fresh_failures_instead_of_history_and_success_tails(self):
+        data = payload()
+        records = []
+        failures = []
+        for i in range(6):
+            record = copy.deepcopy(data['train_experiences'][0])
+            record['attempt_index'] = i
+            record['task']['feedback'] = 'HISTORICAL_ONLY ' + 'old passing detail ' * 1400
+            failure = f'- Rubric 1, replay {i}: ' + 'Explanation before conclusion. ' * 12 + f'MISSING_PAIR_{i}.'
+            failures.append(failure)
+            record['feedback'] = 'Released evaluator failures (fallible):\n' + failure + '\n' + 'Passing appendix ' * 1600
+            record['response'] = json.dumps({'messages': [
+                {'role': 'tool', 'content': json.dumps({'output': 'all checks pass ' * 1000, 'exit_code': 0, 'error': None})},
+                {'role': 'assistant', 'content': 'All deliverables claimed complete.'}]})
+            records.append(record)
+        data['train_experiences'] = records
+        result = make_reflector(CREDENTIALS, transport=Transport())(data, dict(limits(), max_tokens=32000))
+        for failure in failures:
+            self.assertIn(failure, result['optimizer_prompt'])
+        self.assertEqual(result['optimizer_prompt'].count('HISTORICAL_ONLY'), 1)
+        self.assertNotIn('Latest non-success tool result', result['optimizer_prompt'])
+        self.assertLessEqual(result['input_token_reservation'] + result['max_output_tokens'], 32000)
+
+    def test_success_receipt_does_not_hide_an_earlier_actual_tool_failure(self):
+        data = payload()
+        data['train_experiences'][0]['messages'] = [
+            {'role': 'tool', 'content': json.dumps({'output': 'FAILED_REFUND_VALIDATION', 'exit_code': 1, 'error': None})},
+            {'role': 'tool', 'content': json.dumps({'output': 'Later listing succeeded', 'exit_code': 0, 'error': None})},
+        ]
+        result = make_reflector(CREDENTIALS, transport=Transport())(data, limits())
+        section = result['optimizer_prompt'].split('Latest non-success tool result (may be expected):\n')[1].split('\nRecent public')[0]
+        self.assertIn('FAILED_REFUND_VALIDATION', section)
+        self.assertNotIn('Later listing succeeded', section)
+
+    def test_many_multibyte_cases_do_not_overflow_prompt_budget(self):
+        data = payload()
+        data['train_experiences'] = [copy.deepcopy(data['train_experiences'][0]) for _ in range(32)]
+        for i, record in enumerate(data['train_experiences']):
+            record['task']['id'] = f'train-{i}'
+            record['feedback'] = '日' * 3000
+        result = make_reflector(CREDENTIALS, transport=Transport())(data, dict(limits(), max_tokens=32000))
+        self.assertEqual(result['status'], 'completed')
+        self.assertLessEqual(result['supplemental_bytes'], 16000)
+        self.assertLessEqual(result['input_token_reservation'] + result['max_output_tokens'], 32000)
+
     def test_transport_failure_is_counted_without_retry_or_secret_exception(self):
         calls = []
         def transport(*args, **kwargs):

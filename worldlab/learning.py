@@ -4,7 +4,7 @@ import hashlib
 import os
 from pathlib import Path
 from scripts.source_world_calibration import save
-from lifespan.evaluation.optimizer import make_reflector
+from lifespan.evaluation.optimizer import CONTEXT_ADAPTER, make_reflector
 from lifespan.evaluation.skillopt import SkillOptLearner, LearningBudget, REVISION, _load_upstream
 from lifespan.evaluation.provider import provider_contract
 from .learning_feedback import POLICY as FEEDBACK_POLICY
@@ -57,6 +57,7 @@ class SkillOpt:
                 'budget': asdict(self.budget), 'gate_metric': 'mixed', 'gate_no_regression': True,
                 'edit_policy': self.edit_policy,
                 'optimizer_output_tokens': self.optimizer_output_tokens,
+                'optimizer_context_adapter': CONTEXT_ADAPTER,
                 'feedback_projection': FEEDBACK_POLICY,
                 'confirmation': ({'cases': self.confirmation_cases, 'repeats': self.confirmation_repeats,
                     'min_gain': self.confirmation_min_gain, 'selection': 'last_predeclared_validation_cases',
@@ -114,6 +115,9 @@ class SkillOpt:
         if len(operations) != len(receipts):
             raise ValueError('Missing native optimizer transport evidence')
         for row, receipt in zip(operations, receipts):
+            if (expected_identity.get('optimizer_context_adapter') is not None and
+                    receipt.get('context_adapter') != expected_identity['optimizer_context_adapter']):
+                raise ValueError('Optimizer context adapter differs from frozen identity')
             optimizer_provider_check(receipt, expected_identity['provider'], edit_policy=expected_identity.get('edit_policy'))
             if expected_identity.get('edit_policy'):
                 from lifespan.evaluation.scoped_edits import audit_receipt

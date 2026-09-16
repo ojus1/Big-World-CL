@@ -445,3 +445,35 @@ and keeps the existing client-side newline rejection before compilation/adoption
 No arbitrary text-length limits, server changes or selective retries are added.
 Native concurrency and real-optimizer qualification are required before a fresh
 complete learning epoch and matched pilot. Earlier failed results remain intact.
+
+### Native QA iteration 11: preserve fresh reflection evidence
+
+The v29 epoch completed all twelve required replays and its native audits:
+202 target calls, one optimizer call and 4,558,983 tokens. Both proposed edits
+were rejected; the original skill remained byte-identical and confirmation was
+correctly skipped. Its native report passes, but semantic review blocks the pilot.
+
+The exact optimizer request exposed an implementation defect. Prompt compaction
+joined historical feedback, fresh replay feedback and tool output before taking
+the beginning and end. All three JobBench replay failure explanations disappeared,
+even though the feedback projection put them first in their individual records.
+The retained prompt instead showed repeated historical prefixes and successful
+terminal results. A text search for `error` also treated `error: null` as failure.
+
+Context adapter v2 gives fresh feedback its own prefix-preserving allocation,
+shows historical feedback once per task, identifies each replay, and separates
+non-success tool results using execution fields. The input byte reservation and
+native structured-output schema are unchanged. The prompt labels omitted
+evidence honestly and distinguishes relative score from actual requirement
+success. It does not force an edit or change the upstream learning algorithm.
+The learner identity now binds this context adapter and rejects a mismatched
+transport receipt. Source, split, timing and secret-filtering boundaries remain.
+
+Offline replay of the retained payload now includes each of the three complete
+first failure explanations; none appeared in the original native prompt. Both
+TRAIN IDs are present, all four validation IDs absent, and the exact same output
+schema fits within the original 32,000-token conservative reservation. Twenty-six
+optimizer tests pass; the 241-test local worldlab suite passes with nine expected
+skips. Fresh H200 native reflection and full-epoch qualification remain required
+before the matched pilot. The prior rejected epoch and known grader variability
+are retained without relabeling them as learning benefit.
