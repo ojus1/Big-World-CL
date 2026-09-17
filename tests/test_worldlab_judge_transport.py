@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import unittest
 from lifespan.evaluation.provider import provider_contract
 from worldlab.judge_transport import StructuredJudgeBudget, digest, JUDGE_SAMPLING
-from worldlab.verdict_schema import contract, validate_text
+from worldlab.verdict_schema import contract, validate_text, recovery_contract, validate_recovery, RECOVERY_RATIONALE
 from worldlab.qualitative import validate_verdict
 import json
 
@@ -12,6 +12,28 @@ CONSTRAINT = {'json': {'type': 'object'}, 'disable_any_whitespace': True}
 
 
 class Tests(unittest.TestCase):
+    def test_recovery_preserves_nested_decisions_and_binds_every_rationale(self):
+        row = {'type': 'object', 'properties': {'reasoning': {'type': 'string'},
+            'claims_actual_priority_resolution': {'type': 'boolean'}},
+            'required': ['reasoning', 'claims_actual_priority_resolution'], 'additionalProperties': False}
+        schema = {'json': {'type': 'object', 'properties': {'sections': {
+            'type': 'object', 'properties': {'S000': row, 'S001': deepcopy(row)},
+            'required': ['S000', 'S001'], 'additionalProperties': False}},
+            'required': ['sections'], 'additionalProperties': False}}
+        original = deepcopy(schema)
+        compact = recovery_contract(schema)
+        self.assertEqual(schema, original)
+        for key in ('S000', 'S001'):
+            result = compact['json']['properties']['sections']['properties'][key]
+            self.assertEqual(result['required'], row['required'])
+            self.assertEqual(result['properties']['claims_actual_priority_resolution'], {'type': 'boolean'})
+            self.assertEqual(result['properties']['reasoning']['enum'], [RECOVERY_RATIONALE])
+        validate_recovery({'sections': {'S000': {'reasoning': RECOVERY_RATIONALE}}})
+        with self.assertRaises(ValueError):
+            validate_recovery({'sections': {'S000': {'reasoning': 'Unregistered rationale'}}})
+        with self.assertRaises(ValueError):
+            recovery_contract({'json': {'type': 'object', 'properties': {'free_text': {'type': 'string'}}}})
+
     def test_verdict_unicode_and_verbosity_are_not_rejected(self):
         value = {'criterion_id': 'c', 'evidence': 'acc\u00e9nt ' * 400,
                  'reasoning': '"' * 2000, 'passed': False}

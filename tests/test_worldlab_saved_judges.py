@@ -32,7 +32,7 @@ class Tests(unittest.TestCase):
                     save(original / 'judging/GRADE.json', {'grading_complete': False})
             before = {str(p): sha(p) for p in study.rglob('*') if p.is_file()}
             judge = FrozenRubricJudge(bank, 'fixture', Client.base_url,
-                client_factory=lambda: Client([response(status='incomplete', text='{'), response(False)]))
+                client_factory=lambda: Client([response(status='incomplete', text='{'), response(False, repair=True)]))
             report = qualify(bank, judge, study, root / 'new', concurrency=2)
             self.assertTrue(report['ok']);self.assertEqual(report['audited'], 2)
             self.assertEqual(report['recovery_attempts'], 2)

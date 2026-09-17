@@ -10,7 +10,7 @@ from pathlib import Path
 from scripts.source_world_calibration import child, read, save, sha
 from lifespan.evaluation.provider import provider_contract
 from .judge_transport import StructuredJudgeBudget, JUDGE_SAMPLING
-from .verdict_schema import contract as verdict_contract, validate_text, SCHEMA
+from .verdict_schema import contract as verdict_contract, validate_text, SCHEMA, recovery_contract, validate_recovery, RECOVERY_RATIONALE
 from .mechanical_criteria import evaluate as mechanical_verdict, evaluation_method as mechanical_method
 from .public_requirements import evaluate as public_requirements, aggregate, REGISTRY
 from .evidence_archive import duplicate_text_archive
@@ -33,8 +33,12 @@ RULES = ('Evaluate only the supplied criterion against the original public task 
          'Do not narrate deliberation, repeatedly reconsider your decision, or reproduce an entire checklist. '
          'Use the original wording when citing non-English source material. Do not repeat whitespace or pad fields.')
 REPAIR_RULES = (' A prior response did not produce a usable complete JSON verdict. '
-                'Return a concise final verdict now. Keep evidence and reasoning brief; '
-                'do not discuss the prior response. Apply exactly the same criterion and source evidence.')
+                'Apply exactly the same criterion and source evidence, assessing every required condition. '
+                'Return the Boolean decisions and evidence filenames required by the supplied schema. '
+                'For this recovery only, do not generate a written rationale: every reasoning field '
+                'must contain the schema\'s fixed label: ' + RECOVERY_RATIONALE + ' '
+                'This label is metadata, not evidence that the criterion passes. '
+                'Retain all requested per-row and per-section judgments. Do not discuss the prior response.')
 TEXT_FORMATS = {'.md', '.txt', '.csv', '.json', '.py', '.html', '.xml', '.yml', '.yaml'}
 RUNTIME_ROOTS = {'scratch', '.venv', '__pycache__'}
 VERDICT_SCHEMA = SCHEMA
@@ -70,14 +74,17 @@ def verdict_input(payload, *, repair=False):
             {'role': 'user', 'content': content if content is not None else json.dumps(projected,ensure_ascii=False,sort_keys=True)}]
 
 
-def parsed_response(response, criterion, evidence_paths):
+def parsed_response(response, criterion, evidence_paths, *, repair=False):
     if response['status'] != 'completed':
         raise ValueError('Incomplete judge response')
+    value = json.loads(response['text'])
+    if repair:
+        validate_recovery(value)
     if response.get('evaluation_method') == ROW_METHOD:
-        return parse_semantic(json.loads(response['text']), evidence_paths)
+        return parse_semantic(value, evidence_paths)
     if response.get('evaluation_method') == EXAM_METHOD:
-        return parse_exam(json.loads(response['text']), criterion, evidence_paths)
-    return validate_verdict(json.loads(response['text']), criterion,
+        return parse_exam(value, criterion, evidence_paths)
+    return validate_verdict(value, criterion,
                             evidence_paths if response.get('evaluation_method', 'model') == 'model' else None)
 
 
@@ -93,7 +100,7 @@ def request_verdict(client, provider, payload, timeout, *, repair=False):
         max_output_tokens=4096, stream=False, store=False, timeout=timeout,
         **JUDGE_SAMPLING,
         extra_body={'chat_template_kwargs': {'enable_thinking': False},
-                    'structured_outputs': judge_schema(payload)})
+                    'structured_outputs': judge_schema(payload, repair=repair)})
     method = semantic_method(payload)
     if method != 'model':
         from types import SimpleNamespace
@@ -101,8 +108,9 @@ def request_verdict(client, provider, payload, timeout, *, repair=False):
     return response
 
 
-def judge_schema(payload):
-    return semantic_schema(payload) or exam_schema(payload) or verdict_contract(payload['criterion']['id'], payload['evidence']['files'])
+def judge_schema(payload, *, repair=False):
+    schema = semantic_schema(payload) or exam_schema(payload) or verdict_contract(payload['criterion']['id'], payload['evidence']['files'])
+    return recovery_contract(schema) if repair else schema
 
 
 def semantic_method(payload):
@@ -172,7 +180,7 @@ class FrozenRubricJudge:
         self.client_factory = client_factory
 
     def identity(self):
-        return {'name': 'frozen_internal_r3_text_judge', 'version': 35, 'provider': self.provider,
+        return {'name': 'frozen_internal_r3_text_judge', 'version': 36, 'provider': self.provider,
                 'sampling': dict(JUDGE_SAMPLING),
                 'bank_manifest_sha256': self.bank.verification['manifest_sha256'],
                 'rubric_policy': 'original_frozen_r3_bytes', 'unit': 'one_criterion_per_call',
@@ -189,6 +197,7 @@ class FrozenRubricJudge:
                 'evidence_field': 'enum_of_actual_evidence_filenames',
                 'structured_output_transport': 'json_schema_text_guidance',
                 'format_recovery': {'max_per_grade': 1, 'trigger': 'unusable_returned_verdict_with_known_usage',
+                                    'schema': 'same_decision_fields_with_fixed_rationale_label',
                                     'valid_verdicts_never_retried': True, 'within_original_budgets': True},
                 'schema_sha256': sha(Path(__file__).with_name('verdict_schema.py')),
                 'budget_transport_sha256': sha(Path(__file__).with_name('judge_transport.py')),
@@ -266,7 +275,8 @@ class FrozenRubricJudge:
         save(out / 'PUBLIC_REQUIREMENTS.json', supplement)
         criteria = rubric['criteria']
         maximum = min(token_limit or self.max_tokens, self.max_tokens)
-        meter = StructuredJudgeBudget(structured_contracts=[judge_schema({'criterion': c, 'evidence': evidence}) for c in criteria],
+        meter = StructuredJudgeBudget(structured_contracts=[judge_schema({'criterion': c, 'evidence': evidence}, repair=repair)
+                                                           for c in criteria for repair in (False, True)],
                                 max_model_calls=min(call_limit or len(criteria) + 1, len(criteria) + 1),
                                 max_output_tokens=4096, max_total_tokens=maximum,
                                 provider_contract=self.provider)
@@ -312,7 +322,7 @@ class FrozenRubricJudge:
                     record = {'text': response.output_text, 'status': response.status,
                               'evaluation_method': getattr(response, 'evaluation_method', 'model')}
                     save(out / f'REPAIR-RESPONSE-{index:02d}.json', record)
-                    verdict = parsed_response(record, criterion, files)
+                    verdict = parsed_response(record, criterion, files, repair=True)
                 verdicts.append(verdict)
                 save(out / 'PROGRESS.json', {'verdicts': verdicts, 'usage': meter.report()})
         except Exception as exc:
@@ -413,7 +423,7 @@ class FrozenRubricJudge:
                 response = read(repair_path)
                 require(response['evaluation_method'] == model_method, 'Repair method changed')
                 model_operations.append((criterion, payload, response, True))
-            verdicts.append(parsed_response(response, criterion, expected_files))
+            verdicts.append(parsed_response(response, criterion, expected_files, repair=repair_path.exists()))
         require(grade.get('format_recoveries') == recoveries and
                 (artifact_root / 'FORMAT_RECOVERIES.json').exists() == bool(recoveries) and
                 (read(artifact_root / 'FORMAT_RECOVERIES.json') if recoveries else []) == recoveries,
@@ -440,10 +450,11 @@ class FrozenRubricJudge:
         jm = grade['usage']
         require(jm['accounting_complete'] and jm['physical_model_calls'] == len(model_operations) and
                 jm['charged_tokens'] == sum(r['charged_tokens'] for r in jm['operations']), 'Judge cost mismatch')
-        contracts = [transport_digest(judge_schema({'criterion': c, 'evidence': evidence})) for c in rubric['criteria']]
+        contracts = [transport_digest(judge_schema({'criterion': c, 'evidence': evidence}, repair=repair))
+                     for c in rubric['criteria'] for repair in (False, True)]
         require(jm['registered_structured_output_sha256'] == contracts and
                 [r['request_structured_outputs_sha256'] for r in jm['operations']] ==
-                [transport_digest(judge_schema(p)) for c, p, _, _ in model_operations],
+                [transport_digest(judge_schema(p, repair=repair)) for c, p, _, repair in model_operations],
                 'Physical judge constraints differ from the declared structured contract')
         for operation, (criterion, payload, response, repair) in zip(jm['operations'], model_operations):
             require(operation['accounting'] == 'reported' and operation['status'] == 'completed' and

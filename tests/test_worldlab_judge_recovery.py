@@ -8,11 +8,13 @@ import unittest
 
 from scripts.source_world_calibration import read, save, sha
 from worldlab.qualitative import FrozenRubricJudge, REPAIR_RULES
+from worldlab.verdict_schema import RECOVERY_RATIONALE
 
 
-def response(passed=False, *, status='completed', text=None, usage=True):
+def response(passed=False, *, status='completed', text=None, usage=True, repair=False):
     return SimpleNamespace(status=status, output_text=text if text is not None else json.dumps({
-        'criterion_id': 'q', 'passed': passed, 'evidence': 'output/result.md', 'reasoning': 'Final decision.'}),
+        'criterion_id': 'q', 'passed': passed, 'evidence': 'output/result.md',
+        'reasoning': RECOVERY_RATIONALE if repair else 'Final decision.'}),
         usage=SimpleNamespace(input_tokens=50, output_tokens=10, total_tokens=60) if usage else None)
 
 
@@ -70,7 +72,7 @@ class Tests(unittest.TestCase):
         self.audit(case)
 
     def test_returned_incomplete_response_recovers_and_charges_both_calls(self):
-        case = self.run_case([response(status='incomplete', text='{'), response(False)])
+        case = self.run_case([response(status='incomplete', text='{'), response(False, repair=True)])
         *_, out, grade, client = case
         self.assertTrue(grade['grading_complete']);self.assertFalse(grade['success'])
         self.assertEqual(grade['usage']['physical_model_calls'], 2)
@@ -79,10 +81,16 @@ class Tests(unittest.TestCase):
         self.assertEqual(read(out / 'REQUEST-00.json'), read(out / 'REPAIR-REQUEST-00.json'))
         self.assertNotIn(REPAIR_RULES, client.calls[0]['input'][0]['content'])
         self.assertIn(REPAIR_RULES, client.calls[1]['input'][0]['content'])
+        original_schema = client.calls[0]['extra_body']['structured_outputs']['json']
+        repair_schema = client.calls[1]['extra_body']['structured_outputs']['json']
+        self.assertEqual(repair_schema['properties']['reasoning']['enum'], [RECOVERY_RATIONALE])
+        self.assertNotIn('enum', original_schema['properties']['reasoning'])
+        for key in ('passed', 'evidence', 'criterion_id'):
+            self.assertEqual(repair_schema['properties'][key], original_schema['properties'][key])
         self.audit(case)
 
     def test_malformed_returned_json_can_recover(self):
-        case = self.run_case([response(text='not json'), response(True)])
+        case = self.run_case([response(text='not json'), response(True, repair=True)])
         self.assertTrue(case[-2]['grading_complete']);self.assertTrue(case[-2]['success'])
         self.assertEqual(case[-2]['format_recoveries'][0]['reason'], 'invalid_verdict')
         self.audit(case)
@@ -118,10 +126,10 @@ class Tests(unittest.TestCase):
             workspace = root / 'workspace'; (workspace / 'output').mkdir(parents=True)
             (workspace / 'source.md').write_text('Source fact.')
             (workspace / 'output/result.md').write_text('Candidate result.')
-            def verdict(index):
-                value = json.loads(response(False).output_text); value['criterion_id'] = f'q{index}'
+            def verdict(index, *, repair=False):
+                value = json.loads(response(False, repair=repair).output_text); value['criterion_id'] = f'q{index}'
                 return response(text=json.dumps(value))
-            client = Client([*(verdict(i) for i in range(7)), response(status='incomplete', text='{'), verdict(7)])
+            client = Client([*(verdict(i) for i in range(7)), response(status='incomplete', text='{'), verdict(7, repair=True)])
             judge = FrozenRubricJudge(bank, 'fixture', client.base_url, client_factory=lambda: client)
             baseline = {'source.md': sha(workspace / 'source.md')}; out = root / 'judging'
             grade = judge.grade('fixture', workspace, baseline, out, call_limit=judge.max_model_calls)
@@ -135,7 +143,7 @@ class Tests(unittest.TestCase):
     def test_auditor_rejects_outcome_selection_or_changed_repair_context(self):
         for tamper in ['valid_initial', 'changed_evidence', 'changed_prompt_receipt']:
             with self.subTest(tamper=tamper):
-                case = self.run_case([response(status='incomplete', text='{'), response(True)])
+                case = self.run_case([response(status='incomplete', text='{'), response(True, repair=True)])
                 *_, out, grade, _ = case
                 self.audit(case)
                 if tamper == 'valid_initial':
@@ -147,6 +155,11 @@ class Tests(unittest.TestCase):
                     grade['usage']['operations'][1]['request_input_sha256'] = 'wrong'
                     save(out / 'GRADE.json', grade)
                 with self.assertRaises(ValueError):self.audit(case)
+
+    def test_recovery_cannot_return_unregistered_open_ended_rationale(self):
+        case = self.run_case([response(status='incomplete', text='{'), response(True)])
+        self.assertFalse(case[-2]['grading_complete'])
+        self.assertEqual(len(case[-1].calls), 2)
 
 
 if __name__ == '__main__': unittest.main()

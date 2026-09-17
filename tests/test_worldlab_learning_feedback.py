@@ -8,6 +8,18 @@ from worldlab.attempts import task_instruction
 
 
 class LearningFeedbackTests(unittest.TestCase):
+    def test_rejected_artifact_preserves_zero_grade_and_feedback_with_null_supplement(self):
+        from worldlab.artifact_contract import rejected_grade
+        record = {'passed': False, 'input_changes': [], 'unauthorized_files': [],
+                  'evidence_violations': [{'path': 'output/', 'reason': 'No deliverable submitted'}]}
+        grade = rejected_grade(record, 'rubric', 'evidence')
+        original = deepcopy(grade)
+        self.assertIsNone(grade['public_requirements'])
+        self.assertEqual(learning_feedback(grade), grade['feedback'])
+        self.assertEqual(observed_feedback({'grade': grade}), grade['feedback'])
+        self.assertEqual(grade, original)
+        self.assertEqual(grade['quality_score'], 0)
+
     def test_saved_trajectory_allows_json_key_order_but_rejects_content_changes(self):
         trajectory=[{'role':'assistant','content':'Read source','tool_calls':[{'id':'1','args':{'path':'input.md'}}]},
                     {'role':'tool','content':'source text'}]

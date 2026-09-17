@@ -12,6 +12,34 @@ from scripts.audit_learning_v2 import reconcile
 
 
 class Tests(unittest.TestCase):
+    def test_rejected_submission_reaches_learner_as_metered_zero_not_callback_failure(self):
+        from worldlab.artifact_contract import rejected_grade
+        grade = rejected_grade({'passed': False, 'input_changes': [], 'unauthorized_files': [],
+            'evidence_violations': [{'path': 'output/', 'reason': 'No deliverable submitted'}]}, 'rubric', 'evidence')
+        selected = [{'id': 'observed', 'split': 'train', 'day': 0, 'feedback_day': 1,
+            'lineage_group': 'family', 'task_id': 'source-task', 'grade': grade,
+            'work_budget': {'seconds': 900, 'model_calls': 32, 'output_tokens': 8192, 'total_tokens': 500000}}]
+        class Learner:
+            def update(inner, skill, experiences, replay, **kwargs):
+                self.assertEqual(experiences[0]['feedback'], grade['feedback'])
+                ledger = _Ledger(LearningBudget(replay_seconds=1200))
+                result = ledger.invoke('target', replay, {'task': {'id': 'observed'}, 'skill': skill,
+                    'attempt_index': 0, 'sample_id': 0, 'phase': 'train'})
+                return result, ledger.report()
+        def executor(*args, **kwargs):
+            return {'status': 'completed', 'grade': grade, 'trajectory': [], 'tokens': 12345,
+                    'model_calls': 9, 'tool_calls': 14, 'seconds': 5, 'accounting_complete': True}
+        with tempfile.TemporaryDirectory() as tmp:
+            result, costs = update_employee(SimpleNamespace(public=lambda _: {'instruction': 'Original task'}),
+                None, SimpleNamespace(max_tokens=400000), Learner(), selected, employee='employee',
+                day=2, skill='seed', update_root=Path(tmp), executor=executor)
+        self.assertEqual(result['hard'], 0.)
+        self.assertEqual(result['soft'], 0.)
+        self.assertEqual(result['feedback'], grade['feedback'])
+        self.assertTrue(costs['accounting_complete'])
+        self.assertEqual(costs['tokens'], 12345)
+        self.assertEqual(costs['operations'][0]['status'], 'completed')
+
     def test_insufficient_replay_time_stops_without_native_calls_or_a_score(self):
         selected = [{'id': 'observed', 'split': 'val', 'day': 0, 'feedback_day': 1,
             'lineage_group': 'family', 'task_id': 'source-task', 'grade': {'feedback': 'Observed feedback'},
