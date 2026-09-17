@@ -27,7 +27,9 @@ class Hermes:
         self.provider = provider_contract(model, base_url)
 
     def identity(self):
-        return {'name': 'native_hermes_task_package', 'version': 7, 'revision': PIN,
+        from .skill_context import POLICY
+        return {'name': 'native_hermes_task_package', 'version': 8, 'revision': PIN,
+                'skill_loading': POLICY,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
                 'nonstreaming_timeouts': 'request and stale windows are min(600 seconds, whole attempt budget)',
@@ -142,7 +144,7 @@ class Hermes:
     def audit_execution(artifact_root, request, receipt):
         """Check native evidence without importing or running the Hermes agent."""
         from scripts.source_world_calibration import read
-        from lifespan.evaluation.runtime import skill_loaded
+        from .skill_context import audit_file
         root = Path(artifact_root)
         native, native_request = read(root / 'NATIVE.json'), read(root / 'REQUEST.json')
         clock = native_request['execution_clock']
@@ -183,7 +185,11 @@ class Hermes:
                          + request['skill'])
         if skill_path.read_text() != expected_file:
             raise ValueError('Installed skill differs from requested content')
-        if not native['skill_loaded'] or not skill_loaded(native.get('messages', []), sha(skill_path)):
+        expected_skill = {'name': 'work-process', 'native_file_sha256': sha(skill_path),
+                          'content_sha256': hashlib.sha256(request['skill'].encode()).hexdigest()}
+        audit_file(root, expected_skill, meter)
+        if (not native['skill_loaded'] or native['skill'] != expected_skill
+                or native.get('skill_context_sha256') != sha(root / 'SKILL_CONTEXT.json')):
             raise ValueError('Native skill was not loaded')
         checks = {'physical_model_calls': meter['physical_model_calls'], 'charged_tokens': meter['charged_tokens'],
                   'trajectory': native_trajectory(native), 'skill_loaded': native['skill_loaded'],

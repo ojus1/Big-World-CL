@@ -1,4 +1,55 @@
-# Development status — September 17, 2026 (India)
+# Development status — September 18, 2026 (India)
+
+Fresh run v34 started on September 17 at 21:57:38 UTC (September 18, 03:27:38
+IST), using frozen source `016d542837fddc5b0d9be65141ec173c1fadc6f9`.
+Startup verification at 22:04:00 UTC found six fresh simulations, 72 work
+requests and three finalized native attempts whose artifacts, context, grades
+and accounting passed offline audit. All six simulations had made their first
+12 employee decisions. The study was active with no stop request. These are
+startup observations; the six-pair study is still in progress.
+
+The served model remains `Qwen/Qwen3.8-Flash-Next-FP8` on the same H200 machine.
+The gateway was handling 64 simultaneous requests at the configured cap of 64.
+The model container retained its original ID and September 15 start time, with
+zero restarts. No GPU reassignment or serving reconfiguration was performed.
+
+The repair loads each deployed skill through the pinned native reader before
+work, verifies its bytes, and checks its presence in every physical inference
+request. Separate startup/context receipts preserve the actual model trajectory.
+Execution-validation failures now finalize ungraded attempts and retain known
+costs through learning. Three retained failures reproduced rejection while
+preserving their 32 calls and 325,227 tokens; original results were not changed.
+
+Qualification passed 305 H200 tests with no skips and three fresh executions of
+the exact failure contexts. A complete learning epoch then finished all 12
+executed replays with full native, grading, context, optimizer and ledger audits.
+Across qualification, all 15 attempts and 181 native work calls were verified,
+including both seed and candidate skills. Fresh qualification consumed 275 total
+model calls and 4,300,637 tokens. The three failure contexts share one task family;
+the epoch executed four families, with two further confirmation families unused.
+
+The candidate initially improved a validation draw but regressed at the final
+proposal gate: mixed score 0.663462 versus baseline 0.692308. Adoption was rejected,
+confirmation correctly skipped, and the exact seed skill retained. All scores,
+source conflicts and recovered native-tool errors remain in the evidence. This
+establishes operational behavior, not a learning benefit or independent semantic
+correctness; same-model judgments remain provisional.
+
+The replacement retains six matched pairs, twelve employees, twenty days, 2,880
+planned obligations and representative examples for only 2 of 12 employees.
+It starts with fresh actor state and the seed skill. Fluso stays paused and the
+reserved final EuroBench split remains unopened. The unit is
+`bigworld-development-large-v34`; artifacts are under the frozen v34 checkout's
+`lifespan/artifacts/development-large-v3`. See the
+[remediation record](H200_QA_REMEDIATION.md) for qualification details.
+
+## Historical v33 — September 17, 2026
+
+The v33 run later failed at 17:47:20 UTC after three learning replays omitted
+skill loading. It retained 608 finalized online attempts, 264 finalized learning
+replays, 21 completed updates and three failed updates; no pair completed.
+Its original receipts, grades, failure state and in-flight records are preserved.
+The earlier startup observations below are historical.
 
 The repaired v33 large development study started on September 17 at 14:23:17 UTC
 (19:53:17 IST), using frozen source `cfe42f4cbedddb189733b63a9ae6a2657e7a6499`.

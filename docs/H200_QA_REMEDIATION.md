@@ -1,6 +1,36 @@
 # H200 remediation and staged experiments
 
-Latest qualification: the v33 restart passed on September 17. Its source is
+The v33 study failed on September 17 after three native learning replays
+completed without calling `skill_view`. Their native usage remained available,
+but validation raised before finalizing attempts and the learner retained full
+reservations. The run is preserved as failed, with 608 online attempts, 264
+finalized replays, 21 completed updates and three failed updates. None of the
+six pairs completed.
+
+The qualified v34 repair preloads the deployed skill through the pinned
+native reader, verifies its exact bytes, and checks its presence in every
+physical Responses request. `SKILL_CONTEXT.json` retains startup provenance and
+the exact instructions; each metered dispatch binds their hash. This is harness
+startup, not a fabricated model tool call. Missing or changed context prevents
+inference and grading. Execution validation failures now finalize ungraded
+attempts and preserve independently known usage through the learning ledger.
+
+Qualification passed 305 H200 tests with no skips, all three exact failure-context
+reruns, and a complete 12-replay learning epoch. All 15 native attempts, 181 work
+calls, grades and usage records passed their audits. The candidate regressed
+in final validation and was rejected; confirmation was correctly skipped and
+the seed skill retained. Total fresh qualification usage was 275 calls and
+4,300,637 tokens. This is operational qualification, not a learning-effect claim.
+
+The v34 evidence archive contains 835 hash-verified evidence files plus its
+manifest (836 regular files total), with SHA-256
+`71e0c31ec6cd44064a8d39c4f3c96b503017f7f54de0537d4d8ddeb5d29e0ca1`.
+It contains completed qualification and fixed large-startup metadata, excluding
+runtime homes and scratch files. The replacement started at September 17,
+21:57:38 UTC; startup verification confirmed six fresh actor simulations and
+64 concurrent inference requests. The study remains in progress.
+
+Historical qualification: the v33 restart passed on September 17. Its source is
 `cfe42f4cbedddb189733b63a9ae6a2657e7a6499`. A rejected artifact's
 `public_requirements: null` now preserves the original zero, feedback and actual
 usage through learning. The existing single judge-format retry uses a finite
@@ -23,7 +53,7 @@ proposal was broader than its source-policy sequence. The replacement large
 study starts independently and does not inherit that proposal or qualification
 history. The failed v32 study remains separate and incomplete.
 
-The qualified restart's evidence archive contains 1,183 verified regular files
+The historical v33 restart's evidence archive contains 1,183 verified regular files
 and has SHA-256
 `9eaf9240c90e8237e8f80c8ae544097528e030d2527dce9c570483b4a8bd2b01`.
 It contains qualification and fixed startup evidence, not completed large-run

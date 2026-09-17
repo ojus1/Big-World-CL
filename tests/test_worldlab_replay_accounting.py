@@ -12,6 +12,33 @@ from scripts.audit_learning_v2 import reconcile
 
 
 class Tests(unittest.TestCase):
+    def test_skill_validation_failure_settles_actual_usage_and_delivers_no_score(self):
+        from test_worldlab_adapters import Bank, Harness, Judge
+        from scripts.source_world_calibration import read
+        class Invalid(Harness):
+            def run(self, request, artifact_root):
+                return {**super().run(request, artifact_root), 'skill_loaded': False}
+        class Learner:
+            def update(inner, skill, experiences, replay, **kwargs):
+                ledger = _Ledger(LearningBudget(replay_seconds=1200))
+                with self.assertRaises(ReplayFailure):
+                    ledger.invoke('target', replay, {'task': {'id': 'observed'}, 'skill': skill,
+                        'attempt_index': 0, 'sample_id': 0, 'phase': 'train'})
+                return ledger.report()
+        selected = [{'id': 'observed', 'split': 'train', 'day': 0, 'feedback_day': 1,
+            'lineage_group': 'family', 'task_id': 'source-task', 'grade': {'feedback': 'Observed feedback'},
+            'work_budget': {'seconds': 900, 'model_calls': 32, 'output_tokens': 8192, 'total_tokens': 500000}}]
+        with tempfile.TemporaryDirectory() as tmp:
+            judge = Judge(); judge.max_tokens = 400000
+            costs = update_employee(Bank(), Invalid(), judge, Learner(), selected, employee='employee',
+                day=2, skill='seed', update_root=Path(tmp))
+            self.assertEqual(judge.calls, 0)
+            self.assertEqual(costs['tokens'], 20)
+            self.assertEqual(costs['target_model_calls'], 1)
+            self.assertTrue(costs['accounting_complete'])
+            self.assertEqual(costs['operations'][0]['status'], 'execution_invalid')
+            self.assertIsNone(read(Path(tmp) / 'replay-000/ATTEMPT.json')['grade'])
+
     def test_rejected_submission_reaches_learner_as_metered_zero_not_callback_failure(self):
         from worldlab.artifact_contract import rejected_grade
         grade = rejected_grade({'passed': False, 'input_changes': [], 'unauthorized_files': [],
