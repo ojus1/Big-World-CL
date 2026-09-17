@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -36,12 +37,17 @@ class CustomHermesInstallationTests(unittest.TestCase):
                 self.assertEqual(env['HERMES_HOME'], str(computer.profile))
                 raise StopBeforeNativeLaunch
             try:
-                with patch.object(computers, 'HERMES', selected), \
+                # Config serialization is incidental to this environment test;
+                # keep it independent of native Hermes' optional dependencies.
+                with patch.dict(sys.modules, yaml=SimpleNamespace(safe_dump=json.dumps)), \
+                     patch.object(computers, 'HERMES', selected), \
                      patch.dict(os.environ, {'PERSONAL_TOKEN_CANARY': 'must-not-inherit'}), \
                      patch.object(computers.subprocess, 'Popen', side_effect=capture), \
                      self.assertRaises(StopBeforeNativeLaunch):
                     computer.start({'model': 'fixture', 'base_url': 'http://127.0.0.1:9/v1',
                                     'api_key': 'fixture'}, timeout=10)
             finally:
-                computer.log.close()
+                log = getattr(computer, 'log', None)
+                if log is not None:
+                    log.close()
             self.assertEqual(observed['root'], str(selected))
