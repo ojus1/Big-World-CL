@@ -42,13 +42,28 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
     save(out / 'PUBLIC_REQUEST.json', {**asdict(request), 'workspace': str(workspace)})
     execution = harness.run(request, out)
     save(out / 'EXECUTION_RECEIPT.json', execution)
-    validate_execution(execution, budget, skill)
+    validation_error = None
+    try:
+        validate_execution(execution, budget, skill)
+    except ValueError as exc:
+        # Retain the original receipt and known usage even when its evidence
+        # cannot be graded. A callback exception would hide measured costs
+        # behind the learner's full reservation.
+        validation_error = str(exc)
     result = {'task_id': task_id, 'employee_id': employee_id, 'execution': execution,
               'status': execution['status'], 'grade': None,
               'model_calls': execution.get('physical_model_calls'),
               'tokens': execution.get('charged_tokens', budget.total_tokens),
               'accounting_complete': execution.get('accounting_complete', False)}
-    if execution['status'] in ('completed', 'budget_exhausted'):
+    if validation_error:
+        calls, tokens = execution.get('physical_model_calls'), execution.get('charged_tokens')
+        known_calls = type(calls) is int and calls >= 0
+        known_tokens = type(tokens) is int and tokens >= 0 and execution.get('accounting_complete') is True
+        result.update(status='execution_invalid', validation_error=validation_error,
+                      model_calls=calls if known_calls else None,
+                      tokens=tokens if known_tokens else budget.total_tokens,
+                      accounting_complete=known_calls and known_tokens)
+    elif execution['status'] in ('completed', 'budget_exhausted'):
         grade = judge.grade(task_id, workspace, baseline, out / 'judging',
                             token_limit=judge_tokens, call_limit=judge_calls,
                             timeout_seconds=max(0, deadline - time.monotonic()))
@@ -58,8 +73,9 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
                       tokens=execution['charged_tokens'] + grade['usage']['charged_tokens'],
                       accounting_complete=execution['accounting_complete'] and grade['usage']['accounting_complete'])
     messages = execution.get('trajectory', [])
+    if not isinstance(messages, list): messages = []
     result['trajectory'] = messages
-    result['tool_calls'] = sum(len(m.get('tool_calls') or []) for m in messages)
+    result['tool_calls'] = sum(len(m.get('tool_calls') or []) for m in messages if isinstance(m, dict))
     result['seconds'] = time.monotonic() - started
     result['skill_sha256'] = execution.get('skill_sha256')
     result['artifact_inventory'], result['artifact_symlinks'] = inventory(out)

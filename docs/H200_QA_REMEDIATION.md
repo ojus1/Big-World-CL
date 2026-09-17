@@ -1,6 +1,22 @@
 # H200 remediation and staged experiments
 
-Latest qualification: the v33 restart passed on September 17. Its source is
+The v33 study failed on September 17 after three native learning replays
+completed without calling `skill_view`. Their native usage remained available,
+but validation raised before finalizing attempts and the learner retained full
+reservations. The run is preserved as failed, with 608 online attempts, 264
+finalized replays, 21 completed updates and three failed updates. None of the
+six pairs completed.
+
+The prospective v34 repair preloads the deployed skill through the pinned
+native reader, verifies its exact bytes, and checks its presence in every
+physical Responses request. `SKILL_CONTEXT.json` retains startup provenance and
+the exact instructions; each metered dispatch binds their hash. This is harness
+startup, not a fabricated model tool call. Missing or changed context prevents
+inference and grading. Execution validation failures now finalize ungraded
+attempts and preserve independently known usage through the learning ledger.
+Fresh native qualification and a complete epoch are required before restart.
+
+Historical qualification: the v33 restart passed on September 17. Its source is
 `cfe42f4cbedddb189733b63a9ae6a2657e7a6499`. A rejected artifact's
 `public_requirements: null` now preserves the original zero, feedback and actual
 usage through learning. The existing single judge-format retry uses a finite

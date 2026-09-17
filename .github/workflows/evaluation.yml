@@ -49,3 +49,6 @@ jobs:
 
       - name: Test population scale, campaign supervision and independent audit
         run: python -m unittest discover -s tests -p 'test_scale_*.py' -v
+
+      - name: Test workplace simulation, native contracts and learning accounting
+        run: python -m unittest discover -s tests -p 'test_worldlab*.py' -v

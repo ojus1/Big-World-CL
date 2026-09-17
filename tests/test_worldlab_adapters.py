@@ -68,11 +68,28 @@ class Tests(unittest.TestCase):
                     return {**super().run(request, artifact_root), **change}
             with tempfile.TemporaryDirectory() as tmp:
                 judge = Judge()
-                with self.assertRaises(ValueError):
-                    execute_task(Bank(), Invalid(), judge, task_id='task', employee_id='writer',
-                                 skill='Read evidence', budget=Budget(), out=Path(tmp) / 'case')
+                result = execute_task(Bank(), Invalid(), judge, task_id='task', employee_id='writer',
+                                      skill='Read evidence', budget=Budget(), out=Path(tmp) / 'case')
                 self.assertEqual(judge.calls, 0)
                 self.assertTrue((Path(tmp) / 'case/EXECUTION_RECEIPT.json').exists())
+                self.assertEqual(read(Path(tmp) / 'case/ATTEMPT.json'), result)
+                self.assertEqual(result['status'], 'execution_invalid')
+                self.assertIsNone(result['grade'])
+                self.assertEqual(result['model_calls'], 1)
+                self.assertEqual(result['tokens'], change.get('charged_tokens',
+                    500000 if change.get('accounting_complete') is False else 20))
+                self.assertEqual(result['accounting_complete'], change.get('accounting_complete') is not False)
+
+    def test_invalid_usage_is_not_relabelled_as_measured(self):
+        class Invalid(Harness):
+            def run(self, request, artifact_root):
+                return {**super().run(request, artifact_root), 'physical_model_calls': True, 'charged_tokens': None}
+        with tempfile.TemporaryDirectory() as tmp:
+            result = execute_task(Bank(), Invalid(), Judge(), task_id='task', employee_id='writer',
+                skill='Read evidence', budget=Budget(), out=Path(tmp) / 'case')
+            self.assertIsNone(result['model_calls'])
+            self.assertEqual(result['tokens'], Budget().total_tokens)
+            self.assertFalse(result['accounting_complete'])
 
     def test_parallel_employees_keep_order_and_bounded_concurrency(self):
         slots = [{'id': name, 'employee_id': name[0]} for name in ['a0', 'a1', 'b0', 'c0']]
