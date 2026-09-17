@@ -1,0 +1,485 @@
+{
+  "schema_version": 1,
+  "exclusions": {
+    "internal/euw_v1_fr_010": {
+      "reason": "Source contradiction: all four warehouses start above capacity; ENT-Est starts at 95 pallets against 40 capacity, but the prompt requires a temporary 52-pallet peak while supplied rules set all outflows to zero. No feasible plan can satisfy these simultaneous source facts. Retain diagnostics; exclude prospectively until source is repaired and requalified.",
+      "proof": {
+        "ENT-Nord": {
+          "initial_palettes": 75,
+          "capacity_palettes": 50
+        },
+        "ENT-Sud": {
+          "initial_palettes": 77,
+          "capacity_palettes": 45
+        },
+        "ENT-Est": {
+          "initial_palettes": 95,
+          "capacity_palettes": 40
+        },
+        "ENT-Ouest": {
+          "initial_palettes": 67,
+          "capacity_palettes": 55
+        }
+      },
+      "files": {
+        "input/delais_fournisseurs.csv": "aeac0b84a075b2c1b46c1e5e70f9a90f6fcad95f6b447596e03f9dffab879443",
+        "input/demandes_reappro.csv": "ac4394a09226635f415ebd5dd85d423a37ea56e02de892b161243cea65e2c754",
+        "input/fiches_entrepots.csv": "9ab5ebd380484aa02b622bfe9e612524c597a9b26b4dc36c06fe9ac639541f6f",
+        "input/inventaire_initial.csv": "502d2af3a075595be9de5754145fb17ec0f455d6ab256db589df6845fdd812f6",
+        "input/regles_capacite.md": "da12377537958195f156f9964a703fa24a5ca21ecba4c5eefd643eb3b2deed5f",
+        "input/vehicules.csv": "7713829648d154643de61d8196fe1071a685c8dee1b82e59c25e21d013f157c1",
+        "task.json": "e9aeeeb1f70228acabd8f2a0371e2e4f6fb8a88f8a47031ff163fb1cf6faae9d"
+      }
+    },
+    "internal/euw_v1_es_018": {
+      "reason": "Source scheduling infeasibility: several instructors have more exams than available days, while the public rules require at least 48 hours between their exam starts. Even the relaxed bound of one exam per available day cannot assign every course with supplied availability. Original private checks also presume all courses except the no-availability instructor are assigned. Quarantine until the source clarifies feasible workload or permitted additional pending courses; do not silently relax the 48-hour rule.",
+      "proof": {
+        "DOC-001": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-002": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-004": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-006": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-007": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-009": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-011": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-012": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-013": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        }
+      },
+      "files": {
+        "input/asignaturas.csv": "ad45f14ad88efa107262c9024f5952656cc7294572e5374c6d7f5eef072d2c20",
+        "input/aulas_instalaciones.csv": "f6361e52fbd82047b483b6d5fa0267c9df05e190599cf4f5b542253fc237efe3",
+        "input/aulas_vicerrectorado.csv": "0053f759add9ac315129c3a9d9ba7b1f72fe57215b60480438a191c9fcf7997f",
+        "input/disponibilidad_docentes.csv": "7c35f08ee3585ccc7adae57732ec8b0b6c059289908fedb6c90ba1363b16a0d8",
+        "input/nota_ausencia_salas.md": "5de3b76cf8a12095f60408e39d2c8f28298e2623e58c65157f53a694bfdb7d2b",
+        "input/reglamento_v4_1.md": "57bf4da21edc04c21d63f0c880f98981a3d07240794fe1d705e49601fb69ddb9",
+        "task.json": "71656c1e22b6b80d314f26b4c023df730e97d2f064320915bd9dbb0466ac6731"
+      }
+    },
+    "internal/euw_v1_es_018_de_bridge": {
+      "reason": "Source scheduling infeasibility: several instructors have more exams than available days, while the public rules require at least 48 hours between their exam starts. Even the relaxed bound of one exam per available day cannot assign every course with supplied availability. Original private checks also presume all courses except the no-availability instructor are assigned. Quarantine until the source clarifies feasible workload or permitted additional pending courses; do not silently relax the 48-hour rule.",
+      "proof": {
+        "DOC-001": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-002": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-004": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-006": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-007": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-009": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-011": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-012": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-013": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        }
+      },
+      "files": {
+        "input/asignaturas.csv": "7b0fa5c1b83e7f6e687e50738ec2b22fe2ad343d6e1dfce7528042bf0d63ba39",
+        "input/aulas_instalaciones.csv": "f6361e52fbd82047b483b6d5fa0267c9df05e190599cf4f5b542253fc237efe3",
+        "input/aulas_vicerrectorado.csv": "0053f759add9ac315129c3a9d9ba7b1f72fe57215b60480438a191c9fcf7997f",
+        "input/disponibilidad_docentes.csv": "7c35f08ee3585ccc7adae57732ec8b0b6c059289908fedb6c90ba1363b16a0d8",
+        "input/nota_ausencia_salas.md": "1d94a430e55f9064f8d14e02588530c01d6bb56d5cea850d210c23412519b6b0",
+        "input/reglamento_v4_1.md": "6e6cedc62a4c5025eee89ec300f6cf9f6b8d7345e0abb4d0ca725b305a0943d0",
+        "task.json": "5ba727ecfa217d33fb6fd5ee7196bf0df9e9f3102337ad88f9936bbb3b46edb9"
+      }
+    },
+    "internal/euw_v1_es_018_en_bridge": {
+      "reason": "Source scheduling infeasibility: several instructors have more exams than available days, while the public rules require at least 48 hours between their exam starts. Even the relaxed bound of one exam per available day cannot assign every course with supplied availability. Original private checks also presume all courses except the no-availability instructor are assigned. Quarantine until the source clarifies feasible workload or permitted additional pending courses; do not silently relax the 48-hour rule.",
+      "proof": {
+        "DOC-001": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-002": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-004": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-006": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-007": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-009": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-011": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-012": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-013": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        }
+      },
+      "files": {
+        "input/asignaturas.csv": "ad45f14ad88efa107262c9024f5952656cc7294572e5374c6d7f5eef072d2c20",
+        "input/aulas_instalaciones.csv": "f6361e52fbd82047b483b6d5fa0267c9df05e190599cf4f5b542253fc237efe3",
+        "input/aulas_vicerrectorado.csv": "0053f759add9ac315129c3a9d9ba7b1f72fe57215b60480438a191c9fcf7997f",
+        "input/disponibilidad_docentes.csv": "7c35f08ee3585ccc7adae57732ec8b0b6c059289908fedb6c90ba1363b16a0d8",
+        "input/nota_ausencia_salas.md": "7ba484ce2e423d1bd60663da35d984035e5d062740bc48e3efabe2aeed87041d",
+        "input/reglamento_v4_1.md": "a91dd2d6237d0449ceac5bc0733735a2aad16f867e853bfd5e37fe1e9ae954f8",
+        "task.json": "549ee2231cb2f3b5f8e0d7d2e1ecaf6eb4bcf13b4f3787964cfdd324584c18ea"
+      }
+    },
+    "internal/euw_v1_es_018_fr_bridge": {
+      "reason": "Source scheduling infeasibility: several instructors have more exams than available days, while the public rules require at least 48 hours between their exam starts. Even the relaxed bound of one exam per available day cannot assign every course with supplied availability. Original private checks also presume all courses except the no-availability instructor are assigned. Quarantine until the source clarifies feasible workload or permitted additional pending courses; do not silently relax the 48-hour rule.",
+      "proof": {
+        "DOC-001": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-002": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-004": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-006": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-007": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-009": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-011": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-012": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-013": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        }
+      },
+      "files": {
+        "input/asignaturas.csv": "a37ce86a0b5e2e290abce274a9cd408b93296986759608d0574acfb352f50ae4",
+        "input/aulas_instalaciones.csv": "f6361e52fbd82047b483b6d5fa0267c9df05e190599cf4f5b542253fc237efe3",
+        "input/aulas_vicerrectorado.csv": "0053f759add9ac315129c3a9d9ba7b1f72fe57215b60480438a191c9fcf7997f",
+        "input/disponibilidad_docentes.csv": "7c35f08ee3585ccc7adae57732ec8b0b6c059289908fedb6c90ba1363b16a0d8",
+        "input/nota_ausencia_salas.md": "f43daf02405ce1c168dc5f9ae0ff22e31ecbfba604d0b4ac0a5e00f34cd6012e",
+        "input/reglamento_v4_1.md": "c419fa8a35c071518b3ad8b1e1a898fbe767b057537a5083c77c16c51387fa7d",
+        "task.json": "c78b362772e2fac69d2ca6bcefa2b8cbef56134c9e6784f786cec31da76a4126"
+      }
+    },
+    "internal/euw_v1_es_018_it_bridge": {
+      "reason": "Source scheduling infeasibility: several instructors have more exams than available days, while the public rules require at least 48 hours between their exam starts. Even the relaxed bound of one exam per available day cannot assign every course with supplied availability. Original private checks also presume all courses except the no-availability instructor are assigned. Quarantine until the source clarifies feasible workload or permitted additional pending courses; do not silently relax the 48-hour rule.",
+      "proof": {
+        "DOC-001": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-002": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-004": {
+          "required_exams": 4,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-006": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-007": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-009": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-011": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        },
+        "DOC-012": {
+          "required_exams": 3,
+          "available_days": [
+            16,
+            18
+          ],
+          "upper_bound_with_48h_gap": 2
+        },
+        "DOC-013": {
+          "required_exams": 4,
+          "available_days": [
+            15,
+            17,
+            19
+          ],
+          "upper_bound_with_48h_gap": 3
+        }
+      },
+      "files": {
+        "input/asignaturas.csv": "26dd3b068105411b6eff2acfde575939999165a0026c66f5fd59eeefdaefe045",
+        "input/aulas_instalaciones.csv": "f6361e52fbd82047b483b6d5fa0267c9df05e190599cf4f5b542253fc237efe3",
+        "input/aulas_vicerrectorado.csv": "0053f759add9ac315129c3a9d9ba7b1f72fe57215b60480438a191c9fcf7997f",
+        "input/disponibilidad_docentes.csv": "7c35f08ee3585ccc7adae57732ec8b0b6c059289908fedb6c90ba1363b16a0d8",
+        "input/nota_ausencia_salas.md": "965a00997fd7809873ea18ee70dad43c65e65930af2e416fc1363fdd90c0c0a5",
+        "input/reglamento_v4_1.md": "f8b340552297969594cbcb88785fdf27514f4e9982bf93c276980105e17a3224",
+        "task.json": "f06386ff455d182b2d680a387b15b36a0ffe22a6c85c09fde41ddd9e2c2147db"
+      }
+    }
+  }
+}

@@ -50,7 +50,7 @@ class TransferRunnerTests(unittest.TestCase):
         self.learning_status = 'completed'
         self.valid = True
 
-    def check_record(self, record, directory, capsule):
+    def check_record(self, record, directory, capsule, *, transport_manifest=None):
         self.assertEqual(json.loads((directory / 'session.json').read_bytes()), record)
         self.assertEqual(record['task_id'], capsule['task_id'])
 
@@ -88,6 +88,15 @@ class TransferRunnerTests(unittest.TestCase):
 
     def state(self):
         return json.loads((self.out / 'state.json').read_bytes())
+
+    def test_all_probe_arms_use_the_declared_transport(self):
+        from lifespan.evaluation.hermes_transport import manifest_fields
+        self.manifest.update(manifest_fields({'hermes_transport': 'nonstreaming'}))
+        save(self.out/'manifest.json', self.manifest)
+        result = self.run_fixture()
+        self.assertEqual(result['status'], 'completed')
+        self.assertEqual(len(self.calls), 16)
+        self.assertTrue(all(call['hermes_transport'] == 'nonstreaming' for call in self.calls))
 
     def test_no_adoption_runs_all_identical_skill_probes_with_failures(self):
         report = self.run_fixture()
@@ -171,7 +180,7 @@ class TransferRunnerTests(unittest.TestCase):
         cp = json.loads((self.source / 'checkpoint.json').read_bytes())
         cp['runner']['skills'] = {self.employee: SEED_SKILL}
         save(self.source / 'checkpoint.json', cp)
-        save(self.source / 'manifest.json', {key: self.manifest[key] for key in ('target_model', 'model_base_url')})
+        save(self.source / 'manifest.json', {'config': {}, **{key: self.manifest[key] for key in ('target_model', 'model_base_url')}})
         for name in ('bank.json', 'state.json', 'REPORT.json'):
             save(calibration / name, {})
         save(calibration / 'manifest.json', {'source_directory': str(self.source)})

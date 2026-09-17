@@ -1,0 +1,9 @@
+{
+  "research-en-001": [
+    {
+      "prompt": "Synthesize supplied evidence into a grounded briefing with explicit sources, caveats and decisions.",
+      "matches": 2,
+      "selector": {"sources": ["internal_eurobench"], "workflows": ["research_synthesize", "evidence_synthesis"]}
+    }
+  ]
+}

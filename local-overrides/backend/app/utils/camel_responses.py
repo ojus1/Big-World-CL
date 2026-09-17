@@ -5,15 +5,26 @@ installed version only implements Chat Completions, so translate its messages
 and results while retaining encrypted reasoning across each tool round trip.
 """
 import json
+import asyncio
 from threading import RLock
 
 from camel.models import OpenAIModel
 from openai.types.chat import ChatCompletion
+from .actor_output_contract import (CURRENT, ContractError, generation_schema, require,
+                                    configured_provider_contract, provider_contract)
 
 
 class OpenAIResponsesModel(OpenAIModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._provider_contract_at_creation = configured_provider_contract()
+        if self._provider_contract_at_creation is not None:
+            # Pinned CAMEL drops max_retries when forwarding to its base class,
+            # overwriting the requested value before constructing SDK clients.
+            # Reconfigure those same clients without changing endpoint or key.
+            self._client = self._client.with_options(max_retries=0, timeout=120)
+            self._async_client = self._async_client.with_options(max_retries=0, timeout=120)
+            self._max_retries, self._timeout = 0, 120
         # A backend is shared by concurrent agents. Unique call IDs associate
         # response items with the right history; there is no global last response.
         self._items_by_call = {}
@@ -25,6 +36,23 @@ class OpenAIResponsesModel(OpenAIModel):
         return [dict(message) for message in messages]
 
     def _input(self, messages):
+        if configured_provider_contract() is not None:
+            # OASIS interview history prepends its system prompt to memory,
+            # which can already begin with that prompt. The profiled provider
+            # accepts one leading system message. Preserve every text segment,
+            # including duplicates, and never move later system/developer turns.
+            end = 0
+            while end < len(messages) and messages[end].get('role') == 'system':
+                end += 1
+            if end > 1:
+                leading = messages[:end]
+                require(all(set(message) == {'role', 'content'}
+                            and type(message['content']) is str for message in leading),
+                        'profiled_leading_system_messages_require_plain_text')
+                # Structured content or extra fields cannot be joined without
+                # an additional representation rule; reject instead of dropping.
+                messages = [{'role': 'system', 'content': '\n\n'.join(
+                    message['content'] for message in leading)}] + list(messages[end:])
         items, emitted = [], set()
         for message in messages:
             role = message['role']
@@ -66,6 +94,20 @@ class OpenAIResponsesModel(OpenAIModel):
             'reasoning': {'effort': config.get('reasoning_effort', 'low')},
             'max_output_tokens': config.get('max_completion_tokens') or config.get('max_tokens') or 8192,
         }
+        if configured_provider_contract() is not None:
+            # Explicit profile, including ordinary bootstrap/social tool calls.
+            # Do not request reasoning payloads for a no-thinking provider.
+            request.pop('reasoning')
+            request.pop('include')
+            request.update(stream=False, extra_body={'chat_template_kwargs': {'enable_thinking': False}})
+        scope = CURRENT.get()
+        if scope is not None:
+            # Contract applies only to this native interview task. Do not mutate
+            # the shared model's config or affect concurrent social/tool calls.
+            request['max_output_tokens'] = scope.contract['max_output_tokens']
+            request['text'] = {'format': {'type': 'json_schema', 'name': 'actor_' + scope.contract['role'] + '_v1',
+                'strict': True, 'schema': generation_schema(scope.contract['role'], configured_provider_contract())}}
+            return request
         tools = tools if tools is not None else config.get('tools')
         if tools:
             if any(tool['type'] != 'function' for tool in tools):
@@ -80,10 +122,6 @@ class OpenAIResponsesModel(OpenAIModel):
         return request
 
     def _completion(self, response):
-        if response.status != 'completed':
-            # Never execute a partial function call or label truncation a success.
-            reason = getattr(response.incomplete_details, 'reason', None)
-            raise RuntimeError(f'Responses generation did not complete: {response.status}, {reason}')
         output = [item.model_dump(exclude_none=True) for item in response.output]
         calls, texts, refusals = [], [], []
         for item in output:
@@ -96,6 +134,20 @@ class OpenAIResponsesModel(OpenAIModel):
                         texts.append(part['text'])
                     elif part['type'] == 'refusal':
                         refusals.append(part['refusal'])
+        scope = CURRENT.get()
+        if scope is not None:
+            scope.provider_returned(response, '\n'.join(texts + refusals))
+            if calls or refusals:
+                raise ContractError('contracted_interview_returned_tools_or_refusal')
+            if scope.receipt['output_tokens'] is not None and scope.receipt['output_tokens'] > scope.contract['max_output_tokens']:
+                raise ContractError('actor_output_token_limit_exceeded')
+        provider = configured_provider_contract()
+        if provider is not None:
+            require(getattr(response, 'model', None) == provider['model'], 'actor_returned_model_mismatch')
+        if response.status != 'completed':
+            # Account for partial output before failing; never execute it.
+            reason = getattr(response.incomplete_details, 'reason', None)
+            raise RuntimeError(f'Responses generation did not complete: {response.status}, {reason}')
         if not calls and not texts and not refusals:
             raise RuntimeError('Responses generation returned no text or function call')
         if calls:
@@ -111,22 +163,80 @@ class OpenAIResponsesModel(OpenAIModel):
                                   'tool_calls': calls or None, 'refusal': '\n'.join(refusals) or None}}],
             usage={'prompt_tokens': usage.input_tokens, 'completion_tokens': usage.output_tokens,
                    'total_tokens': usage.total_tokens,
-                   'prompt_tokens_details': {'cached_tokens': usage.input_tokens_details.cached_tokens},
-                   'completion_tokens_details': {'reasoning_tokens': usage.output_tokens_details.reasoning_tokens}}
+                   'prompt_tokens_details': {'cached_tokens': getattr(usage.input_tokens_details, 'cached_tokens', None)}
+                       if getattr(usage, 'input_tokens_details', None) is not None else None,
+                   'completion_tokens_details': {'reasoning_tokens': getattr(usage.output_tokens_details, 'reasoning_tokens', None)}
+                       if getattr(usage, 'output_tokens_details', None) is not None else None}
             if usage else None,
         )
 
+    def _provider(self, *, asynchronous):
+        expected = configured_provider_contract()
+        require(getattr(self, '_provider_contract_at_creation', expected) == expected,
+                'actor_provider_configuration_changed')
+        if expected is not None:
+            client = self._async_client if asynchronous else self._client
+            actual = provider_contract(str(self.model_type), str(client.base_url))
+            require(actual == expected, 'actor_provider_contract_mismatch')
+        return expected
+
     def _run(self, messages, response_format=None, tools=None):
-        return self._completion(self._client.responses.create(**self._request(messages, response_format, tools)))
+        if CURRENT.get() is not None:
+            raise ContractError('contracted_interviews_require_async_native_execution')
+        provider = self._provider(asynchronous=False)
+        request = self._request(messages, response_format, tools)
+        recorder = getattr(self, '_model_usage', None)
+        if recorder is not None:
+            with recorder.call(request, provider) as receipt:
+                response = self._client.with_options(max_retries=0).responses.create(**request)
+                receipt.returned(response)
+                return self._completion(response)
+        return self._completion(self._client.responses.create(**request))
 
     async def _arun(self, messages, response_format=None, tools=None):
-        response = await self._async_client.responses.create(**self._request(messages, response_format, tools))
-        return self._completion(response)
+        provider = self._provider(asynchronous=True)
+        request = self._request(messages, response_format, tools)
+        scope = CURRENT.get()
+        if scope is None:
+            recorder = getattr(self, '_model_usage', None)
+            if recorder is not None:
+                with recorder.call(request, provider) as receipt:
+                    response = await self._async_client.with_options(max_retries=0).responses.create(**request)
+                    receipt.returned(response)
+                    return self._completion(response)
+            response = await self._async_client.responses.create(**request)
+            return self._completion(response)
+        remaining = scope.before_dispatch(request, provider=provider)
+        try:
+            # SDK and CAMEL retry layers must not hide extra physical attempts.
+            client = self._async_client.with_options(max_retries=0, timeout=remaining)
+            response = await asyncio.wait_for(client.responses.create(**request), timeout=remaining)
+            # Preserve independently observed usage before output normalization:
+            # a malformed body must not erase known physical consumption.
+            scope.provider_returned(response)
+            return self._completion(response)
+        except Exception as exc:
+            scope.failed(exc)
+            raise ContractError('contracted_actor_provider_failure') from None
 
 
-def create_simulation_model(model, api_key, url):
+def create_simulation_model(model, api_key, url, *, usage_simulation_dir=None):
     from camel.models import ModelFactory
     from camel.types import ModelPlatformType
+    provider = configured_provider_contract()
+    if usage_simulation_dir is not None and provider is None:
+        raise ValueError('Social usage receipts require an explicit provider profile')
+    if provider is not None:
+        require(provider_contract(model, url) == provider, 'actor_provider_contract_mismatch')
+        # Fail fast on an unavailable profiled provider for ordinary social
+        # calls too. Contracted interviews still apply their remaining deadline.
+        # CAMEL's separate RateLimitError policy is unchanged.
+        instance = OpenAIResponsesModel(model_type=model, api_key=api_key, url=url,
+                                       model_config_dict={}, max_retries=0, timeout=120)
+        if usage_simulation_dir is not None:
+            from .model_usage import ModelUsage
+            instance._model_usage = ModelUsage(usage_simulation_dir, provider)
+        return instance
     from .openai_chat_compat import is_gpt5_family, reasoning_config
     config = reasoning_config(model) if is_gpt5_family(model) else None
     if model.startswith('gpt-5.6-luna'):

@@ -9,6 +9,7 @@ import argparse
 from copy import deepcopy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -17,11 +18,14 @@ from ..computers import HERMES
 from ..ecosystem import Ecosystem, WORKFLOWS
 from ..ecosystem_run import actor_prompt, native_decision
 from ..integrated import EMPLOYEE_PROMPT, employee_view, validate_decision, enact_proposal
-from ..mirofish import MiroFishRuntime, ROOT, imports, save
+from ..mirofish import MiroFishRuntime, ROOT, SERVICE_BINDING_FILE, imports, save
 from ..personas import import_cohort
 from .protocol import ExperimentConfig, SEED_SKILL, digest, experience_split, regime_at, scenario, select_experiences
 from .runtime import execute_case
 from .tasks import make_case
+from .hermes_transport import executor_options, manifest_fields
+from lifespan.startup_observability import executor_options as startup_options, manifest_fields as startup_fields
+from .provider import manifest_fields as provider_fields
 
 
 class ReportPostprocessingError(RuntimeError):
@@ -32,7 +36,7 @@ def source_hashes():
     files = sorted((ROOT / 'lifespan').rglob('*.py'))
     files.append(ROOT / 'scripts/evaluation_report_v2.py')
     files.extend(ROOT / 'scripts' / name for name in ('run_scale.py', 'audit_scale.py', 'scale_summary.py',
-                                                     'audit_evaluation.py', 'audit_transfer.py'))
+                                                     'audit_evaluation.py', 'audit_transfer.py', 'audit_learning_v2.py'))
     return {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in files if p.exists() and '/tests/' not in str(p) and '/artifacts/' not in str(p)}
 
@@ -52,7 +56,13 @@ def dependency_provenance():
 def credentials():
     imports()
     from app.config import Config
-    return {'model': Config.LLM_MODEL_NAME, 'base_url': Config.LLM_BASE_URL, 'api_key': Config.LLM_API_KEY}
+    result = {'model': Config.LLM_MODEL_NAME, 'base_url': Config.LLM_BASE_URL, 'api_key': Config.LLM_API_KEY}
+    profile = os.environ.get('BIGWORLD_PROVIDER_PROFILE')
+    if profile:
+        from .provider import contract
+        result['provider_profile'] = profile
+        contract(result)
+    return result
 
 
 def safe_trajectory(record):
@@ -72,7 +82,9 @@ class NativeActors:
         cohort_path = out / 'persona_cohort.json'
         cohort = json.loads(cohort_path.read_text()) if cohort_path.exists() else import_cohort(
             ROOT / 'lifespan/data/persona8b', cohort_path, count=len(participants), seed=spec['seed'])
-        self.runtime = MiroFishRuntime(out / 'actors')
+        service_url = spec.get('mirofish_service_url')
+        self.runtime = MiroFishRuntime(out / 'actors', actor_output_contract=spec.get('actor_output_contract'),
+            **({'base_url': service_url, 'evaluation_service_url': service_url} if service_url is not None else {}))
         self.runtime.evaluation_max_interviews = spec.get('max_actor_interviews')
         if deadline is not None:
             self.runtime.evaluation_deadline = deadline
@@ -106,12 +118,21 @@ class NativeActors:
         view['enterprise_objectives'].pop('cash', None)
         view['geopolitical_bulletin'] = deepcopy(eco.geopolitics)
         view['received_colleague_messages'] = deepcopy(getattr(self, 'mailbox', {}).get(employee, []))
+        # Mail is routed with global firm-qualified IDs, but employee-facing
+        # recipients are local IDs. Present both directions in the same namespace.
+        for message in view['received_colleague_messages']:
+            for field in ('sender', 'recipient'):
+                value = message[field]
+                prefix = fid + '__'
+                if not isinstance(value, str) or not value.startswith(prefix) or value[len(prefix):] not in w.employees:
+                    raise ValueError('Received colleague message crosses firm boundary')
+                message[field] = value[len(prefix):]
         view['colleagues'] = [e for e in w.employees if e != task.owner]
         view['substantive_work'] = case['request']
         prompt = (EMPLOYEE_PROMPT + '\nThis evaluation measures delegated work: delegate must be true. '
             'Set a useful request for your Hermes assistant to perform the substantive work with its real '
             'filesystem. Do not solve or invent the unseen task data. Keep your working notes based on '
-            'observed outcomes.\n' + json.dumps(view))
+            'observed outcomes. Use colleague recipient IDs exactly as listed in colleagues.\n' + json.dumps(view))
         def check(a):
             validate_decision(a, view)
             if a['delegate'] is not True:
@@ -157,12 +178,20 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     creds = creds or credentials()
     started = time.monotonic()
     manifest = {'config': config.public(), 'scenario': spec, 'source_sha256': source_hashes(),
+                **manifest_fields(config), **startup_fields(config), **provider_fields(config, creds),
+                'learning_evidence_version': 2,
                 'target_model': creds['model'], 'model_base_url': creds['base_url'],
                 'dependencies': dependency_provenance(),
                 'state_contract': 'Fresh private agent state each task; native skill is the learning treatment.',
                 'environment_actor_usage': {'tokens': None, 'currency_cost': None,
                     'reason': 'Native MiroFish interview API does not expose complete aggregate usage.'},
                 'sampling': 'Hosted model randomness is not controlled by the scenario seed.'}
+    if config.actor_output_contract is not None:
+        from ..actor_contract import provenance as actor_contract_provenance
+        manifest['actor_output_contract_provenance'] = actor_contract_provenance(
+            config.actor_output_contract, expected_provider=manifest.get('provider_contract'))
+    if config.mirofish_service_url is not None:
+        manifest['mirofish_service_url'] = config.mirofish_service_url
     saved = out / 'checkpoint.json'
     if (out / 'INFLIGHT.json').exists():
         raise RuntimeError('An interrupted action needs reconciliation; refusing automatic replay')
@@ -191,6 +220,16 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
     def report(status):
         from .metrics import build_report
         provenance = {k: manifest[k] for k in ('target_model', 'model_base_url', 'dependencies', 'source_sha256')}
+        provenance.update(manifest_fields(config))
+        provenance.update(startup_fields(config))
+        provenance.update(provider_fields(config, creds))
+        if 'actor_output_contract_provenance' in manifest:
+            provenance['actor_output_contract_provenance'] = manifest['actor_output_contract_provenance']
+        if config.mirofish_service_url is not None:
+            provenance['mirofish_service_url'] = manifest['mirofish_service_url']
+            service_path = out / 'actors' / SERVICE_BINDING_FILE
+            provenance['mirofish_service_binding_sha256'] = (hashlib.sha256(service_path.read_bytes()).hexdigest()
+                if service_path.exists() else None)
         cohort_path = out / 'persona_cohort.json'
         provenance['persona_cohort_sha256'] = (hashlib.sha256(cohort_path.read_bytes()).hexdigest()
             if cohort_path.exists() else 'offline-fixture-no-personas')
@@ -316,7 +355,7 @@ def run_experiment(out, config, *, actor_factory=NativeActors, executor=execute_
                     record = executor(root=out / 'work' / key, employee=employee, world=w, task_id=tid,
                         case=case, request=decision['request'], skill=state['skills'][employee], credentials=creds,
                         objectives=eco.firms[fid], max_iterations=config.max_iterations,
-                        max_tokens=config.max_output_tokens, max_total_tokens=250000,
+                        max_tokens=config.max_output_tokens, max_total_tokens=250000, **executor_options(config), **startup_options(config),
                         business_files=archived, timeout_seconds=min(420, remaining_seconds()))
                     record.update(id=key, skill_version=state['skill_versions'][employee])
                     state['sessions'].append(record)
@@ -414,6 +453,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         'model_calls': remaining_calls, 'tokens': remaining_tokens, 'seconds': epoch_seconds,
         'configured_caps': caps, 'eligible_employee_count': recipients}
     progress = {'schema_version': 1, 'employee': employee, 'day': eco.day,
+        **provider_fields(config, creds),
         'employee_epoch_index': len(own) + 1, 'status': 'running', 'epoch_allocation': allocation,
         'parent_ecosystem_sha256': live_hash,
         'parent_skill_sha256': hashlib.sha256(state['skills'][employee].encode()).hexdigest(),
@@ -464,7 +504,8 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
                 request=capsule['request'], skill=payload['skill'], credentials=creds,
                 objectives=capsule['objectives'], max_iterations=min(config.max_iterations, limits['max_model_calls']),
                 max_tokens=config.max_output_tokens, max_total_tokens=limits['max_tokens'],
-                business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'])
+                business_files=capsule['business_files'], timeout_seconds=limits['timeout_seconds'],
+                **executor_options(config), **startup_options(config))
             usage = result['usage']
             artifact.update(dispatch_status='returned',
                 usage={field: usage.get(field) for field in ('api_calls', 'total_tokens', 'charged_tokens',
@@ -528,6 +569,7 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         persist_progress()
         raise
     result.update(employee=employee, day=eco.day, available_from_day=eco.day + 1,
+                  **provider_fields(config, creds),
                   parent_version=state['skill_versions'][employee],
                   employee_epoch_index=len(own) + 1, epoch_allocation=allocation,
                   replay_artifacts=deepcopy(progress['replay_artifacts']),
@@ -548,7 +590,15 @@ def _learn(out, config, eco, state, employee, experiences, creds, executor, begi
         optimizer_transport_audit=deepcopy(result['optimizer_transport_audit']))
     persist_progress()
     print(f"Day {eco.day}: SkillOpt {employee} {result['status']} accepted={result['accepted']}", flush=True)
-    if result['status'] == 'failed' or not result['costs']['accounting_complete']:
+    operations = (result['costs']['operations'] if result.get('learning_evidence_version', 1) == 2
+                  else result['costs'].get('operations', []))
+    physical_overrun = any(set(op.get('budget_violations', [])) & {'model_calls', 'tokens'}
+                           for op in operations)
+    physical_overrun |= any(type(receipt.get('output_tokens')) is int
+                           and type(receipt.get('max_output_tokens')) is int
+                           and receipt['output_tokens'] > receipt['max_output_tokens']
+                           for receipt in result.get('optimizer_transport_audit', []))
+    if result['status'] == 'failed' or not result['costs']['accounting_complete'] or physical_overrun:
         raise RuntimeError('Learning failed with incomplete evaluation/accounting; run is not a valid pair')
     if next_update_index is not None:
         state['update_index'] = next_update_index
@@ -573,4 +623,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # -m first executes this file as __main__. Use the canonical module's
+    # defaults so recorded native actor provenance matches ordinary imports.
+    from lifespan.evaluation.runner import main as canonical_main
+    canonical_main()

@@ -1,0 +1,2569 @@
+# H200 task-world execution ledger
+
+This ledger supplements [the architecture and calibration guide](WORLDLAB.md).
+All paths below are on `inference-testing@h200-3` under
+`/home/inference-testing/apps/`. Original evidence is preserved. No study here
+establishes statistically significant skill learning.
+
+## Fluso work paused by user: September 15, 11:43 UTC
+
+The user requested **"stop fluso work for now"**. Fluso development,
+qualification and experiments are paused until the user explicitly resumes
+them. The native qualification had already exited: one completed replay, one
+`budget_exhausted_unverified` attempt, failed qualification and no adoption.
+No stop signal or restart was needed. All partial artifacts remain preserved.
+
+At **11:43:11 UTC**, the exact Fluso service was inactive, original PID
+**3390547** was absent, both guardians were inactive and all four owned
+solver/relay containers were absent. Hermes study PID **3314046**, gateway PID
+**2974574** and the unchanged Qwen serving container remained running, with
+global inference concurrency **64**. The pause receipt is
+`Big-World-CL-lab/lifespan/artifacts/fluso-user-pause-20260915T1142Z/PAUSED.json`.
+Do not resume Fluso work as part of the continuing Hermes baseline goal.
+
+## UTF-8 terminal repair qualified; fresh version 9 launched: September 15, 13:37 UTC
+
+Version 9 is a fresh full six-world development study, frozen at
+`46c09c6c6c2fc402bb7852d79a3a9efac2712d57` in
+`Big-World-CL-workplace-v9`. It uses Hermes adapter **7**, whose terminal display
+escapes undecodable UTF-8 bytes. Workspace bytes and grading evidence remain
+unchanged. Its worlds, employee identities, seeds **401/409/419/421/431/433**,
+schedules, sparse calibration, learner, social driver and internal grader 18
+are identical to version 8. The added JobBench adapters are unused in this run.
+The global LLM concurrency remains **64**.
+
+An exact OS-only reproduction used a separate copy of the failed version-8
+French artifact and the same `grep | cut` command. The original server raised
+`UnicodeDecodeError`; the updated server displayed escaped bytes and completed
+a subsequent command. All original study hashes remained unchanged. The
+730-byte raw preview is retained. Reproduction plan SHA:
+`1f61a8289b524894cfcdf4853b6c0712c0cb199fcd99a8cf5807c1b792605ef9`.
+
+All **12 Linux tests passed without skips**, covering malformed bytes, split
+UTF-8 previews, timeout cleanup, resource limits, namespace isolation and 128
+RPCs from 64 concurrent clients. Two fresh native attempts of
+`internal/euw_v1_fr_025` completed with complete execution and grading audits:
+**37 calls / 374,513 tokens**, taking **56.011** and **52.049 seconds**. These
+are component checks, not independent learning observations. Qualification plan
+SHA `29c566ca9756ae4c8aa93690b35c38441f085205749d6e3f30c7c34e5e281bec`.
+
+Service `bigworld-native-workplace-compact-v9` started at **13:37:10 UTC**, PID
+**3761104**, invocation **2abc34ad741e421293b1774cb8399bef**. The original Qwen
+container identity, image, command, GPU assignment and start time were verified
+unchanged before dispatch; gateway PID **2974574** remained active. Version 8
+and Fluso remained stopped. The fresh prospective analysis requires all six
+pairs to complete and pass audit and remains exploratory.
+
+Study SHA `a03d1fca969e2b4b1a43a427f252ad4ef9317bcd4e77c92f4380c7b04d1cf8ab`;
+analysis plan SHA `b3150cb384ad8922418fa1d43b6d83bd2e49cd2a21d699e492b2993635f0fd12`;
+compatibility SHA `f13d3381135a2324609a21ff7505829b1bd825b35599323e3ae5042853dc6857`.
+The packet `lifespan/artifacts/native-compact-v9-start-evidence-h200.tar.gz`
+contains the exact reproduction, native controls, Linux tests, source, analysis,
+launch and **13:39:38 UTC** initial observation: **1,648,663 bytes**, SHA
+`208f18ea72ecb4ca9bedda71955f2364942c8524b3721846a61c85d6798a9623`.
+All **243 payload hashes** passed local verification after safe extraction;
+export SHA `20a6d74fd20de695c13b36abd491bb9fe180969f58677aca0a2d0bcd968efeef`.
+That snapshot verified the live PID with no terminal study failure and no
+finalized attempts yet. It is an initial observation, not the eventual outcome.
+No successful skill adoption, later deployment effect or statistical significance
+has yet been established.
+
+## Version 8 stopped after terminal decoding failure: September 15, 13:25 UTC
+
+Version 8 is stopped and incomplete. Seed 409's learning arm failed on
+`d002-communications-fr-001-001`, task `internal/euw_v1_fr_025`. A normal
+`grep -n ... | cut -c1-90` preview split a multibyte character. Strict stdout
+decoding raised `UnicodeDecodeError` in the sandbox server; the native backend
+then rejected subsequent tool calls as unavailable. The attempt retained
+**25 model calls / 417,265 tokens**, complete accounting and an ungraded
+`infrastructure_error` receipt. It was not a model API availability failure.
+
+Both pair and study status were terminal while PID **3602809** was still live.
+Only the exact owned study service was stopped, with before/intent/result/after
+receipts. At **13:25:35 UTC**, the service was inactive and its original PID was
+absent. The final snapshot at **13:34:06 UTC** contained **247 completely graded
+attempts**, one infrastructure failure, no completed pair and no learning update.
+Finalized receipts recorded **3,801 model calls / 49,069,127 tokens**. Six
+additional unfinished attempts retained **87 dispatched calls / 1,542,790
+charged-or-reserved tokens** in incomplete checkpoints, with all their workers
+absent. These categories exclude social costs and are not a complete study bill.
+No pending reservation is relabeled as measured usage or a completed score.
+
+The stopped-study evidence accompanies the completed JobBench qualification in
+`lifespan/artifacts/jobbench-v1-and-v8-stop-evidence-h200.tar.gz`, SHA
+`d01bfc05ab470b88cb3bd91f000dcaedaa27407dfd637e0d08ef6a218ea3b858`.
+All **178 payload hashes** passed safe local extraction and verification. The
+full original version-8 study remains on H200 and will not be resumed or used
+as a complete paired comparison. See [JobBench qualification](WORLDLAB_JOBBENCH.md)
+for the separate task score, accounting and coverage limits.
+
+## Qualified grader allocation; fresh version 8 launched: September 15, 12:51 UTC
+
+Frozen `Big-World-CL-workplace-v8` at
+`180f76336b59d5c6a8116a808919230555574ce5` uses Hermes adapter 6 and grader 18.
+The runtime cleanup and empty-file fixes remain included. The internal grader
+declares nine calls for up to eight criteria plus one format repair. Online work
+uses that declaration; replay judging is reserved within the original total
+call allowance. Explicit lower allocations remain binding, and valid verdicts
+are never retried. No generated-text character cap was added.
+
+All **33 focused tests passed locally and on H200**, including the controlled
+eighth-criterion truncation and charged ninth repair, the explicit lower call
+limit, constrained replay allocation, and rejection of outcome selection. A
+fresh live check on a separate copy of the eight-criterion case completed and
+passed the offline grading audit: **8 calls / 81,632 tokens**. This time the
+live response did not truncate, so **no native format repair was exercised**;
+that branch was exercised by the controlled regression test. The old failed
+attempt and its grade bytes are unchanged. Qualification plan SHA
+`206ca4366e5c4104002b9535f7fa8101dcc7a11c44186985f47d481d422afae7`.
+
+Two additional concurrent native tasks exercised the combined source through
+the ordinary attempt executor, Hermes sandbox and structured grader. Both
+completed with full native/grade audit, totaling **18 calls / 104,071 tokens**.
+Integrated plan SHA
+`d2d71d232c2740b2425d0550842b4cb97ec576eee2a7abd6a5faa40caa145189`.
+The three fresh controls therefore account for **26 calls / 185,703 tokens**.
+They qualify the tested components and integration, not learning or task
+performance across the whole workload.
+
+Version 8 preserves version 7's exact six worlds, employee identities, task
+schedules, sparse calibration, seed skills, source bank, social driver and
+optimizer policy. The qualification records declare the changed runtime and
+grading behavior prospectively in both arms. The same reservations remain
+upper bounds: 2,880 obligations, up to 5,760 work attempts and 7.776 billion
+tokens including work, judgments and learning replays. These are not measured
+usage. The separate analysis was frozen before dispatch and still requires
+every planned pair to complete and pass audit. It is exploratory, with no
+confirmatory significance claim.
+
+The service `bigworld-native-workplace-compact-v8` started at **12:51:50 UTC**,
+PID **3602809**, invocation **60e42fa8fcf641e1b057436d96b43187**. At
+**12:53:53 UTC**, that PID and its user service were live, six arms had published
+day-0 states and 71 employee decisions, and no terminal pair/study status existed.
+No completed attempt or learning update was present in that initial capture.
+The shared gateway had **64 active requests**, peak 64 and zero transport
+exceptions; client cancellations remained a separate counter. Gateway PID
+**2974574**, instance `533b651bc1af`, and the Qwen container, image and start time
+were unchanged. Version 7 and Fluso remained stopped.
+
+Study SHA `7addab0411bcdc8a31323e4034a36974830c43660b680e6347240a9912ff119a`;
+analysis plan SHA `23cd50f20ac98336f9e92dd2aec7cd23cd375243545ad8122fc5c8392019bba6`;
+compatibility SHA `26716cb94dce2926f78205716ce17dccee147fc83d9acc1dff8775d98dc355e2`.
+The packet `lifespan/artifacts/native-compact-v8-start-evidence-h200.tar.gz`
+contains the complete fresh qualification traces, tests, audits, preparation,
+analysis, launch lifecycle and initial observation: **1,376,777 bytes**, SHA
+`5703f24d31757036183e3a4be1b30a1522c1ba29b16f0c2c0871d869191f354d`.
+All **158 payload hashes** were verified after safe local extraction; export SHA
+`f88ef72fd37a7fe04cc716bc02b8754b1ddd0bc01cb99828ce0468497036a54c`.
+No successful nontrivial adoption, later deployment effect, final-bank result
+or statistical significance has yet been established.
+
+## Version 7 stopped after empty-file evidence rejection: September 15, 12:27 UTC
+
+Version 7 is **stopped and incomplete**. Its seed-409 learning arm recorded a
+terminal `ValueError` while grading `d003-research-en-002-001`. At **12:25:54 UTC**
+both `PAIR_STATUS.json` and the study `STATUS.json` showed that failure while the
+original controller PID **3314046** was still running. The exact user service
+was stopped with before/intent/after receipts; at **12:27:12 UTC** it was inactive
+and the original PID was absent. The Qwen container and shared gateway were
+unchanged. The stopped study and its prospective analysis will not be resumed
+or relabeled as a complete comparison.
+
+The native solver returned a skill-loaded completion with complete accounting:
+**9 calls / 73,142 tokens**, **43.750 seconds**. It left the requested text outputs
+and an additional **zero-byte regular file named `f`**. The frozen grader rejected
+that filename as an unsupported binary format before writing `EVIDENCE.json` or
+making a grading call. No `ATTEMPT.json` or grade was produced for this case.
+A read-only reproduction against the original source confirmed the exception.
+This is an evidence-reading failure, not a negative task score or a learning
+result. Other work interrupted by the service stop retains its partial evidence.
+
+The next grader version retains empty regular files as exact empty text with
+their original filename and SHA, including extensionless files. Empty files
+remain visible to the rubric and to audit; they are not silently excluded.
+Nonempty unsupported payloads remain unqualified. Frozen
+`Big-World-CL-empty-evidence-v1` at `284cf011f0c06f6265531519190542356a2dbcff`
+passed all **29 grading and evidence tests locally and on H200**, including
+file-change audit rejection and the original archive controls. A fresh grader
+check on a separate copy of the failed case completed **4 structured model calls /
+12,407 reported tokens**, with full usage and offline grade audit. The empty
+file remained in the supplied evidence. The original case is still ungraded
+and unchanged; this component check does not recover an outcome for version 7.
+Qualification plan SHA
+`585d3b3cc7b3ae5dfc42ab92975370d126c2c0592c0c2d92dc49a6e55667a609`.
+Stop receipts and the source-level diagnosis are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v7-stop-evidence-v1`.
+
+At **12:33:56 UTC**, the stopped study had **452 completed attempt receipts**,
+one `grading_incomplete` receipt, four attempt directories without final
+`ATTEMPT.json`, no replays and no learning updates. All known native worker and
+sandbox PIDs were absent. One interrupted worker had no native return and its
+checkpoint retained **479,025 charged tokens**, including a reservation above
+its **376,984 reported tokens**. These are partial evidence counts, not a
+completed-study usage total or successful world pairs.
+
+The additional incomplete grade is seed 431's
+`d005-operations-fr-003-001`: its eighth judgment response reached the **4,096-token
+request limit**, and the attempted format repair was blocked by the original
+eight-call allocation. The grade retains **8 calls / 85,693 reported tokens**
+and one blocked call. This is separate from the empty-file defect. The registered
+format-repair policy needs a prospective call allocation that includes its repair;
+no valid verdict may be retried or selected. Version 18 declares nine calls for
+eight supported criteria plus one format repair. Online tasks use that declared
+allocation, and learning replays reserve it inside their existing total call
+budget. Explicit lower caller limits remain binding; alternate judges without a
+declaration retain their eight-call default. All **33 local tests passed**,
+including an eighth-criterion truncation, one charged ninth repair, preserved
+failing verdicts and a constrained replay budget. The subsequent native
+qualification and version-8 launch are recorded above.
+
+The stop packet `lifespan/artifacts/compact-v7-stop-archive-v1-h200.tar.gz` is
+**6,243,162 bytes**, SHA
+`42cc2682c072e1af5dd52f0c3f9d2161214d9b184023162344613e9623ef59f2`.
+All **88 payload hashes** were verified after safe local extraction; export SHA
+`ea90789a4046e80e67d7bd1489793dc33996a135b1cc7f4821c153ba82512728`.
+It preserves the original empty-file case, stop lifecycle, final state snapshots
+and partial native receipts. Full study artifacts remain on H200.
+
+The empty-file qualification and separate original grading-budget failure are
+in `lifespan/artifacts/native-empty-evidence-evidence-v1-h200.tar.gz`:
+**257,796 bytes**, SHA
+`911b9a683fa7b2e9bd628ea3f43ca2d6acc685e51d6a367a913d736223a01ece`.
+All **90 payload hashes** were verified after safe local extraction; export SHA
+`aa04e102e4b5592452b703d78287c70e5acfd2cb615e06d460ab72b5cd04b592`.
+
+## Native tool cleanup qualified: September 15, 12:21 UTC
+
+Frozen `Big-World-CL-tool-cleanup-v2` at
+`352d4a6ea1bad0c93dcadf869dafdaa9e234ade0` qualifies Hermes adapter version 6
+for future runs. The live version-7 study retains adapter version 5 and its
+original source. No study was restarted or edited for this qualification.
+
+An OS-only reproduction established a concrete command-timeout defect: GNU
+`timeout` created another process group in the shell's session, surviving the
+old shell-group kill and holding its output pipe open. A **0.25-second** request
+took **3.013 seconds** with an inner three-second timeout. The corrected source
+returned in **0.253 seconds** and both controlled sandboxes were removed. These
+short controls use no model calls. They explain that process/pipe mechanism;
+they do not recover version 6's missing final accounting or explain every part
+of its 900-second attempt.
+
+Cleanup now pins the command session and visible descendants, bounds pipe
+drainage, and terminates the task namespace if an escaped orphan still holds
+the pipe. Sandbox loss remains an infrastructure error even if the model later
+claims completion. The same resource limits are applied through `prlimit`
+before bash, removing Python's threaded `preexec_fn` path. The first Linux test
+run exposed a separate socket admission failure with 64 simultaneous clients;
+its **93 passes and one error** are preserved. Increasing the socket backlog
+from 16 to 128 passed the corrected **94-test suite with no skips**, including
+128 real RPCs from 64 concurrent clients and the pinned native Hermes fixture.
+
+Two ordinary native development tasks passed their full execution and grading
+audits: **21 calls / 129,094 reported tokens**. The model declined the first
+requested self-termination control; that control did not exercise sandbox loss
+and also failed the skill-read audit. It remains inconclusive and ungraded,
+with **4 calls / 27,268 tokens** preserved. No overall success report was added
+to that original qualification directory.
+
+A separately planned operator control waited for the native task's initial
+output file, pinned its exact sandbox PID and sent SIGTERM. The harness returned
+`infrastructure_error` with `SandboxExecutionError`, retained complete usage
+for **6 calls / 38,561 tokens**, and finished in **18.798 seconds**. The worker
+and sandbox were absent, the delayed output was absent, and no grading was
+dispatched. The ordinary completion audit correctly rejects this attempt.
+Interruption plan SHA
+`dc3a882b188784d6eb124c46861f1b76acb4912e0769061340978b903c74b645`.
+This qualifies the tested interruption path, not every process/provider failure.
+
+The combined read-only audit preserves all controls and charges **31 calls /
+194,923 reported tokens**, including the inconclusive control and eight grader
+calls. Its 23 primary native request IDs are distinct. Audit SHA
+`3af1c2ca88bede0e99d3ba9857b960dbab2901a41b5672fee776e75f6453c787`.
+The packet `lifespan/artifacts/native-tool-cleanup-evidence-v1-h200.tar.gz`
+is **5,870,834 bytes**, SHA
+`f8993f48cdab4b6367cd72e91cf54b0dc863ae25e71daf71870b58facc11ab1b`.
+All **199 payload hashes** were verified after safe local extraction; export SHA
+`5dca10c5d99b830c8e22c3451ebe526435fcf0bafb2d79fca10f443a76de7880`.
+
+At **12:21:12 UTC**, the exact study PID **3314046** and gateway PID **2974574**
+were live in their original user services. Version 7 had **405 completed online
+attempts**, no terminal pair/study status, no replay attempts and no finalized
+learning updates. The six active arms were on recorded days 3–5. The Qwen
+container and gateway instance were unchanged, global model concurrency remained
+**64**, and transport exceptions remained zero; 166 client cancellations were
+counted separately. Fluso remained stopped. This snapshot is not final study
+accounting, a general speedup or evidence of successful learning.
+
+A separate read-only readiness capture at **12:21:12 UTC** verified the six
+published arm snapshots and their attempt-receipt hashes. All **36 employee
+instances** in the three started learning arms had sufficient released
+experience for consolidation: three with direct representative prompts, six
+with role transfer and **27 with uncalibrated defaults**. They were on days 3–4;
+the first scheduled update remains day 6. The other three learning arms have
+not started because arm order is counterbalanced and sequential within each
+pair. Eligibility is not an update, adoption or evidence that the simulator's
+default behavior matches real users. No new model calls were made. Capture:
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-readiness-v7-20260915T1224Z`;
+plan SHA `9d2a6ef9699e7465430b5d4f2285c9a8705961a22c509a6343da15a57eea9c41`;
+report SHA `6be12f377cdbd5a656a8773753973d1427ca55bc9dfee3f9e055a99354b1d728`.
+The report and six state hashes were verified in the local copy.
+
+## Native Fluso consolidation dispatched: September 15, 11:37 UTC
+
+`worldlab.qualify_learning --harness-config` now selects the target harness for
+fresh native SkillOpt replays. It preserves the original historical source and
+audits completed optimizer transport in addition to target costs, fresh grades
+and the adoption gate. All **81 focused tests passed both locally and on H200**,
+including the pinned upstream optimizer and gate controls.
+
+Frozen `Big-World-CL-fluso-learning-v1` at
+`a5090cd3ce5cb2ca65fb3b63f9f52378a7a0e032` uses the already-qualified configured
+Fluso identity unchanged. The four source experiences are the research analyst's
+days 2–5 from the stopped, single-world `development-world-v2`, released at day 6:
+two training and two validation lineages selected by time. Their historical
+Hermes executions remain immutable. Only the new Fluso replay judgments can
+determine consolidation scores. This is one bounded component check, not a
+resumed study, a paired harness comparison or a workplace learning-effect test.
+
+The first operator launch stopped during an identity comparison, before tests,
+native attempts or model dispatch: it compared the delegate with a configured
+identity that also contained factory provenance. The complete configured
+identities match exactly. That script and failed preflight log are preserved.
+The corrected operator launched `bigworld-native-fluso-learning-v2` at
+**11:37:23 UTC**, PID **3390547**, invocation
+**5b6bdbcf7de5406fb72daaae14bd45a3**, with results going to
+`lifespan/artifacts/native-fluso-learning-qualification-v2` in the frozen checkout.
+The native learning budget remains 24 replays, 12 million reserved tokens and
+3,600 seconds; primary, auxiliary, judge and optimizer calls use the shared
+gateway cap of **64**. Completion and adoption remain pending.
+
+At **11:39:14 UTC**, both this service and the version-7 study were active with
+their original PIDs present. Version 7 had **126 completed online attempts**,
+no terminal pair/study status and no finalized learning updates. The gateway
+retained zero transport exceptions, peak 64 and 144 separately counted client
+cancellations. These are bounded progress observations, not final accounting.
+
+Launch plan SHA `20458ba9efb99d3695268bf308d7a71c1ba8e095e4d423350e09a2e92bb600b8`;
+qualification plan SHA `06fd2816499c2d12a95bcd5baa0facfc7a987a6cd5b67682984d891448d6e11e`.
+The initial packet `lifespan/artifacts/native-fluso-learning-start-evidence-v2-h200.tar.gz`
+is **31,520 bytes**, SHA
+`e7697a998b44d1a5c70c0a6073650a55f6cdc83296466a4092455517640f5bc9`.
+All **17 payload hashes** were verified after safe local extraction. Export SHA
+`610e45dfe72ab50fed8c143351ddd345111577e8a15e52cdd75aed009a0bdcc2`.
+This launch packet does not contain a completed native learning qualification.
+
+## Native deadlines qualified; fresh version 7 launched: September 15, 11:22 UTC
+
+Frozen source `159cd0ca7ed66ee41217766670e8a6cc2cc9e728` records the task's
+monotonic deadline before starting native Hermes and atomically checkpoints the
+meter before every physical model dispatch and after each response. At the
+active deadline it closes model admissions and terminates the task sandbox.
+An already admitted response may settle within a separate bounded allowance;
+all settlement time remains in the elapsed-time receipt. Sandbox cleanup must
+be audited within ten seconds. A complete, known-usage native return is still
+required for grading. A checkpoint alone preserves costs and reservations but
+cannot establish completion or turn an interrupted attempt into a task score.
+
+Qualification at `Big-World-CL-hermes-deadline-v1` passed two ordinary public
+development tasks and two prospective deadline controls. The **45-second tool
+control** wrote its initial file, stopped before its delayed file, and retained
+complete accounting: **3 calls / 18,708 tokens**, **45.816 seconds** including
+settlement. The **8-second inference control** retained **6 calls / 39,645
+tokens**, with its sixth accepted response finishing after the active deadline,
+no later model admission and **8.966 seconds** total elapsed time. Both returned
+audited `budget_exhausted` status with worker and sandbox absent. These controls
+do not qualify all crash or provider-failure forms.
+
+The two ordinary task controls added **19 calls / 111,327 tokens**, including
+eight grader calls. All four controls passed independent read-only source
+audits, totaling **28 calls / 169,680 reported tokens** with twenty distinct
+native request IDs. The focused 83-test suite had **82 passes and one optional
+native fixture skip on H200**; locally it had **81 passes and two skips**.
+These are bounded runtime checks, not broad task performance or learning results.
+Plan SHA `8db7bcea4aa17a294f986bdc5f6847ed4bad32b41ab6c9a963429de623dbcdf8`;
+report SHA `c4fdb76835888d939336f56547b9b494db9f5c80aa80329e853b2d3011b8f423`.
+
+`Big-World-CL-workplace-v7` freezes that source and the same six development
+worlds, schedules, employees, seed skills, budgets and non-target adapters as
+version 6. A fresh prospective exploratory analysis was prepared before launch.
+The service `bigworld-native-workplace-compact-v7` started at **11:22:12 UTC**,
+PID **3314046**, invocation **25ae0080a57c4615b7e3a4013003f93c**. At the bounded
+**11:29:04 UTC** observation it was active/running with that PID present,
+**60 completed online attempts**, no terminal pair/study status, no replay
+attempts, no finalized updates and no adoptions. State files can lag completed
+attempt files while a parallel day is joined; these counts are not a transaction
+or a completed-study accounting total. Version 6 remained stopped and unchanged.
+
+The shared gateway remained capped at **64** with peak 64, **zero transport
+exceptions** and 133 client cancellations counted separately. The serving
+container, image, start time and gateway instance were unchanged. Task/world/
+update ceilings remain 64; the global gateway also covers the employee, judge
+and optimizer requests. Structured outputs and request-level token limits
+remain in place; no generated-text character cap was added.
+
+Study SHA `03c10486461609813cf8eb1e6a213d88152c879523f962b409bbe38b6c72d106`;
+analysis plan SHA `03af812603bc33cdd5fe23dd89317dc86349ef893a45cde2cd4b4f724e836c05`;
+compatibility SHA `fd2981449b886d2e603967cf986db305fb4bac652a442f3804f82843f165f522`.
+The packet `lifespan/artifacts/native-compact-v7-start-evidence-h200.tar.gz`
+contains all native qualification traces, test results, audits, preparation,
+analysis, launch lifecycle and the initial observation: **1,589,219 bytes**,
+SHA `b9073997f301c39e68a81d1259c7b60219224c0b86f8bb37b4a1277a4a8c588c`.
+It was copied and safely extracted locally with all **186 payload hashes**
+verified. Export SHA
+`adf5eb052b7fa15f5b0d9ccf330f31ed9a3bf8240b1378ce68e9a82fc5b880ad`.
+This is a fresh development run; no final-bank outcomes, successful nontrivial
+adoption, later deployment effect or statistical significance is established.
+
+## Version 6 stopped after a whole-task deadline: September 15, 10:47 UTC
+
+Version 6 is **stopped and incomplete**. Seed 401's control task
+`d004-operations-fr-003-000` (`internal/euw_v1_es_018_fr_bridge`) reached its
+**900-second** worker deadline without returning `NATIVE.json`. The adapter
+retained the full **500,000-token reservation**, unknown call count and
+`infrastructure_ambiguous` status. This is ungraded and is not a valid negative
+task score under the frozen study policy. Its original receipt remains unchanged.
+
+The native logs show active task work: **15 primary API-call records**, reporting
+**269,655 tokens** and **394.7 seconds** of model latency, alongside a
+**300.10-second terminal timeout** and a later **94.21-second terminal execution**.
+The model wrote scheduling scripts and a CSV artifact before the deadline.
+These partial logs explain substantial elapsed task time, but do not establish
+the complete final state or recover the missing meter, auxiliary costs or grade.
+The gateway recorded zero transport exceptions; this incident must not be
+described as a recurrence of version 5's HTTP 502.
+
+The terminal pair status was detected while the supervisor remained live. The
+exact owned service was stopped with before/intent/dispatch/after evidence.
+At **10:47:43 UTC**, `bigworld-native-workplace-compact-v6` was inactive/dead,
+MainPID was zero and original PID **2975707** was absent. The failed worker and
+sandbox PIDs were also confirmed absent. Model container ID, image and start
+time, and the gateway instance, remained unchanged. The final stable snapshot
+at **10:52:53 UTC** has **511 completed online attempts**, **one ambiguous
+attempt**, **527 employee decisions**, **zero replay attempts**, **zero finalized
+updates** and **zero adoptions**. No arm or pair completed successfully.
+`STATUS.completed_pairs=1` counts the failed pair's terminal join, not a
+successful result. No learning-effect or whole-study resource claim follows.
+
+The frozen `d92debe7` source, study and prospective analysis must not be resumed
+or retroactively changed. Before another world run, qualify durable accounting
+and a prospective deadline/failure policy so ordinary task-budget exhaustion
+does not depend on a final worker return. Do not silently score this study's
+ambiguous attempt or drop it from analysis.
+
+## Independent Fluso cleanup qualified: September 15, 10:52 UTC
+
+Frozen `Big-World-CL-fluso-guardian-v1` at
+`ffac9fa4ea426d6b3dd72d7bc0a2ce788a74d7f3` adds a user-systemd guardian outside
+each native controller's service group. A Linux pidfd watches the exact process;
+unique ownership labels, exact names and image checks confine removal to the
+attempt's containers. Normal completion requires a hashed cleanup acknowledgement.
+Guardian intervention preserves model-accounting files and forbids grading.
+
+Both native interruption controls passed: **SIGTERM and SIGKILL of the whole
+controller service group** left the independent guardian alive long enough to
+remove the two owned containers. Each interrupted attempt retained **one unknown
+488-token reservation**, zero reported tokens and no final grade or learning
+trajectory. The controls verified separate controller/guardian cgroups, exact
+PIDs before dispatch and process/container absence afterwards. This qualifies
+these interruption paths on the functioning H200 Docker/systemd host, not
+recovery from host or daemon failure or every possible cleanup deadline race.
+
+Two fresh public development-task runs also passed full source audits: **34
+model calls and 177,961 reported tokens**, including grading. Native call and
+input-token ceiling controls passed again (**one call / 462 tokens** and **zero
+calls**, respectively), and both withheld grading. All **30 Fluso tests passed
+on H200**; locally 29 passed and the Linux pidfd subprocess test was skipped.
+No full Fluso learning epoch or world comparison is established by these checks.
+The first qualification dispatch stopped at its study-status preflight, before
+tests or inference; its log is preserved. The fresh control ran after the
+version-6 study had been stopped, without restarting it.
+
+Task plan SHA `4421487c521a544fdb043fa7ebdd86438b52cccf5224f19bf6abc0a500eea267`;
+terminal plan SHA `8626f2d596483526eaeb4534568808434774532b9734f3f2310fa023b84c66c7`;
+interruption plan SHA `3ea991e8157ae10ab583d6e14a7f33bfbabb24470397da4753970e832527b423`.
+The combined qualification and stopped-study packet is
+`lifespan/artifacts/fluso-guardian-and-v6-stop-evidence-v1-h200.tar.gz`,
+**8,683,860 bytes**, SHA
+`cf95ffe1cb299770bbf254cefaeeb13acac3ecaa659eb4d49b433d1a0277e105`.
+Its **502 payload files** include native traces, the failed attempt, stop
+lifecycle, study/state snapshots, all qualification outcomes and test logs.
+The archive was copied and safely extracted locally, with every payload hash
+verified under `lifespan/artifacts/fluso-guardian-and-v6-stop-evidence-v1-h200`.
+Export SHA `8290adffc213f4b9f4658b7e2c0a09924d3d70bf0bfabdd314a4671d5a09d5e6`.
+All twelve qualification containers were confirmed absent. At export the shared
+gateway was idle, still capped at **64**, with peak 64, zero transport exceptions
+and 112 client cancellations (including the deliberate interruption controls).
+
+## Native Fluso task adapter qualified: September 15, 10:24 UTC
+
+The interchangeable `worldlab.fluso:Fluso` harness now executes real development
+tasks through the existing task, grading and learning-replay interfaces. Its
+frozen source is `Big-World-CL-fluso-harness-v2` at
+`effc7435fed7d8acd5040eed14d6485621f28de3`. Select
+`configs/worldlab/fluso_h200_v1.json` with `--harness-config`; install the optional
+`requirements-worldlab-fluso.txt` in a separate controller environment. The
+qualified environment uses Python **3.12.3**, aiohttp **3.14.3**, OpenAI
+**1.109.1** and httpx **0.28.1**. The immutable native image remains
+`sha256:3eea3855506e6c5694143609a73f7f4a0469d60d136e250c0ecf3c91ac75749d`.
+
+The adapter isolates each task in a fresh native project and puts its public
+workspace in `projects/Home/task`, outside Fluso's project metadata and memory.
+The skill is mounted read-only. Only the loopback relay can reach the metered
+provider; native primary and auxiliary generation share the attempt budget and
+global LLM concurrency **64**. Audit binds the original prompt, full skill read,
+subsequent skill consumption, native tool results and assistant messages to the
+actual inference bytes. It also checks Docker configuration, terminal state,
+usage and container removal. No generated-text character cap is introduced.
+
+Two fresh executions of `internal/euw_fr_003_en_bridge` passed the full execution
+and grading audits, with **30 model calls and 159,870 reported tokens**. These
+include **11 primary Fluso calls, 11 auxiliary calls and 8 grader calls**. Both
+grades are complete, successful and quality **1.0**. These are repeated runs of
+one public development task with a same-model judge; they do not establish
+general task coverage, independent grading accuracy or skill-learning effects.
+The checks co-ran with the version-6 development study, so their elapsed times
+are not an isolated throughput comparison. The serving container and gateway
+instance remained unchanged.
+
+The first qualification at source `313e9dcd` is preserved as failed: both tasks
+ran, but configuration audit rejected Docker's expected hostname transition
+when the solver joined the relay's network namespace. Its **26 native calls and
+151,942 tokens** remain charged and ungraded. Version 2 allows only the exact
+relay-hostname transition; every other configuration field must still match.
+It rejects a terminal container that is running, OOM-killed or reports a Docker
+state error. No failed receipt was rewritten. **51 targeted tests passed both
+locally and on H200**, including configuration tampering and native evidence.
+
+Two prospective native budget controls also passed. The call ceiling permitted
+exactly **one call / 462 tokens**; the input-token ceiling blocked generation
+before any model call. Both stopped the solver, retained complete meter
+accounting and removed their containers. Both correctly return
+`budget_exhausted_unverified`, with no scored attempt or learning trajectory.
+These controls do not qualify other partial-output or terminal forms. Abrupt
+controller death, a full Fluso learning epoch, document formats and JobBench
+remain to be qualified before broader use.
+
+Successful task plan SHA
+`9b63e9d134736ae3389083fd1224c3d758265e621110d4fd5d20f72da0253bd7`;
+qualification SHA
+`987fe880c46e72b1d397b92cac9ecbf2e2ef9e050f82b2cf7d518ea19680c70e`.
+Terminal plan SHA
+`9716af41245f4afef23cd21f6c338092d9e9f8cd3f16fd54e90005b3da39990f`;
+report SHA `4f10640a6a843fdbea1db90994444f5cdb8a62cf723a5447b74dd44c26d083f6`.
+The packet includes both failed and passed task qualifications, both terminal
+controls, operational state, test logs and an offline audit. All **12 owned
+containers** were confirmed absent. The **1,815,465-byte** archive was copied,
+safely extracted and all **564 payload hashes** verified locally under
+`lifespan/artifacts/native-fluso-harness-qualification-evidence-v2-h200`.
+Archive SHA `9599cb64fd939000d651d8b8e587f70101cc9f4f047a9496b9991c51d2971eb9`;
+export SHA `2fed89c8186804d38bf667c9ede04176a647c04f2ee3f44c5b399d30d48ff107`.
+
+At **10:32:44 UTC**, the unchanged version-6 study had **414 completed work
+attempts**, no pair or study terminal status, no finalized learning updates and
+no adoptions. Its original PID **2975707** was present and the service was
+active/running. The shared gateway retained peak concurrency **64**, zero
+transport errors and 88 client cancellations, counted separately. These are
+nontransactional progress counts, not final accounting or learning results.
+The separate lab snapshot is
+`lifespan/artifacts/native-workplace-v6-progress-20260915T103244Z.json`.
+
+## Fresh inference connections qualified and deployed: September 15, 09:28 UTC
+
+Frozen source `d92debe7623ba2ad33f3c9bb5453db8409f9021c` adds fresh upstream
+connections and request-correlated gateway diagnostics. All **59 targeted tests**
+passed on H200. A controlled reused-connection fixture reproduces a disconnect;
+fresh connections avoid that fixture. This does **not** identify the cause of
+the earlier study's HTTP 502.
+
+The native qualification retained and passed **all 1,088 requests**, reporting
+**825,979 tokens**, zero unknown usage, zero transport errors and zero retries.
+Its six phases cover strict JSON through Responses and Chat, plus streamed Chat.
+Every phase reached **64 active requests** and drained to zero. Fresh phases
+created exactly one upstream socket per request, with no connection reuse.
+The 512-request fresh stress phase took **8.447 seconds** (60.61 requests/second).
+These are repeated-context controls with tiny outputs, not workplace throughput
+or a statistically established speedup. Independent offline reconstruction on
+H200 and locally verified all requests, responses, usage, unique request IDs,
+phase totals and **3,284 manifest entries**.
+
+Qualification plan SHA
+`c32f94b40989fee363a2296e1f610145f4fae99f9362db1fd9396be3070afb30`;
+report SHA `8215135cfaa4cc42660cce1c920e8db486b5b52a45b5e05a65e28baf0b609eca`;
+export SHA `aa7ef95f2b4d2c1f39697ad3c2e7afaf950c145ae15de4dcc8f79577988a6817`.
+The complete **605,918-byte** archive was copied and safely extracted locally
+under `lifespan/artifacts/native-gateway-connections-v2-h200`; archive SHA
+`cf7c8db11e65ab94e51e1a4a08d98c24b2ffc98c5115e2b3c69317d33469f0c3`.
+
+At **09:28:32 UTC**, the idle owned service on port **8011** was replaced with
+`bigworld-throughput-inference-gateway-v2`, PID **2974574**, invocation
+`ad0844adaa514ac1980c099f76873216`, from `Big-World-CL-gateway-v2` at the frozen
+commit above. Its runtime reports aiohttp **3.14.3**, connection policy `fresh`,
+global LLM concurrency **64**, upstream port **8002** and zero retries. Gateway
+instance ID is `533b651bc1af`. The Qwen serving container's ID, image, arguments,
+GPU assignments and start time remained unchanged. Before/intent/stop/dispatch/
+after evidence and a metadata-only event log are retained in the lab checkout's
+`lifespan/artifacts/native-gateway-deployment-v2`.
+
+Two fresh native Hermes controls subsequently passed their source audits:
+**20 total model calls and 124,432 reported tokens**. All **12 solver calls**
+retain distinct gateway IDs matching the live instance; the remaining eight
+calls are task grading. Both attempts completed with known usage and the gateway
+recorded zero transport errors. Qualification is under the frozen
+`Big-World-CL-workplace-v6/lifespan/artifacts/native-harness-gateway-v2` directory.
+Plan SHA `6941787c97870eb49ebdf4d8ce131248d7c75b12aed2fbded6a00b3fb42978c1`;
+report SHA `d40b6495a1c2247cabb43021965fbf2f4022bda779a5063c30a8e7937c27bd1b`.
+
+The fresh version-6 study preserves the exact previous six worlds, schedules,
+personas, sparse examples, adapter identities and development learning protocol.
+Only three existing source files differ: the gateway, budget correlation fields
+and failure-receipt validation. Explicit compatibility evidence reuses the
+unchanged judge, employee and optimizer qualifications without claiming new
+measurements. Newly added Chat/Fluso modules are unused by this Hermes study.
+Study SHA `48bd20a6479a1d264f9c2b943a022986747e0f11ed4605d8db850697104b63c0`;
+prospective analysis plan SHA
+`e7928f0f612f6a43eca5f244f1f2722bab742ef4fe6c978613d83d969f7ab74b`;
+compatibility SHA
+`d484646ab3b325925a272ed9f7425e7f25fa959ef607645b36395f26e268737c`.
+Version 5 remains stopped and unchanged. No reserved final-bank outcomes were
+accessed, and no confirmatory significance claim is authorized by this study.
+
+Version 6 launched at **09:34:02 UTC**, service
+`bigworld-native-workplace-compact-v6`, PID **2975707**, invocation
+`b293451d370e4a148ba7a9d5f159420f`. At **09:36:49 UTC**, its main process was
+present, all six initial arms had recorded 12 employee decisions, and their
+first parallel task wave was running. The gateway had **64 active requests**,
+15 queued and zero transport errors. Neither a completed pair nor an adoption
+existed. The initial snapshot is nontransactional and does not establish success.
+The gateway also records client cancellations separately: the 09:37:21 read
+counted 24 queued metadata GETs, 24 Responses calls cancelled during response
+delivery after HTTP 200, and four Chat calls cancelled before response headers.
+These events must not be reported as zero client errors or silently equated
+with complete token accounting; native attempt receipts remain authoritative
+for their metered calls. No upstream HTTP error event or transport exception
+was recorded in that read. Expected `/props` 404s remain in status counters.
+
+The full two-task native qualification, prospective study and analysis plans,
+compatibility checks, deployment lifecycle, launch receipt, targeted test logs
+and initial progress are copied and hash-verified locally in
+`lifespan/artifacts/native-compact-v6-start-evidence-h200` (**116 payload files**).
+Archive size **1,158,460 bytes**, SHA
+`5bb49434ad72fcee59ceb4916d2c2d16bf5bc865afac4fa8786e3f7c0b0be754`;
+export SHA `252c1ebca59fbcdc752800234cb6d9327cf89e87128fa6e5a275627547524f66`.
+The event log in that package is a timestamped snapshot of the continuing
+gateway log, not its eventual final contents. Native study attempts remain on
+H200. Future status checks must examine pair statuses and receipts as well as
+the live service PID; a running supervisor does not exclude a failed pair.
+
+## Version 5 stopped after a transport failure: September 15, 09:00 UTC
+
+The version-5 campaign is **stopped and incomplete**. Its seed-431 control arm
+failed on `d008-communications-fr-003-000` (`internal/euw_v1_de_013_fr_bridge`).
+Native inference dispatch 23 received **HTTP 502** after about **0.016 seconds**
+at 08:48:40 UTC. The first 22 calls reported **388,768 tokens**; the failed call
+retained its **91,954-token reservation**, for **480,722 charged/reserved tokens**.
+The attempt is ungraded, with incomplete accounting. This was a provider
+transport failure, not a valid negative task score. The retained provider-window
+log has no corresponding error stack; the old gateway did not retain exception
+details, so the underlying transport cause is not established.
+
+The pair failure became terminal after its remaining parallel work joined at
+08:55 UTC. The supervisor was still live when the status check detected the
+failed pair. An owned-service stop was issued at **08:57:30 UTC**, with status,
+study bytes, journal, stop intent, dispatch result and post-stop checks retained.
+MainPID **2364472** is absent; the service is inactive/dead and the shared gateway
+has **zero active and queued requests**. The Qwen serving container remains
+running under the same ID and start time. Frozen study source `b3ddb534` and
+the original analysis are unchanged; this campaign must not be restarted.
+
+The stable post-stop snapshot at **09:00:32 UTC** has **701 fully graded work
+attempts**, **711 employee decisions**, **239 fully graded learning replays**,
+**5 finalized learning epoch receipts** and **zero adoptions**. No world pair
+completed. Finalized receipts exclude interrupted work and cannot establish
+whole-study accounting or a treatment effect.
+
+All five finalized epochs passed the frozen source's offline audit, including
+**52 replays**, optimizer provenance, selection and gate decisions. They consumed
+**6,720,802 tokens**. One epoch made an optimizer call and rejected its proposed
+edits after validation regression; four made no optimizer call. The ordered
+controller had not yet recorded any of these receipts in arm state. The audit
+therefore uses explicit, transient per-epoch views of the original captured
+states; it does not change or resume them. Pending epochs are censored. These
+are diagnostic results, not a completed causal prefix or deployed skill proof.
+
+Stop export SHA `aa6d7dccbcc165454e912e18b4fcb0ee407d01852b2e7c68f6c335f055bca392`.
+Epoch audit plan SHA `62f9439bd41af80fca9b85aea043e8f62cef847daf20e5e1bc6ea750001b4b8c`;
+report SHA `ac0e1c5f1b6ae1f8b61f85263da315a0247420e1ba5a090245786cd3d5f29562`;
+export SHA `b1de1f45fcd32e0acceb3de7906e04636e26f4d438851b9ea556b84a8582fec6`.
+H200 evidence directories are `lifespan/artifacts/compact-v5-stop-evidence-v1`
+and `lifespan/artifacts/compact-v5-finalized-epoch-audit-v1` in the lab checkout.
+The export contains stop lifecycle, arm snapshots, failed-attempt core receipts
+and finalized-epoch audit results; full native attempts remain on H200.
+The 39-file packet was copied, safely extracted and hash-verified locally under
+`lifespan/artifacts/compact-v5-stopped-evidence-v1-h200`. Archive size:
+**10,086,235 bytes**; SHA
+`23424d8462bce10a88da19000d901ee08fa830d990eb7f1506a1f03612b6ea0e`.
+
+## Isolated native Fluso control: September 15, 08:50 UTC
+
+The corrected native Fluso control passed in **18.022 seconds**, with **9 model
+calls and 43,415 reported tokens**, including auxiliary work. The native primary
+session accounts for four calls; five others are also charged by the meter.
+It read the CSV, read the installed work-process skill, and wrote the expected
+JSON total and skill marker. Offline audit matched every primary assistant
+response and its usage to provider bytes, linked the exact native skill read
+to subsequent inference input, and reconstructed a common trajectory.
+
+The relay runs with Docker `--network none`; Fluso shares its loopback-only
+network namespace. A probe with the same mounts/network passed model access,
+blocked direct inference and internet TCP, blocked external DNS, absence of
+controller-only files, and forbidden-route checks. Solver mounts contain only
+its own data, model catalog and read-only learned skill. Both native controls'
+containers were removed successfully. The existing global gateway remains at
+**64**, with verified peak 64. This single control is not a throughput benchmark.
+
+The first control's task execution and isolation checks succeeded, but its audit
+started while a background memory request remained in flight. Its failed receipt
+preserves **12 dispatches, 68,809 charged/reserved tokens**, including a
+**7,326-token reservation** with unknown usage. The fix drains already accepted
+requests before auditing and keeps the relay alive through provider EOF, even
+when the native client has exited. Inputs/output collection now use Fluso's
+project directory. Both controls are retained; the first remains a failed
+qualification. Eight relay tests and eight native-evidence tests passed locally
+and on H200, including shutdown/client-exit regression cases and tampering.
+
+Runtime image: `sha256:3eea3855506e6c5694143609a73f7f4a0469d60d136e250c0ecf3c91ac75749d`.
+Corrected frozen control source: `Big-World-CL-fluso-isolation-v2` at
+`f015944d6b713f3569a6a4382a4b8d67187a473c`; evidence auditor at
+`915ddf34692d0a68654a7e339fae0b0571c788c7`.
+Corrected plan SHA `4114566eb177ba71c0b8a1d8112f1c7f3a58aa4722281e5d9258d0b634361894`;
+report SHA `d3269040adf0615db0c4d707afca5846e6f46df0fe71b3330ef9cf6079896bc1`;
+export SHA `501efe6ea42138ac3b676d9017a2a0bbfb13e14bebbb60775d3bf173feda9479`.
+Combined offline audit report SHA
+`24e6e582bf05916d4cb2f1dfac43baec3d0b5498e3db622cc52e6b240a1f5733`.
+
+All 100 first-control files, 78 corrected-control files, four audit files and
+their export manifests were copied and hash-verified locally under
+`lifespan/artifacts/native-fluso-isolation-qualification-v{1,2}-h200` and
+`lifespan/artifacts/native-fluso-evidence-audit-v1-h200`. These checks qualify
+integration components. The complete Fluso Harness adapter, complete native
+runtime-event audit and JobBench document/research/evaluator qualification remain
+unfinished. No benchmark result or learning effect follows from this control.
+
+## First learning replay audit: September 15, 08:34 UTC
+
+At **08:34:20 UTC**, the unchanged version-5 study had **637 fully graded work
+attempts**, **657 employee decisions** and **58 fully graded learning replays**.
+Two learner arms (seeds 421 and 433) had 24 employee learning epochs in progress;
+seed 409 was completing day-6 work. No learning update or adoption was finalized.
+MainPID **2364472** remained present and active. Pair and whole-study status
+showed no observed failure. Frozen source remained clean at
+`b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`; study SHA remained
+`6267cf6a2b8c4fb9cfd8c1cf3299b1f14d66a7291c035e96c92b755777cf0869`.
+Progress SHA `c52cee61b4cbec1bab467532934d29ee72f569e0e18f469e89c67b57fe54907c`
+is retained at `lifespan/artifacts/compact-v5-first-learning-progress-v1.json`.
+
+A read-only audit, completed at **08:33:25 UTC** using the frozen study source,
+passed for **all 23 completed initial replay receipts observed at capture**.
+The remaining initial replay was explicitly pending. The plan and captured arm
+states were saved before auditing; selection did not depend on replay scores.
+These 23 replays were isolated validation tasks selected by the frozen
+controller, with no employee delegation attached. The audit verified task and
+skill bindings, native skill reads, artifact inventories, saved judge responses
+and combined usage: **405 physical model calls** and **6,154,483 tokens** already
+spent on replay execution and judging. It made **zero new model calls**.
+
+The audited employees comprise **2 with direct examples**, **4 with role-transfer
+assumptions** and **17 using defaults**. This verifies execution for employees
+without direct calibration examples; it does not establish simulator realism.
+The audit covers the captured initial replays, not pending or later replays,
+complete learning epochs, proposal quality, adoption, later deployment or a
+learning effect. The full causal study audit remains outstanding.
+
+Plan SHA `b64084ca0fb531379753cc7344ec44e1eb55dc759e2e9f408ebfe66d9f93eb48`;
+report SHA `63c64530c8bb15f7c749cb90b9b8cd4f3a5d6244e3552ddd014970b31d51f41c`;
+export SHA `4defc6ab4fe49b729625b283795cd920da0f4a0b900fe349c0cc5c0ab412fa15`.
+The four payload files plus export manifest were copied and hash-verified
+locally at `lifespan/artifacts/compact-v5-first-learning-replay-audit-v1-h200`.
+Native replay evidence remains on H200. The progress snapshot has a local
+hash-verified copy at `lifespan/artifacts/compact-v5-first-learning-progress-v1-h200.json`.
+
+## Native chat budget qualification: September 15, 08:23 UTC
+
+At **08:23:19 UTC**, the unchanged version-5 study had **600 fully graded work
+attempts**, **611 employee decisions**, and zero finalized learning updates or
+adoptions. Two learner arms were completing day-6 work, before that day's
+scheduled learning dispatch; the third was on day 5. MainPID **2364472** was
+present and active, with no failure in pair or whole-study status. Progress SHA
+`d894bf924554bb55ba320094b3c153cf849a1ce45ae488837f6c5cdb19dcf0a2` is retained at
+`Big-World-CL-lab/lifespan/artifacts/compact-v5-chat-budget-progress-v1.json`.
+
+The new per-attempt chat meter was qualified separately from frozen source
+`Big-World-CL-chat-budget-v1` at `a97298d3ae46ae21accc68590a01ebe2cbd77a12`.
+Two synthetic Qwen requests through its Unix socket passed: structured JSON
+and a streamed native tool call. Both client requests asked for 500 output
+tokens; the meter placed the declared **128-token cap** on the actual wire.
+Tokenizer input counts **20** and **288** exactly matched reported prompt
+usage. The calls used **27** and **314** tokens, **341 total**, and both controls
+completed in **0.704 seconds**. This two-request check is not a throughput
+benchmark. The original serving container remained running with ID
+`7f685cb6867a93d983bf6a0f1cd5c0cc12c5bde0ddfb28917f243df9e9b71571`.
+
+Plan SHA `3da515781d7613cb3893a3f602ef8b328a3fd934eb59a887ae48ae477582ff5c`;
+report SHA `a07937e57494991d65da63b29a9bf1228e29fb8f62b720dffeaec0b103839933`;
+export SHA `1717e21309e396112aae662435ca8fec907bb4c209c988108fe2afbf7e36756b`.
+All 15 payload files plus the export manifest were copied and hash-verified
+locally under `lifespan/artifacts/native-chat-budget-qualification-v1-h200`.
+The offline audit of the copied native request/tokenizer/response bytes passed
+and reconstructed the same two calls and 341 tokens.
+
+Eighteen targeted tests passed locally and on H200 after the additional
+composition test at `7ec455d`. They cover reservations, actual output caps,
+usage loss, provider overrun, HTTP errors, interrupted streams, cancellation,
+time/call limits, unsupported inputs and receipt tampering. Eighty independent
+attempt meters behind the shared gateway reached exactly **64** simultaneous
+fake upstream calls and never exceeded it. No benchmark outcomes or extra model
+calls were used for those tests. These checks qualify a budget component; the
+Fluso container adapter, isolation and native skill-loading proof remain to be
+integrated. The running Hermes study and its analysis remain frozen.
+
+## Power planning and live progress: September 15, 07:52 UTC
+
+At **07:52:18 UTC**, the unchanged version-5 study had **377 fully graded work
+attempts**, **404 employee decisions**, and zero finalized learning updates or
+adoptions. The six first arms were on days 3–4; first learning updates remain
+scheduled for day 6. MainPID **2364472** was present, its service was active and
+running, and both pair and whole-study status showed no observed failure.
+The shared gateway still enforced **64** concurrent model requests with peak 64.
+This snapshot is not a completed execution or learning-effect audit.
+Progress SHA `3109a602fda153fa5e7eb7aff58a05a4fd30fa66f53bbece09139be690ac4d03`;
+local verified copy: `lifespan/artifacts/compact-v5-power-progress-v1-h200.json`.
+
+Separate mutable source `2fc9cde443c64d25269b65e442186477e3d8ebe3` adds the
+outcome-free power planner described in the [study protocol](WORLDLAB_STUDY_PROTOCOL.md#outcome-free-power-sensitivity).
+Twenty targeted power and analysis tests passed locally and on H200, including
+an independent chi-square mixture integral, simulation of 50,000 normal-data
+samples, the adjacent-integer sample-size threshold and the closed-form bounded
+mean calculation. No live study outcome was used to choose these scenarios.
+
+Nine constructed effect/SD scenarios produced identical sample sizes locally
+and on H200; the largest probability difference was `3.33e-16`. Both used
+NumPy **2.4.2** and SciPy **1.17.1**, in isolated planning environments. Python
+was **3.14.6** locally and **3.12.3** on H200. Each report retains configuration,
+source, versions and a hash manifest. The H200 five-file package was copied and
+hash-verified locally at `lifespan/artifacts/power-scenarios-v1-h200`.
+Local report SHA `a6f7561aecc87bfd535804ba59cda466edc6c6c741c1037c32579fcfcd87bb5d`;
+H200 report SHA `19a3f44e18cc76c6b03aca10c17fd953aa970a07035da66a3627eb56135a2d44`.
+Comparison: `lifespan/artifacts/power-scenarios-comparison-v1.json`.
+
+These are planning sensitivities, not observed power or a selected final N/test.
+At a constructed five-point improvement, paired-normal SD assumptions of ten
+and twenty points give 34 and 128 world pairs respectively at 80% positive
+rejection power and two-sided alpha 0.05. The bounded-mean sufficient count is
+8,138 pairs. Each result has distinct assumptions; none changes the original
+six-pair sign-flip analysis or establishes that more seeds broaden task coverage.
+The frozen running source remains `b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`.
+
+## Observed learning supply: September 15, 07:33 UTC
+
+A source-bound readiness capture at **07:33:57 UTC** found that all **36**
+employees in the three observed learner arms had sufficient completed, released
+training experience for the controller's selection. Each had the required two
+selected training lineages and two separate prepared gate descriptors. This is
+actual captured training supply, not a projection that assumes future work
+succeeds. First updates remain scheduled for day 6; zero updates or adoptions
+had been recorded. Across both conditions six arm states were captured; the
+other six were not yet published and are reported as unobserved, not as
+zero-result employees.
+
+The 36 observed learner employees include **3 with direct examples**, **6 with
+role-transfer task-mixture assumptions**, and **27 using defaults**. This shows
+that the current selection path does not require examples for every employee;
+it does not validate the realism of default personas or inferred preferences.
+The new read-only reporter at `fa85456d4a23cb59638797f2e6d8bb13c57d3164`
+checks source, bank, lineage, chronology and receipt bindings. Fourteen targeted
+readiness/design/isolation tests passed locally; H200 ran 14 with one
+optional-dependency skip. No model call or study mutation is involved.
+
+Plan SHA `213cb0d7b1db1a6f7a18f7384146b75ab3cd20c2c435bd2062b7cc24f1cd5d0a`;
+report SHA `936a3f9dfa1e730b466e96a2fcb0f9ca773647026fab48a1cadafbe9b4b20375`.
+The eight report/plan/snapshot files were copied locally and hash-verified under
+`lifespan/artifacts/compact-v5-observed-readiness-v1-h200` in the lab checkout.
+Native attempt evidence remains on H200. The source and analysis of the running
+study remain frozen. Eligibility alone is neither a skill proposal nor a
+validated adoption, later skill deployment or learning-effect result.
+
+## Checkpoint audit and larger-analysis controls: September 15, 07:18 UTC
+
+The version-5 pre-learning checkpoint audit completed at **07:18:39 UTC**. It
+validated all **107 published completed work attempts** and **145 native employee
+decisions** in the six captured arm states. Work and judging used **1,531 physical
+calls** and **18,577,302 tokens**; the audited employee decisions used **145 calls**
+and **467,426 tokens**. These categories exclude inflight work, unpublished
+parallel receipts and other bootstrap/social accounting. The audit makes zero
+model calls and does not certify a complete world, causal replay of unfinished
+commands, an adopted skill or a learning effect.
+
+Checkpoint plan SHA:
+`29795b95a2be3bd36c406aa743287d98748a31b6810a5f1fdee27b65bd178996`;
+report SHA `40817fa55978b9a3e131882d49448e5380e2928b50b25d43f4625bceea414831`.
+The eight plan/report/snapshot files were copied locally and verified under
+`lifespan/artifacts/compact-v5-checkpoint-audit-v1-h200` in the lab checkout.
+Original native receipts remain on H200. At the preceding 07:14:46 observation,
+the supervisor was live, six first arms had recorded progress, and there were
+82 fully graded attempts with no observed pair failure. No learning update had yet occurred.
+
+Future analysis source `fdeae8aaa1f6eb6722808d52f9a02c320af6b639` removes the
+20-pair computational cap using integer-lattice exact counts and a frozen
+outcome-independent state budget. Twelve targeted tests passed locally and on
+H200, including independent exhaustive enumeration, a 220-pair binomial tail,
+zero-pair multiplicity, computation-budget rejection and floating-point underflow.
+Constructed controls at 6, 64, 128, 512 and 1,024 pairs produced identical exact
+tails on both machines. The largest used 6,352 reachable sums and took 0.424
+seconds locally and 0.439 seconds on H200. These are arithmetic/performance
+fixtures, not study outcomes, power estimates or a choice of final sample size.
+Local report SHA `7e7c057cad90f52a87ec840598f4e3ba85801496041ca9fccb5c721dcf4c247f`;
+H200 report SHA `7bf6b7547132249358a08cd03f8d43f50002f6f277bb5adf074b40c452923209`.
+Both are retained in the lab under `exact-analysis-scale-controls-v2` and
+`exact-analysis-scale-controls-v2-h200`. The running source, workload, six-pair
+analysis, inference configuration and learning policy remain unchanged.
+
+## Latest launch: September 15, 07:03 UTC
+
+`native-workplace-compact-v5` launched at **07:03:20 UTC** from source
+`Big-World-CL-judge-v16` at `b3ddb5348263b85eebb9f4ced2c3d4eb7aa5d500`.
+The initial observation showed MainPID **2364472**, invocation
+`c460a05e634341faaff8ab73a073a4e4`, 12 native employee decisions and no finalized
+work or observed pair failure. These are initial progress observations, not
+completed-work or learning evidence. The shared gateway remains at **64** and
+GPUs 4–7 were at 100% utilization; no inference settings were changed.
+
+The fresh semantic gate matched **76/76** labels in **5.997 seconds**, using
+72 model calls and four registered source checks. Usage was 180,836 reported
+tokens with no unknown accounting; plan SHA
+`5e8294945f566558cf09e0097d3161905c525df12ad17627fba08386d2f2ab99`.
+All **153** retained contexts from the stopped version-4 study passed fresh
+grading and offline audits: **754 calls**, **5,415,871 tokens**, zero format
+recoveries and zero unknown accounting. This includes both diagnosed failures
+and one context with no original evidence projection. Fifteen interrupted
+attempts without gradeable receipts were retained as exclusions without scores.
+Saved-context plan SHA:
+`8b061a0af7db503b22c42c387cc64749cdf4ec69cbd5f35df6282e6b50355280`.
+Two fresh native harness controls passed with **17 calls** and **94,492 tokens**;
+plan SHA `a09c23485b0cad6971747fa1c1031191054468f63d13d7ab7d22f99170c7e33b`.
+All 121 local WorldLab tests passed; H200 ran 121 with one dependency-specific
+skip. A fresh installed-backend check passed. Unchanged employee and optimizer
+component qualifications were reused after source and identity comparison.
+
+The six seeds, employees, schedules, sparse calibration overlay, isolated gates,
+work budgets and analysis policy are identical to the preceding study. The new
+study SHA is
+`6267cf6a2b8c4fb9cfd8c1cf3299b1f14d66a7291c035e96c92b755777cf0869`.
+Its analysis was frozen before dispatch under
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-compact-analysis-v5`, plan
+SHA `baac2e174b944312d888567f52f55465f507b3665a0830145a89c07411d9149d`.
+Launch and serving evidence is in `native-compact-launch-v5` under the lab's
+artifact directory. This remains a development study requiring every planned
+pair; no adoption, later deployment or statistically supported gain is claimed.
+
+The stopped version-4 checkpoint has 146 fully graded work attempts, 147 finalized
+work receipts, 168 employee decisions and zero completed pairs. Its selected
+failure contexts, both rejected format diagnostics, archive reproduction and stop
+receipts were copied locally and verified: 631 files, 22,109,605 bytes, archive SHA
+`c0fa6cada74ee5b6db8cc605d4c76406ffb572f546e51103a8a9ce12e1d585b2`.
+They remain under `lifespan/artifacts/compact-v4-failure-evidence-v1-h200` in the
+local lab checkout. This is selected failure evidence, not a full-study export.
+
+The completed version-16 qualifications and initial launch records are also
+copied locally under `lifespan/artifacts/filename-grading-launch-evidence-v1-h200`:
+4,652 verified regular files, 47,939,329 bytes, with two socket entries retained
+as metadata only. Archive SHA:
+`2142634584e63fa468b29485133f2dae747b1f31ca3e18caf1833366214ab033`.
+This package contains initial launch evidence, not the evolving study outputs.
+
+## Preserved stopped state: September 15, 06:52 UTC
+
+The version-4 scale study **failed and was stopped**. Two pair failures were
+observed at 06:29:34 UTC despite its supervisor still being alive. Pair 401's
+control arm completed a French operations task but the evidence reader rejected
+an extra TAR.GZ file before grading. Pair 409's learning arm exhausted both the
+original and one repair verdict's 4,096-token budgets while listing evidence
+for `r8_evidence_entailment`. That grade used three calls and 42,155 reported
+tokens; it remains incomplete. Neither failure is a completed pair.
+
+The owned service was stopped after preserving its failure state. At 06:31:27
+UTC MainPID was zero, its old process was absent, and gateway active/queued
+counts were zero. Stop evidence is in
+`Big-World-CL-lab/lifespan/artifacts/compact-v4-stop-after-pair-failure-v1`;
+intent SHA `add2efc7046731e9e57d946d3a537825461cd0809437e76270582f1b1c30e34d`.
+The original study, source, outputs and failed grades remain unchanged. At that checkpoint no new
+scale study had launched. Serving remained on the same concurrency-64 gateway.
+
+Two prospective structured-output diagnostics are retained under the lab's
+artifact directory. `decision-json-qualification-v1` completed 78/78 requests in
+5.527 seconds but matched only 71/76 predeclared labels, so its Boolean-only
+format was rejected. `cited-verdict-qualification-v1` kept brief reasoning and
+constrained the evidence field to an actual filename. It completed 78/78 in
+11.102 seconds, used 214,603 reported tokens with no unknown accounting, and
+matched 75/76 labels. Its two unlabeled copies of the prior truncation context
+completed. Plan SHA:
+`039338146d7f84ff0331252d7df28c25c4e7b734d0b525073b89a67cd09a7eb0`.
+The remaining error incorrectly accepted an extra deliverable. These are failed
+development gates; neither report is a general accuracy or learning claim.
+
+A zero-inference reproduction confirmed that the extra archive in pair 401
+contains exactly three byte-identical copies of the visible text deliverables.
+`compact-v4-archive-reproduction-v1` records the original exception and a
+prospective projection, SHA
+`47b14fcd3208f55d8667a6b5e308d2669836076d13baface5593d218b6e81d98`.
+The prospective reader only describes verified duplicate archives; it never
+extracts them or silently accepts new archived evidence. The prospective judge
+also binds filename citations into its request schema and applies a negative-only
+exact-deliverable-set check for the reviewed French coordination source. The
+latter enforces the source's own requirement, not an invented output quota.
+Fresh qualification is required before another study.
+
+## Preserved launch: September 15, 06:09 UTC
+
+`native-workplace-compact-v4` launched at **06:09:20 UTC** from frozen source
+`Big-World-CL-judge-v15` at `1096af56c1f1ba7f62f34de4643e46588b47651a`.
+Its initial checkpoint at 06:09:43 UTC shows all six first arms recording
+native employee decisions, no observed pair/study failure, and the supervisor
+active with MainPID **2257476**, invocation `0aaae18820394c3cb08326f05907a0a1`.
+There was no finalized work or completed pair at this initial checkpoint.
+Service liveness is reported separately from pair and study failure records.
+
+The version-15 semantic suite matched **76/76** labels in **8.994 seconds**:
+74 structured model calls, two registered negative-only source checks,
+189,504 reported tokens, no unknown usage. Its plan SHA is
+`a9708a91159086ff17add7ddd303864281d7c449fa6259db33e33e8240d7dd1f`.
+The same labels that failed earlier qualifications remain in the suite. The
+source-heading correction and greedy decoding were developed using these
+controls; this is a development regression gate, not held-out accuracy evidence.
+
+All **226** saved contexts passed fresh grading and offline audits, including
+one solver output that had failed before evidence creation. Five interrupted
+solver attempts without gradeable outputs are explicitly recorded as excluded,
+without assigning scores. This qualification used **1,099 calls**, **8,171,475
+reported tokens**, one metered format recovery, and no unknown accounting.
+Plan SHA: `dddcb50187edf38c114a11c559336fab9fda88c9ccda8294ece9ecdc9b2bc254`.
+Two fresh native Hermes controls passed, with **21 calls** and **125,489 tokens**;
+plan SHA: `a49fdf6cd43d4fdbdb8a8e2806c24cb3fbf4f2d75033004545acae6afbc419fa`.
+Both used the same global concurrency-64 gateway. Earlier employee and optimizer
+component qualifications were reused only after source and frozen identity
+comparison; a fresh installed-backend check passed. These checks establish
+execution and auditing, not successful learning or general semantic accuracy.
+
+The study retains seeds 401, 409, 419, 421, 431 and 433; 20 simulated days;
+12 employees; update days 6, 10 and 14; probe days 16–19; and isolated validation
+tasks. One employee has representative examples, two have labeled role-transfer
+assumptions, and nine use defaults. Global LLM and world/employee/update ceilings
+remain **64**. The same container, GPUs 4–7, model revision, structured-output
+backend and non-MTP serving settings are unchanged. Only grading uses explicit
+temperature zero and top-p one. No extra character rejection is imposed.
+
+The fresh study SHA is
+`978d77c3671bee7f397f97263153a8572f8ba9ed12aff84da80fe5f1e91345f6`.
+Its analysis was frozen before dispatch under
+`Big-World-CL-lab/lifespan/artifacts/native-workplace-compact-analysis-v4`, plan
+SHA `a4b900b5e8e39eb0ad0a247d153034db8d9a4d74bcce40e25275fff4a1163796`.
+The plan requires all six pairs and a full original-source audit; its statistical
+diagnostic is exploratory, not confirmatory. Launch evidence is
+`Big-World-CL-lab/lifespan/artifacts/native-compact-launch-v4`.
+No adoption, later learned-skill deployment or significant improvement has yet
+been established. The earlier failed study and qualifications remain intact.
+
+## Preserved qualification: September 15, 05:58 UTC
+
+The fresh version-14 source `336934a` passed 111 local WorldLab tests and the
+same H200 suite (one dependency-specific skip). Its semantic qualification
+completed 76 evaluations in 10.690 seconds: 74 model calls and two registered
+source checks, 190,565 reported tokens, no unknown usage. It matched **75/76**
+labels and failed the declared gate. The remaining error was
+`r000-reconciliation-missing-currency`: the grader claimed absent EUR labels
+were present. The request used the model default temperature 1 and top-p 0.95.
+The original response, label, plan and failed report remain under
+`Big-World-CL-judge-v14/lifespan/artifacts/judge-v14-multilingual-semantic-v1`;
+plan SHA `208aac89cf7dfac9395b90ea7229b6985d476f44c21292a2374c96dce5597515`.
+No version-14 scale study was launched.
+
+Prospective version 15 explicitly sends temperature zero and top-p one for
+grading, freezes these values in the judge and semantic plan, validates them
+before physical dispatch and audits their usage readbacks. Source criteria,
+control labels, prompt, schema and actor/solver sampling remain unchanged.
+Greedy decoding does not establish semantic correctness or cross-batch
+reproducibility. A fresh qualification is required; failed qualifications are
+not discarded and their labels are not relaxed.
+
+The corrected stopped-study snapshot at 05:58:12 UTC confirms pair 409 failed,
+no completed pair or arm, and no supervisor process. There are 223 finalized
+work attempts; pending attempts and actor costs are separate. The saved
+controller counter `completed_pairs: 1` means one returned worker (the failed
+pair), not a successfully completed pair. Snapshot:
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-final-stopped-progress-v1.json`.
+
+## Preserved failure and qualification: September 15, 05:23 UTC
+
+`native-workplace-compact-v3` is incomplete. Pair 409/`skillopt_sleep` raised a
+`ValueError` before grading `d001-operations-fr-001-000`, task
+`internal/euw_v1_es_018_fr_bridge`. The native solver returned a known-accounting
+`budget_exhausted` receipt: 21 calls and 411,551 tokens. Its scratch virtual
+environment contained Python and `lib64` links. The original evidence reader
+checked symlinks before excluding scratch, and therefore crashed without writing
+`EVIDENCE.json`. The error was reproduced against the frozen original source and
+retained workspace with **zero model calls**. Reproduction receipt SHA:
+`f24d4fe706790b48d3705f43ace9ea7fc4dbfd60e230c3547279b6f36a61cc4b`.
+
+The supervisor remained alive while other pairs continued. Earlier service-only
+progress observations missed the pair failure; they do not prove every arm was
+progressing. The failed study cannot satisfy its six-pair analysis plan. Its
+remaining work was stopped and preserved; by 05:22:19 UTC the original MainPID
+2112546 was absent, the transient unit was inactive/missing, and gateway active
+and queued counts were zero. The inference container remained running unchanged.
+Stop intent, before/after observations and checkpoint copies are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-stop-after-pair-failure-v1`.
+No source, receipt, failed pair or planned probe was rewritten or dropped.
+
+The separately frozen multilingual suite at `5172a76` then ran all 76 calls in
+13.967 seconds, using 197,332 reported tokens with no unknown usage. It matched
+**75/76 labels** and failed its declared all-labels gate. One repetition of
+`association-missing-network-heading` claimed the absent literal heading was
+present; the other repetition correctly rejected it. The French and German
+controls matched all their labels. Evidence remains under
+`Big-World-CL-semantic-suite-v1/lifespan/artifacts/multilingual-semantic-v1`, plan
+SHA `7ecb7e4ad840543f05fd8451009e527d526bc3c4b5c438f37447ad0a37b3d222`.
+This is a failed, dependent development qualification, not a general accuracy or
+learning-effect estimate.
+
+Prospective judge version 14 excludes scratch before traversal, retains link
+targets in artifact inventories, and registers a source-bound missing-heading
+veto. Presence still requires semantic judgment. Saved-context qualification
+includes completed solver outputs that failed before evidence creation. Progress
+reporting exposes pair failures independently of supervisor liveness. The earlier
+checkouts and qualifications remain frozen; new live qualification is required.
+
+## Historical checkpoint: September 15, 04:58 UTC
+
+The six-pair study `native-workplace-compact-v3` ran from
+`Big-World-CL-judge-v13` at `e2fe6b7f36bdd465c9bd70fc91a4c16945171e16`.
+At 04:58:28 UTC its service was active/running with MainPID **2112546** and
+invocation `ea7d4fdc001545d3882020e187b796d0`. The six first arms had reached
+day 1, with 75 completed work attempts and no updates or adoptions. Updates are
+scheduled on days 6, 10 and 14; probe work begins on day 16.
+
+A separate snapshot taken at 04:58:12 UTC passed the frozen offline auditors
+for **68 completed work attempts and 116 native employee decisions**. All
+checkpointed attempts were included. Their work/judging accounting totals
+960 calls and 11,807,943 tokens; the decisions account for another 116 calls
+and 351,055 tokens. This audit checks individual native execution, deployed
+skill bytes, original task requirements, retained verdicts and cost accounting.
+It does not certify complete-world causal replay, all actor/bootstrap costs,
+judge accuracy or a learning effect.
+
+The receipt and six checkpoint copies are in
+`Big-World-CL-lab/lifespan/artifacts/compact-v3-checkpoint-audit-v1`, copied locally
+as `compact-v3-checkpoint-audit-v1-h200` (eight files, 3,949,410 bytes). The plan
+hash and every state-copy hash were checked locally. Report SHA:
+`8f4beab66c49fa425e290b102eb7604cf5c69d43ca53b5cf9c0610b3fc318ed8`.
+Full native attempt evidence remains in the frozen study on H200.
+
+The shared gateway reported concurrency **64** and a measured peak of **64**.
+At the live observation it had 31 active requests and none queued; vLLM reported
+30 running and none waiting, with GPUs 4–7 at 100% utilization. These are
+sequential point-in-time readings, not a sustained throughput benchmark.
+Aggregate gateway error counters include metadata routes and earlier cancelled
+qualifications; they are not this study's inference-failure count.
+
+## Frozen execution checkouts
+
+| Study | Checkout / revision | Artifact directory inside checkout | State |
+|---|---|---|---|
+| First task world | `Big-World-CL-worlds-v1`, `4a3ab8a` | `lifespan/artifacts/development-world-v1` | Cancelled before execution after judge-format qualification failed |
+| Serial engineering pair | `Big-World-CL-worlds-v2`, `6602bd1` | `lifespan/artifacts/development-world-v2` | Failed at day 4 in learning arm; incomplete judge output |
+| Parallel adapter check | `Big-World-CL-adapters-v1`, `3efaa9f` | `lifespan/artifacts/adapter-qualification-v1` | Complete, both native audits passed |
+| Larger coverage plan | `Big-World-CL-coverage-v1`, `da88f93` | `lifespan/artifacts/development-coverage-v1` | Cancelled before dispatch; zero work/learning calls |
+| Judge count controls | `Big-World-CL-judge-v3`, `cf30158` | `lifespan/artifacts/judge-count-qualification-v3` | Complete, 12/12 correct |
+| Revised parallel pair | `Big-World-CL-worlds-v3`, `437de52` | `lifespan/artifacts/development-world-v3` | Failed at day 5 in control arm; repeated judge whitespace |
+| Native workplace pair | `Big-World-CL-workplace-v3`, `3aa4fa1` | `lifespan/artifacts/native-workplace-v1` | Failed in control day 1 at native first-byte timeout; no completed arm |
+| Consolidation component | `Big-World-CL-learning-v3`, `7bcc1b8` | `lifespan/artifacts/consolidation-qualification-v3` | Failed in final validation; eight completed replays, zero optimizer calls or adoptions |
+| Judge format corpus | `Big-World-CL-judge-v5`, `c79c2d7` | `lifespan/artifacts/judge-corpus-v5` | Complete, 210/210 valid responses; not semantic accuracy |
+| Semantic controls | `Big-World-CL-semantics-v1`, `26d5cc4` | `lifespan/artifacts/semantic-controls-v1` | Complete, 33/33 source-grounded labels matched over one family |
+| Native timeout fixture | `Big-World-CL-watchdogs-v2`, `343dc2d` | `lifespan/artifacts/nonstreaming-watchdogs-v2` | Complete, all three real-clock transport controls passed; zero model inference |
+| Native adapter v4 | `Big-World-CL-adapter-v4`, `8cbf1d3` | `lifespan/artifacts/native-adapter-v4` | Complete; both concurrent task receipts audited |
+| Public arithmetic v7 | `Big-World-CL-judge-v7`, `6f93d99` | `lifespan/artifacts/native-public-judge-v7` | Two native executions audited; one evaluator false negative preserved and corrected separately |
+| Public arithmetic v8 | `Big-World-CL-judge-v8`, `31a59a7` | `lifespan/artifacts/native-public-regrade-v8` | Both unchanged native outputs accepted under fresh v8 grading |
+| Fresh native workplace | `Big-World-CL-workplace-v5`, `31a59a7` | `lifespan/artifacts/native-workplace-v3` | Completed; full original-source audit passed, 52 work attempts, 24 replays, zero adoptions |
+| Six-world native study | `Big-World-CL-workplace-scale-v1`, `3e1719d` | `lifespan/artifacts/native-workplace-scale-v1` | Failed September 15 at 00:23 UTC after 71 graded work attempts; no completed pair |
+| Isolated validation pilot | `Big-World-CL-isolated-validation-v1`, `c833481` | `lifespan/artifacts/native-workplace-isolated-validation-v1` | Launched September 15 at 03:16 UTC, with separately prepared gate cases |
+| Compact JSON six-world study | `Big-World-CL-judge-v13`, `e2fe6b7` | `lifespan/artifacts/native-workplace-compact-v3` | Incomplete after a scratch-symlink grading error in pair 409; remaining work stopped by September 15, 05:22 UTC; no completed pair or learning result |
+
+The stopped pair services are `bigworld-development-world-v2.service` and
+`bigworld-development-world-v3.service`. Their main PIDs at launch were 1794740
+and 1812325. Both run under `systemd --user` with process-group cleanup, a 16-GiB
+controller memory ceiling and a six-hour runtime ceiling. The shared Qwen server
+remains `bigworld-qwen38flashnext` at `http://127.0.0.1:8000/v1`, using GPUs 0–3.
+The controller interpreter is `Big-World-CL/MiroFish/backend/.venv/bin/python`;
+workers use the pinned native Hermes environment.
+
+## Terminal development results
+
+Both services are terminal failures, with `MainPID=0`; these are not observation
+timeouts. v2 failed at **2026-09-14 19:55:56 UTC**, and v3 failed at
+**19:58:41 UTC**. Original incomplete attempts and reservations are preserved.
+
+| Pair / arm | Recorded work | Fully graded | Work + judge calls | Work + judge tokens |
+|---|---:|---:|---:|---:|
+| v2 control | 20 | 20 | 318 | 4,253,239 |
+| v2 SkillOpt | 10 | 9 | 130 | 1,454,159 |
+| v3 control | 12 | 11 | 184 | 2,509,041 |
+| v3 SkillOpt | 0 | 0 | 0 | 0 |
+
+The two pairs consumed **632 recorded calls and 8,216,439 tokens**, including
+the incomplete judge responses. No learning arm reached an update. The v2
+control's two update records are no-ops. No skill was proposed or adopted.
+Nineteen v2 control attempts passed a partial execution audit before termination;
+this does not establish judgment correctness.
+
+The v2 judge sometimes contradicted its own evidence. v3 put the final Boolean
+after evidence and reasoning and passed 12 exact-count controls, but later
+repeated whitespace until reaching its output cap. The next version used a
+finite ASCII grammar. Its range quantifiers were too slow at full field bounds:
+both v4 checks timed out on their first call. These failures remain under
+`Big-World-CL-judge-v4` at `f073579`, with unknown usage retained as reservations.
+
+An equivalent right-recursive grammar completed a short preflight in 0.4 seconds.
+It is frozen at `c79c2d7` in `Big-World-CL-judge-v5`. The v5 checks replay all 210
+saved criterion contexts from the stopped studies and the same 12 constructed
+count controls. Their completion and correctness must be read from their final
+`QUALIFICATION.json` files; no successful full-corpus result is claimed here.
+The corpus check measures format/completion, not general judgment accuracy.
+The v5 count diagnostic completed with **9/12 correct** in 12 model calls and
+70,136 tokens. In failed controls the model counted a changed 5.5 reference as
+5.4 or ignored an appended fourth reference. This is failed count qualification.
+
+The next judge uses an executable literal-count predicate only when the entire
+frozen criterion and its original three-reference source match the registered
+case. Changed or unknown criteria retain model judging. The original rubric and
+all old judgments remain intact. This removes a mechanical counting failure;
+it does not establish accuracy of the remaining semantic judgments.
+
+Each small pair has two employees, ten days, one possible update per learning
+employee, four probes per arm and a 60-million-token combined reservation ceiling.
+This is a maximum reservation, not an expected consumption estimate. v2 uses seed
+211; v3 uses seed 223. v3 keeps the original small specification, adds
+`max_parallel_employees: 2`, and freezes it in `run/development-world-v3.json` and
+`STUDY.json`. Its study SHA is
+`49406f7d96992e8c3e5056df410a052f1206f3a9ba0e46d3e39b5da78be18cdb`.
+
+The larger cancelled plan expanded 12 employees over three departments and three
+languages, with one direct calibration anchor, two role transfers and nine
+defaults. It planned 960 work attempts and 36 possible learning updates. Its
+`EXECUTION.json` records cancellation before dispatch and prevents accidental
+reuse through the single-execution guard. Prepare a new plan after qualification.
+
+## Inspect and audit
+
+Use `systemctl --user show SERVICE -p ActiveState -p SubState -p MainPID` and
+`journalctl --user -u SERVICE -n 12 --no-pager` for process status. Inspect each
+arm's `STATE.json` and `INFLIGHT.json`; top-level `STATUS.json` updates when an
+entire arm finishes. Never infer completion from an old progress line.
+
+After a pair completes, run the matching frozen checkout's
+`python -m worldlab.audit_worlds --bank ../Big-World-CL/lifespan/artifacts/final-world-calibration-v1 --out lifespan/artifacts/development-world-vN`.
+Keep audits beside the original evidence. The v2 limitation sidecar must remain
+part of any interpretation even if its execution audit passes. Compare adopted
+skill contents, future deployment receipts, probe results and learning costs;
+a positive score difference without an adopted skill is not a learning result.
+
+Local copies of the completed adapter and judge controls are under
+`Big-World-CL-lab/lifespan/artifacts/`. All 80 adapter evidence files matched their
+receipt hashes after transfer. Their combined qualification cost is 32 physical
+calls and 196,431 tokens. The focused suite passes 36 task-world/calibration cases,
+including alternate harness receipts, sparse examples and failed parallel waves.
+
+## Reacting workplace implementation
+
+Commit `897dfea` adds optional native MiroFish employee decisions to the task
+runner. Its causal state includes capacity-limited queues, delayed feedback,
+rework, deadlines, notes, trust and next-day colleague messages. Original source
+requirements accompany each employee request; replay uses that same recorded
+request. The kernel never exposes future tasks or unreleased grades to actors.
+
+The factory, harness and learner remain separate adapters. Each paired arm gets
+a new OASIS environment with the same pinned persona assignments. The primary
+workplace metric is acceptance before deadline over every planned probe,
+including deferred and unattempted probes. Rewards are configured synthetic
+utility, not money. Native interview usage is measured; bootstrap and the initial
+social round remain an explicit accounting gap.
+
+The source is frozen in `Big-World-CL-workplace-v1`. The native employee qualifier
+used two real role assignments and day-zero views, without solver work or invented
+feedback. It failed before any employee interview: MiroFish's ontology-generation
+request failed after roughly 120 seconds and the backend returned HTTP 500. Its
+partial native project and controller evidence are preserved; the new adapter
+is not qualified yet. Full
+realistic-world learning and prospective significance evidence remain outstanding.
+
+The installed canonical checkout at `897dfea` passed **1,027 tests, 6 skipped**
+(`python -m pytest -q tests lifespan/tests`). Running all tests in a bare frozen
+worktree first exposed missing local dependency paths (SkillOpt and the backend
+venv), not product regressions; that failed test invocation is retained. The
+focused suite after the deterministic count addition passes 39 tests.
+
+`worldlab.qualify_learning` can independently exercise a bounded native SkillOpt
+update from four temporally selected, already-recorded control experiences. It
+preserves the historical work, starts new target replays, grades those with the
+current frozen judge and audits completed replay receipts and the adoption gate.
+This avoids rerunning a whole control arm merely to reach consolidation. It is a
+component qualification, not a continuation or replacement of a failed study.
+
+
+## Native workplace and consolidation follow-up
+
+The declared-organization compiler at `33708c8` seeds only the assigned employees
+and departments through the native local graph API. It uses no model for ontology
+or initial graph extraction. It disables automatic graph-memory extraction in
+this workplace mode; OASIS interviews, explicit notes and delayed colleague mail
+retain state. Existing legacy bootstrap behavior remains the default elsewhere.
+
+`Big-World-CL-workplace-v2/lifespan/artifacts/native-employees-v2` completed:
+two actual Persona 8B employees, two verified native decisions, two model calls
+and **4,914 interview tokens**. Its plan SHA is
+`6c559a685a6c1e5e0ca51a6ceaebb313233214657297e85470816e86fa8beb2d`.
+Native graph readbacks and the actor database are preserved. Initial social-round
+model costs remain unknown; the 4,914 figure covers interviews only.
+
+The v6 count check in `Big-World-CL-learning-v1` passed **12/12 with zero model
+calls**, using the registered deterministic predicate. This is a mechanical
+control result, not a model-accuracy claim. Its plan SHA is
+`7952bc4376f191ab253d6e7f70a6a3b235d08cc44c1f6a19c05853f7d4911f16`.
+
+The first standalone consolidation invocation failed during historical request
+import before creating a plan or making model calls. Versioned import handles
+Hermes v1's `REQUEST.json` and later normalized request receipts. The second
+invocation (`Big-World-CL-learning-v2`, source `ebd2202`) failed on its first target
+replay: six calls reported 70,803 tokens, and a seventh returned a connection error
+after 120 seconds, retaining a 65,229-token reservation. This is not a scored
+learning failure and not evidence that optimization is ineffective.
+
+The corrected native Hermes configuration at `7bcc1b8` sets both request and
+stale-response windows to `min(600 seconds, whole task budget)`, using supported
+provider settings. Both values are checked against the actual native agent and
+saved in `READY.json` and `NATIVE.json`. Whole work and consolidation budgets
+remain unchanged. The native adapter is now version 3.
+
+`bigworld-consolidation-v3.service` runs from `Big-World-CL-learning-v3`, with
+artifacts at `lifespan/artifacts/consolidation-qualification-v3`. Its source
+experiences are the research analyst's days 2 and 4 (train) and days 3 and 5
+(validation), available at day 6 of the stopped v2 control. Selection is temporal,
+not based on scores. Fresh replays use the current judge and seed skill. Read the
+final `QUALIFICATION.json` and `AUDIT.json` before reporting completion or adoption.
+The first actual native request readbacks confirmed both 600-second settings.
+
+The focused suite passes **44 tests**. The full installed-environment rerun
+at `7bcc1b8` passed **1,035 tests, 6 skipped** in 125.64 seconds, finishing at
+2026-09-14 20:45:31 UTC under `bigworld-canonical-tests-v2.service`.
+
+At **20:46:48 UTC**, consolidation v3 remained active with its first native target
+replay in flight and both timeout readbacks verified at 600 seconds. The v5 judge
+corpus had completed 92 of its 210 fixed contexts. Neither was complete at this
+snapshot. No skill adoption or significant learning result is claimed.
+
+## First complete native workplace protocol launched
+
+Source `3aa4fa1` separates new task arrivals from work capacity. The new
+`development_workplace_v1.json` specifies two employees in one department, English
+research and French editing, one incoming task and two work opportunities per
+employee/day, two-day deadlines and bounded rework. Only the research employee
+has a representative prompt. This prevents an implicit assumption that a user
+has examples for the whole workforce, and allows spare capacity to absorb rework.
+The same frozen arrivals are used in both arms; subsequent decisions can differ.
+Both local and installed H200 focused suites passed **46 tests**.
+
+The frozen checkout is `/home/inference-testing/apps/Big-World-CL-workplace-v3`.
+Its `lifespan/artifacts/native-workplace-v1/STUDY.json` SHA-256 is
+`815a012ed6298ecb8c9909f273e0a7aa4d4389fb733e1a4b149e4dd17cc53643`.
+Seed 317 has ten days, learning on day 6 and probes on days 8–9. There are 40
+incoming obligations across the pair and at most 80 work attempts, including
+rework. Work/judge reservations are 72 million tokens, learning reservations
+24 million, and native interviews are reserved separately (160 logical calls,
+including bounded repairs). These are ceilings, not expected or consumed tokens;
+actor bootstrap/social usage remains unknown.
+
+`bigworld-native-workplace-v1.service` started at **20:54:15 UTC** on September 14,
+with invocation `7228b78af9e84d8b91fabffb19f7e4b2`, MainPID 1834682 and an 18-hour
+service ceiling. It uses a fresh native employee environment per arm and the
+already-running backend on loopback 5001. At **20:55:55 UTC**, it remained active:
+one day-zero employee decision had completed (2,528 interview tokens), the second
+was in flight, and no work attempt had completed. This is a development
+integration run, not a powered or confirmatory experiment.
+
+At that same snapshot, consolidation v3 had completed two native target replays:
+18 calls / 285,933 tokens and 9 calls / 49,992 tokens, both with complete accounting.
+It remained active with no final update/adoption decision. The v5 judge-format
+corpus had completed 130/210 calls, charging 967,778 reported tokens. Its scope
+remains format/completion, not judgment correctness.
+
+The first consolidation replay (`internal/euw_v1_es_017_en_bridge`) included an
+incorrect judge explanation that supplier B was factually supported. Direct
+inspection of the original instruction and acquisition policy confirms supplier A:
+pending on-site PACS validation is explicitly allowed with a clause; supplier B's
+measured 3T noise exceeds the excluding threshold. The original rubric therefore
+stands unchanged. The failed memo criterion's decision and its explanation must
+not be treated as equally reliable evidence; semantic judging remains unqualified.
+
+The completed native-employees-v2 qualification was copied locally as 18 regular
+files, verified against source SHA-256 values and independently receipt-audited:
+two decisions, two calls, 4,914 interview tokens. The archive SHA is
+`520463516e4c7ad76b0d891da3e3da728dc45adcd6e9fc4503f964006f0d9cb7`;
+the local audit is `lifespan/artifacts/native-employees-v2-local-audit.json`.
+
+## Mechanical coverage audit and semantic controls
+
+The read-only diagnostic at `cd6d9de` ran against every attempt receipt present
+in the stopped worlds-v2/v3 studies and consolidation-v3 at snapshot time.
+`Big-World-CL-mechanical-v1/lifespan/artifacts/mechanical-agreement-v1` contains
+46 attempts from 13 lineage groups, with 44 complete qualitative judgments.
+The plan SHA is `b1203a7f94604fc2f23da59d1018d42585de0eab4a93adaf41447a3e20619d93`.
+It made zero model calls; a separate rerun verified all 46 mechanical results and
+source artifact hashes. Five diagnostic/review JSON files were copied locally and
+verified byte for byte. No historical grade or candidate output was changed.
+
+| Qualitative result | Mechanical fail | Mechanical pass |
+|---|---:|---:|
+| Fail | 16 | 0 |
+| Pass | 20 | 8 |
+
+This is disagreement, not an accuracy confusion matrix. Source inspection of
+three cases establishes why neither evaluator can simply replace the other:
+
+* `euw_fr_003_en_bridge`: mechanical JSON gold requires a sixth workshop benefit,
+  while the corrected r3 contract explicitly permits omission of that notes-only
+  possibility. Requiring it would add an obligation absent from the corrected
+  contract. A1–A5 coverage is not deficient merely because A6 is absent.
+* `euw_v1_fr_014`: a qualitative-passing output reports zero calendar days for
+  2025-01-20 through 2025-01-13. The public inclusive subtraction rule yields −6.
+  The r3 criteria largely cover the decision prose and ordering; they do not
+  replace this numerical obligation.
+* `euw_v1_es_017_en_bridge`: the public CSV yields TCO totals A=955,306,
+  B=875,758 and C=1,115,141, hence A's price score 9.2 and total 9.20. A passing
+  candidate instead used report-summary TCO and produced 9.15. But mechanical
+  requirements for Spanish `EXCLUIDO` markers conflict with public English
+  `EXCLUDED`, and zeroing every weighted subrow is stricter than the public
+  requirement for zero on the TOTAL row. Some failures in the same check group
+  are therefore valid and others are not.
+
+`SOURCE_REVIEW.json` preserves these findings with source and candidate hashes.
+The reviewer is Codex source inspection, not an independent human. The diagnostic
+initially could not import the document dependencies in MiroFish's environment;
+no diagnostic plan or grading ran then. It completed using the original evaluator
+environment `/home/inference-testing/benchmarks/eurobench-v1/.venv/bin/python`.
+
+Both workplace-v1 and consolidation-v3 received an
+`EVALUATION_LIMITATION.json` sidecar that binds this evidence and marks full-task
+success unqualified. Their frozen protocols and results remain intact. The next
+scoring contract must combine valid numerical/structural obligations with the
+corrected qualitative requirements before supporting a learning-effect claim.
+
+Semantic controls at `26d5cc4` run from `Big-World-CL-semantics-v1`, artifact
+`lifespan/artifacts/semantic-controls-v1`. There are 11 constructed cases over one
+source family (five positive, six negative), repeated three times. All cases,
+expected labels and rationales are frozen before calls. They cover optional A6,
+valid paraphrases, threshold direction, membership duration, invented guarantees,
+heading requirements and appendix ordering. `bigworld-semantic-controls-v1`
+started at **21:06:30 UTC**, invocation `7cb3782d77024d81a6d611c4702ba307`, with a
+4,500-second service ceiling. At **21:11:57 UTC**, 12/33 calls were complete and
+all 12 matched their labels (34,525 tokens). Even a full pass is one-family
+qualification, not general judge accuracy or actual solver performance.
+
+At that same snapshot, the original judge-format corpus was 169/210 (1,293,320
+tokens); consolidation-v3 had six completed replays and no final adoption
+decision; the native workplace was on day 1 with two completed work attempts and
+four metered employee decisions (14,934 interview tokens). All four inference
+services were confirmed active with nonzero MainPIDs.
+
+## Configurable experiment adapters
+
+`a4af361` adds operator-selected harness and learner factories to the existing
+runner. Their configuration bytes and factory-module hashes enter frozen adapter
+identity; changing them between prepare and execute is rejected before dispatch.
+The offline harness auditor accepts the same factory configuration. Existing
+direct Hermes/SkillOpt arguments retain their behavior; no Fluso implementation
+is implied by the loader.
+
+Both local and H200 focused suites passed **51 tests**. Actual installed Hermes
+and SkillOpt factories successfully prepared seed 331 in
+`Big-World-CL-factories-v1/lifespan/artifacts/factory-preparation-v1`, with study SHA
+`62da8e213e79989d05b668300b7ab76db4b43331a4fc889d82d8af8fd9520964`.
+That artifact is preparation-only: zero model calls and no experiment execution.
+The complete canonical suite passed **1,042 tests, 6 skipped** in 125.77 seconds
+at **21:13:33 UTC** under `bigworld-canonical-tests-v3`, invocation
+`24866588d9a548c082fb58ec1c9d2b30`. Its MainPID was zero and service result success
+when checked at 21:14:14 UTC. At that check, the semantic controls were 17/33
+completed and correct, the format corpus was 173/210, and all four inference
+services remained active. No consolidation adoption decision was available.
+
+At **21:15:42 UTC**, a service-specific systemd drop-in changed the format corpus
+service's observed `RuntimeMaxUSec` from 1h to 2h after a daemon reload. MainPID
+1824041 and invocation `4d1db414e04d4828bcfd214939fe4ab1` were unchanged; the process
+was not restarted. `judge-corpus-v5/RUNTIME_ADJUSTMENT.json` records before/after
+readbacks. The fixed 210 cases, 120-second per-call deadline and model/token
+budgets are unchanged. The original one-hour deadline had not yet elapsed when
+this adjustment was recorded.
+
+## First-byte timeout correction and completed component evidence
+
+The native workplace pair failed at **21:15:22 UTC** on September 14. The two
+employees produced four recorded work attempts, three fully graded, totaling
+52 work/judge calls and 699,017 charged-or-reserved tokens. Of those tokens,
+641,324 have provider receipts and 57,693 remain a reservation for the failed
+request. Four employee decisions used another 14,934 interview tokens; native
+bootstrap/social usage remains unknown. No arm or learning update completed.
+
+Both request and stale timeout readbacks were 600 seconds. A separate native
+Codex watchdog nevertheless closed the final-body HTTP request at 120 seconds
+because it had emitted no SSE event. Hermes source remains pinned and unchanged.
+Adapter version 4 uses the supported `HERMES_CODEX_TTFB_TIMEOUT_SECONDS=0`
+environment setting in its isolated worker. It records and audits this setting
+alongside the request/stale limits; the parent whole-attempt limit also remains.
+The change neither invents stream activity nor adds retries.
+
+The real-clock qualification at `343dc2d` used native construction, native SDK
+clients, the native interruptible request helper and the actual final-body
+adapter against an isolated loopback fixture. The legacy setting stopped at
+120.029 seconds, the corrected setting returned the complete response at
+130.059 seconds, and a two-second request budget stopped at 2.026 seconds.
+All three cases passed, with no fabricated SSE events and zero model inference.
+Plan SHA: `9ef0e52a6365fac66f938558738591a63e013b4b92dd5e28c81642a5d1233db6`.
+The earlier fixture at `3d6ce09` retained correct timing observations but failed
+its request-count assertion because native metadata probes were also counted;
+its failed evidence remains in `nonstreaming-watchdogs-v1`.
+
+Consolidation v3 also failed at the same native first-byte watchdog, on its ninth
+replay during final validation. Eight replays completed, no optimizer call ran,
+and no skill was adopted. Its 106 work/judge calls charged or reserved 957,952
+tokens: 887,479 reported plus 70,473 reserved for the missing final receipt.
+The native attempt correctly recorded incomplete accounting, but the replay
+callback passed its charged total as measured usage to the learner. Thus the
+historical aggregate's `accounting_complete: true` is incorrect.
+`ACCOUNTING_LIMITATION.json` binds the original receipts and this correction.
+Commit `8cbf1d3` passes unknown usage as unknown across that boundary, retaining
+the learner's full replay reservation and known physical-call count. The
+regression check covers both known and unknown usage after execution failure.
+Original study, update, and attempt files remain unchanged.
+
+The semantic controls finished at **21:21:02 UTC**, with 33/33 labels matched,
+33 calls and 95,377 reported tokens. Their plan SHA is
+`83093ab80eba01c414a72f9762d17fe92d40cb7dbe44a73bb4c44baedb5f33c9`.
+All 47 evidence files were copied locally and checked against remote hashes.
+The format corpus finished at **21:25:53 UTC**, with 210/210 valid responses,
+210 calls and 1,613,226 reported tokens. Its process survived the original
+one-hour deadline after the recorded extension, without restarting. All 424
+evidence files were copied locally and checked against remote hashes. Neither
+qualification establishes full-task correctness or a learning effect.
+
+The focused suite after the timeout/accounting changes passes **52 tests**.
+The complete canonical suite at `8cbf1d3` passed **1,043 tests, 6 skipped** in
+125.85 seconds under `bigworld-canonical-tests-v4`, invocation
+`99cd8dd7273841db82570f1a832560e2`; the service was inactive with MainPID zero
+and result success afterward.
+The new native adapter qualification at `8cbf1d3` uses two fresh concurrent
+`internal/euw_fr_003_en_bridge` tasks, fixed before execution, on the same Qwen
+server. Its service is `bigworld-adapter-v4`, invocation
+`be196dc8b2ca4ea0bb9d60ef624cb3cb`. This is transport, worker isolation and receipt
+qualification only. The earlier failed world and consolidation are not resumed.
+Both new workers' `READY.json` receipts confirm request/stale limits of 600
+seconds and the explicit zero first-byte watchdog setting.
+At **21:30:57 UTC**, both native controls were complete and audited, using 8 and
+11 work/judge calls respectively: 43,815 and 69,234 tokens, or 19 calls and
+113,049 tokens combined, all with complete accounting. The service was inactive
+with MainPID zero and result success. The qualification plan SHA is
+`08e75c8728d34b1420a081e647c9f082e58c9110cb7b1d8fa4faacd6d4366e12`.
+
+## Public arithmetic checks and the next native workplace pair
+
+Commit `6f93d99` supplements the unchanged corrected r3 criteria with deterministic
+public requirements for two reviewed tasks. The registry binds each task's public
+contract and all source input hashes. The editorial checks cover rows, inclusive
+calendar subtraction, signed dates, fourteen-day compression and fixed French
+publication dates. The procurement checks cover source-derived scores, weighted
+totals and supplier exclusions. Each check has a fixed weight; malformed output
+fails the registered checks without reducing their denominator. Other tasks
+remain in the workload. This is partial coverage, not a complete replacement
+for qualitative judgment or certification of all 186 eligible tasks.
+
+The first native procurement qualification exposed an overstrict rule in the new
+checker: a valid output left intermediate weighted cells blank for excluded
+suppliers. The public task requires their TOTAL to be zero but does not specify
+the intermediate cells. Commit `31a59a7` accepts that alternative and explicitly
+marked intermediate cells, and advances the judge to version 8. The original v7
+receipts remain unchanged. The prepared workplace-v2 was cancelled before any
+dispatch; its replacement uses a fresh artifact directory and source checkout.
+
+The v7 native qualification completed two audited executions, with 31 work/judge
+calls and 457,102 tokens. All original r3 criteria passed in both. The v7 public
+checker accepted one and incorrectly rejected the blank-cell output. Fresh v8
+grading of the exact same output bytes accepted both, using eight new judge calls
+and 98,943 tokens; no solver reran. The fresh grading plan SHA is
+`4e7fba27b6944900a09ad6fc01bfb2a67a429a5df4bf56203f33c7086b30a0c9`.
+Its artifact is `Big-World-CL-judge-v8/lifespan/artifacts/native-public-regrade-v8`.
+All 46 files in this fresh grading artifact were also copied locally and verified
+against remote SHA-256 hashes.
+The `bigworld-public-regrade-v8` service finished with MainPID zero and result
+success. Its invocation is `98458ba890c643caada89e3efffa412e`.
+
+All 18 fixed public-component controls pass at `31a59a7`, including the two valid
+excluded-cell alternatives, with zero model calls. The editorial positive
+fixtures are component controls, not full-task gold outputs. A separate read-only
+diagnostic against the already frozen 46-attempt snapshot found nine registered
+attempts, six of whose original passes fail the new public checks. This is a
+dependent retrospective diagnostic, not an independent estimate of judge accuracy.
+The v8 diagnostic plan SHA is
+`d8c83b153fe748c39f2235fbeec1397edb02bbdb3d5e47708046af2e67a45565`.
+All 24 component/diagnostic evidence files were copied locally and checked against
+remote SHA-256 hashes. Historical outputs and grades were not changed.
+
+The full canonical suite at `6f93d99` passed **1,046 tests, 6 skipped** in 126.67
+seconds, under `bigworld-canonical-tests-v5`, invocation
+`e6c5f47beba64a44a2cd00d038320756`. The focused suite after the v8 correction passed
+**55 tests**. The full-suite result predates that correction.
+
+Source inspection also explains consolidation-v3's zero optimizer calls: all six
+training replays had hard and soft score 1. The pinned SkillOpt implementation
+returns no reflection when there are no failures and no contrastive score spread.
+Its failed validation example is not reflection training data. This was a
+legitimate no-op, separate from the later timeout, and is not evidence of skill
+learning. No cases were selected by their score to force an update.
+
+The fresh ten-day seed-317 native pair launched at **21:46:55 UTC on September 14**
+under `bigworld-native-workplace-v3`, invocation
+`86cb332683f84371bb6830fabf9d14f0`, MainPID 1853105. It runs from the frozen
+`Big-World-CL-workplace-v5` checkout at `31a59a7`; its artifact is
+`lifespan/artifacts/native-workplace-v3` and study SHA is
+`f56c80acfebaef75e37e463f154e257b932cd9d4869ca66fc0dedd48fcd9244c`.
+At **21:49:58 UTC**, the service was active and one work session had completed.
+At **21:52:13 UTC**, it had advanced to day 1 with two completed sessions and four
+employee decisions. Those two work sessions used 35 work/judge calls and 534,950
+tokens. MainPID 1853105 remained active.
+The pair plans 40 obligations, at most 80 work attempts and two possible learner
+updates. The analyst alone has calibration examples; the French editor uses
+defaults. The 96-million-token work/judge/learning reservation is a ceiling,
+not measured consumption. Bootstrap/social usage remains unknown.
+
+At `3e1719d`, the separate six-world native development study is **prepared only**:
+12 employees, three departments, three languages, 20 days and seeds
+`401 409 419 421 431 433`. Every seed has one directly calibrated employee, two
+recorded role transfers and nine defaults. The fixed schedule plans 2,880 arriving
+obligations, at most 5,760 work attempts and 216 possible learner updates. Its
+7,776,000,000-token reservation is a conservative ceiling, not an ETA or actual
+cost. No model calls or native employee bootstrap have been dispatched for it.
+The checkout is `Big-World-CL-workplace-scale-v1`, artifact
+`lifespan/artifacts/native-workplace-scale-v1`, study SHA
+`3105405bfb60e91cc84c00ea07674b701c2bc3ec22a93499b451eeae1a9ce9e1`.
+The [study protocol](WORLDLAB_STUDY_PROTOCOL.md) describes the required adoption,
+deployment, paired-outcome and statistical evidence. None of these preparation
+counts establishes a statistically supported learning effect.
+
+The separate prospective analysis was frozen at **21:56 UTC** before any scale
+study execution, under `Big-World-CL-lab/lifespan/artifacts/native-workplace-scale-analysis-v1`.
+Its plan SHA is `019ba6cbb8b1b63d5beaa40a7c47673e3a128cb8fc55a8e744ac6fdaa7daa74e`.
+The implementation is at `c3bbd0e`; all 59 WorldLab tests passed locally. The
+analysis requires all six planned pairs and their original offline audits before
+computing the equal-world paired effect, uncertainty and exploratory sign-flip
+diagnostic. No analysis results or statistical significance are available yet.
+
+At **21:56:09 UTC**, the ten-day native pair remained active under the same
+MainPID and invocation. Its control arm had reached day 2 with six completed work
+sessions, eight recorded employee decisions, 92 work/judge calls and 1,265,579
+work/judge tokens. No learning update had run. These are live progress counts,
+not a completed paired result.
+
+## Six-world native study launched
+
+The scale study launched at **21:59:22 UTC on September 14**, from its unchanged
+`3e1719d` checkout and original prepared study. Service
+`bigworld-native-workplace-scale-v1` has invocation
+`d321a4ee4152473b86daeb36a74d5c73` and MainPID 1861095. The prospective analysis
+was already frozen; its plan and study hashes were checked before dispatch.
+The service has a 32-GiB controller ceiling and an operational seven-day runtime
+ceiling. Hitting that ceiling would leave an incomplete study; it does not change
+the frozen task, learner or token budgets. Launch and readback receipts are under
+`Big-World-CL/run/h200-20260914/native-workplace-scale-v1-{launch,started}.json`.
+
+The pre-dispatch server snapshot at **21:58:41 UTC** showed two running requests,
+zero waiting requests, zero preemptions and about 2.05% KV-cache use. The Qwen
+server remains on GPUs 0–3; GPUs 4–7 were idle. The pilot continues alongside the
+scale study. Their native simulations have separate project, graph, simulation
+and employee-state identities. Neither running checkout or installed backend
+was modified to start the larger study.
+
+At **22:02:58 UTC**, both services were active with their original MainPIDs and
+invocations. Scale seed 401's control arm had initialized all 12 native profiles,
+completed 12 employee decisions (12 calls, 34,146 reported tokens), and dispatched
+its first four work attempts. No scale work attempt had completed at that
+snapshot. The pilot control arm was on day 4 with 11 completed work attempts,
+177 work/judge calls and 2,463,650 work/judge tokens. Its 13 metered employee
+decisions used 71,013 additional tokens. Neither study had a learner update yet.
+
+A read-only inspection of scale simulation `sim_80f6a626cfc1` preserves a SQLite
+backup, native log snapshots and the installed OASIS agent source under
+`Big-World-CL-lab/lifespan/artifacts/native-actor-accounting-inspection-v1`.
+Its inspection SHA is
+`a98edd3790dbf2807a8f67f62a508e85a89526751329fc06d8e3be935b6bc9b8`.
+`perform_action_by_llm` receives CAMEL's response but logs tool names, arguments
+and results, not provider usage. Native trace rows likewise preserve actions
+rather than physical-call receipts. The known interview receipts do not cover
+these initial social calls. Shared-server counters cannot uniquely attribute
+concurrent traffic to this simulation. Bootstrap/social usage therefore remains
+unknown. Future metering belongs at the simulation-scoped provider dispatch and
+response boundary; these running sources and historical costs remain unchanged.
+All eight inspection files were copied locally and checked against remote hashes.
+
+At **22:07:25 UTC**, the reusable progress command at `7ddea29` observed both
+original service processes present and active, with no JSON read errors. The
+scale study had two fully graded attempts: 18 work/judge calls and 105,817
+reported tokens, plus its 12 employee interviews. Two other work attempts were
+still missing final receipts. The pilot retained 11 fully graded attempts while
+its next two were running; no arm or learner update had completed. These
+nontransactional snapshots are saved under
+`Big-World-CL-lab/lifespan/artifacts/workplace-progress-snapshots`.
+The local WorldLab suite passed **62 tests**, and all three new progress-command
+checks also passed on H200. Those checks cover unknown usage, a service polling
+timeout, live/terminal process states, incomplete checkpoint writes and replay
+costs already included in the learner ledger. They make no learning-effect claim.
+
+## Learner audit extension and subset-calibration verification
+
+At `0f8383d`, the learner adapter owns its policy-specific `audit_update` check.
+The shared audit still enforces employee identity, feedback chronology, replay
+provenance and accounting. SkillOpt retains its original gate checks and now
+also checks frozen configuration, skill hashes and optimizer transport receipts.
+Custom adapters must provide an auditor matching their recorded identity;
+matching a built-in name alone cannot substitute for that contract. Newly
+prepared analyses preserve their executable source and optional learner config.
+The already running studies and their prospective analysis remain unchanged.
+
+The H200 checks at this commit passed **1,060 tests, 6 skipped**, in two explicit
+scopes: `tests` passed 748 with 4 skipped in 99.85 seconds under
+`bigworld-canonical-tests-v6`; `lifespan/tests` passed 312 with 2 skipped in
+26.13 seconds under `bigworld-lifespan-tests-v6`, invocation
+`30742f8bab9a40258c2de66a40dcbd66`. These are software checks, including the
+existing one-example/100-employee and zero-example calibration cases, rather
+than evidence of a learning effect. Representative examples remain optional for
+any subset of employees; same-role/language transfer is a recorded assumption
+and uncovered employees retain simulator defaults.
+
+At **22:22:04 UTC on September 14**, the read-only progress command found both
+original study main processes present. The pilot control arm remained on day 5
+with 15 fully graded work attempts, 249 work/judge calls and 3,451,236 reported
+tokens. Scale seed 401's control arm was on day 0 with 11 fully graded work
+attempts, 142 work/judge calls and 1,466,008 reported tokens. These counts exclude
+separate employee interviews and unknown bootstrap/social usage. Neither study
+had a finalized learner update or a completed paired learning comparison.
+
+## Native social-call accounting qualified separately
+
+At `bafac6f`, a new opt-in native recorder captures simulation-bound Responses
+dispatch receipts, reported token usage and failures for uncontracted social
+calls. Interviews retain their existing separate ledger. Missing usage and
+unfinished requests remain unknown, and normalization failures retain any
+usage already returned by the provider. The installed-module inventory includes
+the recorder, and archived receipts are checked against their simulation,
+provider, configuration, source hashes and reported totals.
+
+The fresh qualification ran from `Big-World-CL-social-meter-v1`, using its own
+MiroFish checkout, database and backend on port 5002. It used the unchanged Qwen
+server and two employees from the existing workplace configuration; only the
+analyst had representative prompts. Its artifact is
+`lifespan/artifacts/native-social-usage-v1`, with plan SHA
+`fa5f1d5474469d8d9f542aed1bf62e9f797a78de879c3d16272397e0e6a57b52`.
+Both employee decisions passed their native receipt audits. The separate social
+ledger records **2 dispatches and 5,123 reported tokens**; the interview ledger
+records **2 calls and 5,218 reported tokens**. Neither ledger has unknown usage.
+This qualifies these native receipt paths, not other bootstrap providers or a
+learning effect. Historical runs remain unmetered in their original scope.
+
+The qualification service `bigworld-native-social-usage-v1` completed
+successfully (invocation `b1db7b84da6147bca78271b7eede3f7f`). Its temporary backend
+was then stopped. The full `tests` and `lifespan/tests` suite passed **1,074 tests,
+6 skipped**, in 118.15 seconds under `bigworld-social-meter-tests-v1`, invocation
+`98482e1adf8c4b4894b16531b2d94091`. The isolated-checkout dependency issue and
+old four-file preflight inventory found during validation were resolved before
+this final run. All 22 qualification files were copied locally and checked
+against remote SHA-256 hashes. The inventory SHA is
+`7b41de8d4364927197c67a78fac7da4fe2f467aeb94e851a00529fb63a93ffe0`;
+the local evidence is `lifespan/artifacts/native-social-usage-v1-h200`.
+
+At **22:40:09 UTC on September 14**, both original study processes remained
+present. The pilot control arm had reached day 8 with 23 fully graded attempts,
+374 work/judge calls and 5,135,298 reported work/judge tokens. Scale seed 401's
+control arm was on day 1 with 20 fully graded attempts, 281 work/judge calls and
+3,514,676 reported work/judge tokens. No learner update or paired learning result
+had completed. Neither active study checkout nor its installed backend changed.
+
+## Pilot control complete; learner arm running
+
+By **22:48:54 UTC on September 14**, the pilot had completed its control arm and
+started a fresh SkillOpt arm under the original service PID and invocation. The
+control produced 27 graded work attempts, using 445 work/judge calls and
+6,119,480 reported work/judge tokens. Its 27 employee decisions used 28 metered
+interview calls and 200,703 tokens. Initial social usage remains unknown.
+
+The separate control-only audit uses the original `31a59a7` implementation. It
+rebuilds the workplace chronology, verifies all 27 work attempts and native
+employee receipts, checks the original seed skill throughout, and reconciles
+the four planned probe obligations and resource totals. Both scheduled control
+update records exactly match the zero-cost, unchanged-skill no-op policy. The
+input inventory was unchanged by the audit, which made no model calls. This is
+not the full paired audit or a statistical analysis.
+
+The audit artifact is `Big-World-CL-lab/lifespan/artifacts/native-workplace-control-audit-v2`,
+with plan SHA `903fc598e429d89365221dddd7529b91d3d816e8cc86f211701116f9da43b3e9`.
+Its three files and exact audit driver were copied locally and hash-verified.
+The earlier auxiliary v1 check is retained: its assertion incorrectly required
+an empty control update list, instead of verifying the normal no-op records.
+No experiment record or frozen source was changed to correct that check.
+
+A zero-call timing diagnostic selects only control observations released by the
+fixed first update cutoff, day 6, using the original chronology/lineage selector.
+For the pinned K2 gate schedule, repeated observed work durations give candidate
+cycle proxies of 3,054.41 seconds for the analyst and 3,398.25 seconds for the
+editor, before optimizer/setup overhead, against a 3,600-second epoch budget.
+These are planning proxies, not measured replay latency, feasibility guarantees,
+ETAs or learning outcomes. Actual learner history and candidate execution can
+differ. The diagnostic is `lifespan/artifacts/native-workplace-time-budget-v1`,
+with timing SHA `28240cbb0f217f910900ee1f45e703e2e99c2a70a42aba19ab9a4f670aa130cc`;
+the local copy's hash, selections and arithmetic were checked. The next relevant
+resource evidence is the first actual learner epoch's ledger; budgets remain
+frozen in both running studies.
+
+At **22:54:20 UTC**, the pilot SkillOpt arm was on day 1 with three graded work
+attempts. Scale seed 401's control arm was on day 2 with 26 graded attempts.
+Both original main processes remained present. No SkillOpt update or paired
+learning-effect result had completed at that snapshot.
+
+## Replaceable evaluator and audit validation
+
+Commits `d173d65` and `e1cefb7` add judge factories alongside the harness and
+learner factories. The task-world CLI accepts `--judge-config`; the shared
+controller validates normalized scores/accounting before releasing feedback and
+routes both online and replay audits to the selected judge. The built-in r3
+scoring function is unchanged. Its source/evidence/aggregation checks now live
+with the grader. A configured evaluator binds its bank, provider, source and
+configuration, and prospective analysis requires that exact configuration before
+execution. Missing model identities leave same-model status unknown.
+
+An alternate binary-evidence fixture completes a 20-session world pair and one
+learner replay without Internal r3 rubric or verdict files. It checks native
+receipt routing, score tampering, invalid returned grades, source-bank mismatch,
+factory changes and analysis preparation. These are interface tests, not native
+JobBench qualification or evidence of a learning effect.
+
+On H200, the original `31a59a7` auditor and the configured `d173d65` auditor each
+accepted all 27 completed pilot control attempts. They produced identical
+attempt/hash/call/token rows and preserved the complete input inventory. AST
+comparison confirms the runtime `FrozenRubricJudge.grade` function is unchanged.
+This read-only regression made zero model calls; the 445 calls and 6,119,480
+tokens in those receipts remain historical work, not new qualification costs.
+The six qualified grader/controller/audit modules are byte-identical in
+`e1cefb7`.
+
+The final full suite at `e1cefb7` passed **1,083 tests, six skipped, in 118.29
+seconds**. It ran under `bigworld-judge-adapter-tests-v3`, invocation
+`9ac49d09193a4803a4f2fab99f7b966b`, and exited successfully with no main process
+remaining. An earlier test launch was interrupted because it incorrectly set a
+global inference profile without model/endpoint settings; a targeted existing
+fixture reproduced `invalid_actor_provider_model`. The corrected environment
+also passed the preceding `d173d65` suite, 1,080 tests and six skipped. Both logs
+and the launch-error note are retained. No experiment was interrupted.
+
+The evidence package is
+`Big-World-CL-lab/lifespan/artifacts/judge-adapter-validation-v1` on H200, with a
+verified local copy at `lifespan/artifacts/judge-adapter-validation-v1-h200`.
+All 16 files (477,817 bytes) were checked after safe extraction. `VALIDATION.json`
+SHA-256 is `2bc221d42326bce6c6a0307dba2ad57ec3785213737d0e69eb2630421065a890`;
+the archive SHA-256 is
+`4bcfaeaa793cd64f8f8895e6776cc01afa39351ba6cbab408e471ec0c8973357`.
+This package establishes adapter/audit regression, not judge accuracy or a full
+paired experiment result.
+
+At **23:14:32 UTC September 14**, the original pilot and scale main processes
+remained live with their original invocation IDs. The pilot SkillOpt arm was on
+day 3 with nine graded attempts, 131 work/judge calls and 1,714,353 recorded
+tokens. Scale seed 401's control arm was on day 2 with 38 graded attempts, 538
+work/judge calls and 6,921,381 recorded tokens. Neither had a completed SkillOpt
+update. The running studies, their budgets, backend, source checkouts and frozen
+analysis remain unchanged; the next learning evidence is the pilot's first
+scheduled update at day 6.
+
+## Editorial working-day consistency diagnostic
+
+The source task `internal/euw_v1_fr_014` explicitly includes Saturdays in
+working days and excludes Sundays plus five named 2025 holidays. The production
+supplement covers calendar subtraction but does not yet cover working-day
+counts or the strict `<10` flag. Commit `07b9051` adds a separate read-only
+diagnostic for these two calculations; it does not change the production
+grader, historical scores, skills or active study configuration.
+
+The H200 diagnostic selected every completed attempt of this calibration-training
+task in the pilot control arm, independent of score: **four attempts, 144 CSV
+rows**. All working-day counts and threshold flags matched the stated arithmetic.
+No additional arithmetic defects were found. This checks consistency with the
+candidate's stated delivery/review dates; it does not establish that every date
+choice, translator assignment, status or narrative judgment is correct. The
+four attempts belong to one dependent task family.
+
+Eight hand-calculated controls cover Saturday inclusion, Sunday exclusion,
+holiday boundaries, nine versus ten working days, and a negative interval.
+The targeted suite passed **11 tests in 0.80 seconds** on H200, including comparison
+against explicit date enumeration. The offline auditor reproduced the four
+attempts, and a copied diagnostic with one attempt omitted was rejected even
+after its results and summary were rebuilt. The complete original control file
+inventory remained unchanged. All this work made zero model calls.
+
+Frozen source is `/home/inference-testing/apps/Big-World-CL-editorial-arithmetic-v1`
+at `07b9051`; artifacts are `lifespan/artifacts/editorial-arithmetic-control-v1`
+there. The local copy is `lifespan/artifacts/editorial-arithmetic-control-v1-h200`:
+11 files, 276,715 bytes, all hash-verified after extraction. The plan SHA-256 is
+`104896dae3208c003d99b9b8b0cd1e4dffa1cc0b9ac79aa71ad4d6586170896d`, report SHA-256
+is `5d444c4cda6d1edb1fa33d52397009102d7e7496dd7c4260b2324b91d4968e15`, and archive
+SHA-256 is `2dc58959670f3aea30fa6dc2b504afed7ae57ebd2e26cd9200fe5cfd600f5e19`.
+
+At **23:22:05 UTC September 14**, both original experiment main processes remained
+live. The pilot learning arm had reached day 5 with 14 graded attempts, 197
+work/judge calls and 2,346,201 recorded tokens. Scale seed 401's control arm was on
+day 3 with 39 graded attempts, 559 calls and 7,357,173 recorded tokens. No
+SkillOpt update had completed. Actual consolidation costs and adoption evidence
+remain the next required observation; the original per-update budgets and study
+service limits remain unchanged.
+
+## First-update expectations and employee-context exposure
+
+At **23:27:44 UTC September 14**, before any day-6 learning replay, the original
+pilot source selected two released training cases and two validation cases for
+each employee. The saved state and every selected attempt hash were verified.
+Day-6 work releases its feedback on day 7 and cannot alter this selection. The
+expectations artifact is `lifespan/artifacts/native-workplace-first-epoch-expectations-v1`
+in the H200 lab checkout. Plan SHA-256 is
+`4ae64467418436fbd6b66a0516bc63ef84d489e67b765d5ae8b3f0adab3e9338`;
+the local `-h200` copy contains five verified files totaling 1,073,426 bytes.
+
+A separate read-only diagnostic then reproduced all **17 saved employee views**
+from the original workplace command log. All four selected training requests
+were written with released validation feedback in their actor views: **nine
+exposure edges**, all from families used by that employee's current validation
+gate. The original request bytes are preserved in the training prompt and replay.
+This confirms an available information path through employee context. It does
+not prove semantic transfer, optimizer use of validation feedback, adoption or
+an effect size. Original task-ID and chronology audits remain narrower than
+context isolation; a passing gate in these native studies is a development
+selection result, not independent held-out evidence.
+
+The diagnostic ran twice against the same snapshot using original pilot source
+`31a59a7`, reproduced identical findings, and verified its source attempt and
+request receipts remained unchanged. It made zero model calls. The first
+auxiliary collector incorrectly assumed that replay 000 was a training case;
+its assertion failed after the exposure report was produced. That partial
+artifact is preserved as v1. The corrected v2 identifies the replay against all
+selected cases: replay 000 is the existing-skill validation of
+`d003-french-editor-001`, completed with 10 work/judge calls and 60,468 tokens.
+These are experiment costs, not diagnostic costs or a final learning ledger.
+
+The verified H200 lab artifact is
+`lifespan/artifacts/native-workplace-context-exposure-v2`; report SHA-256 is
+`b60ac6ac3044e8ec3f303defddbc0761e30dcc9489bff45e9456af2527f309a5`.
+Its local `-h200` copy contains five verified files totaling 31,361 bytes;
+archive SHA-256 is
+`0d583ef0919276646a7f03d27a7b417a45124aa33547608c873ef79e47374063`.
+The diagnostic and expectations snapshot are evaluator-side evidence and must
+not be mounted into solver or optimizer workspaces.
+
+At **23:34:43 UTC September 14**, both original main processes were live with
+their original invocation IDs. The pilot learning arm had 17 completed work
+attempts, 242 work/judge calls and 2,914,074 recorded work tokens. Its first
+French-editor epoch had one completed replay and replay 001 in progress, with
+no finalized update or adoption. Scale seed 401's control arm had 47 completed
+attempts, 683 calls and 9,306,398 recorded tokens on day 3. Frozen experiment
+code, active backend, inference flags and per-update budgets remain unchanged.
+
+## Prospective validation isolation
+
+Commit `c833481` adds `validation_context: isolated_public_tasks_v1` for fresh
+studies. It freezes distinct public validation families outside live arrivals,
+omits the gate catalog from employee-adapter input, and supplies the original
+public gate instruction to learner replays without employee context or an
+invented observed grade. All ordinary pre-probe arrivals now use the training
+pool. Work opportunities, deadlines and learner replay budgets retain their
+declared limits. This changes the workload and is not a repair of either active
+historical study. Repeated gates remain adaptive development selection data.
+
+The local 26-test regression passed, followed by five targeted checks after the
+final dispatch guard and employee projection changes. On H200, the full suite
+passed **1,093 tests, 6 skipped, in 119.03 seconds**. The test service was
+`bigworld-isolated-validation-tests-v1`, invocation
+`af61379079684e199b1272b9aa132a4a`; its driver completed at **23:45:16 UTC
+September 14**. Frozen source is `Big-World-CL-isolated-validation-v1` at
+`c833481`. No new model calls were made by this qualification.
+
+The tests include a complete saved fixed-world audit with validation replays
+but no fabricated validation work attempts; a two-employee driver that
+deliberately echoes feedback through notes and colleague messages; injected
+validation context and wrong-bank-partition rejection; and pinned native
+SkillOpt reflection with validation-only canaries and forced fixture training
+failures. The latter verifies routing with callbacks, not live model behavior
+or successful learning. Original native employee experiments remain necessary.
+
+Deterministic compilation against the verified real bank passed twice for both
+configurations. The small world has 20 arrivals (16 train, 4 probe) and four
+gate descriptors across two employees. The larger world has 240 arrivals
+(192 train, 48 probe) and 24 gate descriptors across 12 employees. Sparse
+calibration remains one direct plus one default in the small world, and one
+direct, two role transfers and nine defaults in the larger one.
+
+The H200 qualification artifact is
+`lifespan/artifacts/isolated-validation-qualification-v1` under the frozen source;
+report SHA-256 is `b94adc78ac243566a3b4ec2a62cdceccae7e9bf8ee33cb934f6d87f5b1397329`.
+Its local `-h200` copy contains seven verified files totaling 203,696 bytes.
+Archive SHA-256 is
+`703302365a17a839f58fe553ce712d3865f8fd36c21d8f34159fa5481c1df486`.
+
+A fresh seed-317 native pilot is **prepared, not dispatched**, at
+`Big-World-CL-isolated-validation-v1/lifespan/artifacts/native-workplace-isolated-validation-v1`.
+Its study SHA-256 is `76255751d34445298b7974773a76211da8a5cbb766103bb9e10e875cccad6cf2`.
+The pair plans 40 obligations, at most 80 work attempts and two employee updates;
+its 96-million-token reservation ceiling is not measured cost. It uses the same
+Qwen endpoint, native Hermes and SkillOpt pins, with separate social metering
+enabled. Its employee backend is the previously qualified
+`Big-World-CL-social-meter-v1/MiroFish/backend` on port 5002, stopped at preparation.
+The existing experiments use their original backend on port 5001.
+
+The two prepared files were copied locally to
+`lifespan/artifacts/native-isolated-validation-plan-v1-h200`, totaling 160,510
+bytes, with the study hash checked against `PREPARED.json`. Archive SHA-256 is
+`58e2b5f9a97b59032e0448103aeebc0264ac8c15edf2e6105df1f9a2e1fa8a86`.
+There is no execution marker or native world directory yet. Inspect the
+original pilot's first finalized learning ledger before adding another model
+workload; its unchanged one-hour per-update budget remains an operational
+constraint. At preparation, backend startup, native execution, paired audit and
+actual learning/deployment evidence were pending.
+
+## Isolated pilot backend ready; original replay audit
+
+At **23:50:54 UTC September 14**, the separate backend was live under
+`bigworld-isolated-validation-backend-v1`, PID **1948435**, invocation
+`f8d694fe190844189dfa3aff3905e82c`. Its process working directory and loopback
+port-5002 listener matched the prepared pilot. The frozen `c833481` installation
+checker verified all five tracked override files, the pinned MiroFish revision
+and patch, and the local capability route with network/process dispatch denied.
+The subsequent live capability GET matched the frozen client contract. This
+qualifies installation and API readiness, not a new employee simulation.
+
+The original pilot, scale controller and port-5001 backend retained PIDs
+1853105, 1861095 and 1824221. The Qwen model-list GET and container start timestamp
+confirmed the existing inference server. The separate backend startup and these
+checks made zero model calls. The prepared isolated pilot still has no execution
+marker. Its backend has an 8-GiB memory ceiling and a 24-hour service lifetime;
+the frozen experiment budgets have not been changed.
+
+The readiness artifact is
+`Big-World-CL-isolated-validation-v1/lifespan/artifacts/isolated-validation-backend-readiness-v1`.
+`READINESS.json` SHA-256 is
+`a31bc40a9308023a29af42121ac7457eb681ac30458ef5ac2ac97923585154ab`.
+The local `isolated-validation-backend-readiness-v1-h200` copy has four verified
+files, 16,251 bytes; archive SHA-256 is
+`118667a8c8866bc39f03278c4936728104530fa7c84fba0117c0e38150e896ab`.
+
+A separate original-source audit at **23:51:55 UTC** covered all six replay
+receipts finalized at capture in the first French-editor epoch: two validation
+replays and four training replays, all using the seed skill. Each request matched
+the pre-update selection and original employee message; original input hashes,
+native execution, deployed skill, grader evidence and combined usage passed the
+frozen `31a59a7` auditor. Source receipts remained unchanged. The six attempts
+recorded **96 work/judge calls, 1,307,272 tokens and 1,246.46 seconds**. These
+seconds are summed attempt durations, not the complete epoch's wall clock or
+final ledger. No update receipt existed when the audit finished.
+
+That audit made zero model calls and establishes neither optimizer activity nor
+adoption or validation independence. Artifact
+`Big-World-CL-lab/lifespan/artifacts/native-first-epoch-partial-audit-v1` has report
+SHA-256 `4d46cac8825c5ace3db1a614074bd20cdfa50db5d1ff7f9d59761cea03c0ab1d`.
+Its local `-h200` copy has three verified files, 15,863 bytes; archive SHA-256 is
+`5b038d288e706f51cfc5655e09436a2487ef8fde9924a6139bdd80ed41b58d68`.
+
+## Completed native pilot and preserved scale failure
+
+By **03:14 UTC September 15**, the original pilot service was inactive with
+`Result=success`. Its full audit ran under the original `31a59a7` source and
+passed **52 work attempts, 24 learning replays, 52 employee decisions and one
+world pair**. The study-file inventory was unchanged and the audit made zero
+model calls. Neither employee adopted a skill.
+
+| Arm | Work attempts | Rework | On-time probes | Work/judge tokens | Learning/replay tokens |
+|---|---:|---:|---:|---:|---:|
+| No learning | 27 | 7 | 2/4 | 6,119,480 | 0 |
+| SkillOpt | 25 | 5 | 3/4 | 4,773,084 | 5,107,024 |
+
+Employee interviews added 379,694 measured tokens; original bootstrap/social
+usage remains unknown. The +0.25 probe fraction difference cannot demonstrate
+skill learning because both arms deployed the seed skill throughout. The one
+dependent world pair and documented validation-context exposure are additional
+limitations.
+
+Both day-six updates completed within their original budgets. The French
+editor used 213 target calls and 3,200,659 tokens over 2,272.90 seconds. Its
+candidate's mixed gate score fell from 0.5833 to 0.5, including a validation case
+that fell from 0.1667 to zero. The analyst used 168 target calls and 1,906,365
+tokens over 1,421.58 seconds; its candidate fell from 1.0 to 0.7083, with one case
+falling to 0.4167. Each epoch made one optimizer call and 12 replays. Both
+candidate edits were rejected; the subsequent final replays used the unchanged
+seed skill. The finalized train/validation IDs matched the selection captured
+before any learning replay at 23:27:44 UTC September 14.
+
+Artifact `Big-World-CL-lab/lifespan/artifacts/native-workplace-paired-audit-v1`
+has `AUDIT.json` SHA-256
+`46f4bdfb5b664a07064febf396aa241819d45f4ff4480ad7a65def456fafb6a5`.
+Its eight-file local `-h200` copy is hash-verified (649,513 bytes); archive SHA
+is `4d5bd9fe498d4950789c51b20718ddbf680f66dcbee9f2bd08508f5125de432d`.
+
+The original six-world scale service failed at **00:23:21 UTC September 15**,
+with exit code 1 and no completed arm. Its first control world had 71 graded
+attempts, 1,067 work/judge calls and 14,930,114 work/judge tokens. Both returned
+responses for `d005-operations-fr-002-000` were complete, metered and within the
+API token/time budgets, but their `working_notes` contained 1,900 characters
+against the then-enforced 1,800-character acceptance limit. Every other field
+passed the original schema. The permitted repair repeated the same overlong
+notes; its generic error did not identify the field or limit. These two requests
+consumed 14,770 measured tokens.
+
+That failed study is preserved and cannot fulfill its original six-pair analysis.
+The original-source diagnostic is
+`Big-World-CL-lab/lifespan/artifacts/native-scale-wire-failure-v2`, with report SHA
+`9a62b67e375060f1d43982978fcc67005397b7dcd5f2b8ce1a4d936ac5e27252`.
+Its five-file local copy is verified (611,356 bytes); archive SHA is
+`23edac2629704a60c18f2dddf411f4b5f4d39fc6b5961d9dc00d44840271d935`.
+The first diagnostic collector stopped before source reads because it imported
+a newer progress helper from the older checkout; that separate collector failure
+is recorded and did not change the experiment.
+
+The isolated pilot launched at **03:16:17 UTC September 15** under
+`bigworld-native-workplace-isolated-validation-v1`, invocation
+`f4fd3393ba9147fb97e5cfac824d2cb8`, PID 1981529. It uses the previously frozen
+`c833481` study and port-5002 backend. Launch records are retained in
+`native-isolated-pilot-launch-v1`; the three-file local copy is verified
+(7,350 bytes), with archive SHA
+`c5565b4cefe3524ead943222f43e327cb9426b161e8d797f8d857ac7e6fa4871`.
+
+## Shared inference concurrency 64
+
+The new gateway runs under `bigworld-inference-gateway-v1`, invocation
+`34fb717a3e7246f4872518d4c321492a`, from frozen source
+`Big-World-CL-concurrency64-v1` at `df3548e`. It serves
+`http://127.0.0.1:8010/v1`, forwarding unchanged requests to the existing Qwen
+server on port 8000. Port 8001 was already occupied and was not changed.
+Its dedicated Python environment uses aiohttp 3.14.3. It admits at most **64
+requests**, holds slots through streaming EOF and reports queue/concurrency/error
+counters without logging prompts or retrying requests. Existing direct port-8000
+clients are outside this new limit.
+
+At **03:35:10 UTC September 15**, all **64 concurrent structured Qwen Responses
+requests** completed with the expected IDs and JSON shape. The measured peak
+was exactly 64, with no gateway or model response errors, and the batch took
+**3.725 seconds**, consuming 2,870 input and 9,603 output tokens. This is a
+constructed concurrency canary, not full-workplace throughput or learning evidence.
+H200 artifact: `Big-World-CL-lab/lifespan/artifacts/inference64-native-v1`.
+
+New source `c9d9fe3` removes unenforceable character limits from actor schemas,
+employee notes/messages, generated profiles and learned skill documents. Prompt
+guidance requests concise text; API output-token budgets remain. The generation
+and acceptance schemas now agree. Native optimizer edit arrays also use a
+registered JSON schema; its request/receipt audit passed a real one-call Qwen
+qualification (113 tokens) in `concurrency64-optimizer-format-v1`.
+
+The new scale configuration sets work, world-pair and employee-update concurrency
+ceilings to 64 and uses isolated validation cases. Independent pairs and employee
+epochs run in spawned processes; each employee's native SkillOpt replay/gate
+sequence is preserved. A complete offline fixture audited two overlapping world
+pairs, 80 work attempts and four replays, including separate employee update
+processes. A failure fixture retained its failed pair and joined its successful
+peer. These are execution tests, not measured model improvements.
+
+The H200 source suite at `c9d9fe3` passed **1,094 tests**, with seven skips and
+one stale test expecting the optimizer's old unstructured request. After updating
+that expectation, all **nine provider-contract tests** passed against the same
+frozen production code. The original and corrected test outputs are retained in
+`concurrency64-qualification-v1`. The gateway's three real HTTP concurrency and
+streaming tests passed separately in its dedicated environment. Initial broad
+pytest collection encountered unrelated upstream `scripts` namespace collisions;
+the source suite uses the established `tests lifespan/tests` scope.
+
+The updated port-5003 backend passed installation/capability checks and **12/12
+native employee decisions** across the declared roles and languages. Interviews
+used 35,558 measured tokens; 12 initial social calls used 30,871 tokens, with no
+failed or unknown-usage receipts in either category. Other bootstrap usage is
+still outside that meter. The qualifier is
+`Big-World-CL-concurrency64-v2/lifespan/artifacts/native-concurrency64-employees-v1`.
+
+The fresh six-world study launched at **03:46:41 UTC September 15**, under
+`bigworld-native-workplace-concurrency64-v1`, PID **1998836**, invocation
+`f4139a9cc92d4f65b770f542f353ad08`. It has a 64-GiB controller-group ceiling and
+the original seven-day maximum runtime. Frozen source is `c9d9fe3`; study SHA is
+`0b59f2cf49d456965720ec2033a1f1b80b2b127579601a344b10e3ec4496efb6`.
+Its separate analysis was frozen before dispatch, with plan SHA
+`1629d82724d519f2506d87ba905ad80bef59366e471e2a7ecf5d857c1aa0e8eb`.
+
+The study retains six seeds, 12 employees per world, three departments, three
+languages and 20 simulated days. Only one employee has supplied examples per
+world; two use explicit role/language transfer and nine retain defaults. There
+are 2,880 planned obligations, at most 5,760 work attempts and 216 possible
+learning epochs. The 7.776-billion-token reservation is a ceiling, not measured
+consumption or a prediction. Work and learning budgets retain their prior values;
+throughput comes from concurrent independent execution and the shared endpoint.
+The study remains development-only and must finish all pairs and original-source
+audits before its planned analysis can run.
+
+### Sustained-load failure and throughput qualification
+
+The short concurrency canary did not establish sustained workplace performance.
+World 433 failed on its twelfth employee decision: native receipt
+`5bc7e16e249bb2666b8adfec171ed3f9a4f883dd63f74842f2c11f7ca7c5aeb0`
+records one dispatched request, `APITimeoutError` after 120.103 seconds and
+unknown usage. The backend returned HTTP 504 at 03:50:41 UTC. Its failed pair and
+inflight marker remain intact. By 03:56:57, 11 work attempts had finalized across
+the other worlds: two fully graded and nine with incomplete grading. The
+six-pair analysis cannot pass with this failed pair.
+
+Original-server logs during this load show approximately 130–220 generated
+tokens/second with roughly 48–62 running requests. The optional Hermes
+`/v1/props` discovery probes returned 404; observed inference POSTs returned 200.
+HTTP 200 does not establish complete inference or valid grading. A vLLM grammar
+decoder error at 03:49:56 is retained, but cannot be causally bound to the timed
+out actor from the available request IDs. Gateway cancellations include client
+disconnects and cannot all be labeled inference failures from its aggregate
+counters.
+
+The completed qualifications, source test logs, immutable study/analysis plans,
+launch record, native failure receipt and partial operational snapshot are copied
+to `concurrency64-operational-evidence-v1-h200` locally. All **219 files** are
+hash-verified (8,721,771 bytes). Archive SHA-256 is
+`12a32b48f2eac5666eedad650856132292410781ac73a98bf86c9465724fecc9`;
+provenance SHA-256 is
+`f5e54939a2c97e0bd31f682b77eb973a5727b6492205d1f0eab5c267265346c8`.
+The canary's response files are normalized JSON; its raw-wire hashes are distinct
+from the stored-file hashes and raw response bytes were not retained.
+
+A separate qualification-only container started at **03:55:14 UTC September 15**
+on previously idle GPUs 4–7, exposing loopback port 8002. It keeps the same pinned
+model, image and original flags except that MTP speculative decoding is disabled.
+The original inference container and active studies are unchanged. This tests a
+throughput configuration; no speedup is established yet. vLLM describes
+[speculative decoding](https://docs.vllm.ai/en/latest/features/speculative_decoding/)
+primarily as a latency optimization for medium-to-low request rates.
+
+New source also replaces the judge's 900-rule character-bounding grammar with a
+compact JSON schema. Criterion identity, exact keys and field types remain
+enforced; explanation verbosity and quoting source language are prompt guidance.
+The judge identity advances to version 9, so existing experiments continue to
+audit against their frozen implementation. Nineteen targeted transport, provider
+and world tests pass. Native sustained-load and semantic qualification of this
+new judge/server combination remain pending.
+
+### Qualified throughput endpoint and fresh six-world execution
+
+At **04:00:42 UTC September 15**, the new no-MTP server and compact judge schema
+completed all **64 concurrent semantic controls**, matching every known label.
+The batch used 171,062 input and 17,747 output tokens in **19.550 seconds**
+(907.76 output tokens/second over batch wall time). Median latency was 17.135
+seconds, nearest-rank p95 19.144 seconds and maximum 19.542 seconds. Gateway peak
+was exactly 64; there were no response errors, timeouts, cancellations or unknown
+usage. These repeat 11 source-grounded development controls from one family,
+with distinct request prefixes. They are not independent outcomes, a general
+judge-accuracy estimate, or a measured workplace speedup over the previous run.
+All raw response bodies are retained and checked against receipts and labels.
+
+The new model container is `bigworld-qwen38flashnext-throughput-v1`, ID
+`4c8b66ae53cf375ae7df068dbdafd06ac0ef5e94a2e5393b5c1ab6791f0782b8`,
+started at `2026-09-15T03:55:14.893638712Z` on GPUs 4–7. Its gateway is
+`bigworld-throughput-inference-gateway-v1`, invocation
+`dae9ce4a2ad3459987e94a053820dee6`, serving `http://127.0.0.1:8011/v1`.
+The native backend uses port 5004 under `bigworld-throughput-backend-v1`,
+invocation `e27fd378875d46d7a01a3de1af629009`.
+
+Both concurrent Hermes work controls completed and passed original-source
+receipt audits: **19 calls and 110,101 tokens**. The optimizer's structured
+edit-array call passed its request audit, consuming **111 tokens** in 1.054
+seconds. All **12 native employee decisions** passed: interviews used 36,057
+tokens and the 12 initial social calls used 30,810 tokens, with no unknown usage
+in either measured category. Other bootstrap usage remains excluded. The native
+qualifier's plan SHA is
+`3e40e7660af341613efb03d9892a312d3ac5d818c1858980be7195732a0ecf84`;
+the harness plan SHA is
+`578d9e17d52c389fbc07eb9b1737fca51855c82d1ad474dbeb814242ecabbcb9`.
+An additional 14 judge-adapter, parallel-execution and learner-audit tests passed,
+bringing this source change's targeted verification to 33 passing tests.
+
+Two operator setup errors were caught before model dispatch and preserved:
+the new installation initially lacked the tracked `actor_contract_transport.json`
+file, and the standalone optimizer qualifier initially omitted `current_day`.
+The missing file was installed, the installation checker passed, and both
+qualifiers were rerun in fresh output directories. Their failed destinations
+remain visible; neither is a model-quality failure or a discarded experiment.
+
+The fresh study launched at **04:05:17 UTC September 15**, from frozen
+`2c65a2c735ef9c8bf0e556f86f8da06ba824b033`, under
+`bigworld-native-workplace-throughput-v1`, PID **2032157**, invocation
+`131820fd4ad14bcdaaee1517d0b79597`. It uses the qualified gateway, native backend
+and judge v9, with the same six seeds, 12 employees, 20 days, sparse calibration,
+isolated validation and original budgets. Its study SHA is
+`e123fbef42107320a5e4a5b5e45e19da626dc873402431db594aff64f42be65c`;
+its analysis was prepared before dispatch with plan SHA
+`2e5ba605cb72f28947434e314bc841cd6d07dff0a5a7c868eb14c9676e95e3e4`.
+At **04:08:04 UTC**, all 72 initial employee decisions were recorded and all
+six work waves were active, with no finalized work receipts yet. No learning
+effect or completed-pair result exists at that observation.
+
+The preceding concurrency run was deliberately interrupted at **04:07:13 UTC**
+after one pair had failed and 55 work attempts had finalized with widespread
+incomplete/ambiguous accounting. SIGINT targeted only its controller service's
+processes. Before/after snapshots and the stop intent are preserved in
+`native-concurrency64-stop-v1`; by 04:08:04 its MainPID was zero and its transient
+unit was absent. This is an operator-stopped failed run, not successful completion.
+The separate isolated-validation pilot had already failed at **04:02:06 UTC**
+with `Unscored or invalid work attempt`, preserving its day-seven work marker.
+It was not stopped by that SIGINT. Both original inference-container flags and
+start time remain unchanged; their frozen study artifacts were not rewritten.
+
+The completed qualifications, raw 64-call benchmark, fixed study/analysis plans,
+launch receipt and partial operational observation are in
+`throughput-operational-evidence-v1`. It contains **423 files, 11,484,996 bytes**;
+archive SHA is
+`f59d511ec666a3d60e236a083c0add6862f9909fb92c3810c03acd6ddd2787b5`,
+and provenance SHA is
+`aa970ef0c74f08e477068104d00c6dfe13c2739795e1eefef84ec7c005a42eaf`.
+The local `throughput-operational-evidence-v1-h200` copy is fully hash-verified.
+
+At **04:10:06 UTC**, the replacement study had **23 finalized work attempts**,
+all fully graded with complete recorded accounting: 219 work/judge calls and
+1,337,722 charged tokens. All six worlds remained on their first work wave.
+Recent server intervals reported 1,492–1,744 generated tokens/second. Those are
+live workload observations, not a matched speedup measurement. No server engine
+errors were present in the launch-to-observation log. Gateway aggregate counters
+also include optional metadata probes and client cancellations; they must not
+be interpreted as inference-failure counts without path-level evidence.
+
+### Truncated verdicts and judge version 10 qualification
+
+The throughput study subsequently produced incomplete judge responses at the
+4,096-output-token API cap. At least two had long runs of whitespace outside
+JSON string values; others continued deliberating through the token budget.
+Five failed grades were copied before an operator SIGINT stopped the remaining
+workers, with before/intent/dispatch/after observations retained in
+`throughput-format-failures-v1`. The after snapshot records 112 finalized work
+attempts, 106 fully graded, and eight attempts without a final receipt. Its
+systemd unit is absent and MainPID is zero. The missing unit's default success
+field is not evidence of successful experimental completion. Frozen source and
+study receipts remain unchanged; all six originally planned pairs remain in the
+denominator. No learning effect has been established.
+
+Judge version 10 uses a six-rule compact Unicode JSON grammar, eliminating
+inter-field whitespace without limiting explanation length. The installed
+XGrammar parser accepted Unicode, escapes, empty strings and a 12,000-character
+string, and rejected extra fields, wrong types and inter-field padding. Prompts
+request concise final evidence and rationale without narrated deliberation.
+
+One format-only regeneration per grade is permitted for a returned incomplete
+or invalid verdict with known usage. It receives the same evidence and criterion
+and stronger brevity guidance, with no prior answer content. Both physical calls
+are retained and charged within the original eight-call, token and deadline
+allocations. Valid failing judgments are never regenerated. API errors, timeouts
+and unknown usage are never retried. The auditor binds each original/repair
+input and response to its metered operation and rejects changed evidence or
+outcome selection. Existing frozen studies continue using their original judge.
+
+`worldlab.qualify_saved_judges` copies and regrades every saved evidence snapshot
+from a stopped development study at concurrency 64, including failed and
+interrupted grades. It audits complete grades under the new implementation and
+preserves every qualification outcome. These are dependent development contexts
+for completion and accounting checks, not an accuracy or learning estimate.
+
+The live version-10 grammar failed its 64-request qualification: all requests
+timed out at approximately 121 seconds with unknown usage, despite passing
+CPU grammar acceptance checks. The retained artifact is
+`judge-v10-semantic64-v1`; no study launched on that source. The full offline
+suite recorded 1,102 passing tests, seven skips and one failure caused by stale
+profile-length constraints in the canonical MiroFish installation.
+
+Version 11 returns to native JSON Schema with Boolean-first property order,
+keeping the metered format recovery and concise prompts. The pinned server's
+installed `XgrammarBackend.compile_grammar` passes its global
+`disable_any_whitespace` setting to `compile_json_schema`. The replacement
+container therefore adds `--structured-outputs-config
+'{"backend":"xgrammar","disable_any_whitespace":true}'`; all other pinned
+no-MTP flags remain unchanged. This is a serving change after the study stopped
+and the unsuccessful qualification ended, with an idle gateway. The old
+container is stopped and retained. Startup and old-server evidence are in
+`throughput-compact-json-server-v1`. Live qualification remains required before
+launch; grammar validity alone was insufficient performance evidence.
+
+At 04:32:34 UTC, version 11 completed all 64 semantic requests with valid JSON
+and known usage in 18.867 seconds (13,876 output tokens; 735.48 output tokens per
+wall second). However, only 63 of 64 known labels matched. One missing-heading
+control explicitly identified the binding violation in its evidence/rationale
+but emitted `passed: true`. The strict semantic qualification therefore failed;
+the prepared study `60938c943e8084811d0776fe2c46a6a1799cb036389cdc78a0e0c2dfbe1d5b10`
+was not launched. A separate completion-only run of all saved work evidence
+continues, without treating that as semantic qualification.
+
+Version 12 restores the final Boolean after the evidence/rationale and explicitly
+requires agreement with the stated finding. It keeps native compact JSON Schema,
+prompt-only verbosity and metered format recovery. The version-11 contradictory
+verdict remains a failure; it is never rewritten or retried as a valid verdict.
+New version-12 qualification must retain all newly planned outcomes.
+
+At 04:36:35 UTC, version 12 passed all 64 semantic controls with known usage in
+13.240 seconds: 172,854 input and 14,388 output tokens, or 1,086.75 output tokens
+per wall second. Median latency was 10.940 seconds and p95 12.339 seconds.
+The saved-evidence run nevertheless encountered a 120.145-second API timeout
+on `grade-0008`, retaining a 26,960-token reservation and unknown actual usage.
+Version 13 keeps the exact rules and schema but permits up to 300 seconds for
+each request, clipped to the existing overall grade deadline. It does not add
+calls, tokens, time to the overall job allocation, or retries for unknown usage.
+
+Both version-12 native Hermes controls passed their source audits (16 calls,
+86,844 tokens). Its standalone optimizer request returned with known usage
+(one call, 555 tokens), but did not pass the required provider audit.
+The employee qualifier failed before opening the native runtime because its
+operator command omitted the explicit provider environment used by study
+services. This zero-dispatch setup error is retained; a correctly configured
+fresh qualifier is required. Source profile generation already passed the new
+installation check and targeted tests without character-length constraints.
+
+The version-13 full evidence qualification passed all **113 grades**, with
+557 calls, 4,153,565 reported tokens, zero unknown accounting and no format
+regenerations. This is completion and audit qualification, not judgment truth.
+The previous timeout context completed in this fresh run; the result does not
+establish a causal speedup or prove the longer timeout caused that completion.
+Seventeen targeted local tests pass for the final judge change.
+
+The version-13 native employee qualification passed all 12 decisions: 34,869
+interview tokens, and separately 30,801 observed social-call tokens across 12
+calls with no unknown usage. Other bootstrap providers remain outside those
+measured categories. The standalone version-12 and version-13 optimizer drivers
+omitted `provider_profile` in their explicit credentials. Their calls returned,
+but their provider audits failed and no passing qualification report exists.
+Production `worldlab.learning.SkillOpt.update` already supplies that profile.
+The corrected standalone check uses the production profile and a fresh output
+directory. The launch guard correctly rejected the missing optimizer report;
+that guard failure made no study calls. An attempted evidence export before
+dispatch is likewise an incomplete copy, not a delivered evidence archive.
+
+The corrected, explicitly profiled optimizer check passed in a fresh directory,
+`judge-v13-native-optimizer-v2`: one structured call, 111 tokens, 1.502 seconds.
+The complete 64-control report and its 64 raw responses are copied locally and
+hash-verified in `judge-v12-semantic64-v1-h200` (259 manifest entries plus the
+manifest). Its archive SHA is
+`6b475aa06f078f7a8a10120ab03581fc923e737c8bd7d28b445ffe077aec322c`.
+`SEMANTIC_COMPATIBILITY.json` records reuse of those controls under version 13:
+rules, repair rules, validation, input construction, request helper and schema
+bytes are unchanged, and the server container is unchanged. No extra 64-call
+measurement is claimed.
+
+The fresh study launched at **04:48:17 UTC September 15** from frozen source
+`e2fe6b7f36bdd465c9bd70fc91a4c16945171e16`. Service
+`bigworld-native-workplace-compact-v3` has PID **2112546** and invocation
+`ea7d4fdc001545d3882020e187b796d0`; it was active/running with its main process
+present at 04:48:44 UTC. The study SHA is
+`4488deb56597bca60be3084625b96498c496537dbfaaa728877415e0ef1ff30f`,
+and its prospectively prepared analysis plan SHA is
+`5c204af6cfa6251b7d11aef3c2a0c0f9daea4d348aeddcdc1af77c0880adda5c`.
+It keeps six seeds, 12 employees, 20 days, sparse example coverage, isolated
+validation and shared LLM concurrency 64. At that observation eight employee
+decisions were recorded, no work attempts had finalized, and no skills were
+adopted. No learning result or statistical claim exists yet.
+
+The final two Hermes controls passed with 19 calls and 110,485 tokens. The
+completed qualifications, retained failed attempts, serving configuration,
+study/analysis plans and initial running-state observation are copied to
+`compact-json-operational-evidence-v2-h200` locally. All **6,619 files,
+66,745,962 bytes** are hash-verified. Archive SHA is
+`626805f37c05839f33f5e74c0b105ea99c204ea2cf23f27af7b90c16623c718f`;
+provenance SHA is
+`5f16e94e5b89374b163eabdb427241d8d9d5590e9e667817c9ddbd87f408f7fd`.
+This package includes dependent development qualifications and partial study
+progress; it is not a completed experiment or a successful-learning result.
+
+## Version 10 prepared; inference resource conflict
+
+At September 15, 2026 20:29 UTC, the next complete matched study was prepared
+from frozen source `d936482b3f641fa670be774887e7e547fae23b00` in
+`/home/inference-testing/apps/Big-World-CL-workplace-v10`. This follows the stopped
+version-9 study and its artifact/replay failures documented in
+`WORLDLAB_CURRENT_STATUS.md`; old failed runs remain unchanged.
+
+Preparation retained all six seeds, 12 employees per arm, 20 days, assignments,
+isolated validation cases, sparse calibration and native learning budgets.
+There are 2,880 planned obligations and capacity for up to 5,760 work sessions.
+Source comparison ties the new run to the passing native artifact/admission
+qualification and the 25 local plus 25 H200 cancellation checks. Only the new
+failure policy changes the world specification. Original grading rules and
+methods are unchanged outside the qualified evidence projection.
+
+Study SHA:
+`936477c1fb9a35b2e11d88f3434bf751a872c81b875022aabfe459412f755348`.
+Prospective analysis SHA:
+`30c370c6cc9b64a41ed4f3a7bd0a0c743ffac1332819bb3cc68ea484001b2099`.
+Compatibility SHA:
+`959d038ae0c15a5e0564f8530d47d9ee6d4ee29d502d759deacd5e873660e824`.
+
+The model container pinned by the launch operator is stopped. The replacement
+on GPUs 4–7 and port 8002 serves the same revision with different inference
+settings, so the exact-runtime check refused it before creating a study process.
+No model calls were made during preparation. Fluso remains paused. The prepared
+development study is not a completed comparison or a statistically supported
+learning result. Local preparation receipts and hash verification are in
+`lifespan/artifacts/native-compact-v10-local/`.
+
+### User-selected shared model qualification and version-10 launch
+
+The user subsequently requested using the model already served on the GPUs.
+The existing `fluso-meta-next-replica2-20260915` runtime was qualified unchanged:
+container `09bc5f45eecded401560b4dd0d95bd84c9e7a8821d33eadbab201840621d396c`,
+started `2026-09-15T20:18:20.809526703Z`, on GPUs 4–7 and loopback port 8002.
+It serves the same pinned Qwen Flash Next revision and image with MTP enabled
+(three speculative tokens), prefix caching and 256 maximum sequences. The
+shared gateway at port 8011 keeps the experiment's LLM concurrency at 64.
+
+All 64 concurrent structured controls returned valid verdicts matching their
+declared labels, with known usage: 174,198 input and 9,899 output tokens in
+39.501 seconds; median latency 23.558 seconds, nearest-rank p95 34.684 seconds.
+These repeated controls ran under shared load and do not establish a causal
+speed comparison. Two native Hermes controls passed full audits (25 calls,
+195,210 tokens), all 12 native employee decisions passed, and the structured
+optimizer check passed with one call / 111 tokens. The initial semantic launcher
+failed before dispatch because its Python environment lacked `aiohttp`; the
+preserved correction used the existing gateway environment, with no server
+package or setting changes.
+
+The unchanged version-10 study and prospective analysis launched at
+**21:47:58 UTC September 15**. Service `bigworld-native-workplace-compact-v10`
+has PID **1573076**, invocation **d9cc6a3038594ec5a3efc61c831e098b**. At 21:49:25
+its actual process was present, all six initial arms had started, 29 employee
+decisions were saved and no work attempt had finalized. There was no stop marker.
+Fluso work remains paused. The pipeline runs the frozen audit and analysis
+after full successful execution; a failed study ends it without retries or
+partial-pair inference. Native qualification receipts are under the frozen
+checkout's `lifespan/artifacts/shared-model-qualification-v1`; launch and runtime
+observations are under lab `lifespan/artifacts/native-compact-launch-v10`.
+This is a running development study, not a completed learning-effect result.
+
+The 21:59:49 UTC follow-up verified the same live process and model container,
+68 finalized work attempts with completed execution and grading statuses,
+no grading errors, and no stop marker. The six initial arms were on days 0–1;
+no learner update had run. The Fluso experiment and both guardian services were
+inactive with MainPID 0. This observation is retained separately as
+`native-compact-launch-v10/RUNNING_CHECK-20260915T215949Z.json`.
+
+A compact local evidence copy contains 29 verified qualification, launch and
+operator files. Archive `shared-runtime-v10-evidence-20260915T215949Z.tar.gz`
+is 203,521 bytes, SHA-256
+`231ed4ba2812cfd9aa4e1e1c6e743e8a7471577484e0601545e9ac68a6ca9bc7`.
+Safe local extraction and every payload hash passed verification. Full native
+traces and running study artifacts remain on H200 and are outside this copy.

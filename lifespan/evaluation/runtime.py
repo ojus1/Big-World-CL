@@ -85,8 +85,16 @@ def skill_loaded(messages, native_file_sha256=None):
 
 def execute_case(*, root, employee, world, task_id, case, request, skill, credentials,
                  objectives, max_iterations=16, max_tokens=4096, business_files=None,
-                 max_total_tokens=None, timeout_seconds=420):
+                 max_total_tokens=None, timeout_seconds=420, hermes_transport='streaming',
+                 hermes_startup_observability=False, provider_profile=None):
     from .tasks import grade_case
+    from .hermes_transport import contract
+    from ..startup_observability import executor_options as startup_options
+    transport = contract(hermes_transport)
+    from .provider import matches as provider_matches, require_config
+    provider = require_config({'provider_profile': provider_profile,
+                               'hermes_transport': hermes_transport}, credentials)
+    provider_fields = {'provider_contract': provider} if provider is not None else {}
     root = Path(root).resolve()
     if root.exists():
         raise ValueError('Rollout destination exists; trials must start from a fresh state')
@@ -94,7 +102,9 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     started = time.monotonic()
     computer = Computer(root / 'computers', employee,
         execution={'mode': 'evaluation', 'max_iterations': max_iterations, 'max_tokens': max_tokens,
-                   'max_total_tokens': max_total_tokens},
+                   'max_total_tokens': max_total_tokens, 'hermes_transport': hermes_transport,
+                   **provider_fields,
+                   **startup_options({'hermes_startup_observability': hermes_startup_observability})},
         artifact_grader=lambda artifact: grade_case(case, artifact))
     task = world.tasks[task_id]
     brief = request + '\n' + case['request']
@@ -111,6 +121,10 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
     save(root / 'INFLIGHT.json', {'employee': employee, 'task_id': task_id, 'skill': skill_info})
     try:
         ready = computer.start(credentials, timeout=min(150, timeout_seconds))
+        if ready.get('evaluation_transport') != transport:
+            raise RuntimeError('Native worker transport differs from requested contract')
+        if not provider_matches(ready.get('provider_contract'), provider):
+            raise RuntimeError('Native worker provider differs from requested contract')
         forbidden = set(ready['tool_names']) & {'memory', 'skill_manage'}
         if forbidden:
             raise RuntimeError('Private learning tools exposed in controlled target: ' + str(forbidden))
@@ -122,6 +136,26 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
         grade = computer.last_grade or {'success': False, 'score': 0.0, 'checks': {},
                                         'feedback': 'No artifact reached substantive submission.'}
         native = result['native']
+        # A returned receipt must survive even when provenance is invalid.
+        # Preserve the raw native body and costs, then stop at the existing
+        # infrastructure gate instead of losing incurred usage in an exception.
+        transport_valid = (native.get('evaluation_transport') == transport
+            and all(type(op.get('request_stream')) is bool
+                and op['request_stream'] == (hermes_transport == 'streaming')
+                for op in native.get('evaluation_budget', {}).get('operations', [])))
+        if provider is not None:
+            meter = native.get('evaluation_budget', {})
+            transport_valid = (transport_valid and provider_matches(native.get('provider_contract'), provider)
+                and provider_matches(meter.get('provider_contract'), provider)
+                and all(provider_matches(op.get('provider_contract'), provider)
+                    and op.get('request_api_mode') == provider['api_mode']
+                    and op.get('request_model') == provider['model']
+                    and op.get('request_base_url') == provider['base_url']
+                    and op.get('request_store') is False
+                    and type(op.get('request_chat_template_kwargs')) is dict
+                    and set(op['request_chat_template_kwargs']) == {'enable_thinking'}
+                    and op['request_chat_template_kwargs']['enable_thinking'] is False
+                    for op in meter.get('operations', [])))
         calls = sum(len(m.get('tool_calls') or []) for m in native.get('messages', []))
         usage = native_usage(native)
         loaded = skill_loaded(native.get('messages', []), skill_info['native_file_sha256'])
@@ -134,27 +168,36 @@ def execute_case(*, root, employee, world, task_id, case, request, skill, creden
             if artifact is None:
                 raise RuntimeError('Successful work has no committed artifact snapshot')
         record = {'employee': employee, 'day': world.day, 'task_id': task_id,
+            'hermes_transport': transport,
+            **provider_fields,
             'case_id': case['id'], 'regime': case['regime'], 'skill': skill_info,
             'skill_loaded': loaded, 'success': success, 'semantic_score': grade['score'],
             'feedback': grade['feedback'], 'checks': grade['checks'],
             'artifact': artifact, 'committed_artifact_sha256': computer.committed_hash,
             'last_submitted_artifact_sha256': computer.last_submission_hash,
             'usage': usage, 'tool_calls': calls, 'elapsed_seconds': time.monotonic() - started,
+            'timing': {'schema_version': 2, 'timeout_seconds': timeout_seconds,
+                'elapsed_seconds_scope': 'runtime_start_through_snapshot_before_session_write_and_cleanup',
+                'physical_inference_seconds': None},
             'trace': env.trace, 'result': result, 'diagnostic': env.diagnostic(),
             'filesystem_before': before, 'filesystem_after': after,
             'filesystem_delta': file_delta(before, after),
             'world_before': before_world, 'world_after': world.snapshot(),
             'budget_exhausted': bool(native.get('evaluation_budget', {}).get('exhausted', False)),
-            'infrastructure_valid': usage['complete'] and (not native.get('failed', False)
+            'infrastructure_valid': transport_valid and usage['complete'] and (not native.get('failed', False)
                 or native.get('evaluation_budget', {}).get('exhausted', False))
                 and not any(op.get('status') == 'provider_budget_overrun'
                     for op in native.get('evaluation_budget', {}).get('operations', []))}
+        if getattr(computer, 'startup_observer', None):
+            record['startup_observation'] = computer.startup_observer.summary()
         save(root / 'session.json', record)
         (root / 'INFLIGHT.json').unlink()
         return record
     except Exception as exc:
         save(root / 'FAILURE.json', {'type': type(exc).__name__, 'message': str(exc),
-                                    'usage_complete': False, 'elapsed_seconds': time.monotonic() - started})
+                                    'usage_complete': False, 'elapsed_seconds': time.monotonic() - started,
+            **({'startup_observation': computer.startup_observer.summary()}
+               if getattr(computer, 'startup_observer', None) else {})})
         raise
     finally:
         computer.close()

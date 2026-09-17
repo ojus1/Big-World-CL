@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "study_scope": "development",
+  "days": 10,
+  "probe_start_day": 8,
+  "update_days": [
+    6
+  ],
+  "feedback_delay": 1,
+  "train_cases": 2,
+  "val_cases": 2,
+  "work_budget": {
+    "model_calls": 32,
+    "output_tokens": 8192,
+    "total_tokens": 500000,
+    "seconds": 900
+  },
+  "employees": [
+    {
+      "id": "research-analyst",
+      "role": "Research and evidence analyst",
+      "language": "en",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "research_synthesize",
+          "evidence_synthesis"
+        ]
+      },
+      "representative_tasks": [
+        {
+          "prompt": "Synthesize supplied evidence into a grounded briefing with explicit sources, caveats and decisions.",
+          "matches": 2,
+          "selector": {
+            "sources": [
+              "internal_eurobench"
+            ],
+            "workflows": [
+              "research_synthesize",
+              "evidence_synthesis"
+            ]
+          }
+        }
+      ],
+      "arrivals_per_day": 1,
+      "deadline_days": 2,
+      "department": "Research and communications"
+    },
+    {
+      "id": "french-editor",
+      "role": "French communications editor",
+      "language": "fr",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "draft_edit"
+        ]
+      },
+      "arrivals_per_day": 1,
+      "deadline_days": 2,
+      "department": "Research and communications"
+    }
+  ],
+  "max_parallel_employees": 2,
+  "workplace": {
+    "max_attempts": 2,
+    "grace_days": 2,
+    "retry_delay": 1,
+    "settlement_delay": 1,
+    "work_cost_units": 1.0,
+    "completion_value_units": 10.0
+  }
+}

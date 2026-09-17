@@ -104,12 +104,16 @@ def _load_upstream(source: Path):
 
 
 @contextmanager
-def _frozen_upstream_settings(prompts):
+def _frozen_upstream_settings(prompts, learned_banner=None):
     # consolidate's replay_batch reads this process variable, and CliBackend
     # normally consults user prompt overrides. Serialize our calls and replace
     # only the renderer temporarily, without reading/writing personal config.
     previous_workers = os.environ.get("SKILLOPT_SLEEP_WORKERS")
     previous_render = prompts.render
+    memory_module = importlib.import_module('skillopt_sleep.memory')
+    previous_banner = memory_module._BANNER
+    if learned_banner is not None:
+        memory_module._BANNER = learned_banner
 
     def render(name, replacements):
         result = prompts.DEFAULTS[name]["text"]
@@ -122,6 +126,7 @@ def _frozen_upstream_settings(prompts):
     try:
         yield
     finally:
+        memory_module._BANNER = previous_banner
         prompts.render = previous_render
         if previous_workers is None:
             os.environ.pop("SKILLOPT_SLEEP_WORKERS", None)
@@ -192,6 +197,8 @@ class _Ledger:
         self.optimizer_model_calls = 0
         self.replays = 0
         self.accounting_complete = True
+        self.stop_evidence = None
+        self.decision_elapsed_seconds = None
 
     def invoke(self, kind: str, callback: Callable, payload: dict) -> dict:
         b = self.budget
@@ -200,10 +207,14 @@ class _Ledger:
         remaining_calls = getattr(b, f"max_{category}") - getattr(self, category)
         remaining_tokens = b.max_tokens - self.tokens
         remaining_seconds = b.max_seconds - (time.monotonic() - self.started)
-        if target and self.replays >= b.max_replays:
-            raise BudgetExhausted("Replay budget exhausted")
-        if remaining_calls < 1 or remaining_tokens < 1 or remaining_seconds <= 0:
-            raise BudgetExhausted(f"{kind} budget exhausted")
+        reason = ("replays" if target and self.replays >= b.max_replays else
+                  "model_calls" if remaining_calls < 1 else "tokens" if remaining_tokens < 1 else
+                  "wall_seconds" if remaining_seconds <= 0 else None)
+        if reason:
+            self.stop_evidence = {"stage": "pre_dispatch", "kind": kind, "reason": reason,
+                "remaining_model_calls": remaining_calls, "remaining_tokens": remaining_tokens,
+                "remaining_seconds": remaining_seconds}
+            raise BudgetExhausted(f"{kind} budget exhausted before dispatch")
         limits = {
             "remaining_model_calls": remaining_calls, "remaining_tokens": remaining_tokens,
             "remaining_seconds": remaining_seconds,
@@ -222,6 +233,9 @@ class _Ledger:
                "attempt_index": payload.get("attempt_index"), "sample_id": payload.get("sample_id"),
                "tokens": limits["max_tokens"], "model_calls": limits["max_model_calls"],
                "tool_calls": None, "accounting": "reservation", "status": "dispatched"}
+        if target:
+            row["skill_sha256"] = _hash(payload["skill"])
+        row["budget_violations"] = []
         self.rows.append(row)
         started = time.monotonic()
         try:
@@ -238,25 +252,53 @@ class _Ledger:
             self.accounting_complete = False
             row["status"] = "invalid_receipt"
             raise ReplayFailure("Callback must return an execution receipt")
-        for name in ("tokens", "model_calls", "tool_calls"):
-            value = result.get(name)
-            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        # Preserve each independently known cost even when a different receipt
+        # field is missing. Unknown dimensions retain their full reservation.
+        observed = {name: result[name] if type(result.get(name)) is int and result[name] >= 0 else None
+                    for name in ("tokens", "model_calls", "tool_calls")}
+        row["reported_usage"] = observed
+        if observed["tokens"] is not None:
+            self.tokens += observed["tokens"] - limits["max_tokens"]
+            row["tokens"] = observed["tokens"]
+        if observed["model_calls"] is not None:
+            setattr(self, category, getattr(self, category) + observed["model_calls"] - limits["max_model_calls"])
+            row["model_calls"] = observed["model_calls"]
+        row["tool_calls"] = observed["tool_calls"]
+        row.update(accounting="reported" if all(v is not None for v in observed.values()) else "reservation",
+                   callback_status=str(result.get("status", "missing_status")))
+        for name, value in observed.items():
+            if value is None:
                 self.accounting_complete = False
                 row["status"] = "invalid_receipt"
                 raise ReplayFailure(f"Callback omitted valid {name} accounting")
         latency = result.get("latency_ms")
         if (isinstance(latency, bool) or not isinstance(latency, (int, float))
                 or not math.isfinite(latency) or latency < 0):
-            self.accounting_complete = False
             row["status"] = "invalid_receipt"
             raise ReplayFailure("Callback omitted valid latency accounting")
-        self.tokens += result["tokens"] - limits["max_tokens"]
-        setattr(self, category, getattr(self, category) + result["model_calls"] - limits["max_model_calls"])
-        row.update({key: result[key] for key in ("tokens", "model_calls", "tool_calls", "latency_ms")})
+        row["latency_ms"] = latency
         row.update(accounting="reported", status=str(result.get("status", "missing_status")))
-        if (result["tokens"] > limits["max_tokens"] or result["model_calls"] > limits["max_model_calls"]
-                or wall_seconds > limits["timeout_seconds"] or latency > limits["timeout_seconds"] * 1000):
+        violations = [name for name, exceeded in (
+            ("model_calls", result["model_calls"] > limits["max_model_calls"]),
+            ("tokens", result["tokens"] > limits["max_tokens"]),
+            ("callback_wall_seconds", wall_seconds > limits["timeout_seconds"]),
+            ("receipt_latency_ms", latency > limits["timeout_seconds"] * 1000)) if exceeded]
+        row["budget_violations"] = violations
+        if result.get('status') == 'not_admitted':
+            if (any(observed.values()) or not isinstance(result.get('admission'), dict)
+                    or result['admission'].get('admitted') is not False or violations):
+                raise ReplayFailure('Invalid zero-dispatch admission receipt')
+            row['admission'] = result['admission']
+            self.stop_evidence = {'stage': 'callback_admission', 'kind': kind,
+                                 'operation_index': len(self.rows) - 1, 'admission': row['admission']}
+            raise BudgetExhausted('The next operation cannot fit its work and grading allocation')
+        if violations:
             row["status"] = "budget_exceeded"
+            self.stop_evidence = {"stage": "post_dispatch", "kind": kind,
+                "operation_index": len(self.rows) - 1, "violations": violations}
+            allowed_statuses = ("completed",) if target else ("completed", "budget_exhausted")
+            if result.get("status") not in allowed_statuses:
+                raise ReplayFailure(f"{kind} execution failed as well as exceeding its budget")
             raise BudgetExhausted("Callback exceeded its reserved budget; candidate cannot be accepted")
         if result.get("status") != "completed":
             raise ReplayFailure(f"{kind} execution did not complete")
@@ -268,6 +310,8 @@ class _Ledger:
             "optimizer_model_calls": self.optimizer_model_calls, "replays": self.replays,
             "wall_seconds": time.monotonic() - self.started,
             "accounting_complete": self.accounting_complete, "operations": self.rows,
+            "stop_evidence": self.stop_evidence,
+            "decision_elapsed_seconds": self.decision_elapsed_seconds,
         }
 
 
@@ -286,33 +330,44 @@ class SkillOptLearner:
 
     def __init__(self, *, source: str | Path = DEFAULT_SOURCE, edit_budget: int = 4,
                  gate_metric: str = "mixed", gate_no_regression: bool = True,
-                 gate_mixed_weight: float = 0.5, max_skill_chars: int = 32_000,
-                 rollouts_k: int = 1):
+                 gate_mixed_weight: float = 0.5,
+                 rollouts_k: int = 1, learned_banner=None, confirmation_cases=0,
+                 confirmation_repeats=2, confirmation_min_gain=0.05):
         if not isinstance(edit_budget, int) or isinstance(edit_budget, bool) or edit_budget < 1:
             raise ValueError("edit_budget must be a positive integer")
         if gate_metric not in {"hard", "soft", "mixed"}:
             raise ValueError("gate_metric must be hard, soft or mixed")
         if not math.isfinite(gate_mixed_weight) or not 0 <= gate_mixed_weight <= 1:
             raise ValueError("gate_mixed_weight must be in [0, 1]")
-        if not isinstance(max_skill_chars, int) or max_skill_chars < 1:
-            raise ValueError("max_skill_chars must be positive")
         if type(rollouts_k) is not int or rollouts_k < 1:
             raise ValueError("rollouts_k must be a positive integer")
         self.source, self.edit_budget = Path(source), edit_budget
         self.gate_metric, self.gate_no_regression = gate_metric, gate_no_regression
-        self.gate_mixed_weight, self.max_skill_chars = gate_mixed_weight, max_skill_chars
+        self.gate_mixed_weight = gate_mixed_weight
         self.rollouts_k = rollouts_k
+        if type(confirmation_cases) is not int or confirmation_cases < 0 or type(confirmation_repeats) is not int or confirmation_repeats < 1:
+            raise ValueError('Invalid confirmation case/repetition count')
+        if type(confirmation_min_gain) not in (int, float) or not math.isfinite(confirmation_min_gain) or not 0 < confirmation_min_gain <= 1:
+            raise ValueError('Confirmation requires a positive finite minimum gain')
+        self.learned_banner = learned_banner
+        self.confirmation_cases, self.confirmation_repeats = confirmation_cases, confirmation_repeats
+        self.confirmation_min_gain = confirmation_min_gain
 
     def update(self, skill: str, experiences: list[dict], replay: Callable, reflect: Callable,
                *, current_day: int, budget: LearningBudget | dict | None = None,
                night: int = 1) -> dict:
         safe = _safe_experiences(experiences, current_day)
-        if not isinstance(skill, str) or len(skill) > self.max_skill_chars:
-            raise ValueError("Initial skill must be a string within max_skill_chars")
+        if not isinstance(skill, str):
+            raise ValueError("Initial skill must be a string")
         budget = LearningBudget(**budget) if isinstance(budget, dict) else budget or LearningBudget()
         ledger = _Ledger(budget)
         attempts, optimizer_inputs = [], []
+        validation = [x['id'] for x in safe if x['split'] == 'val']
+        if self.confirmation_cases and len(validation) <= self.confirmation_cases:
+            raise InvalidExperience('Confirmation must leave nonempty separate proposal validation cases')
+        confirm_ids = validation[-self.confirmation_cases:] if self.confirmation_cases else []
         result = {
+            "learning_evidence_version": 2,
             "algorithm": self.name, "upstream_revision": REVISION,
             "accepted": False, "skill": skill, "skill_before_sha256": _hash(skill),
             "current_day": current_day, "train_ids": [x["id"] for x in safe if x["split"] == "train"],
@@ -322,14 +377,23 @@ class SkillOptLearner:
                 "gate_mode": "on", "evolve_memory": False, "rollouts_k": self.rollouts_k,
                 "budget": asdict(budget)},
         }
+        if self.confirmation_cases:
+            result['configuration']['confirmation'] = {'cases': self.confirmation_cases,
+                'repeats': self.confirmation_repeats, 'min_gain': self.confirmation_min_gain,
+                'selection': 'last_predeclared_validation_cases', 'no_case_regression': True}
+            result['proposal_validation_ids'] = [i for i in validation if i not in confirm_ids]
+            result['confirmation_validation_ids'] = confirm_ids
+            result['confirmation'] = None
         with _UPSTREAM_LOCK:
             consolidate, CliBackend, TaskRecord, prompts = _load_upstream(self.source)
             descriptors = {x["id"]: x for x in safe}
             tasks = [TaskRecord(id=x["id"], project="big-world-cl", intent=x["prompt"],
                                 context_excerpt=x["context"], split=x["split"],
                                 reference_kind="none", source_sessions=[x["source_session"]] if x["source_session"] else [])
-                     for x in safe]
-            max_chars = self.max_skill_chars
+                     for x in safe if x['id'] not in confirm_ids]
+            confirmation_tasks = {x['id']: TaskRecord(id=x['id'], project='big-world-cl', intent=x['prompt'],
+                context_excerpt=x['context'], split='val', reference_kind='none',
+                source_sessions=[x['source_session']] if x['source_session'] else []) for x in safe if x['id'] in confirm_ids}
 
             class NativeBridge(CliBackend):
                 name = "big-world-native-hermes"
@@ -339,7 +403,7 @@ class SkillOptLearner:
                     self.pending = {}
 
                 def attempt(self, task, candidate, memory, sample_id=0):
-                    if memory or len(candidate) > max_chars:
+                    if memory or not isinstance(candidate, str):
                         raise ReplayFailure("Candidate violated the skill-only document boundary")
                     public = dict(descriptors[task.id])
                     receipt = ledger.invoke("target", replay, {
@@ -399,7 +463,7 @@ class SkillOptLearner:
 
             bridge = NativeBridge()
             try:
-                with _frozen_upstream_settings(prompts):
+                with _frozen_upstream_settings(prompts, self.learned_banner):
                     consolidated = consolidate(
                         bridge, tasks, skill, "", edit_budget=self.edit_budget,
                         gate_metric=self.gate_metric, gate_mixed_weight=self.gate_mixed_weight,
@@ -411,12 +475,38 @@ class SkillOptLearner:
                 # copies are removed from the public gate record.
                 evidence.pop("reflect_raw", None)
                 evidence.pop("call_error", None)
-                result.update(status="completed", accepted=consolidated.accepted,
-                              skill=consolidated.new_skill if consolidated.accepted else skill,
+                accepted = consolidated.accepted
+                if self.confirmation_cases:
+                    result['proposal_gate_evidence'] = evidence
+                    if accepted:
+                        from .confirmation import plan, evaluate
+                        start = len(attempts)
+                        for phase, task_id, sample in plan(confirm_ids, self.confirmation_repeats):
+                            bridge.evidence_phase = phase
+                            candidate = skill if phase == 'confirmation_baseline' else consolidated.new_skill
+                            task = confirmation_tasks[task_id]
+                            answer = bridge.attempt(task, candidate, '', sample_id=sample)
+                            bridge.judge(task, answer)
+                        result['confirmation'] = evaluate(attempts[start:], confirm_ids, self.confirmation_repeats,
+                            self.confirmation_min_gain, _hash(skill), _hash(consolidated.new_skill))
+                        accepted = result['confirmation']['passed']
+                ledger.decision_elapsed_seconds = time.monotonic() - ledger.started
+                if ledger.decision_elapsed_seconds > budget.max_seconds:
+                    ledger.stop_evidence = {"stage": "post_consolidation", "reason": "wall_seconds",
+                        "elapsed_seconds": ledger.decision_elapsed_seconds}
+                    raise BudgetExhausted("Epoch deadline expired before the adoption decision")
+                result.update(status="completed", accepted=accepted,
+                              skill=consolidated.new_skill if accepted else skill,
                               gate_evidence=evidence)
             except (ReplayFailure, InvalidExperience) as exc:
                 result.update(status="budget_exhausted" if isinstance(exc, BudgetExhausted) else "failed",
                               error=str(exc), gate_evidence={"accepted": False, "gate_action": "reject_incomplete"})
         result.update(skill_after_sha256=_hash(result["skill"]), costs=ledger.report(),
-                      replay_evidence=attempts, optimizer_inputs=optimizer_inputs)
+                      replay_evidence=attempts, optimizer_inputs=optimizer_inputs,
+                      unscored_replay_evidence=[
+                          {"id": row["task_id"], "phase": row["phase"], "sample_id": row["sample_id"],
+                           "attempt_index": row["attempt_index"], "skill_sha256": row["skill_sha256"],
+                           "score_consumed": False, "reason": "not_delivered_to_upstream"}
+                          for row in ledger.rows if row["kind"] == "target"
+                          and row["attempt_index"] >= len(attempts)])
         return result

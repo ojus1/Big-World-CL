@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "study_scope": "development",
+  "days": 20,
+  "probe_start_day": 16,
+  "update_days": [
+    6,
+    10,
+    14
+  ],
+  "feedback_delay": 1,
+  "train_cases": 2,
+  "val_cases": 2,
+  "max_parallel_employees": 4,
+  "work_budget": {
+    "model_calls": 32,
+    "output_tokens": 8192,
+    "total_tokens": 500000,
+    "seconds": 900
+  },
+  "workforce_templates": [
+    {
+      "id_prefix": "research-en",
+      "count": 3,
+      "role": "Research and evidence analyst",
+      "language": "en",
+      "department": "Research",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "research_synthesize",
+          "evidence_synthesis"
+        ]
+      },
+      "arrivals_per_day": 1,
+      "deadline_days": 2
+    },
+    {
+      "id_prefix": "communications-fr",
+      "count": 3,
+      "role": "Communications and insights editor",
+      "language": "fr",
+      "department": "Communications",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "draft_edit",
+          "evidence_synthesis",
+          "coordinate_update"
+        ]
+      },
+      "arrivals_per_day": 1,
+      "deadline_days": 2
+    },
+    {
+      "id_prefix": "communications-de",
+      "count": 3,
+      "role": "Communications and insights editor",
+      "language": "de",
+      "department": "Communications",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "draft_edit",
+          "evidence_synthesis",
+          "coordinate_update"
+        ]
+      },
+      "arrivals_per_day": 1,
+      "deadline_days": 2
+    },
+    {
+      "id_prefix": "operations-fr",
+      "count": 3,
+      "role": "Operations coordinator",
+      "language": "fr",
+      "department": "Operations",
+      "sessions_per_day": 2,
+      "task_selector": {
+        "sources": [
+          "internal_eurobench"
+        ],
+        "workflows": [
+          "plan_schedule",
+          "coordinate_update",
+          "app_workflow"
+        ]
+      },
+      "arrivals_per_day": 1,
+      "deadline_days": 2
+    }
+  ],
+  "workplace": {
+    "max_attempts": 2,
+    "grace_days": 2,
+    "retry_delay": 1,
+    "settlement_delay": 1,
+    "work_cost_units": 1.0,
+    "completion_value_units": 10.0
+  }
+}

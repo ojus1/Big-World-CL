@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "unit": "world_pair",
+  "primary": "probe_accepted_on_time_fraction",
+  "alpha": 0.05,
+  "target_power": 0.8,
+  "max_world_pairs": 20000,
+  "minimum_effects": [0.025, 0.05, 0.1],
+  "paired_difference_standard_deviations": [0.05, 0.1, 0.2],
+  "assumption_source": "Constructed sensitivity scenarios, not estimates from observed outcomes. Effects are absolute fraction improvements; SD is across independent learner-minus-control world differences. No final sample size or analysis method has been selected."
+}
