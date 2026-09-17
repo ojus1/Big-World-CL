@@ -1,5 +1,37 @@
 # H200 remediation and staged experiments
 
+Latest qualification: the v33 restart passed on September 17. Its source is
+`cfe42f4cbedddb189733b63a9ae6a2657e7a6499`. A rejected artifact's
+`public_requirements: null` now preserves the original zero, feedback and actual
+usage through learning. The existing single judge-format retry uses a finite
+structured recovery schema that retains all decisions and evidence choices,
+while replacing open-ended rationale generation with an explicitly disclosed
+fixed label. Valid verdicts and unknown-usage failures cannot trigger this retry.
+
+All 266 H200 worldlab/optimizer tests passed. Live qualification retained all
+12 positive/negative controls, three exact truncated-criterion repetitions, a
+complete copied-workspace grade with an actual repair, and a complete 20-replay
+learning epoch. Native artifact, context, optimizer, ledger and admission audits
+passed. The candidate was rejected after confirmation mean gains of +0.083333
+and -0.041667; the seed skill remained deployed. The qualification consumed
+9,059,860 tokens and 463 model calls for the full learning epoch.
+
+Same-model semantic judgments remain provisional. The grant-allocation source
+register totals EUR 1,525,000, whereas its task premise and board minutes state
+EUR 1,400,000; frozen inputs and grades were not rewritten. The rejected sorting
+proposal was broader than its source-policy sequence. The replacement large
+study starts independently and does not inherit that proposal or qualification
+history. The failed v32 study remains separate and incomplete.
+
+The qualified restart's evidence archive contains 1,183 verified regular files
+and has SHA-256
+`9eaf9240c90e8237e8f80c8ae544097528e030d2527dce9c570483b4a8bd2b01`.
+It contains qualification and fixed startup evidence, not completed large-run
+results. [Timestamped restart status](WORLDLAB_CURRENT_STATUS.md) supersedes the
+historical stages below.
+
+## Historical remediation plan and stages
+
 Started 2026-09-16 following the frozen v10 deep QA. This plan authorizes no
 reinterpretation of v10 outcomes. Each native stage uses a fresh artifact root,
 frozen source/configuration, the already served Qwen3.8-Flash-Next-FP8 revision

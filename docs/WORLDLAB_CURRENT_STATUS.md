@@ -1,4 +1,39 @@
-# Current development state — September 16, 2026 (India)
+# Development status — September 17, 2026 (India)
+
+The repaired v33 large development study started on September 17 at 14:23:17 UTC
+(19:53:17 IST), using frozen source `cfe42f4cbedddb189733b63a9ae6a2657e7a6499`.
+The served model remains `Qwen/Qwen3.8-Flash-Next-FP8` on the shared H200 server,
+with global LLM concurrency 64. No model-container restart or GPU reassignment
+was performed. The study retains six matched pairs, twelve employees, twenty
+days, 2,880 planned obligations and representative examples for 2 of 12 employees.
+Fluso experiments remain paused and reserved final EuroBench tasks remain unopened.
+
+The v32 predecessor failed at 01:06:39 UTC after 650 finalized online attempts
+and 427 learning replays; no matched pair completed. Its original grades,
+failure records and in-flight markers remain preserved. The fixes handle null
+public requirements from rejected-artifact grades and use a compact structured
+schema for the existing bounded judge-format retry. Normal judge requests are
+unchanged. The new run uses fresh actor state and starts from the seed skill.
+
+Qualification passed 250 worldlab tests and 16 optimizer tests on H200, with no
+skips; all 7,986 retained normal criterion contexts remained identical. Twelve
+positive/negative live controls matched, three fixed repetitions of the formerly
+truncated criterion completed, and a complete fresh grade exercised the actual
+repair path. A full fresh learning epoch completed and audited all 20 replays.
+Its candidate passed proposal validation but regressed in repeated independent
+confirmation, so adoption was rejected and the seed skill retained. These checks
+establish execution and gate behavior, not a learning benefit or infallible judging.
+
+Startup verification at 14:27:11 UTC found six fresh simulations, 72 work requests,
+27 finalized attempts and three passing native attempt audits. A later snapshot
+at 14:29:51 UTC found the unit active with 60 completed attempts, complete grades
+and accounting, and no stop request. These are timestamped observations, not
+current progress or completed-study results. The unit is
+`bigworld-development-large-v33`; artifacts are under the frozen v33 checkout's
+`lifespan/artifacts/development-large-v2`. See [the remediation record](H200_QA_REMEDIATION.md)
+for qualification scope and limitations.
+
+## Historical v10 state — September 16, 2026
 
 Version 10 launched on September 15 at 21:47:58 UTC, after the user selected
 the model already served on the GPUs. It uses `Qwen/Qwen3.8-Flash-Next-FP8`,
