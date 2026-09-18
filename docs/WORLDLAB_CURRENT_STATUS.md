@@ -1,5 +1,53 @@
 # Development status — September 18, 2026 (India)
 
+The resilient v35 study started on September 18 at 10:25:32 UTC (15:55:32 IST),
+using frozen production source `d7139de240019937aab49125c1a5e9b1634ca407`.
+It defaults to `record_and_continue`: execution, grading, employee-decision and
+learning errors retain their evidence while later scheduled work continues.
+Failed learning keeps the prior skill; unknown usage retains reservations, and
+missing grades never become fabricated training scores. Manual stop remains
+available. An unrecoverable arm failure is reported as incomplete while other
+arms continue. See [failure policy and time allocation](SIMULATION_RESILIENCE.md).
+
+The v34 predecessor failed on September 18 at 02:36:12 UTC. It retains 626 online
+attempts (625 complete grades and one incomplete grade), 276 finalized learning
+replays and 24 completed updates; no pair completed. The triggering task stopped
+new actions at its active deadline, then settled an admitted inference request.
+That settlement left about 48 seconds for judging under the old shared deadline.
+The new contract reserves a full 300 seconds for grading separately from work,
+bounded settlement and worker termination. Replay wall time is 2,725 seconds;
+epoch wall allowance is 55,200 seconds. Token and call budgets are unchanged.
+
+Qualification passed 295 H200 tests without skips and a complete six-day paired
+native pilot. The pilot retained one grading error, two employee-decision errors
+and one learning-replay error while completing later work. Its ten online
+attempts, ten native interviews, six replay records and all causal/failure/cost
+evidence passed offline audit. The failed epoch retained its prior skill; the
+next epoch completed five native replays with complete accounting. It generated
+no optimizer proposal because selected training results were full-score, then
+rejected unchanged-skill adoption at equal validation scores. There is no new
+learning-benefit or candidate-adoption claim. Both planned pilot probes expired
+unattempted behind backlog and remain in the denominator.
+
+A separate grade of copied v34 outputs passed in 55.04 seconds, eight calls and
+73,860 measured tokens using the unchanged grader and full time allowance. The
+old partial grade and unknown-cost reservation remain untouched. Synthetic
+pilot faults made no model calls themselves; their conservative reservations
+must not be described as measured inference consumption.
+
+The fresh large run retains six matched pairs, twelve employees, twenty days,
+2,880 obligations and representative examples for only 2 of 12 employees. It
+starts with fresh actors and seed skills. The model remains
+`Qwen/Qwen3.8-Flash-Next-FP8` on the same H200 machine with LLM concurrency 64.
+Fluso stays paused; the reserved final EuroBench split remains unopened. The unit
+is `bigworld-development-large-v35`, with artifacts beneath the frozen v35
+checkout at `lifespan/artifacts/development-large-v4`. The study hash is
+`1c9e57bdcd1d9ef12fce1dda5e5d6531c4e343c99c47672bb44852f9bcfee3ed`.
+
+## Historical v34 startup — September 18, 2026
+
+The following startup observations predate the v34 failure described above.
+
 Fresh run v34 started on September 17 at 21:57:38 UTC (September 18, 03:27:38
 IST), using frozen source `016d542837fddc5b0d9be65141ec173c1fadc6f9`.
 Startup verification at 22:04:00 UTC found six fresh simulations, 72 work

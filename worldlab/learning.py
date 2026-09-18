@@ -19,8 +19,8 @@ class SkillOpt:
         self.provider = provider_contract(model, base_url)
         self.budget = LearningBudget(**budget) if budget else LearningBudget(
             max_replays=24, max_target_model_calls=1560, max_optimizer_model_calls=2,
-            max_tokens=12_000_000, max_seconds=19000, replay_model_calls=65,
-            replay_tokens=900_000, replay_seconds=1500, optimizer_tokens=32000)
+            max_tokens=12_000_000, max_seconds=28000, replay_model_calls=65,
+            replay_tokens=900_000, replay_seconds=2125, optimizer_tokens=32000)
         self.edit_budget, self.rollouts_k = edit_budget, rollouts_k
         from lifespan.evaluation.scoped_edits import POLICY
         if type(scoped_edits) is not bool: raise ValueError('scoped_edits must be boolean')

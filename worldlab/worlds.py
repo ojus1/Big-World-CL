@@ -19,6 +19,7 @@ from .calibration import fit
 from .campaign import SEED_SKILL, source_identity
 from .contracts import Budget
 from .dispatch import dispatch_day
+from .resilience import POLICIES, enabled, attempt_seconds, report_failures
 from .cancellation import check as check_cancellation
 from .workforce import expand_workforce
 from .validation_context import ISOLATED, policy, compile_cases, validate_world, select_experiences, employee_world
@@ -34,7 +35,7 @@ def compile_world(bank, specification, seed, harness, judge):
     """Freeze all schedules before outcomes; role defaults work without examples."""
     if specification.get('study_scope') != 'development':
         raise ValueError('The calibration bank cannot authorize a final confirmatory study')
-    if specification.get('failure_policy', 'stop_after_current_wave') not in ('stop_after_current_wave', 'drain_all_pairs'):
+    if specification.get('failure_policy', 'record_and_continue') not in POLICIES:
         raise ValueError('Unsupported study failure policy')
     employees = specification['employees']
     isolated = policy(specification) == ISOLATED
@@ -153,11 +154,11 @@ def eligible_experiences(sessions, employee, day, train_cases, val_cases):
 
 def prepare_study(bank, spec, seeds, harness, judge, learner, out, employee_factory=None):
     spec = expand_workforce(spec)
-    spec = {**spec, 'failure_policy': spec.get('failure_policy', 'stop_after_current_wave')}
+    spec = {**spec, 'failure_policy': spec.get('failure_policy', 'record_and_continue')}
     replay_seconds = learner.identity().get('budget', {}).get('replay_seconds')
     if (spec.get('update_days') and replay_seconds is not None
-            and replay_seconds < Budget(**spec.get('work_budget', {})).seconds + 300):
-        raise ValueError('Replay timeout cannot fit the configured work window and 300 seconds of judging')
+            and replay_seconds < attempt_seconds(harness, Budget(**spec.get('work_budget', {})))):
+        raise ValueError('Replay timeout cannot fit work, settlement and 300 seconds of judging')
     if callable(getattr(learner, 'validate_plan', None)):
         learner.validate_plan(spec, judge)
     if not callable(getattr(learner, 'audit_update', None)):
@@ -235,6 +236,7 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
     validate_world(bank, world)
     out = Path(out).resolve(); out.mkdir(parents=True, exist_ok=False)
     spec = world['specification']
+    resilient = enabled(spec)
     skills = {e['id']: SEED_SKILL for e in world['workforce']}
     sessions, updates, events = [], [], []
     state = {'day': 0, 'skills': skills, 'sessions': sessions, 'updates': updates, 'events': events}
@@ -246,11 +248,12 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
         def work(slot):
             return execute_task(bank, harness, judge, task_id=slot['task_id'], employee_id=slot['employee_id'],
                                   skill=skills[slot['employee_id']], budget=Budget(**slot['work_budget']),
-                                  out=out / 'sessions' / slot['id'], judge_tokens=judge_tokens)
+                                  out=out / 'sessions' / slot['id'], judge_tokens=judge_tokens, continue_on_error=resilient)
 
         def record_work(slot, result):
             record = {**slot, 'status': result['status'], 'tokens': result['tokens'],
                       'model_calls': result['model_calls'], 'grade': result['grade'],
+                      'accounting_complete': result.get('accounting_complete', result['status'] == 'completed'),
                       'attempt_sha256': sha(out / 'sessions' / slot['id'] / 'ATTEMPT.json'),
                       'skill_content_sha256': hashlib.sha256(skills[slot['employee_id']].encode()).hexdigest()}
             sessions.append(record)
@@ -274,7 +277,8 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
 
         dispatch_day([s for s in world['schedule'] if s['day'] == day], work, record_work, journal_work,
                      max_parallel=spec.get('max_parallel_employees', 1),
-                     cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None)
+                     cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None,
+                     continue_on_error=resilient)
         if day not in spec.get('update_days', []): continue
         check_cancellation(cancellation)
         if spec.get('max_parallel_updates', 1) > 1:
@@ -304,7 +308,8 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
 
             dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
                 record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'],
-                cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None)
+                cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None,
+                continue_on_error=resilient)
         else:
             for employee in sorted(skills):
                 check_cancellation(cancellation)
@@ -317,9 +322,9 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
                                             'budget': learner.identity().get('budget')})
                 from .experience_update import update_employee
                 update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
-                                         skill=skills[employee], update_root=update_root, executor=execute_task)
+                                         skill=skills[employee], update_root=update_root, executor=execute_task, continue_on_error=resilient)
                 updates.append({'day': day, 'employee_id': employee, 'result': update})
-                if update['status'] not in ('completed', 'budget_exhausted'):
+                if update['status'] not in ('completed', 'budget_exhausted') and not resilient:
                     save(out / 'STATE.json', state)
                     raise RuntimeError('Learning attempt failed; no automatic replay')
                 if update.get('accepted'):
@@ -331,12 +336,13 @@ def run_world(bank, world, harness, judge, learner, out, *, cancellation=None):
     probes = [s for s in sessions if s['split'] == 'probe']
     report = {'status': 'completed', 'world_seed': world['seed'], 'arm': learner.identity()['name'],
               'work_sessions': len(sessions), 'probe_sessions': len(probes),
-              'probe_quality_mean': sum(s['grade']['quality_score'] for s in probes) / len(probes),
-              'probe_successes': sum(s['grade']['success'] for s in probes),
+              'probe_quality_mean': sum(s['grade']['quality_score'] if s['status'] == 'completed' else 0. for s in probes) / len(probes),
+              'probe_successes': sum(bool(s['grade']['success']) if s['status'] == 'completed' else False for s in probes),
               'learning_epochs': len(updates), 'adoptions': sum(u['result']['accepted'] for u in updates),
               'work_and_judging_tokens': sum(s['tokens'] for s in sessions),
               'learning_and_replay_judging_tokens': sum(u['result']['costs']['tokens'] for u in updates),
               'world_schedule_sha256': stable_hash(world), 'scope': world['scope']}
+    report['failures'] = report_failures(sessions, updates)
     save(out / 'REPORT.json', report)
     return report
 
@@ -360,8 +366,10 @@ def execute_study(bank, harness, judge, learner, out, employee_factory=None):
     else:
         from .cancellation import Cancellation, StudyCancelled
         failure_policy = study['worlds'][0]['specification'].get('failure_policy', 'stop_after_current_wave')
-        cancellation = Cancellation(out) if failure_policy == 'stop_after_current_wave' else None
+        resilient = enabled(study['worlds'][0]['specification'])
+        cancellation = Cancellation(out) if failure_policy != 'drain_all_pairs' else None
         reports = []
+        failures = []
         for index, world in enumerate(study['worlds']):
             arms = [NoLearning(), learner]
             if index % 2: arms.reverse()
@@ -377,25 +385,35 @@ def execute_study(bank, harness, judge, learner, out, employee_factory=None):
                         report = run_reacting(bank, world, harness, judge, arm, root, employee_factory, cancellation=stop)
                     reports.append(report)
                 except BaseException as exc:
-                    if stop is not None and not isinstance(exc, StudyCancelled): stop.request(type(exc).__name__)
+                    if stop is not None and not isinstance(exc, StudyCancelled) and not resilient: stop.request(type(exc).__name__)
+                    failures.append({'failed_world': world['seed'], 'failed_arm': arm.identity()['name'],
+                                     'error_type': type(exc).__name__})
                     save(out / 'STATUS.json', {'status': 'incomplete', 'completed_arms': len(reports),
                                                'planned_arms': 2 * len(study['worlds']), 'error_type': type(exc).__name__,
                                                'failure_policy': failure_policy,
                                                'stop_requested': cancellation is not None and cancellation.path.exists(),
                                                'failed_world': world['seed'], 'failed_arm': arm.identity()['name'],
-                                               'reports': reports})
+                                               'reports': reports, 'failures': failures})
+                    if resilient and not isinstance(exc, StudyCancelled): continue
                     raise
                 save(out / 'STATUS.json', {'completed_arms': len(reports), 'planned_arms': 2 * len(study['worlds']), 'reports': reports})
     pairs = []
+    missing = []
     for world in study['worlds']:
         rows = {r['arm']: r for r in reports if r['world_seed'] == world['seed']}
+        if set(rows) != {'no_learning', learner.identity()['name']}:
+            missing.append(world['seed'])
+            continue
         pairs.append({'seed': world['seed'], 'probe_quality_delta':
                       rows[learner.identity()['name']]['probe_quality_mean'] - rows['no_learning']['probe_quality_mean']})
         if employee_factory is not None:
             pairs[-1]['probe_on_time_delta'] = (rows[learner.identity()['name']]['probe_accepted_on_time_fraction'] -
                                                 rows['no_learning']['probe_accepted_on_time_fraction'])
-    result = {'status': 'completed', 'world_pairs': pairs, 'analysis': study['analysis'],
-              'mean_probe_quality_delta': sum(p['probe_quality_delta'] for p in pairs) / len(pairs),
+    result = {'status': 'incomplete' if missing else 'completed', 'world_pairs': pairs,
+              'missing_world_pairs': missing, 'analysis': study['analysis'],
+              'mean_probe_quality_delta': sum(p['probe_quality_delta'] for p in pairs) / len(pairs) if pairs else None,
+              'retained_failures': [dict(world_seed=r['world_seed'], arm=r['arm'], **r['failures'])
+                                    for r in reports if r.get('failures')],
               'confirmatory_significance_claim': False}
     save(out / 'REPORT.json', result)
     return result

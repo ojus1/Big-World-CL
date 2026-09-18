@@ -21,11 +21,16 @@ def task_instruction(original, employee_message=None):
 
 
 def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, out,
-                 judge_tokens=400_000, judge_calls=None, total_timeout_seconds=None, employee_message=None):
+                 judge_tokens=400_000, judge_calls=None, total_timeout_seconds=None, employee_message=None,
+                 continue_on_error=False):
+    from .resilience import attempt_seconds, JUDGE_SECONDS, incident
     if judge_calls is None:
         judge_calls = judge_call_allocation(judge, task_id)
     started = time.monotonic()
-    deadline = started + (total_timeout_seconds if total_timeout_seconds is not None else budget.seconds + 300)
+    allowance = attempt_seconds(harness, budget)
+    if total_timeout_seconds is not None and total_timeout_seconds < allowance:
+        raise ValueError('Attempt allocation cannot fit work, settlement and grading')
+    deadline = started + (total_timeout_seconds if total_timeout_seconds is not None else allowance)
     out = Path(out).resolve()
     public = bank.public(task_id)
     reasons = harness.unsupported(public) + judge.unsupported(public)
@@ -40,7 +45,19 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
     if employee_message is not None:
         save(out / 'EMPLOYEE_REQUEST.json', {'message': employee_message, 'original_instruction': public['instruction']})
     save(out / 'PUBLIC_REQUEST.json', {**asdict(request), 'workspace': str(workspace)})
-    execution = harness.run(request, out)
+    timing = {'version': 1, 'work_active_seconds': budget.seconds,
+              'work_wall_seconds': allowance - JUDGE_SECONDS, 'judge_seconds': JUDGE_SECONDS,
+              'attempt_deadline_monotonic': deadline, 'started_monotonic': started}
+    save(out / 'TIMING.json', timing)
+    try:
+        execution = harness.run(request, out)
+    except Exception as exc:
+        if not continue_on_error: raise
+        failure = incident(out, 'execution', exc, task_id=task_id, employee_id=employee_id)
+        execution = {'status': 'infrastructure_error', 'physical_model_calls': None,
+                     'charged_tokens': budget.total_tokens, 'accounting_complete': False,
+                     'reservation_reason': 'Harness raised without a verified final receipt',
+                     'failure': failure}
     save(out / 'EXECUTION_RECEIPT.json', execution)
     validation_error = None
     try:
@@ -64,14 +81,25 @@ def execute_task(bank, harness, judge, *, task_id, employee_id, skill, budget, o
                       tokens=tokens if known_tokens else budget.total_tokens,
                       accounting_complete=known_calls and known_tokens)
     elif execution['status'] in ('completed', 'budget_exhausted'):
-        grade = judge.grade(task_id, workspace, baseline, out / 'judging',
-                            token_limit=judge_tokens, call_limit=judge_calls,
-                            timeout_seconds=max(0, deadline - time.monotonic()))
-        validate_grade(grade, token_limit=judge_tokens, call_limit=judge_calls)
-        result.update(grade=grade, status='completed' if grade['grading_complete'] else 'grading_incomplete',
-                      model_calls=(execution['physical_model_calls'] + grade['usage']['physical_model_calls']),
-                      tokens=execution['charged_tokens'] + grade['usage']['charged_tokens'],
-                      accounting_complete=execution['accounting_complete'] and grade['usage']['accounting_complete'])
+        timing.update(judge_started_monotonic=time.monotonic(),
+                      judge_allowance_seconds=min(JUDGE_SECONDS, max(0, deadline - time.monotonic())))
+        save(out / 'TIMING.json', timing)
+        try:
+            grade = judge.grade(task_id, workspace, baseline, out / 'judging',
+                                token_limit=judge_tokens, call_limit=judge_calls,
+                                timeout_seconds=timing['judge_allowance_seconds'])
+            save(out / 'JUDGE_RECEIPT.json', grade)
+            validate_grade(grade, token_limit=judge_tokens, call_limit=judge_calls)
+            result.update(grade=grade, status='completed' if grade['grading_complete'] else 'grading_incomplete',
+                          model_calls=(execution['physical_model_calls'] + grade['usage']['physical_model_calls']),
+                          tokens=execution['charged_tokens'] + grade['usage']['charged_tokens'],
+                          accounting_complete=execution['accounting_complete'] and grade['usage']['accounting_complete'])
+        except Exception as exc:
+            if not continue_on_error: raise
+            failure = incident(out, 'grading', exc, task_id=task_id, employee_id=employee_id)
+            result.update(status='grading_error', grade=None, failure=failure,
+                          model_calls=None, tokens=execution['charged_tokens'] + judge_tokens,
+                          accounting_complete=False, judge_token_reservation=judge_tokens)
     messages = execution.get('trajectory', [])
     if not isinstance(messages, list): messages = []
     result['trajectory'] = messages

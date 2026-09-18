@@ -5,6 +5,7 @@ from .campaign import SEED_SKILL
 from .workplace import Workplace
 from .worlds import stable_hash
 from .validation_context import validate_world
+from .resilience import enabled, report_failures
 
 
 def require(value, message):
@@ -19,6 +20,9 @@ def replay_commands(bank, world, state):
     require(len(sessions) == len(state['sessions']), 'Duplicate online session')
     visited = set()
     delegated = {}
+    failures = {f['id']: f for f in state.get('decision_failures', [])}
+    visited_failures = set()
+    require(len(failures) == len(state.get('decision_failures', [])), 'Duplicate failed actor decision')
     for command in state['workplace']['commands']:
         op, args = command['operation'], command['arguments']
         if op == 'decide':
@@ -34,6 +38,14 @@ def replay_commands(bank, world, state):
             if decision['session_id'] is not None:
                 require(decision['session_id'] not in delegated, 'Duplicate delegated session')
                 delegated[decision['session_id']] = decision
+        elif op == 'decision_failed':
+            failure = failures.get(args['failure_id'])
+            require(failure is not None and failure['id'] not in visited_failures and
+                    failure['day'] == place.day and failure['employee_id'] == args['employee_id'] and
+                    failure['obligation_id'] == args['obligation_id'] and
+                    failure['view'] == place.view(args['employee_id'], args['obligation_id'], bank),
+                    'Failed decision chronology or view changed')
+            visited_failures.add(failure['id'])
         elif op == 'start':
             sid = args['session_id']
             require(sid in sessions and sid not in visited, 'Unrecorded or duplicate work start')
@@ -53,9 +65,14 @@ def replay_commands(bank, world, state):
             require(session['status'] == 'completed' and session['grade']['grading_complete'] and
                     args['outcome'] == {k: session['grade'][k] for k in ('success', 'quality_score', 'feedback')},
                     'Workplace outcome differs from grading evidence')
-        require(op in ('advance', 'decide', 'start', 'complete'), 'Unknown workplace operation')
+        elif op == 'fail':
+            session = sessions[args['session_id']]
+            require(enabled(world['specification']) and session['status'] != 'completed'
+                    and args['status'] == session['status'], 'Operational failure differs from receipt')
+        require(op in ('advance', 'decide', 'start', 'complete', 'fail', 'decision_failed'), 'Unknown workplace operation')
         getattr(place, op)(**args)
     require(next(decisions, None) is None and visited == set(sessions), 'Untracked decision or online session')
+    require(visited_failures == set(failures), 'Untracked failed actor decision')
     require(place.state == state['workplace'], 'Persistent workplace differs from causal replay')
     return place
 
@@ -77,6 +94,8 @@ def audit_workplaces(bank, out, study, harness, learner, judge=None):
             require(report['status'] == 'completed' and not (root / 'INFLIGHT.json').exists(), 'World incomplete')
             place = replay_commands(bank, world, state)
             require(place.summary() == report['workplace'], 'Workplace report differs from causal replay')
+            require(report['failures'] == report_failures(state['sessions'], state['updates'], state.get('decision_failures', [])),
+                    'Failure summary changed')
             require(read(root / 'actors/PERSONAS.json') == world['employee_context'], 'Persona assignment changed')
             seed = read(root / 'actors/NATIVE_GRAPH_SEED.json')
             require(seed['declared'] == declarations(world['workforce']) and seed['model_calls'] == 0 and
@@ -92,10 +111,18 @@ def audit_workplaces(bank, out, study, harness, learner, judge=None):
                 if len(receipts) == 2: cache_keys.add(decision['id'] + '-repair')
                 counts['native_employee_decisions'] += 1
             ledger = read(root / 'actors/evaluation_interview_ledger.json')
-            require({r['key'] for r in ledger['requests']} == cache_keys and len(ledger['requests']) == len(cache_keys),
+            from .audit_failures import audit_actor_failures
+            failed_keys = audit_actor_failures(root, state, study['employee_driver'])
+            extra = [r for r in ledger['requests'] if r['key'] in failed_keys]
+            actual_failed_keys = {r['key'] for r in extra}
+            require({r['key'] for r in ledger['requests']} == cache_keys | actual_failed_keys
+                    and len(ledger['requests']) == len(cache_keys | actual_failed_keys),
                     'Untracked actor request')
-            require({p.stem for p in (root / 'actors/mirofish_interviews').glob('*.json')} == cache_keys,
+            observed_caches = {p.stem for p in (root / 'actors/mirofish_interviews').glob('*.json')}
+            require(cache_keys <= observed_caches <= cache_keys | actual_failed_keys,
                     'Untracked actor cache')
+            calls += sum(r.get('physical_model_calls') or 0 for r in extra)
+            tokens += sum(r.get('tokens') or 0 for r in extra)
             require(report['actor_usage']['model_calls'] == calls and report['actor_usage']['tokens'] == tokens,
                     'Actor accounting differs from verified native receipts')
             counts['actor_interview_tokens'] += tokens
@@ -107,7 +134,8 @@ def audit_workplaces(bank, out, study, harness, learner, judge=None):
                         u['day'] < session['day'] and u['result']['accepted']]
                 skill = past[-1]['result']['skill'] if past else SEED_SKILL
                 record = audit_attempt(bank, root / 'sessions' / session['id'], session['task_id'], skill, harness,
-                                       employee_message=session['employee_message'], judge=judge)
+                                       employee_message=session['employee_message'], judge=judge,
+                                       allow_incomplete=enabled(world['specification']))
                 require(record['grade'] == session['grade'] and record['tokens'] == session['tokens'] and
                         sha(root / 'sessions' / session['id'] / 'ATTEMPT.json') == session['attempt_sha256'],
                         'Session receipt changed')

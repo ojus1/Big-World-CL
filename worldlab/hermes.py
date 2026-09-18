@@ -28,13 +28,14 @@ class Hermes:
 
     def identity(self):
         from .skill_context import POLICY
-        return {'name': 'native_hermes_task_package', 'version': 8, 'revision': PIN,
+        return {'name': 'native_hermes_task_package', 'version': 9, 'revision': PIN,
                 'skill_loading': POLICY,
                 'provider': self.provider, 'transport': 'nonstreaming',
                 'sandbox': 'bubblewrap', 'state': 'fresh_profile_and_files_per_attempt',
                 'nonstreaming_timeouts': 'request and stale windows are min(600 seconds, whole attempt budget)',
                 'nonstreaming_watchdog': 'native no-first-SSE-event watchdog disabled by HERMES_CODEX_TTFB_TIMEOUT_SECONDS=0',
                 'task_deadline': 'stop sandbox and admissions at active deadline; settle accepted inference for min(600, active_seconds)+15 seconds',
+                'wall_allowance': 'active work plus bounded inference settlement plus 10 seconds worker termination; grading has a separate allowance',
                 'meter_persistence': 'atomic checkpoint before every dispatch and after every nonstreaming receipt',
                 'tool_cleanup': 'pinned session and descendant PIDs; bounded pipe drain; lost sandbox execution is ungraded',
                 'tool_resource_limits': 'external prlimit before bash; no Python preexec callback in threaded server',
@@ -56,6 +57,10 @@ class Hermes:
 
     def worker_options(self):
         return {}
+
+    @staticmethod
+    def wall_seconds(budget):
+        return budget.seconds + clock_contract(budget.seconds)['settlement_seconds'] + 10
 
     def run(self, request, artifact_root):
         artifact_root = Path(artifact_root).resolve()

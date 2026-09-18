@@ -1,5 +1,52 @@
 # H200 remediation and staged experiments
 
+## Resilient v35 — September 18, 2026
+
+The v34 study failed after native inference settlement consumed most of the
+grading window. New task actions had stopped at the active deadline; the
+bounded settlement was not additional task execution. Replay admission now
+reserves active work, settlement and worker termination plus a separate
+300-second grading allowance. For 1,800 seconds of active work this requires
+2,725 seconds per replay; the large epoch allocation is 55,200 seconds. Existing
+token/call limits and grading schemas remain unchanged.
+
+New studies default to `record_and_continue`. Ungraded attempts retain known
+usage and unknown-cost reservations. Failed decisions defer an opportunity;
+failed learning keeps the prior skill and permits later scheduled updates.
+Independent arms proceed after arm failures, while missing pairs stay
+incomplete. Manual cancellation remains honored. Reports and audits distinguish
+operational completion from complete grading or measured accounting. See
+[the continuation contract](SIMULATION_RESILIENCE.md).
+
+Frozen `d7139de240019937aab49125c1a5e9b1634ca407` passed 295 H200 tests with no
+skips and a predeclared six-day native paired pilot. All ten online attempts,
+ten interviews, six learning replay records and causal/failure ledgers passed
+offline audit. Four injected faults were retained without stopping later work:
+one grade, two employee decisions and one learning replay. After the failed
+day-2 epoch, day 3 completed five replays, 48 calls and 282,435 measured tokens.
+No optimizer proposal was generated on the full-score training cases; the
+unchanged-skill gate rejected adoption and skipped confirmation. Both planned
+pilot probes expired behind backlog, remaining in the denominator. The scope
+is operational recovery, not representative performance or learning benefit.
+
+Fresh grading of a copied v34 output completed in 55.04 seconds, eight calls and
+73,860 tokens; full artifact/grading audit passed. The original partial grade
+and unknown usage were not replaced. Original v34 receipts and stop state retain
+their hashes. Native raw review preserved ordinary model errors too, including
+recovered container-path tool errors and an inaccurate final-chat description of
+a correct saved artifact. No new source task or grader rule was introduced.
+
+The fresh six-pair study started at 10:25:32 UTC (15:55:32 IST), with the existing
+Qwen3.8-Flash-Next-FP8 service and concurrency 64. It uses fresh actors and seed
+skills. The failed v32/v33/v34 studies remain separate. Fluso remains paused and
+reserved final EuroBench remains unopened. See the
+[timestamped current status](WORLDLAB_CURRENT_STATUS.md).
+
+## Historical v34 qualification and startup
+
+The startup account below predates the subsequent v34 failure. Its frozen
+qualification evidence and original study remain preserved.
+
 The v33 study failed on September 17 after three native learning replays
 completed without calling `skill_view`. Their native usage remained available,
 but validation raised before finalizing attempts and the learner retained full
