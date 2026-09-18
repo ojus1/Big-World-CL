@@ -14,6 +14,7 @@ from .experience_update import update_employee
 from .workplace import Workplace
 from .worlds import stable_hash
 from .validation_context import select_experiences, employee_world, validate_world
+from .resilience import enabled, incident, report_failures
 
 
 def run_world(bank, world, harness, judge, learner, out, employee_factory, *, cancellation=None):
@@ -22,8 +23,10 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
     validate_world(bank, world)
     place = Workplace(world)
     spec = world['specification']
+    resilient = enabled(spec)
     skills = {e['id']: SEED_SKILL for e in world['workforce']}
-    state = {'skills': skills, 'sessions': [], 'updates': [], 'decisions': [], 'workplace': place.state}
+    state = {'skills': skills, 'sessions': [], 'updates': [], 'decisions': [],
+             'decision_failures': [], 'workplace': place.state}
     driver = None
 
     def checkpoint():
@@ -53,7 +56,19 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
                     # bounded native repair, but must not mutate the workplace.
                     def validate(decision):
                         deepcopy(place).decide(employee, oid, decision)
-                    decision = driver.decide(view, key, validate)
+                    try:
+                        decision = driver.decide(view, key, validate)
+                    except Exception as exc:
+                        if not resilient: raise
+                        failure_root = out / 'decision_failures' / key
+                        failure = incident(failure_root, 'employee_decision', exc,
+                                           key=key, view=view, usage=driver.usage())
+                        state['decision_failures'].append({'id': key, 'day': day, 'employee_id': employee,
+                            'obligation_id': oid, 'view': view, 'failure': failure,
+                            'incident_sha256': sha(failure_root / 'INCIDENT.json')})
+                        place.decision_failed(employee, oid, key)
+                        checkpoint(); (out / 'INFLIGHT.json').unlink()
+                        continue
                     delegated = place.decide(employee, oid, decision)
                     state['decisions'].append({'id': key, 'day': day, 'employee_id': employee,
                         'obligation_id': oid, 'view': view, 'decision': decision,
@@ -69,17 +84,20 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
                     return execute_task(bank, harness, judge, task_id=slot['task_id'],
                         employee_id=slot['employee_id'], skill=skills[slot['employee_id']],
                         employee_message=slot['employee_message'], budget=Budget(**slot['work_budget']),
-                        out=out / 'sessions' / slot['id'], judge_tokens=judge.max_tokens)
+                        out=out / 'sessions' / slot['id'], judge_tokens=judge.max_tokens, continue_on_error=resilient)
 
                 def record(slot, result):
                     state['sessions'].append({**slot, 'status': result['status'], 'grade': result['grade'],
                         'tokens': result['tokens'], 'model_calls': result['model_calls'],
+                        'accounting_complete': result.get('accounting_complete', result['status'] == 'completed'),
                         'attempt_sha256': sha(out / 'sessions' / slot['id'] / 'ATTEMPT.json'),
                         'skill_content_sha256': hashlib.sha256(skills[slot['employee_id']].encode()).hexdigest()})
                     state['sessions'].sort(key=lambda s: (s['day'], s['day_order']))
                     if result['status'] == 'completed' and result['grade']['grading_complete']:
                         place.complete(slot['obligation_id'], slot['id'], {k: result['grade'][k]
                                        for k in ('success', 'quality_score', 'feedback')})
+                    elif resilient:
+                        place.fail(slot['obligation_id'], slot['id'], result['status'])
                     checkpoint()
                     print(json.dumps({'seed': world['seed'], 'arm': learner.identity()['name'],
                                       'day': day, 'session': slot['id'], 'status': result['status']}), flush=True)
@@ -97,7 +115,8 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
                         (out / 'INFLIGHT.json').unlink()
 
                 dispatch_day(work, perform, record, journal, max_parallel=spec.get('max_parallel_employees', 1),
-                             cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None)
+                             cancellation=cancellation.at(stage='work_wave', day=day) if cancellation else None,
+                             continue_on_error=resilient)
             if day not in spec.get('update_days', []): continue
             check_cancellation(cancellation)
             if spec.get('max_parallel_updates', 1) > 1:
@@ -121,7 +140,8 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
 
                 dispatch_updates(bank, harness, judge, learner, selections, day=day, skills=skills, out=out,
                     record=record_update, journal=journal_updates, max_parallel=spec['max_parallel_updates'],
-                    cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None)
+                    cancellation=cancellation.at(stage='learning_wave', day=day) if cancellation else None,
+                    continue_on_error=resilient)
             else:
                 for employee in sorted(skills):
                     check_cancellation(cancellation)
@@ -130,10 +150,11 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
                     save(out / 'INFLIGHT.json', {'kind': 'learning', 'day': day, 'employee_id': employee,
                                                 'budget': learner.identity().get('budget')})
                     update = update_employee(bank, harness, judge, learner, selected, employee=employee, day=day,
-                        skill=skills[employee], update_root=out / 'learning' / f'd{day:03d}-{employee}')
+                        skill=skills[employee], update_root=out / 'learning' / f'd{day:03d}-{employee}',
+                        continue_on_error=resilient)
                     state['updates'].append({'day': day, 'employee_id': employee, 'result': update})
                     checkpoint()
-                    if update['status'] not in ('completed', 'budget_exhausted'):
+                    if update['status'] not in ('completed', 'budget_exhausted') and not resilient:
                         raise RuntimeError('Learning failed; evidence preserved without automatic replay')
                     if update.get('accepted'): skills[employee] = update['skill']
                     checkpoint(); (out / 'INFLIGHT.json').unlink()
@@ -153,6 +174,7 @@ def run_world(bank, world, harness, judge, learner, out, employee_factory, *, ca
             'learning_and_replay_judging_tokens': sum(u['result']['costs']['tokens'] for u in state['updates']),
             'actor_usage': driver.usage(), 'workplace': summary,
             'world_schedule_sha256': stable_hash(world), 'scope': world['scope']}
+        report['failures'] = report_failures(state['sessions'], state['updates'], state['decision_failures'])
         save(out / 'REPORT.json', report)
         return report
     finally:

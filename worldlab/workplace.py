@@ -217,6 +217,31 @@ class Workplace:
         self.state['reviews'].append({**deepcopy(outcome), 'obligation_id': obligation_id, 'session_id': session_id,
                                      'release_day': self.day + self.delay, 'completed_day': self.day, 'cause': event})
 
+    def fail(self, obligation_id, session_id, status):
+        """Release an ungraded work slot without manufacturing feedback or trust changes."""
+        obligation = self.state['obligations'][obligation_id]
+        require(obligation['status'] == 'working' and obligation['last_session'] == session_id,
+                'Failure must match the running attempt')
+        require(isinstance(status, str) and status and status != 'completed', 'Failure needs an ungraded status')
+        self._command('fail', {'obligation_id': obligation_id, 'session_id': session_id, 'status': status})
+        retry = obligation['attempts'] < self.max_attempts and self.day < obligation['due_day'] + self.grace
+        obligation.update(status='pending' if retry else 'failed',
+                          next_eligible_day=self.day + max(1, self.retry_delay), operational_failure=status)
+        self._emit('work_ungraded', obligation['employee_id'],
+                   {'obligation_id': obligation_id, 'session_id': session_id, 'status': status,
+                    'retry_eligible': retry}, [obligation['start_event']])
+
+    def decision_failed(self, employee_id, obligation_id, failure_id):
+        """Spend a decision opportunity and defer; this is not a fabricated actor answer."""
+        require(obligation_id in self.available(employee_id), 'Failed decision exceeds available capacity')
+        require(isinstance(failure_id, str) and failure_id, 'Failed decision needs its receipt identity')
+        self._command('decision_failed', {'employee_id': employee_id, 'obligation_id': obligation_id,
+                                         'failure_id': failure_id})
+        self.state['employees'][employee_id]['used_capacity'] += 1
+        self.state['obligations'][obligation_id]['next_eligible_day'] = self.day + 1
+        self._emit('employee_decision_failed', employee_id,
+                   {'obligation_id': obligation_id, 'failure_id': failure_id})
+
     def summary(self):
         obligations = self.state['obligations']
         probes = [s for s in self.arrivals.values() if s['split'] == 'probe']
@@ -239,6 +264,6 @@ class Workplace:
     def replay(cls, world, commands):
         workplace = cls(world)
         for command in commands:
-            require(command['operation'] in ('advance', 'decide', 'start', 'complete'), 'Unknown workplace command')
+            require(command['operation'] in ('advance', 'decide', 'start', 'complete', 'fail', 'decision_failed'), 'Unknown workplace command')
             getattr(workplace, command['operation'])(**deepcopy(command['arguments']))
         return workplace

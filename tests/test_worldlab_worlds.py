@@ -45,7 +45,7 @@ class Learning(NoLearning):
         return {**result, 'skill': skill + '\nNew skill', 'accepted': True}
 
 
-SPEC = {'schema_version': 1, 'study_scope': 'development', 'days': 10, 'probe_start_day': 8,
+SPEC = {'failure_policy': 'stop_after_current_wave', 'schema_version': 1, 'study_scope': 'development', 'days': 10, 'probe_start_day': 8,
         'update_days': [6], 'feedback_delay': 1, 'train_cases': 2, 'val_cases': 2,
         'employees': [{'id': 'writer', 'role': 'Editor', 'language': 'en'}]}
 
